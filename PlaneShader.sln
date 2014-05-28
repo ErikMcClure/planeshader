@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlaneShader", "PlaneShader\PlaneShader.vcxproj", "{D4997047-629C-4100-AEDA-4670F3D277CA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00 Testbed", "examples\00 Testbed\00 Testbed.vcxproj", "{C4856504-9B3D-453E-954C-C5B0447C84BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D4997047-629C-4100-AEDA-4670F3D277CA} = {D4997047-629C-4100-AEDA-4670F3D277CA}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D4997047-629C-4100-AEDA-4670F3D277CA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D4997047-629C-4100-AEDA-4670F3D277CA}.Debug|Win32.Build.0 = Debug|Win32
+		{D4997047-629C-4100-AEDA-4670F3D277CA}.Release|Win32.ActiveCfg = Release|Win32
+		{D4997047-629C-4100-AEDA-4670F3D277CA}.Release|Win32.Build.0 = Release|Win32
+		{C4856504-9B3D-453E-954C-C5B0447C84BB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C4856504-9B3D-453E-954C-C5B0447C84BB}.Debug|Win32.Build.0 = Debug|Win32
+		{C4856504-9B3D-453E-954C-C5B0447C84BB}.Release|Win32.ActiveCfg = Release|Win32
+		{C4856504-9B3D-453E-954C-C5B0447C84BB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
