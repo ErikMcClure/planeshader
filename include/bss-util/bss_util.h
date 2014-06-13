@@ -220,8 +220,8 @@ namespace bss_util {
   {
     if(!argc||!argv) return;
     const char* const* cur=argv;
-    size_t len=1;
-    for(size_t i = 1; i<argc; ++i)
+    int len=1;
+    for(int i = 1; i<argc; ++i)
     {
       if(argv[i][0]==divider)
       {

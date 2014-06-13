@@ -6,6 +6,7 @@
 
 #include "psDriver.h"
 #include "psRenderable.h"
+#include "psCamera.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psPass : public psDriverHold

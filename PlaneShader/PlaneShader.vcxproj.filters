@@ -63,6 +63,27 @@
     <ClInclude Include="..\include\psStateblock.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psShader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psInheritable.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psGUIManager.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psGUIEvent.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="psNullDriver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psColor.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psCircle.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -86,6 +107,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psStateblock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psTex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psInheritable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psGUIManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

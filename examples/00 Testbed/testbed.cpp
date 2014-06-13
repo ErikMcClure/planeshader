@@ -7,9 +7,14 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "psEngine.h"
+#include "psShader.h"
+#include "psColor.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
+#include "bss-util/cStr.h"
 #include <time.h>
+#include <iostream>
+#include <functional>
 
 using namespace planeshader;
 using namespace bss_util;
@@ -62,7 +67,27 @@ void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val=true; 
 
 bool comparevec(psVec a, psVec b, int diff=1)
 {
-  return b.x==0.0f?fsmall(a.x):fcompare(a.x, b.x, diff) && b.y==0.0f?fsmall(a.y):fcompare(a.y, b.y, diff);
+  return b.x==0.0f?fsmall(a.x, FLT_EPS*4):fcompare(a.x, b.x, diff) && b.y==0.0f?fsmall(a.y, FLT_EPS*4):fcompare(a.y, b.y, diff);
+}
+bool comparevec(psColor& a, psColor& b, int diff=1)
+{
+  return b.r==0.0f?fsmall(a.r):fcompare(a.r, b.r, diff) &&
+    b.g==0.0f?fsmall(a.g):fcompare(a.g, b.g, diff) &&
+    b.b==0.0f?fsmall(a.b):fcompare(a.b, b.b, diff) &&
+    b.a==0.0f?fsmall(a.a):fcompare(a.a, b.a, diff);
+}
+cStr ReadFile(const char* path)
+{
+  FILE* f;
+  FOPEN(f, path, "rb");
+  if(!f) return "";
+  cStr buf;
+  fseek(f, 0, SEEK_END);
+  long ln = ftell(f);
+  buf.resize(ln+1);
+  fseek(f, 0, SEEK_SET);
+  fread(buf.UnsafeString(), 1, ln, f);
+  return std::move(buf);
 }
 TESTDEF::RETPAIR test_psVec()
 {
@@ -190,16 +215,19 @@ TESTDEF::RETPAIR test_psVec()
   TEST(lp.LineDistanceSqr(1, 3, 1+ln.x, 3+ln.y)==bss_util::distsqr(1, 3, 2, -3));
   TEST(fcompare(lp.LineDistance(1, 3, 1+ln.x, 3+ln.y),bss_util::dist<float>(1, 3, 2, -3),100));
 
+  TEST(comparevec(psVec::ToPolar(psVec(3, 4)), psVec(5, 0.9273f), 1000));
+  TEST(comparevec(psVec::ToPolar(psVec(0, 4)), psVec(4, PI_HALFf), 1000));
+  TEST(comparevec(psVec::ToPolar(psVec(3, 0)), psVec(3, 0), 1000));
+  TEST(comparevec(psVec::ToPolar(-3, 0), psVec(3, PIf), 1000));
+  TEST(comparevec(psVec::ToPolar(0, -4), psVec(4, -PI_HALFf), 1000));
+  TEST(comparevec(psVec::FromPolar(5, 0.9273f), psVec(3, 4), 1000));
+  TEST(comparevec(psVec::FromPolar(4, -PI_HALFf), psVec(0, -4), 1000));
+  TEST(comparevec(psVec::FromPolar(psVec(3, 0)), psVec(3, 0), 1000));
+  TEST(comparevec(psVec::FromPolar(psVec(3, PIf)), psVec(-3, 0), 1000));
+  TEST(comparevec(psVec::FromPolar(psVec(4, PIf+PI_HALFf)), psVec(0, -4), 1000));
+
   /*
-  static BSS_FORCEINLINE const psVecT<T> BSS_FASTCALL FromPolar(const psVecT<T>& v) { return FromPolar(v.x,v.y); }
-  static BSS_FORCEINLINE const psVecT<T> BSS_FASTCALL FromPolar(T r, T angle) { return psVecT<T>(r*cos(angle),r*sin(angle)); }
-  static BSS_FORCEINLINE const psVecT<T> BSS_FASTCALL ToPolar(const psVecT<T>& v) { return ToPolar(v.x,v.y); }
-  static BSS_FORCEINLINE const psVecT<T> BSS_FASTCALL ToPolar(T x, T y) { return psVecT<T>(bss_util::FastSqrt((x*x) + (y*y)),atan2(y,x)); } //x - r, y - theta
   static BSS_FORCEINLINE bool BSS_FASTCALL IntersectEllipse(T X, T Y, T A, T B, T x, T y) { T tx=X-x; T ty=Y-y; return ((tx*tx)/(A*A)) + ((ty*ty)/(B*B)) <= 1; }
-  static BSS_FORCEINLINE T BSS_FASTCALL PointLineInfDistSqr(T X, T Y, T X1, T Y1, T X2, T Y2) {  T tx=X2-X1; T ty=Y2-Y1; T det=(tx*(Y1-Y)) - ((X1-X)*ty); return (det*det)/((tx*tx)+(ty*ty)); }
-  static BSS_FORCEINLINE T BSS_FASTCALL PointLineInfDist(T X, T Y, T X1, T Y1, T X2, T Y2) {  T tx=X2-X1; T ty=Y2-Y1; return ((tx*(Y1-Y)) - ((X1-X)*ty))/bss_util::FastSqrt((tx*tx)+(ty*ty)); }
-  static inline void BSS_FASTCALL NearestPointToLineInf(T X, T Y, T X1, T Y1, T X2, T Y2, T& outX, T& outY) //treated as infinite line
-  static inline void BSS_FASTCALL NearestPointToLine(T X, T Y, T X1, T Y1, T X2, T Y2, T& outX, T& outY) //treated as line segment
   static inline void BSS_FASTCALL EllipseNearestPoint(T A, T B, T cx, T cy, T& outX, T& outY)*/
 
   ENDTEST;
@@ -220,8 +248,11 @@ TESTDEF::RETPAIR test_psVec3D()
   float ee[3] ={ -1.0f, 1.0f, 2.0f };
   psVec3D e(ee);
   TESTVEC3(e, -1.0f, 1.0f, 2.0f);
+  TEST(psVec3D(3, 0, -8).Equals(3, 0, -8));
+  TEST(!psVec3D(3, 0, -8).Equals(3, 1, -8));
+  TEST(!psVec3D(3, 0, -8).Equals(3, 0, 8));
+
   /*
-  inline bool BSS_FASTCALL Equals(T X, T Y, T Z) const { return X == x && Y == y && Z==z; }
   inline T BSS_FASTCALL GetDistance(const psVec3DT<T>& other) const { T tz = (other.z - z);  T ty = (other.y - y); T tx = (other.x - x); return (T)bss_util::FastSqrt((tx*tx)+(ty*ty)+(tz*tz)); }
   inline T BSS_FASTCALL GetDistanceSquared(const psVec3DT<T>& other) const { T tz = (other.z - z); T ty = (other.y - y); T tx = (other.x - x); return (T)((tx*tx)+(ty*ty)+(tz*tz)); }
   inline T BSS_FASTCALL GetDistance(T X, T Y, T Z) const { T tz = (other.z - z); T ty = (Y - y); T tx = (X - x); return (T)bss_util::FastSqrt((tx*tx)+(ty*ty)+(tz*tz)); }
@@ -301,6 +332,22 @@ TESTDEF::RETPAIR test_psRect()
   ENDTEST;
 }
 
+TESTDEF::RETPAIR test_psColor()
+{
+  BEGINTEST;
+  psColor c(0xFF7F3F1F);
+  TEST(comparevec(c, psColor(0.498039f, 0.2470588f, 0.121568f, 1.0f), 100));
+  unsigned int ci = c;
+  TEST(ci==0xFF7F3F1F);
+  TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 0) == 0xFF7F3F1F);
+  TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 1.0f) == 0x103070F0);
+  TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 0.5f) == 0x87575787);
+  TEST(psColor::Multiply(0xFF7F3F1F, 0) == 0);
+  TEST(psColor::Multiply(0xFF7F3F1F, 1.0f) == 0xFF7F3F1F);
+  TEST(psColor::Multiply(0xFF7F3F1F, 0.5f) == 0x7F3F1F0F);
+  ENDTEST;
+}
+
 TESTDEF::RETPAIR test_psCamera()
 {
   BEGINTEST;
@@ -311,12 +358,26 @@ TESTDEF::RETPAIR test_psCamera()
 TESTDEF::RETPAIR test_psDirectX10()
 {
   BEGINTEST;
-  engine->Begin();
-
-
-  engine->End();
-
-
+  cStr shfile = ReadFile("../media/testbed.hlsl");
+  auto shader = psShader::CreateShader(0, 0, 2, &SHADER_INFO(shfile.c_str(), (const char*)"vs_main", VERTEX_SHADER_4_0),
+    &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
+  auto timer = psEngine::OpenProfiler();
+  int fps=0;
+  while(engine->Begin())
+  {
+    shader->Activate();
+    engine->GetDriver()->DrawFullScreenQuad();
+    engine->End();
+    if(psEngine::CloseProfiler(timer)>1000000000)
+    {
+      timer = psEngine::OpenProfiler();
+      char text[10]={ 0,0,0,0,0,0,0,0,0,0 };
+      _itoa_r(fps, text, 10);
+      engine->SetWindowTitle(text);
+      fps=0;
+    }
+    ++fps;
+  }
 
   ENDTEST;
 }
@@ -354,6 +415,10 @@ int main(int argc, char** argv)
   TESTDEF tests[] ={
     { "psVec", &test_psVec },
     { "psVec3D", &test_psVec3D },
+    { "psCircle", &test_psCircle },
+    { "psRect", &test_psRect },
+    { "psColor", &test_psColor },
+    { "psDirectX10", &test_psDirectX10 },
   };
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
@@ -367,13 +432,15 @@ int main(int argc, char** argv)
   std::vector<uint> failures;
   PSINIT init;
   init.driver=RealDriver::DRIVERTYPE_DX10;
-  init.width=320;
-  init.height=240;
+  init.width=640;
+  init.height=480;
   //init.iconresource=101;
   //init.filter=5;
   {
     psEngine ps(init);
     if(ps.GetQuit()) return 0;
+    std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool { if(evt.type == GUI_KEYDOWN && evt.keycode == KEY_ESCAPE) ps.Quit(); return false; };
+    ps.SetInputReceiver(guicallback);
     //ps[0].SetClear(true, 0);
     engine=&ps;
 

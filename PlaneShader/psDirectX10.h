@@ -11,6 +11,7 @@
 #include "directx/D3DX10.h"
 
 namespace planeshader {
+  // Vertex input to geometry shader for rect rendering
   struct DX10_rectvert 
   {
     float x, y, z, rot;
@@ -18,22 +19,51 @@ namespace planeshader {
     float u, v, u2, v2;
     unsigned int color;
   };
+  // Vertex used for polygons and circles, is the layout used by the default (null) shader replacement.
+  struct DX10_defaultvert
+  {
+    float x, y, z;
+    float u, v;
+    unsigned int color;
+  };
+  // Vertex used for lines and point rendering
+  struct DX10_simplevert
+  {
+    float x, y, z;
+    unsigned int color;
+  };
+  struct DX10_SB
+  {
+    ID3D10RasterizerState* rs;
+    ID3D10DepthStencilState* ds;
+    UINT stencilref;
+    ID3D10BlendState* bs;
+    FLOAT blendfactor[4];
+    UINT sampleMask;
+    unsigned char numsamplerps;
+    unsigned char numsamplervs;
+    unsigned char numsamplergs;
+
+    static inline ID3D10SamplerState* const* GetPS(DX10_SB* sb) { return (ID3D10SamplerState* const*)(sb+1); }
+    static inline ID3D10SamplerState* const* GetVS(DX10_SB* sb) { return ((ID3D10SamplerState* const*)(sb+1))+sb->numsamplerps; }
+    static inline ID3D10SamplerState* const* GetGS(DX10_SB* sb) { return ((ID3D10SamplerState* const*)(sb+1))+sb->numsamplerps+sb->numsamplervs; }
+  };
   class psDirectX10 : public psDriver
   {
   public:
     // Constructors
-    psDirectX10(const psVeciu& dim);
+    psDirectX10(const psVeciu& dim, unsigned antialias, bool vsync, bool fullscreen, bool destalpha, HWND hwnd);
     ~psDirectX10();
     // Begins a scene
     virtual bool Begin();
     // Ends a scene
-    virtual void End();
+    virtual char End();
     // Draws a vertex object
-    virtual void BSS_FASTCALL Draw(psVertObj* buf, float(&transform)[4][4], FLAG_TYPE flags);
+    virtual void BSS_FASTCALL Draw(psVertObj* buf, FLAG_TYPE flags, const float(&transform)[4][4]=identity);
     // Draws a rectangle
-    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect& uv, const unsigned int(&vertexcolor)[4], const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags, const float xform[4][4]);
-    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, const unsigned int(&vertexcolor)[4], FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags, const float(&xform)[4][4]=identity);
+    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, FLAG_TYPE flags);
     virtual void DrawRectBatchEnd();
     // Draws a circle
     virtual void BSS_FASTCALL DrawCircle();
@@ -56,11 +86,13 @@ namespace planeshader {
     inline virtual const psVec& GetExtent() const { return _extent; }
     virtual void BSS_FASTCALL SetExtent(float znear, float zfar);
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(unsigned short bytes, USAGETYPES usage, BUFFERTYPES type, void* initdata=0);
+    virtual void* BSS_FASTCALL CreateBuffer(unsigned short bytes, unsigned int usage, const void* initdata=0);
+    virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags);
+    virtual void BSS_FASTCALL UnlockBuffer(void* target);
     // Creates a texture
-    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, USAGETYPES usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, void* initdata=0, void** additionalview=0);
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, USAGETYPES usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0);
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, USAGETYPES usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0);
+    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0);
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0);
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0);
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect);
     virtual void PopScissorRect();
@@ -70,11 +102,23 @@ namespace planeshader {
     virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader);
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
     virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1);
+    // Builds a stateblock from the given set of state changes
+    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states);
+    // Sets a given stateblock
+    virtual void BSS_FASTCALL SetStateblock(void* stateblock);
+    // Create a vertex layout from several element descriptions
+    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num);
+    void* BSS_FASTCALL CreateLayout(void* shader, size_t sz, const ELEMENT_DESC* elements, unsigned char num);
+    virtual void BSS_FASTCALL SetLayout(void* layout);
     // Frees a created resource of the specified type
     virtual void BSS_FASTCALL FreeResource(void* p, RESOURCE_TYPE t);
+    virtual void BSS_FASTCALL GrabResource(void* p, RESOURCE_TYPE t);
+    virtual void BSS_FASTCALL CopyResource(void* dest, void* src, RESOURCE_TYPE t);
+    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, bool fullscreen);
+    virtual void BSS_FASTCALL Clear(unsigned int color);
     // Gets a pointer to the driver implementation
     inline virtual RealDriver GetRealDriver() { RealDriver d; d.dx10=this; d.type=RealDriver::DRIVERTYPE_DX10; return d; }
-
+    inline virtual psTex* GetBackBuffer() { return _backbuffer; }
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="");
     // Create an actual shader object from compiled shader source (either precompiled or from CompileShader())
@@ -85,20 +129,27 @@ namespace planeshader {
     // Returns true if shader version is supported
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile);
 
+    inline long GetLastError() const { return _lasterr; }
+
   protected:
-    static inline unsigned int BSS_FASTCALL _usagetodxtype(USAGETYPES types);
-    static inline unsigned int BSS_FASTCALL _usagetocpuflag(USAGETYPES types);
-    static inline unsigned int BSS_FASTCALL _usagetomisc(USAGETYPES types);
-    static inline unsigned int BSS_FASTCALL _usagetobind(USAGETYPES types);
-    static inline unsigned int BSS_FASTCALL _buftypetodxtype(BUFFERTYPES types);
+    static inline unsigned int BSS_FASTCALL _usagetodxtype(unsigned int types);
+    static inline unsigned int BSS_FASTCALL _usagetocpuflag(unsigned int types);
+    static inline unsigned int BSS_FASTCALL _usagetomisc(unsigned int types);
+    static inline unsigned int BSS_FASTCALL _usagetobind(unsigned int types);
+    static inline unsigned int BSS_FASTCALL _reverseusage(unsigned int usage, unsigned int misc, unsigned int bind); //reassembles DX10 flags into a generic usage flag
     static inline unsigned int BSS_FASTCALL _fmttodx10(FORMATS format);
+    static inline FORMATS BSS_FASTCALL _reversefmt(unsigned int format);
     static inline unsigned int BSS_FASTCALL _getbitsperpixel(FORMATS format);
     static inline D3D10_PRIMITIVE_TOPOLOGY BSS_FASTCALL _getdx10topology(PRIMITIVETYPE type);
     void* _createshaderview(ID3D10Resource* src);
     void* _creatertview(ID3D10Resource* src);
     void* _createdepthview(ID3D10Resource* src);
+    long _lasterr;
 
+    IDXGIFactory* _factory;
     ID3D10Device* _device;
+    IDXGISwapChain* _swapchain;
+    psTex* _backbuffer;
     D3DXMATRIX matProj;
     D3DXMATRIX matCamPos_NoScale;
     D3DXMATRIX matCamPos;
@@ -110,8 +161,21 @@ namespace planeshader {
     void* _batchvbuf;
     psVec _extent;
     bool _zerocamrot;
+    bool _vsync;
     bss_util::cStack<psRectl> _scissorstack;
     ID3D10VertexShader* _fsquadVS;
+    ID3D10VertexShader* _rectVS;
+    ID3D10GeometryShader* _rectGS;
+    ID3D10PixelShader* _rectPS;
+    ID3D10VertexShader* _defaultVS;
+    ID3D10PixelShader* _defaultPS; //single texture pixel shader
+    ID3D10Buffer* _cam_def; //viewproj matrix and identity world matrix
+    ID3D10Buffer* _cam_usr; //viewproj matrix and custom world matrix
+    ID3D10Buffer* _camnorot_def; // no rotation viewproj
+    ID3D10Buffer* _camnorot_usr;
+    ID3D10Buffer* _camnorotpos_def; //no rotation or position viewproj
+    ID3D10Buffer* _camnorotpos_usr;
+
   };
 }
 
