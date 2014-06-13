@@ -4,13 +4,15 @@
 #ifndef __ENGINE_H__PS__
 #define __ENGINE_H__PS__
 
-#include "bss-util/cArraySimple.h"
+#include "bss-util/cArray.h"
 #include "bss-util/cBitField.h"
 #include "bss-util/cHighPrecisionTimer.h"
 #include "bss-util/bss_log.h"
+#include "psGUIManager.h"
 #include "psDriver.h"
 
 #define PSLOG(level) BSSLOG(*psEngine::Instance(),level)
+#define PSLOGV(level,...) BSSLOGV(*psEngine::Instance(),level,__VA_ARGS__)
 
 namespace planeshader {
   class psPass;
@@ -18,10 +20,10 @@ namespace planeshader {
   struct PSINIT;
 
   // Core engine object
-  class PS_DLLEXPORT psEngine : public bss_util::cHighPrecisionTimer, public bss_util::cLog, public psDriverHold
+  class PS_DLLEXPORT psEngine : public psGUIManager, public bss_util::cHighPrecisionTimer, public bss_util::cLog, public psDriverHold
   {
-    const unsigned char PSENGINE_QUIT = (1<<0);
-    const unsigned char PSENGINE_AUTOANI = (1<<1);
+    static const unsigned char PSENGINE_QUIT = (1<<0);
+    static const unsigned char PSENGINE_AUTOANI = (1<<1);
 
   public:
     // Constructor
@@ -40,13 +42,21 @@ namespace planeshader {
       End();
       return true;
     }
+    // Insert a pass 
+    bool InsertPass(psPass& pass, unsigned short index=-1);
+    // Remove pass 
+    bool RemovePass(unsigned short index);
     // Gets a pass. The 0th pass always exists.
     inline psPass* GetPass(unsigned short index=0) const { return index<_passes.Size()?_passes[index]:0; }
     inline unsigned short NumPass() const { return _passes.Size(); }
+    // Get/Sets the quit value
     inline void Quit() { _flags+=PSENGINE_QUIT; }
     inline bool GetQuit() const { return _flags[PSENGINE_QUIT]; }
+    // Sets whether the animations should auto-update
     inline void SetAutoUpdateAni(bool ani) { _flags[PSENGINE_AUTOANI]=ani; }
-    inline psDriver* GetDriver() const { return _driver; }
+    // Get/set the timewarp factor
+    inline void SetTimeWarp(double timewarp) { _timewarp = timewarp; }
+    inline double GetTimeWarp() const { return _timewarp; }
 
     psPass& operator [](unsigned short index) { assert(index<_passes.Size()); return *_passes[index]; }
     const psPass& operator [](unsigned short index) const { assert(index<_passes.Size()); return *_passes[index]; }
@@ -60,17 +70,39 @@ namespace planeshader {
     bss_util::WArray<psPass*, unsigned short>::t _passes;
     bss_util::cBitField<unsigned char> _flags;
     double _secdelta;
+    double _timewarp;
     unsigned short _curpass;
+    psPass* _mainpass;
 
     static psEngine* _instance;
   };
 
   struct PSINIT
   {
+    inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX9), fullscreen(false), vsync(false),
+      destalpha(true), composite(PS_COMP_NONE), antialias(0), farextent(50000.0f), nearextent(1.0f), errout(0) {}
+
     int width;
     int height;
     RealDriver::DRIVERTYPE driver;
-
+    bool fullscreen;
+    bool vsync;
+    bool destalpha;
+    enum PS_COMP : char {
+      PS_COMP_NONE=0,
+      PS_COMP_NOFRAME=1,
+      PS_COMP_NOFRAME_CLICKTHROUGH=2,
+      PS_COMP_NOFRAME_NOMOVE=3,
+      PS_COMP_NOFRAME_OPAQUE_CLICK=4,
+      PS_COMP_FRAME=-1,
+      PS_COMP_FRAME_TITLE=-2,
+      PS_COMP_FRAME_TITLE_CLOSEBUTTON=-3,
+      PS_COMP_FRAME_SIZEABLE=-4
+    } composite;
+    unsigned char antialias;
+    float farextent;
+    float nearextent;
+    std::ostream* errout;
   };
 }
 

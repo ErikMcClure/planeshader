@@ -5,6 +5,7 @@
 #define __DELEGATE_H__BSS__
 
 #include "bss_defines.h"
+#include <functional>
 
 namespace bss_util {
   // delegate class using variadic templates
@@ -16,8 +17,11 @@ namespace bss_util {
   public:
     inline delegate(const delegate& copy) : _src(copy._src), _stub(copy._stub) {}
     inline delegate(void* src, R(MSC_FASTCALL *GCC_FASTCALL stub)(void*, Args...)):_src(src), _stub(stub) {}
-    inline R operator()(Args... args) const { return (*_stub)(_src,args...); }
+    inline delegate(std::function<R(Args...)>& src):_src(&src), _stub(&stublambda) {}
+    inline delegate(std::function<R(Args...)>&& src) = delete; // Don't do delegate([&](){ return; }) or it'll go out of scope.
+    inline R operator()(Args... args) const { return (*_stub)(_src, args...); }
     inline delegate& operator=(const delegate& right) { _src=right._src; _stub=right._stub; return *this; }
+    inline bool IsEmpty() const { return _src==0||_stub==0; }
 
     template<class T, RTYPE(MSC_FASTCALL T::*GCC_FASTCALL F)(Args...)>
     inline static delegate From(T* src) { return delegate(src, &stub<T, F>); }
@@ -28,6 +32,7 @@ namespace bss_util {
 
     template <class T, RTYPE(MSC_FASTCALL T::*GCC_FASTCALL F)(Args...)>
     static R BSS_FASTCALL stub(void* src, Args... args) { return (static_cast<T*>(src)->*F)(args...); }
+    static R BSS_FASTCALL stublambda(void* src, Args... args) { return (*static_cast<std::function<R(Args...)>*>(src))(args...); }
   };
 #else
   template<typename R=void, typename T1=void, typename T2=void, typename T3=void, typename T4=void, typename T5=void>
@@ -45,6 +50,7 @@ namespace bss_util {
 
     template<class T, R(MSC_FASTCALL T::*GCC_FASTCALL F)(void)>
     inline delegate static From(T* src) { return delegate(src, &stub<T,F>); }
+    inline static delegate From(T* src) { return delegate(src, &stub<T, F>); }
 
   protected:
     void* _src;

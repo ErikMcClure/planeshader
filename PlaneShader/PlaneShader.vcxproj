@@ -105,12 +105,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\psCamera.h" />
+    <ClInclude Include="..\include\psCircle.h" />
+    <ClInclude Include="..\include\psColor.h" />
     <ClInclude Include="..\include\psDriver.h" />
     <ClInclude Include="..\include\psEngine.h" />
+    <ClInclude Include="..\include\psGUIEvent.h" />
+    <ClInclude Include="..\include\psGUIManager.h" />
+    <ClInclude Include="..\include\psInheritable.h" />
     <ClInclude Include="..\include\psLocatable.h" />
     <ClInclude Include="..\include\psPass.h" />
     <ClInclude Include="..\include\psRect.h" />
     <ClInclude Include="..\include\psRenderable.h" />
+    <ClInclude Include="..\include\psShader.h" />
     <ClInclude Include="..\include\psStateblock.h" />
     <ClInclude Include="..\include\psTex.h" />
     <ClInclude Include="..\include\psVec.h" />
@@ -119,6 +125,7 @@
     <ClInclude Include="..\include\ps_dec.h" />
     <ClInclude Include="psDirectX10.h" />
     <ClInclude Include="psDirectX10_fsquadVS.h" />
+    <ClInclude Include="psNullDriver.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc" />
@@ -127,9 +134,14 @@
     <ClCompile Include="psCamera.cpp" />
     <ClCompile Include="psDirectX10.cpp" />
     <ClCompile Include="psEngine.cpp" />
+    <ClCompile Include="psGUIManager.cpp" />
+    <ClCompile Include="psInheritable.cpp" />
     <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psPass.cpp" />
     <ClCompile Include="psRenderable.cpp" />
+    <ClCompile Include="psShader.cpp" />
+    <ClCompile Include="psStateblock.cpp" />
+    <ClCompile Include="psTex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="fsquadVS.hlsl">
@@ -144,6 +156,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)_main</VariableName>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_main</VariableName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

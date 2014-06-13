@@ -10,6 +10,7 @@
 #include "cArray.h"
 
 #define BSSLOG(logger,level) ((logger).FORMATLOG(level,__FILE__,__LINE__))
+#define BSSLOGV(logger,level,...) ((logger).WriteLog(level,__FILE__,__LINE__,__VA_ARGS__))
 
 namespace bss_util {
   class StreamSplitter;
@@ -50,6 +51,8 @@ namespace bss_util {
     cLog& operator=(cLog&& right);
     inline operator std::ostream&() { return _stream; }
 
+    template<typename... Args>
+    BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, Args... args) { _writelog(FORMATLOGLEVEL(_levels[level], file, line), args...); }
     BSS_FORCEINLINE std::ostream& BSS_FASTCALL FORMATLOG(unsigned char level, const char* file, unsigned int line) { return FORMATLOGLEVEL(_levels[level], file, line); }
     inline std::ostream& BSS_FASTCALL FORMATLOGLEVEL(const char* level, const char* file, unsigned int line)
     {
@@ -60,6 +63,9 @@ namespace bss_util {
     }
 
   protected:
+    template<typename Arg, typename... Args>
+    static inline void _writelog(std::ostream& s, Arg arg, Args... args) { s << arg; _writelog(s, args...); }
+    static inline void _writelog(std::ostream& s) { s << std::endl; }
     static bool BSS_FASTCALL _writedatetime(long timezone, std::ostream& log, bool timeonly);
     static const char* BSS_FASTCALL _trimpath(const char* path);
     void _leveldefaults();

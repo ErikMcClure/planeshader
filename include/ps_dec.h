@@ -29,12 +29,10 @@ namespace planeshader {
 
   // All possible flags for objects 
   const FLAG_TYPE PSFLAG_NOTVISIBLE = (1 << 0); //Prevents the object and its children from being rendered
-  const FLAG_TYPE PSFLAG_NOCAMPOS = (1 << 1); //Ignores the camera position (This doesn't work with camera rotation. If you use camera rotation, designate PSFLAG_NOCAMROTATE as well)
+  const FLAG_TYPE PSFLAG_NOCAMPOS = (1 << 1); //Ignores the camera position, implies NOCAMROTATE
   const FLAG_TYPE PSFLAG_NOZOOM = (1 << 2); //Ignores the camera zoom level (its z coordinate)
   const FLAG_TYPE PSFLAG_NOCAMROTATE = (1 << 3); //Ignores the camera rotation
   const FLAG_TYPE PSFLAG_ALWAYSRENDER = (1 << 4); //This object will always render itself regardless of any NOTVISIBLE flags anywhere in the parent chain
-  //const FLAG_TYPE PSFLAG_RIGHTALIGN = (1 << 6); //Causes the centered behavoir of an image to right align it
-  //const FLAG_TYPE PSFLAG_BOTTOMALIGN = (1 << 7); //Causes the centered behavoir of an image to bottom align it
   const FLAG_TYPE PSFLAG_DONOTCULL = (1 << 5); //Ensures the object is never culled for any reason
   const FLAG_TYPE PSFLAG_USER = (1 << 6); //This is where you should start your own flag settings
 
