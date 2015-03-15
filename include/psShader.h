@@ -19,9 +19,9 @@ namespace planeshader {
     const void* init;
 
     template<class T> // We can't have templates on constructors so we have to do this instead
-    BSS_FORCEINLINE static SHADER_INFO From(void* Shader, SHADER_VER V, const void* Init=0) { return SHADER_INFO(Shader, V, std::is_void<T>::value?0:sizeof(T), Init); }
+    BSS_FORCEINLINE static SHADER_INFO From(void* Shader, SHADER_VER V, const void* Init=0) { return SHADER_INFO(Shader, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value,char,T>::type), Init); }
     template<class T>
-    BSS_FORCEINLINE static SHADER_INFO From(const char* Shader, const char* entrypoint, SHADER_VER V, const void* Init=0) { return SHADER_INFO(Shader, entrypoint, V, std::is_void<T>::value?0:sizeof(T), Init); }
+    BSS_FORCEINLINE static SHADER_INFO From(const char* Shader, const char* entrypoint, SHADER_VER V, const void* Init=0) { return SHADER_INFO(Shader, entrypoint, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value, char, T>::type), Init); }
   };
 
   class PS_DLLEXPORT psShader : protected psDriverHold, public bss_util::cRefCounter
@@ -40,7 +40,7 @@ namespace planeshader {
       va_start(vl, num);
       for(unsigned int i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
       va_end(vl);
-      return static_cast<psShaderT*>(CreateShader(I, layout, num, infos));
+      return CreateShader(I, layout, num, infos);
     }
     static psShader* BSS_FASTCALL CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, ...); // All arguments here must be passed in as const SHADER_INFO*
     template<unsigned char I>

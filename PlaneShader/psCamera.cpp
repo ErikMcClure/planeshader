@@ -3,6 +3,7 @@
 
 #include "psCamera.h"
 #include "psEngine.h"
+#include "bss-util/profiler.h"
 
 using namespace planeshader;
 
@@ -24,12 +25,12 @@ const psVec& psCamera::GetMouseAbsolute() const
 }
 psVec psCamera::TransformPoint(const psVec3D& point, FLAG_TYPE flags) const
 {
-  return point;
+  return point.xy;
 
 }
 psVec psCamera::ReversePoint(const psVec3D& point, FLAG_TYPE flags) const
 {
-  return point;
+  return point.xy;
 
 }
 // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
@@ -39,6 +40,7 @@ const psRectRotate psCamera::GetScreenRect(FLAG_TYPE flags) const
 }
 void psCamera::SetViewPort(const psRectiu& vp)
 {
+  PROFILE_FUNC();
   psVec dim = psEngine::Instance()->GetDriver()->screendim;
   _viewport.topleft = vp.topleft/dim;
   _viewport.bottomright = (vp.bottomright-vp.topleft)/dim;

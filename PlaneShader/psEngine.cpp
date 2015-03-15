@@ -5,6 +5,8 @@
 #include "psPass.h"
 #include "psDirectX10.h"
 #include "psNullDriver.h"
+#include "psStateblock.h"
+#include "bss-util/profiler.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -30,6 +32,7 @@ psDriver* psDriverHold::GetDriver() { return _driver; }
 
 psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), delta(_delta), secdelta(_secdelta), _curpass(0), _passes(1), _mainpass(0)
 {
+  PROFILE_FUNC();
   if(_instance!=0) // If you try to make another instance, it violently explodes.
     terminate();
   _instance = this;
@@ -45,7 +48,7 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   switch(init.driver)
   {
   case RealDriver::DRIVERTYPE_DX10:
-    _driver = new psDirectX10(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, init.destalpha, _window);
+    new psDirectX10(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, init.destalpha, _window);
     if(((psDirectX10*)_driver)->GetLastError()!=0) { delete _driver; _driver=0; }
     break;
   }
@@ -56,6 +59,8 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
     return;
   }
 
+  psStateblock::DEFAULT = psStateblock::Create(0, 0);
+  _driver->SetStateblock(psStateblock::DEFAULT->GetSB());
   _resizewindow(_driver->screendim.x, _driver->screendim.y, init.fullscreen);
   _driver->SetExtent(init.nearextent, init.farextent);
   _mainpass = new psPass();
@@ -63,6 +68,7 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 }
 psEngine::~psEngine()
 {
+  PROFILE_FUNC();
   if(_driver)
     delete _driver;
   _driver=0;
@@ -75,6 +81,7 @@ psEngine::~psEngine()
 }
 bool psEngine::Begin()
 {
+  PROFILE_FUNC();
   if(GetQuit())
     return false;
   if(_flags&PSENGINE_AUTOANI)
@@ -87,13 +94,14 @@ bool psEngine::Begin()
 }
 void psEngine::End()
 {
+  PROFILE_FUNC();
   while((_curpass+1)<_passes.Size())
     NextPass();
   _passes[_curpass]->End();
 
   //_linerenderer->Render();
   //cRenderList::SwapAlloc();
-  
+
   //if(_realdriver.dx9->_mousehittest!=0) //if this is nonzero we need to toggle transparency based on a system wide mouse hit test
   //  if(_realdriver.dx9->MouseHitTest(GetMouseExact(), _alphacutoff))
   //    SetWindowLong(_window, GWL_EXSTYLE, ((GetWindowLong(_window, GWL_EXSTYLE))&(~WS_EX_TRANSPARENT)));
@@ -118,6 +126,7 @@ void psEngine::End(double delta)
 }
 void psEngine::NextPass()
 {
+  PROFILE_FUNC();
   _passes[_curpass]->End();
   _passes[++_curpass]->Begin();
 }

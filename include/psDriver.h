@@ -5,7 +5,7 @@
 #define __DRIVER_H__PS__
 
 #include "psRect.h"
-#include "psVec3D.h"
+#include "psVec.h"
 
 namespace planeshader {
   class psTex;
@@ -16,6 +16,7 @@ namespace planeshader {
   class psOpenGL1;
   class psNullDriver;
   struct STATEINFO;
+  class psShader;
 
   struct BSS_COMPILER_DLLEXPORT RealDriver
   {
@@ -56,33 +57,6 @@ namespace planeshader {
     LINELIST,
     LINESTRIP,
     POINTLIST
-  };
-
-  struct psVertObj
-  {
-    void* verts;
-    void* indices;
-    unsigned int nvert; // Number of vertices 
-    unsigned int nindice; // Number of indices
-    unsigned int vsize; // Size of the vertices in this buffer
-    PRIMITIVETYPE mode; // Mode to render in
-  };
-
-  enum USAGETYPES : unsigned int {
-    USAGE_DEFAULT=0,
-    USAGE_IMMUTABLE=1,
-    USAGE_DYNAMIC=2,
-    USAGE_STAGING=3,
-    USAGE_VERTEX=4,
-    USAGE_INDEX=8,
-    USAGE_CONSTANT_BUFFER=12,
-    USAGE_AUTOGENMIPMAP=(1<<4),
-    USAGE_TEXTURECUBE=(1<<5),
-    USAGE_RENDERTARGET=(1<<6),
-    USAGE_SHADER_RESOURCE=(1<<7),
-    USAGE_DEPTH_STENCIL=(1<<8),
-    USAGE_USAGEMASK=3,
-    USAGE_BINDMASK=12
   };
 
   enum FORMATS : unsigned char {
@@ -129,6 +103,34 @@ namespace planeshader {
     FMT_R16G16B16A16_UNORM,
     FMT_R16G16_FLOAT,
     FMT_R16G16B16A16_FLOAT
+  };
+
+  struct psVertObj
+  {
+    void* verts;
+    void* indices;
+    unsigned int nvert; // Number of vertices 
+    unsigned int nindice; // Number of indices
+    unsigned int vsize; // Size of the vertices in this buffer
+    FORMATS ifmt; // Either FMT_INDEX16 or FMT_INDEX32
+    PRIMITIVETYPE mode; // Mode to render in
+  };
+
+  enum USAGETYPES : unsigned int {
+    USAGE_DEFAULT=0,
+    USAGE_IMMUTABLE=1,
+    USAGE_DYNAMIC=2,
+    USAGE_STAGING=3,
+    USAGE_VERTEX=4,
+    USAGE_INDEX=8,
+    USAGE_CONSTANT_BUFFER=12,
+    USAGE_AUTOGENMIPMAP=(1<<4),
+    USAGE_TEXTURECUBE=(1<<5),
+    USAGE_RENDERTARGET=(1<<6),
+    USAGE_SHADER_RESOURCE=(1<<7),
+    USAGE_DEPTH_STENCIL=(1<<8),
+    USAGE_USAGEMASK=3,
+    USAGE_BINDMASK=12
   };
 
   enum ELEMENT_SEMANTICS : unsigned char {
@@ -185,7 +187,7 @@ namespace planeshader {
     NUM_SHADER_VERSIONS
   };
 
-  enum LOCK_FLAGS
+  enum LOCK_FLAGS : unsigned char
   {
     LOCK_READ=1,
     LOCK_WRITE=2,
@@ -193,7 +195,26 @@ namespace planeshader {
     LOCK_WRITE_DISCARD=4,
     LOCK_WRITE_NO_OVERWRITE=5,
     LOCK_DONOTWAIT=8,
-    LOCK_TYPEMASK=7,
+    LOCK_TYPEMASK=LOCK_READ|LOCK_WRITE|LOCK_READ_WRITE|LOCK_WRITE_DISCARD|LOCK_WRITE_NO_OVERWRITE,
+  };
+
+  struct TEXTURE_DESC
+  {
+    psVec3Diu dim;
+    USAGETYPES usage;
+    FORMATS format;
+    unsigned char miplevels;
+  };
+  
+  enum FILTERS : unsigned char 
+  {
+    FILTER_NONE=0,
+    FILTER_NEAREST,
+    FILTER_LINEAR,
+    FILTER_BOX,
+    FILTER_PRECOMPUTEALPHA,
+    FILTER_ALPHABOX,
+    NUM_FILTERS
   };
   class BSS_COMPILER_DLLEXPORT psDriver
   {
@@ -210,15 +231,15 @@ namespace planeshader {
     virtual void BSS_FASTCALL Draw(psVertObj* buf, FLAG_TYPE flags, const float(&transform)[4][4]=identity)=0;
     // Draws a rectangle
     virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)=0;
-    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags, const float(&xform)[4][4]=identity)=0;
-    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, FLAG_TYPE flags)=0;
-    virtual void DrawRectBatchEnd()=0;
+    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4]=identity)=0;
+    virtual void DrawRectBatchEnd(const float(&xform)[4][4]=identity)=0;
     // Draws a circle
     virtual void BSS_FASTCALL DrawCircle()=0;
     // Draws a polygon
     virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags)=0;
     // Draws points (which are always batch rendered)
-    virtual void BSS_FASTCALL DrawPointsBegin(const psTex* texture, float size, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags)=0;
     virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num)=0;
     virtual void DrawPointsEnd()=0;
     // Draws lines (which are also always batch rendered)
@@ -227,7 +248,7 @@ namespace planeshader {
     virtual void DrawLinesEnd()=0;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)=0;
-    virtual void BSS_FASTCALL ApplyCamera3D(float (&m)[4][4], const psRectiu& viewport)=0;
+    virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad()=0;
     // Gets/Sets the extent
@@ -239,8 +260,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL UnlockBuffer(void* target)=0;
     // Creates a texture
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0)=0;
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0)=0;
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0)=0;
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO)=0;
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO)=0;
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect)=0;
     virtual void PopScissorRect()=0;
@@ -259,6 +280,7 @@ namespace planeshader {
     virtual void BSS_FASTCALL SetLayout(void* layout)=0;
     // Frees a created resource of the specified type
     enum RESOURCE_TYPE : unsigned char { RES_TEXTURE, RES_SURFACE, RES_DEPTHVIEW, RES_SHADERVS, RES_SHADERPS, RES_SHADERGS, RES_SHADERCS, RES_SHADERDS, RES_SHADERHS, RES_STATEBLOCK, RES_INDEXBUF, RES_VERTEXBUF, RES_CONSTBUF, RES_LAYOUT };
+    virtual TEXTURE_DESC BSS_FASTCALL GetTextureDesc(void* t)=0;
     virtual void BSS_FASTCALL FreeResource(void* p, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL GrabResource(void* p, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL CopyResource(void* dest, void* src, RESOURCE_TYPE t)=0;
@@ -269,6 +291,8 @@ namespace planeshader {
     virtual psTex* GetBackBuffer()=0;
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver()=0;
+    // Sets default rendertarget
+    virtual void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = !rt?GetBackBuffer():rt; }
 
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="")=0;
@@ -286,7 +310,16 @@ namespace planeshader {
     BSS_FORCEINLINE static void BSS_FASTCALL _inversetransformadd(float(&mat)[4][4], const float(&add)[4][4]) { mat[3][0]=add[3][0]-mat[3][0]; mat[3][1]=add[3][1]-mat[3][1]; mat[3][2]=add[3][2]; }
     static const float identity[4][4];
 
+    struct SHADER_LIBRARY
+    {
+      psShader* IMAGE;
+      psShader* PARTICLE;
+    } library;
+
     psVeciu screendim;
+
+  protected:
+    const psTex* _defaultrt;
   };
 
   struct PS_DLLEXPORT psDriverHold

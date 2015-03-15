@@ -6,6 +6,7 @@
 #include "psPass.h"
 #include "psStateblock.h"
 #include "psShader.h"
+#include "bss-util/profiler.h"
 
 using namespace planeshader;
 
@@ -47,6 +48,7 @@ psRenderable::psRenderable(FLAG_TYPE flags, int zorder, psStateblock* stateblock
 psRenderable::~psRenderable() { _destroy(); }
 void BSS_FASTCALL psRenderable::SetPass(unsigned short pass)
 {
+  PROFILE_FUNC();
   if(pass==_pass) return;
   //if(_pinfo) _pinfo->p=0;
   //_pinfo=0;
@@ -65,6 +67,7 @@ void BSS_FASTCALL psRenderable::SetPass(unsigned short pass)
 }
 void BSS_FASTCALL psRenderable::SetStateblock(psStateblock* stateblock)
 {
+  PROFILE_FUNC();
   if(_stateblock)
     _stateblock->Drop();
   _stateblock = stateblock;
@@ -84,6 +87,7 @@ void psRenderable::_destroy()
 }
 psRenderable& psRenderable::operator =(const psRenderable& right)
 {
+  PROFILE_FUNC();
   _destroy();
   _flags=right._flags;
   _internalflags=right._internalflags;
@@ -99,6 +103,7 @@ psRenderable& psRenderable::operator =(const psRenderable& right)
 }
 psRenderable& psRenderable::operator =(psRenderable&& right)
 {
+  PROFILE_FUNC();
   _destroy();
   _flags=right._flags;
   _internalflags=right._internalflags;

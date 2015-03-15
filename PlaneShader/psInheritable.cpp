@@ -2,6 +2,7 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psInheritable.h"
+#include "bss-util/profiler.h"
 
 using namespace planeshader;
 
@@ -38,6 +39,7 @@ psInheritable::~psInheritable()
 }
 void psInheritable::SetParent(psInheritable* parent)
 {
+  PROFILE_FUNC();
   if(parent==_parent) return;
   if(_parent)
     bss_util::AltLLRemove<psInheritable,&GetLLBase>(this, _parent->_children);
@@ -58,20 +60,23 @@ void psInheritable::SetParent(psInheritable* parent)
 
 void BSS_FASTCALL psInheritable::SetPass(unsigned short pass)
 {
+  PROFILE_FUNC();
   psRenderable::SetPass(pass);
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->SetPass(pass);
 }
 void psInheritable::_gettotalpos(psVec3D& pos) const
 {
+  PROFILE_FUNC();
   if(_rotation != 0.0f)
-    psVec::RotatePoint(pos.x, pos.y, GetTotalRotation());
+    psVec::RotatePoint(pos.x, pos.y, GetTotalRotation(), pos.x, pos.y);
   pos += _relpos;
   if(_parent)
     _parent->_gettotalpos(pos);
 }
 psInheritable& psInheritable::operator=(const psInheritable& copy)
 {
+  PROFILE_FUNC();
   while(_children!=0) _children->SetParent(0);
   SetParent(copy._parent);
   psRenderable::operator=(copy);
@@ -80,6 +85,7 @@ psInheritable& psInheritable::operator=(const psInheritable& copy)
 }
 psInheritable& psInheritable::operator=(psInheritable&& mov)
 {
+  PROFILE_FUNC();
   while(_children!=0) _children->SetParent(0);
   SetParent(mov._parent);
   _children=mov._children;

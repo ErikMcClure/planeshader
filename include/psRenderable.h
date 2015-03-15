@@ -24,10 +24,7 @@ namespace planeshader {
     psRenderable(const DEF_RENDERABLE& def);
     explicit psRenderable(FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, unsigned short pass=(unsigned short)-1);
     virtual ~psRenderable();
-    inline void BSS_FASTCALL Render(bool bypassqueue=true) {
-      _render();
-      //if(bypassqueue)
-    }
+    virtual void BSS_FASTCALL Render()=0;
     inline int GetZOrder() const { return _zorder; }
     inline void BSS_FASTCALL SetZOrder(int zorder) { _zorder=zorder; }
     inline unsigned short GetPass() const { return _pass; }
@@ -47,7 +44,6 @@ namespace planeshader {
     psRenderable& operator =(psRenderable&& right);
 
   protected:
-    virtual void _render()=0;
     void _destroy();
 
     bss_util::cBitField<FLAG_TYPE> _flags;

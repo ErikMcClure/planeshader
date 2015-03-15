@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __BSS_LOG_H__
@@ -18,9 +18,14 @@ namespace bss_util {
   // Log class that can be converted into a stream and redirected to various different stream targets
   class BSS_DLLEXPORT cLog
   {
+#ifdef BSS_COMPILER_MSC2010
+    cLog(const cLog& copy) : _stream(std::_Noinit) {}
+#else
+    cLog(const cLog& copy) = delete;
+#endif
+    cLog& operator=(const cLog& right) BSS_DELETEFUNCOP
   public:
     // Move semantics only
-    cLog(const cLog& copy) = delete;
     cLog(cLog&& mov);
     // Constructor - takes a stream and adds it
     explicit cLog(std::ostream* log=0);
@@ -47,12 +52,19 @@ namespace bss_util {
     // Sets a level string (which should be a constant, not something that will get deallocated)
     void BSS_FASTCALL SetLevel(unsigned char level, const char* str);
 
-    cLog& operator=(const cLog& right) = delete;
     cLog& operator=(cLog&& right);
     inline operator std::ostream&() { return _stream; }
 
+#ifdef BSS_VARIADIC_TEMPLATES
     template<typename... Args>
     BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, Args... args) { _writelog(FORMATLOGLEVEL(_levels[level], file, line), args...); }
+#else // For VS2010, we get to do this the messy way...
+    template<class A1> BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, A1 a1) { FORMATLOGLEVEL(_levels[level], file, line) << a1 << std::endl; }
+    template<class A1, class A2> BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, A1 a1, A2 a2) { FORMATLOGLEVEL(_levels[level], file, line) << a1 << a2 << std::endl; }
+    template<class A1, class A2, class A3> BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, A1 a1, A2 a2, A3 a3) { FORMATLOGLEVEL(_levels[level], file, line) << a1 << a2 << a3 << std::endl; }
+    template<class A1, class A2, class A3, class A4> BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, A1 a1, A2 a2, A3 a3, A4 a4) { FORMATLOGLEVEL(_levels[level], file, line) << a1 << a2 << a3 << a4 << std::endl; }
+    template<class A1, class A2, class A3, class A4, class A5> BSS_FORCEINLINE void BSS_FASTCALL WriteLog(unsigned char level, const char* file, unsigned int line, A1 a1, A2 a2, A3 a3, A4 a4, A5 a5) { FORMATLOGLEVEL(_levels[level], file, line) << a1 << a2 << a3 << a4 << a5 << std::endl; }
+#endif
     BSS_FORCEINLINE std::ostream& BSS_FASTCALL FORMATLOG(unsigned char level, const char* file, unsigned int line) { return FORMATLOGLEVEL(_levels[level], file, line); }
     inline std::ostream& BSS_FASTCALL FORMATLOGLEVEL(const char* level, const char* file, unsigned int line)
     {
@@ -63,14 +75,16 @@ namespace bss_util {
     }
 
   protected:
+#ifdef BSS_VARIADIC_TEMPLATES
     template<typename Arg, typename... Args>
     static inline void _writelog(std::ostream& s, Arg arg, Args... args) { s << arg; _writelog(s, args...); }
     static inline void _writelog(std::ostream& s) { s << std::endl; }
+#endif
     static bool BSS_FASTCALL _writedatetime(long timezone, std::ostream& log, bool timeonly);
     static const char* BSS_FASTCALL _trimpath(const char* path);
     void _leveldefaults();
 
-    WArray<const char*, unsigned char>::t _levels;
+    cArray<const char*, unsigned char> _levels;
     StreamSplitter* _split;
     long _tz;
 #pragma warning(push)
