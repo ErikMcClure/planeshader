@@ -9,9 +9,12 @@
 #include "psEngine.h"
 #include "psShader.h"
 #include "psColor.h"
+#include "psTex.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
 #include "bss-util/cStr.h"
+#include "bss-util/profiler.h"
+#include "bss-util/bss_algo.h"
 #include <time.h>
 #include <iostream>
 #include <functional>
@@ -89,6 +92,7 @@ cStr ReadFile(const char* path)
   fread(buf.UnsafeString(), 1, ln, f);
   return std::move(buf);
 }
+
 TESTDEF::RETPAIR test_psVec()
 {
   BEGINTEST;
@@ -232,92 +236,6 @@ TESTDEF::RETPAIR test_psVec()
 
   ENDTEST;
 }
-
-TESTDEF::RETPAIR test_psVec3D()
-{
-  BEGINTEST;
-
-  psVec3Di a(3);
-  TESTVEC3(a, 3, 3, 3);
-  psVec3Di b(1, 2, 3);
-  TESTVEC3(b, 1, 2, 3);
-  psVec3D c(4.0f);
-  TESTVEC3(c, 4.0f, 4.0f, 4.0f)
-    psVec3D d(b);
-  TESTVEC3(d, 1.0f, 2.0f, 3.0f);
-  float ee[3] ={ -1.0f, 1.0f, 2.0f };
-  psVec3D e(ee);
-  TESTVEC3(e, -1.0f, 1.0f, 2.0f);
-  TEST(psVec3D(3, 0, -8).Equals(3, 0, -8));
-  TEST(!psVec3D(3, 0, -8).Equals(3, 1, -8));
-  TEST(!psVec3D(3, 0, -8).Equals(3, 0, 8));
-
-  /*
-  inline T BSS_FASTCALL GetDistance(const psVec3DT<T>& other) const { T tz = (other.z - z);  T ty = (other.y - y); T tx = (other.x - x); return (T)bss_util::FastSqrt((tx*tx)+(ty*ty)+(tz*tz)); }
-  inline T BSS_FASTCALL GetDistanceSquared(const psVec3DT<T>& other) const { T tz = (other.z - z); T ty = (other.y - y); T tx = (other.x - x); return (T)((tx*tx)+(ty*ty)+(tz*tz)); }
-  inline T BSS_FASTCALL GetDistance(T X, T Y, T Z) const { T tz = (other.z - z); T ty = (Y - y); T tx = (X - x); return (T)bss_util::FastSqrt((tx*tx)+(ty*ty)+(tz*tz)); }
-  inline T BSS_FASTCALL GetDistanceSquared(T X, T Y, T Z) const { T tz = (other.z - z); T ty = (Y - y); T tx = (X - x); return (T)((tx*tx)+(ty*ty)+(tz*tz)); }
-  inline T GetLength3D() const { return bss_util::FastSqrt((x*x)+(y*y)+(z*z)); }
-  inline psVec3DT<T>& Normalize3D() { T length = GetLength3D(); x=x/length; y=y/length; z=z/length; return *this; }
-  inline psVec3DT<T> Abs3D() const { return psVec3DT<T>(abs(x),abs(y),abs(z)); }
-  inline psVec3DT<T> CrossProduct3D(const psVec3DT<T>& other) const { return CrossProduct3D(other.x,other.y,other.z); }
-  inline psVec3DT<T> CrossProduct3D(T X, T Y, T Z) const { return psVec3DT<T>(y*Z - z*Y,z*X - x*Z,x*Y - X*y); }
-  inline float DotProduct(const psVec3DT<T>& other) const { return x * other.x + y * other.y + z * other.z; }
-  inline psVec3DT<T> BSS_FASTCALL MatrixMultiply(const T (&m)[9]) { return psVec3DT<T>((x*m[0])+(y*m[1])+(z*m[2]),(x*m[3])+(y*m[4])+(z*m[5]),(x*m[6])+(y*m[7])+(z*m[8])); }
-  inline T BSS_FASTCALL GetZ() const { return z; }
-  inline psVecT<T>& Get2D() { return *this; }
-  inline const psVecT<T>& Get2D() const { return *this; }
-
-  inline const psVec3DT<T> BSS_FASTCALL operator +(const psVec3DT<T>& other) const { return psVec3DT<T>(x + other.x, y + other.y, z + other.z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator -(const psVec3DT<T>& other) const { return psVec3DT<T>(x - other.x, y - other.y, z - other.z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator *(const psVec3DT<T>& other) const { return psVec3DT<T>(x * other.x, y * other.y, z * other.z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator /(const psVec3DT<T>& other) const { return psVec3DT<T>(x / other.x, y / other.y, z / other.z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator +(const psVecT<T>& other) const { return psVec3DT<T>(x + other.x, y + other.y, z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator -(const psVecT<T>& other) const { return psVec3DT<T>(x - other.x, y - other.y, z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator *(const psVecT<T>& other) const { return psVec3DT<T>(x * other.x, y * other.y, z); }
-  inline const psVec3DT<T> BSS_FASTCALL operator /(const psVecT<T>& other) const { return psVec3DT<T>(x / other.x, y / other.y, z); }
-  //inline const psVec3DT<T> BSS_FASTCALL operator +(const T other) const { return psVec3DT<T>(x + other, y + other, z + other); }
-  //inline const psVec3DT<T> BSS_FASTCALL operator -(const T other) const { return psVec3DT<T>(x - other, y - other, z - other); }
-  //inline const psVec3DT<T> BSS_FASTCALL operator *(const T other) const { return psVec3DT<T>(x * other, y * other, z * other); }
-  //inline const psVec3DT<T> BSS_FASTCALL operator /(const T other) const { return psVec3DT<T>(x / other, y / other, z / other); }
-  //all const T functions are disabled to prevent mixups.
-
-  inline psVec3DT<T>& BSS_FASTCALL operator +=(const psVec3DT<T> &other) { x += other.x; y += other.y; z += other.z; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator -=(const psVec3DT<T> &other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator *=(const psVec3DT<T> &other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator /=(const psVec3DT<T> &other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator +=(const psVecT<T> &other) { x += other.x; y += other.y; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator -=(const psVecT<T> &other) { x -= other.x; y -= other.y; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator *=(const psVecT<T> &other) { x *= other.x; y *= other.y; return *this; }
-  inline psVec3DT<T>& BSS_FASTCALL operator /=(const psVecT<T> &other) { x /= other.x; y /= other.y; return *this; }
-  //inline psVec3DT<T>& BSS_FASTCALL operator +=(const T other) { x += other; y += other; z += other; return *this; }
-  //inline psVec3DT<T>& BSS_FASTCALL operator -=(const T other) { x -= other; y -= other; z -= other; return *this; }
-  //inline psVec3DT<T>& BSS_FASTCALL operator *=(const T other) { x *= other; y *= other; z *= other; return *this; }
-  //inline psVec3DT<T>& BSS_FASTCALL operator /=(const T other) { x /= other; y /= other; z /= other; return *this; }
-
-  inline const psVec3DT<T> operator -(void) const { return psVec3DT<T>(-x, -y, -z); }
-
-  inline bool BSS_FASTCALL operator !=(const psVec3DT<T> &other) const { return (x != other.x) || (y != other.y) || (z != other.z); }
-  inline bool BSS_FASTCALL operator ==(const psVec3DT<T> &other) const { return (x == other.x) && (y == other.y) && (z == other.z); }
-  inline bool BSS_FASTCALL operator !=(const T other) const { return (x != other) || (y != other) || (z != other); }
-  inline bool BSS_FASTCALL operator ==(const T other) const { return (x == other) && (y == other) && (z == other); }
-  inline bool BSS_FASTCALL operator >(const psVec3DT<T> &other) const { return (x > other.x) || ((x == other.x) && ((y > other.y) || ((y == other.y) && (z > other.z)))); }
-  inline bool BSS_FASTCALL operator <(const psVec3DT<T> &other) const { return (x < other.x) || ((x == other.x) && ((y < other.y) || ((y == other.y) && (z < other.z)))); }
-  inline bool BSS_FASTCALL operator >=(const psVec3DT<T> &other) const { return !operator<(other); }
-  inline bool BSS_FASTCALL operator <=(const psVec3DT<T> &other) const { return !operator>(other); }
-  inline bool BSS_FASTCALL operator >(const T other) const { return (x > other) && (y > other) && (z > other); }
-  inline bool BSS_FASTCALL operator <(const T other) const { return (x < other) && (y < other) && (z < other); }
-  inline bool BSS_FASTCALL operator >=(const T other) const { return (x >= other) && (y >= other) && (z >= other); }
-  inline bool BSS_FASTCALL operator <=(const T other) const { return (x <= other) && (y <= other) && (z <= other); }
-
-  inline psVec3DT<T>& BSS_FASTCALL operator=(const psVec3DT<T>& other) { x=other.x;y=other.y;z=other.z; return *this; }
-  template<class U>
-  inline psVec3DT<T>& BSS_FASTCALL operator=(const psVec3DT<U>& other) { x=(T)other.x;y=(T)other.y;z=(T)other.z; return *this; }
-
-  */
-  ENDTEST;
-}
-
 TESTDEF::RETPAIR test_psCircle()
 {
   BEGINTEST;
@@ -363,10 +281,14 @@ TESTDEF::RETPAIR test_psDirectX10()
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
   auto timer = psEngine::OpenProfiler();
   int fps=0;
+  psTex* pslogo = psTex::Create("../media/pslogo.png");
+
   while(engine->Begin())
   {
     shader->Activate();
-    engine->GetDriver()->DrawFullScreenQuad();
+    engine->GetDriver()->library.PARTICLE->Activate();
+    //engine->GetDriver()->DrawFullScreenQuad();
+    engine->GetDriver()->DrawRect(psRectRotateZ(100, 100, 200, 200, 0), RECT_UNITRECT, 0xFFFFFFFF, &pslogo, 1, 0);
     engine->End();
     if(psEngine::CloseProfiler(timer)>1000000000)
     {
@@ -407,14 +329,15 @@ int main(int argc, char** argv)
 {
   bss_util::ForceWin64Crash();
   SetWorkDirToCur();
-  srand(time(NULL));
+  bssrandseed(time(NULL));
+
   AllocConsole();
   freopen("CONOUT$", "wb", stdout);
+  freopen("CONOUT$", "wb", stderr);
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] ={
     { "psVec", &test_psVec },
-    { "psVec3D", &test_psVec3D },
     { "psCircle", &test_psCircle },
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
@@ -465,11 +388,12 @@ int main(int argc, char** argv)
   }
 
   std::cout << "\nPress Enter to exit the program." << std::endl;
-  std::cin.get();
+  //std::cin.get();
   fclose(stdout);
   fclose(stdin);
   FreeConsole();
 
+  PROFILE_OUTPUT("ps_profiler.txt", 1|4);
   //end program
   return 0;
 }

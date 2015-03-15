@@ -4,7 +4,7 @@
 #ifndef __LOCATABLE_H__PS__
 #define __LOCATABLE_H__PS__
 
-#include "psVec3D.h"
+#include "psVec.h"
 #include "ps_ani.h"
 
 namespace planeshader {
@@ -59,8 +59,8 @@ namespace planeshader {
   };
 }
 //typename V, typename D = V, typename S = void, typename A = void, typename DEL = delegate<A, V>
-namespace bss_util { template<> struct ANI_IDTYPE<planeshader::POSITION_ANI_TYPEID> { typedef ANI_IDTYPE_TYPES<AniAttributeSmooth<planeshader::POSITION_ANI_TYPEID>, planeshader::psVec, planeshader::psVec, void, void, delegate<void, const planeshader::psVec&>> TYPES; }; }
-namespace bss_util { template<> struct ANI_IDTYPE<planeshader::ROTATION_ANI_TYPEID> { typedef ANI_IDTYPE_TYPES<AniAttributeSmooth<planeshader::ROTATION_ANI_TYPEID>, float> TYPES; }; }
-namespace bss_util { template<> struct ANI_IDTYPE<planeshader::PIVOT_ANI_TYPEID> { typedef ANI_IDTYPE_TYPES<AniAttributeSmooth<planeshader::PIVOT_ANI_TYPEID>, planeshader::psVec, planeshader::psVec, void, void, delegate<void, const planeshader::psVec&>> TYPES; }; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::POSITION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec>{ AniAttributeT() : AniAttributeSmooth(planeshader::POSITION_ANI_TYPEID) {} }; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::ROTATION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, float>{ AniAttributeT() : AniAttributeSmooth(planeshader::ROTATION_ANI_TYPEID) {} }; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::PIVOT_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec>{ AniAttributeT() : AniAttributeSmooth(planeshader::PIVOT_ANI_TYPEID) {} }; }
 
 #endif

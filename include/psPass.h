@@ -18,6 +18,8 @@ namespace planeshader {
     void End();
     inline void BSS_FASTCALL SetCamera(const psCamera* camera) { _cam=!camera?&psCamera::default_camera:camera; }
     inline const psCamera* GetCamera() const { return _cam; }
+    inline const psTex* GetDefaultRenderTarget() const { return _defaultrt; }
+    inline void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
 
@@ -26,6 +28,7 @@ namespace planeshader {
   protected:
     const psCamera* _cam;
     psRenderable* _renderables;
+    const psTex* _defaultrt;
   };
 }
 

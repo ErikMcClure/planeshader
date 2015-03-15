@@ -42,9 +42,6 @@
     <ClInclude Include="..\include\psVec.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psVec3D.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\ps_ani.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -82,6 +79,15 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\psCircle.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ps_interface.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psSolid.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psEllipse.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

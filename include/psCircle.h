@@ -11,26 +11,26 @@ namespace planeshader {
   template <class T>
   struct BSS_COMPILER_DLLEXPORT psCircleT
   {
+    typedef bss_util::Vector<T, 2> VEC;
     inline psCircleT() {} //The following constructors allow for implicit conversion between types
-    inline psCircleT(const psCircleT<T>& other) : x(other.x), y(other.y), r(other.r) {}
     template<class U>
     inline psCircleT(const psCircleT<U>& other) : x((T)other.x), y((T)other.y), r((T)other.r) {}
     inline psCircleT(T X, T Y, T R) : x(X), y(Y), r(R) {}
-    inline psCircleT(const psVecT<T>& Pos, T R) : x(Pos.x), y(Pos.y), r(R) {}
+    inline psCircleT(const VEC& Pos, T R) : x(Pos.x), y(Pos.y), r(R) {}
     inline T Area() const { return (T)(PI*r*r); }
     inline bool BSS_FASTCALL IntersectPoint(T X, T Y) const { return bss_util::distsqr<T>(x, y, X, Y)<=(r*r); }
-    inline bool BSS_FASTCALL IntersectPoint(const psVecT<T>& point) const { return IntersectPoint(point.x, point.y); }
+    inline bool BSS_FASTCALL IntersectPoint(const VEC& point) const { return IntersectPoint(point.x, point.y); }
     inline bool BSS_FASTCALL IntersectCircle(const psCircleT& other) const { return IntersectCircle(other.x, other.y, other.r); }
-    inline bool BSS_FASTCALL IntersectCircle(const psVec& pos, T R) const { return IntersectCircle(pos.x, pos.y, R); }
+    inline bool BSS_FASTCALL IntersectCircle(const VEC& pos, T R) const { return IntersectCircle(pos.x, pos.y, R); }
     inline bool BSS_FASTCALL IntersectCircle(T X, T Y, T R) const { T tr=r+R; return bss_util::distsqr<T>(x, y, X, Y)<=(tr*tr); }
-    inline void BSS_FASTCALL IntersectCircle(const psCircleT& other, const psVec(&output)[2]) const { return _IntersectCircle(other.x, other.y, other.r, output[0]._xyarray); }
-    inline void BSS_FASTCALL IntersectCircle(const psVec& pos, T R, const psVec(&output)[2]) const { return _IntersectCircle(pos.x, pos.y, R, output[0]._xyarray); }
-    inline void BSS_FASTCALL IntersectCircle(T X, T Y, T R, const psVec(&output)[2]) const { return _IntersectCircle(X, Y, R, output[0]._xyarray); }
+    inline void BSS_FASTCALL IntersectCircle(const psCircleT& other, const VEC(&output)[2]) const { return _IntersectCircle(other.x, other.y, other.r, output[0]._xyarray); }
+    inline void BSS_FASTCALL IntersectCircle(const VEC& pos, T R, const VEC(&output)[2]) const { return _IntersectCircle(pos.x, pos.y, R, output[0]._xyarray); }
+    inline void BSS_FASTCALL IntersectCircle(T X, T Y, T R, const VEC(&output)[2]) const { return _IntersectCircle(X, Y, R, output[0]._xyarray); }
     inline void BSS_FASTCALL IntersectCircle(const psCircleT& other, T(&output)[4]) const { return _IntersectCircle(other.x, other.y, other.r, output); }
-    inline void BSS_FASTCALL IntersectCircle(const psVec& pos, T R, T(&output)[4]) const { return _IntersectCircle(pos.x, pos.y, R, output); }
+    inline void BSS_FASTCALL IntersectCircle(const VEC& pos, T R, T(&output)[4]) const { return _IntersectCircle(pos.x, pos.y, R, output); }
     inline void BSS_FASTCALL IntersectCircle(T X, T Y, T R, T(&output)[4]) const { _IntersectCircle(X, Y, R, output); }
     inline bool BSS_FASTCALL WithinCircle(const psCircleT& other) const { return WithinCircle(other.x, other.y, other.r); }
-    inline bool BSS_FASTCALL WithinCircle(const psVec& pos, T R) const { return WithinCircle(pos.x, pos.y, R); }
+    inline bool BSS_FASTCALL WithinCircle(const VEC& pos, T R) const { return WithinCircle(pos.x, pos.y, R); }
     inline bool BSS_FASTCALL WithinCircle(T X, T Y, T R) const { T tr=R-r; return (r>=R || bss_util::distsqr(X, Y, x, y)>=(tr*tr)); }
     inline bool BSS_FASTCALL IntersectLineInf(T X1, T Y1, T X2, T Y2) const { return pos.LineInfDistanceSqr(X1, Y1, X2, Y2)<=(r*r); }
     inline bool BSS_FASTCALL IntersectLine(T X1, T Y1, T X2, T Y2) const { return pos.LineDistanceSqr(X1, Y1, X2, Y2)<=(r*r); }
@@ -38,7 +38,7 @@ namespace planeshader {
     inline bool BSS_FASTCALL IntersectRect(T left, T top, T right, T bottom) const { return _CircleRectIntersect(x, y, r, left, top, right, bottom); }
     inline bool BSS_FASTCALL IntersectEllipse(T X, T Y, T A, T B) const { return CircleEllipseIntersect(X, Y, A, B, x, y, r); }
     inline void BSS_FASTCALL NearestPoint(T X, T Y, T& outX, T& outY) const { CircleNearestPoint(X, Y, x, y, r, outX, outY); }
-    inline void BSS_FASTCALL NearestPoint(const psVec& pos, T& outX, T& outY) const { CircleNearestPoint(pos.x, pos.y, x, y, r, outX, outY); }
+    inline void BSS_FASTCALL NearestPoint(const VEC& pos, T& outX, T& outY) const { CircleNearestPoint(pos.x, pos.y, x, y, r, outX, outY); }
 
     inline psCircleT& operator=(const psCircleT<T>& other) { r=other.r; x=other.x; y=other.y; }
     template<class U>
@@ -51,7 +51,7 @@ namespace planeshader {
     {
       T dx=x-X; //Centers the ellipse/circle pair such that the ellipse is at the origin
       T dy=y-Y;
-      psVecT<T>::EllipseNearestPoint(A, B, dx, dy, X, Y);
+      EllipseNearestPoint(A, B, dx, dy, X, Y);
       return bss_util::distsqr(X, Y, dx, dy)<(r*r);
     }
 
@@ -70,11 +70,11 @@ namespace planeshader {
       U1=A/ratio;
       U2=-U1; //the y coordinates of the line are always 0
 
-      psVecT<T>::NearestPointToLine(tx, ty, U1, 0, U2, 0, Vx, Vy); //compiler should optimize the zeros out.
+      NearestPointToLine(tx, ty, U1, 0, U2, 0, Vx, Vy); //compiler should optimize the zeros out.
       Vx*=ratio;
       if(bss_util::distsqr(Vx, Vy, tx, ty)<r2) return true; //if the nearest point on the line is inside the circle, the circle intersects the line, so it must intersect the ellipse
       CircleNearestPoint(Vx, Vy, tx, ty, r, U1, U2); //Failing that we get the nearest point on the circle to the line and check to see if its in the ellipse
-      return psVecT<T>::IntersectEllipse(0, 0, A, B, U1, U2);
+      return IntersectEllipse(0, 0, A, B, U1, U2);
     }
     //static inline bool BSS_FASTCALL CircleEllipseIntersect(T c, T e, T d, T f, T a, T b, T r)
     //{
@@ -93,7 +93,7 @@ namespace planeshader {
     T r;
     union {
       struct {
-        psVecT<T> pos;
+        VEC pos;
       };
       struct {
         T x;
@@ -146,7 +146,7 @@ namespace planeshader {
     }
   };
 
-  typedef psCircleT<FNUM> psCircle; //default typedef
+  typedef psCircleT<float> psCircle; //default typedef
   typedef psCircleT<int> psCirclei;
   typedef psCircleT<double> psCircled;
   typedef psCircleT<short> psCircles;

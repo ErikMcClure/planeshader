@@ -108,6 +108,7 @@
     <ClInclude Include="..\include\psCircle.h" />
     <ClInclude Include="..\include\psColor.h" />
     <ClInclude Include="..\include\psDriver.h" />
+    <ClInclude Include="..\include\psEllipse.h" />
     <ClInclude Include="..\include\psEngine.h" />
     <ClInclude Include="..\include\psGUIEvent.h" />
     <ClInclude Include="..\include\psGUIManager.h" />
@@ -117,12 +118,13 @@
     <ClInclude Include="..\include\psRect.h" />
     <ClInclude Include="..\include\psRenderable.h" />
     <ClInclude Include="..\include\psShader.h" />
+    <ClInclude Include="..\include\psSolid.h" />
     <ClInclude Include="..\include\psStateblock.h" />
     <ClInclude Include="..\include\psTex.h" />
     <ClInclude Include="..\include\psVec.h" />
-    <ClInclude Include="..\include\psVec3D.h" />
     <ClInclude Include="..\include\ps_ani.h" />
     <ClInclude Include="..\include\ps_dec.h" />
+    <ClInclude Include="..\include\ps_interface.h" />
     <ClInclude Include="psDirectX10.h" />
     <ClInclude Include="psDirectX10_fsquadVS.h" />
     <ClInclude Include="psNullDriver.h" />

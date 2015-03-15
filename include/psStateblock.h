@@ -69,6 +69,7 @@ namespace planeshader {
     TYPE_TEXTURE_RESULTARG,
     TYPE_TEXTURE_CONSTANT,
   };
+
   struct STATEINFO
   {
     union {
@@ -88,6 +89,7 @@ namespace planeshader {
       unsigned __int64 __vali64;
     };
   };
+
   class PS_DLLEXPORT psStateblock : public bss_util::cRefCounter
   {
   public:
@@ -114,6 +116,7 @@ namespace planeshader {
       return true;
     }
 
+    static psStateblock* DEFAULT;
     static const int MAXSAMPLERS = 16;
 
   protected:
@@ -121,11 +124,30 @@ namespace planeshader {
     ~psStateblock();
     virtual void DestroyThis();
 
-    bss_util::WArray<STATEINFO, unsigned short>::t _infos;
+    bss_util::cArray<STATEINFO, unsigned short> _infos;
     void* _sb;
 
     typedef bss_util::cKhash<psStateblock*, char, false, &SBHASHFUNC, &SBEQUALITY> BLOCKHASH;
     static BLOCKHASH _blocks;
+  };
+
+  struct PS_DLLEXPORT STATEBLOCK_LIBRARY
+  {
+    static void INITLIBRARY();
+    static psStateblock* GLOW; //Basic glow
+    static psStateblock* PARTICLE; //turns off alpha test for particles
+    static psStateblock* PARTICLE_GLOW; //Both GLOW and PARTICLE
+    static psStateblock* MASK[8]; //Used for masking
+    static psStateblock* INVMASK[8];
+    static psStateblock* UVBORDER; // Sets UV coordinates to use a border of color 0 (you can easily override that)
+    static psStateblock* UVMIRROR; // Sets UV coordinates to Mirror
+    static psStateblock* UVMIRRORONCE; // Sets UV coordinates to MirrorOnce
+    static psStateblock* UVWRAP; // Sets UV coordinates to Wrap (There is no CLAMP as that is the default)
+    static psStateblock* GAMMAREAD; // linearize on read (only the 0th sampler, which is usually the diffuse map, since all other maps are already linear) 
+    static psStateblock* GAMMAWRITE; // un-linearize on write
+    static psStateblock* GAMMACORRECT; // Standard gamma correction
+    static psStateblock* SUBTRACTIVE; // Subtracts the image from whatever its being rendered on top of. Used for black LCD text.
+    static psStateblock* PREMULTIPLIED; // Blending state for premultiplied textures
   };
 }
 

@@ -3,12 +3,14 @@
 
 #include "psStateblock.h"
 #include "psDriver.h"
+#include "bss-util/profiler.h"
 #include <stdarg.h>
 #include <algorithm>
 
 using namespace planeshader;
 
 psStateblock::BLOCKHASH psStateblock::_blocks;
+psStateblock* psStateblock::DEFAULT=0;
 
 psStateblock::psStateblock(const STATEINFO* infos, unsigned int numstates) : _infos(numstates)
 {
@@ -24,6 +26,7 @@ void psStateblock::DestroyThis() { delete this; }
 
 psStateblock* BSS_FASTCALL psStateblock::Create(unsigned int numstates, ...)
 {
+  PROFILE_FUNC();
   DYNARRAY(STATEINFO, states, numstates);
 
   va_list vl;
@@ -36,6 +39,7 @@ psStateblock* BSS_FASTCALL psStateblock::Create(unsigned int numstates, ...)
 }
 psStateblock* BSS_FASTCALL psStateblock::Create(const STATEINFO* infos, unsigned int numstates)
 {
+  PROFILE_FUNC();
   psStateblock* r = new psStateblock(infos, numstates);
   khiter_t iter = _blocks.Iterator(r);
   if(_blocks.ExistsIter(iter))

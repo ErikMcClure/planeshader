@@ -3,11 +3,13 @@
 
 #include "psGUIManager.h"
 #include "bss-util/bss_win32_includes.h"
+#include "bss-util/profiler.h"
 #include "psEngine.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
 using namespace planeshader;
+using namespace bss_util;
 
 #define MAKELPPOINTS(l)       ((POINTS FAR *)&(l))
 #pragma comment(lib, "Winmm.lib")
@@ -42,6 +44,7 @@ tagPOINTS* __stdcall psGUIManager::_STCpoints(HWND__* hWnd, tagPOINTS* target)
 
 long __w64 __stdcall psGUIManager::WndProc(HWND__* hWnd, unsigned int message, unsigned int __w64 wParam, long __w64 lParam)
 {
+  PROFILE_FUNC();
   static tagTRACKMOUSEEVENT _trackingstruct ={ sizeof(tagTRACKMOUSEEVENT), TME_LEAVE, 0, 0 };
   WPARAM wpcopy=wParam;
   psGUIManager* self = psEngine::Instance();
@@ -231,6 +234,7 @@ DWMEXTENDFRAME dwmextend=0;
 
 HWND__* psGUIManager::WndCreate(HINSTANCE__* instance, long width, long height, bool windowed, const wchar_t* icon, HICON__* iconrc, char& composite)
 {
+  PROFILE_FUNC();
   HINSTANCE hInstance = GetModuleHandleW(0);
 
   if(instance)
@@ -341,6 +345,7 @@ psGUIManager::psGUIManager() : _receiver(0,0)
 }
 psGUIManager::~psGUIManager()
 {
+  PROFILE_FUNC();
   ChangeDisplaySettings(NULL, 0);
   ShowCursor(TRUE);
 
@@ -351,6 +356,7 @@ psGUIManager::~psGUIManager()
 }
 void psGUIManager::SetKey(unsigned char keycode, bool down, bool held, DWORD time)
 {
+  PROFILE_FUNC();
   GetKeyboardState(_allkeys);
   //bool held=down && _getkey(keycode);
   _allkeys[keycode]=down?(_allkeys[keycode]|0x08):(_allkeys[keycode]&(~0x08)); //For sanity, ensure this matches what we just got.
@@ -371,6 +377,7 @@ void psGUIManager::SetKey(unsigned char keycode, bool down, bool held, DWORD tim
 }
 void psGUIManager::SetChar(int key, DWORD time)
 {
+  PROFILE_FUNC();
   GetKeyboardState(_allkeys);
 
   psGUIEvent evt;
@@ -391,6 +398,7 @@ void psGUIManager::SetChar(int key, DWORD time)
 
 void psGUIManager::SetMouse(tagPOINTS* points, unsigned char click, size_t wparam, DWORD time)
 {
+  PROFILE_FUNC();
   psGUIEvent evt;
   evt.time=time;
   evt.type = (GUI_EVENT)(click&15);
@@ -453,6 +461,7 @@ void psGUIManager::SetMouse(tagPOINTS* points, unsigned char click, size_t wpara
 // Locks the cursor
 void psGUIManager::LockCursor(bool lock)
 {
+  PROFILE_FUNC();
   _flags[PSGUIMANAGER_LOCKCURSOR]=lock;
   _lockcursor(_window, lock);
 }
@@ -464,6 +473,7 @@ void psGUIManager::ShowCursor(bool show)
 
 char psGUIManager::CaptureAllJoy(HWND__* hwnd)
 {
+  PROFILE_FUNC();
   char r=0;
   _alljoysticks=0;
   for(unsigned short i = 0; i < _maxjoy; ++i)
@@ -481,6 +491,7 @@ char psGUIManager::CaptureAllJoy(HWND__* hwnd)
 
 void psGUIManager::FlushMessages()
 {
+  PROFILE_FUNC();
   _exactmousecalc();
   //windows stuff
   MSG msg;
@@ -493,7 +504,7 @@ void psGUIManager::FlushMessages()
     if(msg.message == WM_QUIT)
     {
       psEngine::Instance()->Quit();
-      PSLOGV(0, "Quit message recieved, setting _quit to true");
+      PSLOGV(3, "Quit message recieved, setting _quit to true");
       return;
     }
   }
@@ -502,11 +513,13 @@ void psGUIManager::FlushMessages()
 }
 void psGUIManager::SetWindowTitle(const char* caption)
 {
+  PROFILE_FUNC();
   SetWindowText(_window, caption);
 }
 
 void psGUIManager::_joyupdateall()
 {
+  PROFILE_FUNC();
   JOYINFOEX info;
   info.dwSize=sizeof(JOYINFOEX);
   info.dwFlags=JOY_RETURNBUTTONS|JOY_RETURNCENTERED|JOY_RETURNX|JOY_RETURNY|JOY_RETURNZ|JOY_RETURNR|JOY_RETURNU|JOY_RETURNV;
@@ -577,6 +590,7 @@ float psGUIManager::_translatejoyaxis(unsigned short axis) const
 
 void psGUIManager::_create(psVeciu dim, bool fullscreen, char composite, HWND__* window)
 {
+  PROFILE_FUNC();
   // Check for desktop composition
   HMODULE dwm=LoadLibraryW(L"dwmapi.dll");
   if(dwm)
@@ -601,6 +615,7 @@ void psGUIManager::_create(psVeciu dim, bool fullscreen, char composite, HWND__*
 
 void psGUIManager::_exactmousecalc()
 {
+  PROFILE_FUNC();
   POINT p;
   //GetCursorPos(&p); //This fails for large addresses
   {
@@ -619,6 +634,7 @@ void psGUIManager::_exactmousecalc()
 
 void psGUIManager::_resizewindow(unsigned int width, unsigned int height, bool fullscreen)
 {
+  PROFILE_FUNC();
   RECT rsize;
   rsize.top = 0;
   rsize.left = 0;

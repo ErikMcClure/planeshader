@@ -38,7 +38,7 @@ namespace planeshader {
     virtual void DrawLinesEnd() { }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) { }
-    virtual void BSS_FASTCALL ApplyCamera3D(float(&m)[4][4], const psRectiu& viewport) { }
+    virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport) { }
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad() { }
     // Gets/Sets the extent
@@ -50,13 +50,15 @@ namespace planeshader {
     virtual void BSS_FASTCALL UnlockBuffer(void* target) { }
     // Creates a texture
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0) { return 0; }
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0) { return 0; }
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, unsigned char miplevels=0, void** additionalview=0) { return 0; }
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO) { return 0; }
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO) { return 0; }
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect) { }
     virtual void PopScissorRect() { }
     // Sets the current rendertargets, setting all the rest to null.
     virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0) { }
+    // Sets default rendertarget
+    virtual void SetDefaultRenderTarget(const psTex* rendertarget) { }
     // Sets shader constants
     virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader) { }
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
@@ -69,6 +71,7 @@ namespace planeshader {
     virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num) { return 0; }
     virtual void BSS_FASTCALL SetLayout(void* layout) { }
     // Frees a created resource of the specified type
+    virtual TEXTURE_DESC BSS_FASTCALL GetTextureDesc(void* t) { TEXTURE_DESC r ={ }; return r; }
     virtual void BSS_FASTCALL FreeResource(void* p, psDriver::RESOURCE_TYPE t) { }
     virtual void BSS_FASTCALL GrabResource(void* p, psDriver::RESOURCE_TYPE t) { }
     virtual void BSS_FASTCALL CopyResource(void* dest, void* src, psDriver::RESOURCE_TYPE t) { }

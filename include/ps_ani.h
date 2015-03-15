@@ -5,6 +5,7 @@
 #define __ANI_H__PS__
 
 #include "bss-util/cAnimation.h"
+#include "bss-util/LLBase.h"
 
 namespace planeshader {
   class psAnimation : public bss_util::cAnimation<bss_util::StaticAllocPolicy<char>>, protected bss_util::LLBase<psAnimation>

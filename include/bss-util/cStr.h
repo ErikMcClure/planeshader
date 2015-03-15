@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __CSTR_H__BSS__
@@ -109,6 +109,7 @@ public:
   template<class U> inline cStrT(const cStrT<T,U>& copy) : BASE(copy) {}
   template<class U> inline cStrT(const cStrT<OTHER_C,U>& copy) : BASE() { _convstr(copy.c_str()); }
   inline cStrT(const CHAR* string) : BASE(!string?CSTR_CT<T>::STREMPTY():string) { }
+  inline cStrT(const CHAR* string, size_t count) : BASE(!string?CSTR_CT<T>::STREMPTY():string, count) { }
   inline cStrT(const OTHER_C* text) : BASE() { if(text!=0) _convstr(text); }
   cStrT(unsigned short index, const CHAR* text, const CHAR delim) : BASE() //Creates a new string from the specified chunk
   {
@@ -239,9 +240,8 @@ public:
     return r;
   }
 
-  void operator[](std::allocator<char>&) = delete;
-
 private:
+  void operator[](std::allocator<char>&) BSS_DELETEFUNC
 #ifdef BSS_COMPILER_MSC
   BSS_FORCEINLINE CHAR* _internal_ptr() { return _Myptr(); }
   BSS_FORCEINLINE const CHAR* _internal_ptr() const { return _Myptr(); }

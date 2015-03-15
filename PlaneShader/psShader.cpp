@@ -2,11 +2,13 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psShader.h"
+#include "bss-util/profiler.h"
 
 using namespace planeshader;
 
 void psShader::Activate()
 {
+  PROFILE_FUNC();
   _driver->SetShader(_ss[0], VERTEX_SHADER_1_1);
   _driver->SetShader(_ss[1], PIXEL_SHADER_1_1);
   _driver->SetShader(_ss[2], GEOMETRY_SHADER_4_0);
@@ -24,6 +26,7 @@ void psShader::Activate()
 
 bool BSS_FASTCALL psShader::SetConstants(void* data, size_t sz, unsigned char I)
 {
+  PROFILE_FUNC();
   void* target=_driver->LockBuffer(_sc[I], LOCK_WRITE_DISCARD);
   if(!target || sz!=_sz[I]) return false;
   memcpy(target, data, sz);
@@ -33,6 +36,7 @@ bool BSS_FASTCALL psShader::SetConstants(void* data, size_t sz, unsigned char I)
 
 psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, ...)
 {
+  PROFILE_FUNC();
   DYNARRAY(SHADER_INFO, infos, num);
   va_list vl;
   va_start(vl, num);
@@ -42,6 +46,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
 }
 psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, const SHADER_INFO* infos)
 {
+  PROFILE_FUNC();
   void* ss[6]={ 0 };
   void* sc[6]={ 0 };
   size_t sz[6]={ 0 };
@@ -60,15 +65,16 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
     assert(index<6);
     if(minvalid>=index) { minvalid=index; minindex=i; }
 
-    ss[index] = _driver->CreateShader(infos[i].shader, infos[i].v);
+    ss[index] = !infos[i].shader?0:_driver->CreateShader(infos[i].shader, infos[i].v);
     sz[index] = infos[i].ty_sz;
     if(sz[index]>0) sc[index] = _driver->CreateBuffer(sz[index], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, infos[i].init);
   }
   assert(minindex<num);
-  return new psShader(!layout?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
+  return new psShader((!layout || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
 }
 psShader* psShader::CreateShader(psShader* copy)
 {
+  PROFILE_FUNC();
   unsigned char i;
   for(i = 0; i < 6; ++i)
     if(copy->_sc[i]!=0)
@@ -80,6 +86,7 @@ psShader* psShader::CreateShader(psShader* copy)
 }
 psShader* BSS_FASTCALL psShader::CreateShader(unsigned int num, const psShader* first, ...)
 {
+  PROFILE_FUNC();
   if(!num) return 0;
   psShader* r = new psShader(*first);
   va_list vl;
@@ -101,6 +108,7 @@ psShader::psShader(void* layout, void* ss[6], void* sc[6], size_t sz[6]) : _layo
 psShader::~psShader() { _destroy(); }
 void psShader::_destroy()
 {
+  PROFILE_FUNC();
   for(unsigned char i = 0; i < 6; ++i)
     if(_sc[i]) _driver->FreeResource(_sc[i], psDriver::RES_CONSTBUF);
 
@@ -111,6 +119,7 @@ void psShader::_destroy()
 }
 void psShader::_copy(const psShader& copy)
 {
+  PROFILE_FUNC();
   _layout=copy._layout;
   if(_layout) _driver->GrabResource(_layout, psDriver::RES_LAYOUT);
   for(unsigned char i = 0; i < 6; ++i) _ss[i]=copy._ss[i];
@@ -127,6 +136,7 @@ void psShader::_copy(const psShader& copy)
 }
 void psShader::_move(psShader&& mov)
 {
+  PROFILE_FUNC();
   _layout=mov._layout;
   mov._layout=0;
   for(unsigned char i = 0; i < 6; ++i) { _ss[i]=mov._ss[i]; mov._ss[i] = 0; }
@@ -149,6 +159,7 @@ psShader& psShader::operator=(psShader&& mov)
 }
 psShader& psShader::operator+=(const psShader& right)
 {
+  PROFILE_FUNC();
   if(!_ss[0] && right._ss[0]!=0)
   {
     if(_layout) _driver->FreeResource(_layout, psDriver::RES_LAYOUT);

@@ -22,10 +22,17 @@ namespace planeshader {
     inline const psVeciu& GetDim() const { return _dim; }
     inline unsigned char GetMipLevels() const { return _miplevels; }
 
+    // Returns an existing texture object if it has the same path or creates a new one if necessary 
+    static psTex* BSS_FASTCALL Create(const char* file, USAGETYPES usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE);
+    // if datasize is 0, data is assumed to be a path. If datasize is nonzero, data is assumed to be a pointer to memory where the texture is stored
+    static psTex* BSS_FASTCALL Create(const void* data, unsigned int datasize, USAGETYPES usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE);
+
     psTex& operator=(const psTex& right);
     psTex& operator=(psTex&& right);
 
   protected:
+    static psTex* BSS_FASTCALL _create(void* res, void* view);
+
     virtual void DestroyThis();
 
     void* _res; // In DX10/11 this is the shader resource view. In DX9 it's the texture pointer.

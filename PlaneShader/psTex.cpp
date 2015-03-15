@@ -30,6 +30,28 @@ psTex::~psTex()
   if(_view) _driver->FreeResource(_view, (_usage&USAGE_RENDERTARGET)?psDriver::RES_SURFACE:psDriver::RES_DEPTHVIEW);
 }
 void psTex::DestroyThis() { delete this; }
+psTex* BSS_FASTCALL psTex::Create(const char* file, USAGETYPES usage, FILTERS mipfilter, FILTERS loadfilter)
+{
+  void* view = 0;
+  void* res = _driver->LoadTexture(file, usage, FMT_UNKNOWN, &view, 0, mipfilter, loadfilter);
+  return _create(res, view);
+}
+psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, USAGETYPES usage, FILTERS mipfilter, FILTERS loadfilter)
+{
+  if(!datasize)
+    return Create((const char*)data, usage);
+  void* view = 0;
+  void* res = _driver->LoadTextureInMemory(data, datasize, usage, FMT_UNKNOWN, &view, 0, mipfilter, loadfilter);
+  return _create(res, view);
+}
+psTex* BSS_FASTCALL psTex::_create(void* res, void* view)
+{
+  if(!res) return 0;
+  TEXTURE_DESC desc = _driver->GetTextureDesc(res);
+  psTex* ret = new psTex(res, view, desc.dim.xy, desc.format, desc.usage, desc.miplevels);
+  ret->Grab();
+  return ret;
+}
 psTex& psTex::operator=(const psTex& right)
 {
   psTex::~psTex();
@@ -38,6 +60,7 @@ psTex& psTex::operator=(const psTex& right)
   _usage=right._usage;
   _miplevels=right._miplevels;
   _res = _driver->CreateTexture(right._dim, right._format, right._usage, right._miplevels, 0, &_view);
+  _driver->CopyResource(_res, right._res, psDriver::RES_TEXTURE);
   return *this;
 }
 psTex& psTex::operator=(psTex&& right)

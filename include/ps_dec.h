@@ -21,6 +21,8 @@
 #define PS_DLLEXPORT
 #endif
 
+#define BSS_ENABLE_PROFILER
+
 #ifdef  __cplusplus
 namespace planeshader {
 #endif
@@ -29,20 +31,16 @@ namespace planeshader {
 
   // All possible flags for objects 
   const FLAG_TYPE PSFLAG_NOTVISIBLE = (1 << 0); //Prevents the object and its children from being rendered
-  const FLAG_TYPE PSFLAG_NOCAMPOS = (1 << 1); //Ignores the camera position, implies NOCAMROTATE
-  const FLAG_TYPE PSFLAG_NOZOOM = (1 << 2); //Ignores the camera zoom level (its z coordinate)
-  const FLAG_TYPE PSFLAG_NOCAMROTATE = (1 << 3); //Ignores the camera rotation
-  const FLAG_TYPE PSFLAG_ALWAYSRENDER = (1 << 4); //This object will always render itself regardless of any NOTVISIBLE flags anywhere in the parent chain
-  const FLAG_TYPE PSFLAG_DONOTCULL = (1 << 5); //Ensures the object is never culled for any reason
-  const FLAG_TYPE PSFLAG_USER = (1 << 6); //This is where you should start your own flag settings
+  const FLAG_TYPE PSFLAG_FIXED = (1 << 1); //Ignores the camera rotation and xyz position.
+  const FLAG_TYPE PSFLAG_ALWAYSRENDER = (1 << 2); //This object will always render itself regardless of any NOTVISIBLE flags anywhere in the parent chain
+  const FLAG_TYPE PSFLAG_DONOTCULL = (1 << 3); //Ensures the object is never culled for any reason
+  const FLAG_TYPE PSFLAG_USER = (1 << 4); //This is where you should start your own flag settings
 
 #ifdef  __cplusplus
-  const FLAG_TYPE PSFLAG_INHERITABLE=PSFLAG_NOTVISIBLE|PSFLAG_NOCAMPOS|PSFLAG_NOZOOM|PSFLAG_NOCAMROTATE;
-  const FLAG_TYPE PSFLAG_FIXED=PSFLAG_NOCAMPOS|PSFLAG_NOCAMROTATE|PSFLAG_NOZOOM; //Defines a fixed image, which completely ignores the camera
+  const FLAG_TYPE PSFLAG_INHERITABLE=PSFLAG_NOTVISIBLE|PSFLAG_FIXED;
 }
 #else
-  const FLAG_TYPE PSFLAG_INHERITABLE=0x0F;
-  const FLAG_TYPE PSFLAG_FIXED=0x0E;
+  const FLAG_TYPE PSFLAG_INHERITABLE=0x03;
 #endif
 
 #endif

@@ -67,7 +67,7 @@ namespace planeshader {
     static psEngine* Instance(); // Cannot be inline'd for DLL reasons.
 
   protected:
-    bss_util::WArray<psPass*, unsigned short>::t _passes;
+    bss_util::cArray<psPass*, unsigned short> _passes;
     bss_util::cBitField<unsigned char> _flags;
     double _secdelta;
     double _timewarp;
