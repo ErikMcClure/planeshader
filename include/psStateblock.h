@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __STATEBLOCK_H__PS__
@@ -20,9 +20,12 @@ namespace planeshader {
     TYPE_BLEND_DESTBLENDALPHA,
     TYPE_BLEND_BLENDOPALPHA,
     TYPE_BLEND_RENDERTARGETWRITEMASK, // index 0-7
+    TYPE_BLEND_BLENDFACTOR, // index 0-3
+    TYPE_BLEND_SAMPLEMASK,
     TYPE_DEPTH_DEPTHENABLE,
     TYPE_DEPTH_DEPTHWRITEMASK,
     TYPE_DEPTH_DEPTHFUNC,
+    TYPE_DEPTH_STENCILVALUE, // StencilRef value everything is compared to
     TYPE_DEPTH_STENCILENABLE,
     TYPE_DEPTH_STENCILREADMASK,
     TYPE_DEPTH_STENCILWRITEMASK,
@@ -78,57 +81,71 @@ namespace planeshader {
           unsigned int value;
           float valuef;
         };
-        union {
-          struct {
-            STATETYPE type;
-            unsigned char index;
-          };
-          unsigned short typeindex;
-        };
+        STATETYPE type;
+        unsigned short index;
       };
       unsigned __int64 __vali64;
     };
+
+    typedef bss_util::cArray<STATEINFO, unsigned short> STATEINFOS;
+
+    inline static bool SILESS(const planeshader::STATEINFO& l, const planeshader::STATEINFO& r) { return l.type<=r.type && (l.type<r.type || l.index<r.index); }
+    inline static khint_t SIHASHFUNC(STATEINFOS* sb) {
+      unsigned short sz=sb->Size();
+      khint32_t r=0;
+      for(unsigned short i = 0; i < sz; ++i)
+        r=bss_util::KH_INT64_HASHFUNC((((__int64)bss_util::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
+      return r;
+    }
+    inline static bool SIEQUALITY(STATEINFOS* left, STATEINFOS* right)
+    {
+      unsigned short sl=left->Size();
+      unsigned short sr=right->Size();
+      if(sl!=sr) return false;
+      for(unsigned short i = 0; i < sl; ++i)
+        if((*left)[i].__vali64 != (*right)[i].__vali64)
+          return false;
+      return true;
+    }
+    static STATEINFOS* Exists(STATEINFOS* compare);
+    typedef bss_util::cKhash<STATEINFOS*, char, false, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
+    static BLOCKHASH _blocks;
   };
 
-  class PS_DLLEXPORT psStateblock : public bss_util::cRefCounter
+  class PS_DLLEXPORT psStateblock : public bss_util::cArray<STATEINFO, unsigned short>, public bss_util::cRefCounter
   {
   public:
     inline void* GetSB() const { return _sb; }
 
     static psStateblock* BSS_FASTCALL Create(unsigned int numstates, ...);
     static psStateblock* BSS_FASTCALL Create(const STATEINFO* infos, unsigned int numstates);
-    inline static bool SBLESS(const planeshader::STATEINFO& l, const planeshader::STATEINFO& r) { return l.typeindex<r.typeindex; }
-    inline static khint_t SBHASHFUNC(psStateblock* sb) {
-      unsigned short sz=sb->_infos.Size();
-      khint32_t r=0;
-      for(unsigned short i = 0; i < sz; ++i)
-        r=bss_util::KH_INT64_HASHFUNC((((__int64)bss_util::KH_INT64_HASHFUNC(sb->_infos[i].__vali64))<<32)|r);
-      return r;
-    }
-    inline static bool SBEQUALITY(psStateblock* left, psStateblock* right)
-    {
-      unsigned short sl=left->_infos.Size();
-      unsigned short sr=right->_infos.Size();
-      if(sl!=sr) return false;
-      for(unsigned short i = 0; i < sl; ++i)
-        if(left->_infos[i].__vali64 != left->_infos[i].__vali64)
-          return false;
-      return true;
-    }
 
     static psStateblock* DEFAULT;
-    static const int MAXSAMPLERS = 16;
 
   protected:
     psStateblock(const STATEINFO* infos, unsigned int numstates);
     ~psStateblock();
     virtual void DestroyThis();
-
-    bss_util::cArray<STATEINFO, unsigned short> _infos;
+    
     void* _sb;
+  };
 
-    typedef bss_util::cKhash<psStateblock*, char, false, &SBHASHFUNC, &SBEQUALITY> BLOCKHASH;
-    static BLOCKHASH _blocks;
+  // Restricted to sampler infos
+  class PS_DLLEXPORT psTexblock : public bss_util::cArray<STATEINFO, unsigned short>, public bss_util::cRefCounter
+  {
+  public:
+    inline void* GetSB() const { return _tb; }
+    static psTexblock* BSS_FASTCALL Create(unsigned int numstates, ...);
+    static psTexblock* BSS_FASTCALL Create(const STATEINFO* infos, unsigned int numstates);
+
+    static psTexblock* DEFAULT;
+
+  protected:
+    psTexblock(const STATEINFO* infos, unsigned int numstates);
+    ~psTexblock();
+    virtual void DestroyThis();
+
+    void* _tb; // In DX10, this is the sampler state, but in openGL, it's actually NULL, because openGL binds the sampler states to the texture at texture creation time using the STATEINFOs contained in this object.
   };
 
   struct PS_DLLEXPORT STATEBLOCK_LIBRARY
@@ -139,10 +156,10 @@ namespace planeshader {
     static psStateblock* PARTICLE_GLOW; //Both GLOW and PARTICLE
     static psStateblock* MASK[8]; //Used for masking
     static psStateblock* INVMASK[8];
-    static psStateblock* UVBORDER; // Sets UV coordinates to use a border of color 0 (you can easily override that)
-    static psStateblock* UVMIRROR; // Sets UV coordinates to Mirror
-    static psStateblock* UVMIRRORONCE; // Sets UV coordinates to MirrorOnce
-    static psStateblock* UVWRAP; // Sets UV coordinates to Wrap (There is no CLAMP as that is the default)
+    static psTexblock* UVBORDER; // Sets UV coordinates to use a border of color 0 (you can easily override that)
+    static psTexblock* UVMIRROR; // Sets UV coordinates to Mirror
+    static psTexblock* UVMIRRORONCE; // Sets UV coordinates to MirrorOnce
+    static psTexblock* UVWRAP; // Sets UV coordinates to Wrap (There is no CLAMP as that is the default)
     static psStateblock* GAMMAREAD; // linearize on read (only the 0th sampler, which is usually the diffuse map, since all other maps are already linear) 
     static psStateblock* GAMMAWRITE; // un-linearize on write
     static psStateblock* GAMMACORRECT; // Standard gamma correction

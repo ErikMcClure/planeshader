@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psDirectX10.h"
@@ -130,52 +130,80 @@ _backbuffer(0), _extent(10000, 1)
   screendim = _backbuffer->GetDim();
   _cam_def = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
   _cam_usr = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
+  _proj_def = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
+  _proj_usr = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
   ApplyCamera(VEC3D_ZERO, VEC_ZERO, 0, psRectiu(0, 0, screendim.x, screendim.y));
 
   _fsquadVS = (ID3D10VertexShader*)CreateShader(fsquadVS_main, sizeof(fsquadVS_main), VERTEX_SHADER_4_0);
-  ELEMENT_DESC rectdesc[4] ={
-    { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-    { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-    { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
-    { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+
+  auto fnload = [](const char* file) -> std::unique_ptr<char[]>
+  {
+    FILE* f = 0;
+    FOPEN(f, file, "rb");
+    fseek(f, 0, SEEK_END);
+    long ln = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    std::unique_ptr<char[]> a(new char[ln+1]);
+    fread(a.get(), 1, ln, f);
+    fclose(f);
+    a[ln]=0;
+    return a;
   };
 
   {
-    FILE* f = 0;
-    FOPEN(f, "../media/fsrect.hlsl", "rb");
-    fseek(f, 0, SEEK_END);
-    long ln = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    std::unique_ptr<char[]> a(new char[ln+1]);
-    fread(a.get(), 1, ln, f);
-    fclose(f);
-    a[ln]=0;
+    auto a = fnload("../media/fsimage.hlsl");
 
-    library.IMAGE = psShader::CreateShader(rectdesc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
-  }
-
-  {
-    FILE* f = 0;
-    FOPEN(f, "../media/fspoint.hlsl", "rb");
-    fseek(f, 0, SEEK_END);
-    long ln = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    std::unique_ptr<char[]> a(new char[ln+1]);
-    fread(a.get(), 1, ln, f);
-    fclose(f);
-    a[ln]=0;
-
-    ELEMENT_DESC pointdesc[4] ={
+    ELEMENT_DESC desc[4] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
       { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
       { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
       { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
     };
 
-    library.PARTICLE = psShader::CreateShader(pointdesc, 3,
+    library.IMAGE = psShader::CreateShader(desc, 3,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload("../media/fsrect.hlsl");
+
+    library.RECT = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+  }
+
+  {
+    auto a = fnload("../media/fscircle.hlsl");
+
+    library.CIRCLE = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+  }
+
+  {
+    auto a = fnload("../media/fsline.hlsl");
+
+    ELEMENT_DESC desc[2] ={
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+    };
+
+    library.LINE = psShader::CreateShader(desc, 2,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload("../media/fspoint.hlsl");
+
+    ELEMENT_DESC desc[4] ={
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+    };
+
+    library.PARTICLE = psShader::CreateShader(desc, 3,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
       &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
@@ -206,7 +234,26 @@ _backbuffer(0), _extent(10000, 1)
   _batchobjbuf.vsize = sizeof(DX10_simplevert);
   _batchobjbuf.verts = _batchvertbuf;
   _batchobjbuf.nvert = BATCHSIZE;
+
+  _ptobjbuf.indices=0;
+  _ptobjbuf.mode = POINTLIST;
+  _ptobjbuf.nindice=0;
+  _ptobjbuf.vsize = sizeof(DX10_simplevert);
+  _ptobjbuf.verts = _batchvertbuf;
+  _ptobjbuf.nvert = BATCHSIZE;
+
+  _lineobjbuf.indices=0;
+  _lineobjbuf.mode = LINELIST;
+  _lineobjbuf.nindice=0;
+  _lineobjbuf.vsize = sizeof(DX10_simplevert);
+  _lineobjbuf.verts = _batchvertbuf;
+  _lineobjbuf.nvert = BATCHSIZE;
   
+
+  // Create default stateblock and sampler state, then activate the default stateblock.
+  _defaultSB = (DX10_SB*)CreateStateblock(0);
+  _defaultSS = (ID3D10SamplerState*)CreateTexblock(0);
+  SetStateblock(NULL);
   Clear(0xFF000000);
   _swapchain->Present(0, 0);
 }
@@ -217,6 +264,10 @@ psDirectX10::~psDirectX10()
     FreeResource(_cam_def, RES_CONSTBUF);
   if(_cam_usr)
     FreeResource(_cam_usr, RES_CONSTBUF);
+  if(_proj_def)
+    FreeResource(_proj_def, RES_CONSTBUF);
+  if(_proj_usr)
+    FreeResource(_proj_usr, RES_CONSTBUF);
   if(_rectvertbuf)
     FreeResource(_rectvertbuf, RES_VERTEXBUF);
   if(_batchindexbuf)
@@ -225,6 +276,10 @@ psDirectX10::~psDirectX10()
     FreeResource(_batchvertbuf, RES_VERTEXBUF);
   if(_fsquadVS)
     FreeResource(_fsquadVS, RES_SHADERVS);
+  if(_defaultSB)
+    FreeResource(_defaultSB, RES_STATEBLOCK);
+  if(_defaultSS)
+    FreeResource(_defaultSS, RES_TEXBLOCK);
   if(library.IMAGE)
     library.IMAGE->Drop();
   if(library.PARTICLE)
@@ -262,9 +317,9 @@ void BSS_FASTCALL psDirectX10::Draw(psVertObj* buf, FLAG_TYPE flags, const float
   _device->IASetVertexBuffers(0, 1, (ID3D10Buffer**)&buf->verts, &buf->vsize, &offset);
   _device->IASetPrimitiveTopology(_getdx10topology(buf->mode));
   
-  ID3D10Buffer* cam = _cam_def;
+  ID3D10Buffer* cam = (flags&PSFLAG_FIXED)?_proj_def:_cam_def;
   if(transform != identity)
-    _setcambuf(cam = _cam_usr, matView, transform);
+    _setcambuf(cam = ((flags&PSFLAG_FIXED)?_proj_usr:_cam_usr), matView, transform);
 
   _device->VSSetConstantBuffers(0, 1, (ID3D10Buffer**)&cam);
   _device->GSSetConstantBuffers(0, 1, (ID3D10Buffer**)&cam);
@@ -294,12 +349,11 @@ void BSS_FASTCALL psDirectX10::DrawRectBatchBegin(const psTex* const* texes, uns
 }
 void BSS_FASTCALL psDirectX10::DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4])
 { 
-  _lockedrectbuf[_lockedcount] ={ rect.left, rect.top, rect.z, rect.rotation,
+  _lockedrectbuf[_lockedcount++] ={ rect.left, rect.top, rect.z, rect.rotation,
     rect.right-rect.left, rect.bottom-rect.top, rect.pivot.x, rect.pivot.y,
     uv.left, uv.top, uv.right, uv.bottom,
     color };
-  ++_lockedcount;
-  if(_lockedcount >= 512)
+  if(_lockedcount >= BATCHSIZE)
   {
     DrawRectBatchEnd(xform);
     _lockedrectbuf = (DX10_rectvert*)LockBuffer(_rectobjbuf.verts, LOCK_WRITE_DISCARD);
@@ -312,12 +366,9 @@ void psDirectX10::DrawRectBatchEnd(const float(&xform)[4][4])
   _rectobjbuf.nvert = _lockedcount;
   Draw(&_rectobjbuf, _lockedflag, xform);
 }
-void BSS_FASTCALL psDirectX10::DrawCircle()
-{ 
-}
 void BSS_FASTCALL psDirectX10::DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags)
 { 
-  DX10_simplevert* buf = (DX10_simplevert*)LockBuffer(_batchvertbuf, LOCK_WRITE_DISCARD);
+  DX10_simplevert* buf = (DX10_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
   for(int i = 0; i < num; ++i)
   {
     buf[i].x = verts[i].x;
@@ -325,20 +376,17 @@ void BSS_FASTCALL psDirectX10::DrawPolygon(const psVec* verts, FNUM Z, int num, 
     buf[i].z = Z;
     buf[i].color = vertexcolor;
   }
-  _batchobjbuf.verts = _batchvertbuf;
   _batchobjbuf.nvert = num;
-  _batchobjbuf.indices = _batchindexbuf;
   _batchobjbuf.nindice = (num-2)*3;
   Draw(&_batchobjbuf, flags);
 }
 void BSS_FASTCALL psDirectX10::DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags)
 {
-  _lockedptbuf = (DX10_simplevert*)LockBuffer(_batchvertbuf, LOCK_WRITE_DISCARD);
+  _lockedptbuf = (DX10_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
   _lockedcount = 0;
   _lockedflag = flags;
+  library.PARTICLE->SetConstants<float, 2>(size);
   SetTextures(texes, numtex, PIXEL_SHADER_1_1);
-  _batchobjbuf.indices = 0;
-  _batchobjbuf.verts = _batchvertbuf;
 }
 void BSS_FASTCALL psDirectX10::DrawPoints(psVertex* particles, unsigned int num)
 {
@@ -348,9 +396,9 @@ void BSS_FASTCALL psDirectX10::DrawPoints(psVertex* particles, unsigned int num)
   {
     memcpy(_lockedptbuf+_lockedcount, particles, (BATCHSIZE-_lockedcount)*sizeof(DX10_simplevert));
     UnlockBuffer(_lockedptbuf);
-    _batchobjbuf.nvert = BATCHSIZE;
-    Draw(&_batchobjbuf, _lockedflag);
-    _lockedptbuf = (DX10_simplevert*)LockBuffer(_batchvertbuf, LOCK_WRITE_DISCARD);
+    _ptobjbuf.nvert = BATCHSIZE;
+    Draw(&_ptobjbuf, _lockedflag);
+    _lockedptbuf = (DX10_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
     _lockedcount=0;
     num-=BATCHSIZE;
     particles+=BATCHSIZE;
@@ -362,15 +410,35 @@ void psDirectX10::DrawPointsEnd()
 {
   PROFILE_FUNC();
   UnlockBuffer(_lockedptbuf);
-  _batchobjbuf.nvert = _lockedcount;
-  Draw(&_batchobjbuf, _lockedflag);
+  _ptobjbuf.nvert = _lockedcount;
+  Draw(&_ptobjbuf, _lockedflag);
 }
-void BSS_FASTCALL psDirectX10::DrawLinesStart(int num, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawLinesStart(FLAG_TYPE flags)
 {
-
+  _lockedptbuf = (DX10_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
+  _lockedcount = 0;
+  _lockedflag = flags;
+  SetTextures(0, 0, PIXEL_SHADER_1_1);
 }
-void BSS_FASTCALL psDirectX10::DrawLines(const cLineT<float>& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags) { }
-void psDirectX10::DrawLinesEnd() { }
+void BSS_FASTCALL psDirectX10::DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags)
+{ 
+  _lockedptbuf[_lockedcount++] ={ line.x1, line.y1, Z1, vertexcolor };
+  _lockedptbuf[_lockedcount++] ={ line.x2, line.y2, Z2, vertexcolor };
+
+  if(_lockedcount >= BATCHSIZE)
+  {
+    DrawLinesEnd();
+    _lockedptbuf = (DX10_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
+    _lockedcount = 0;
+  }
+}
+void psDirectX10::DrawLinesEnd()
+{
+  PROFILE_FUNC();
+  UnlockBuffer(_lockedptbuf);
+  _ptobjbuf.nvert = _lockedcount;
+  Draw(&_ptobjbuf, _lockedflag);
+}
 void BSS_FASTCALL psDirectX10::ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) 
 { 
   PROFILE_FUNC();
@@ -405,50 +473,14 @@ void BSS_FASTCALL psDirectX10::ApplyCamera(const psVec3D& pos, const psVec& pivo
   D3DXMatrixTranslation(&m, vp.Width*-0.5f, vp.Height*-0.5f, 1);
   D3DXMatrixMultiply(&matProj, &m, &matProj);
 
-  float mem[16];
-  memcpy(mem, m, sizeof(float)*16);
-
-  // Build a standard centered rotation matrix plus translation, then inverse it. This is our view matrix for the camera.
-  matCamPos_NoScale._41=-pos.x-pivot.x; //This is faster then rebuilding the entire matrix every time for no reason
-  matCamPos_NoScale._42=-pos.y-pivot.y;
-  
-  D3DXMatrixTranslation(&m, -pos.x, -pos.y, 0.0f);
-  D3DXMatrixRotationZ(&matView, -rotation); // This is reversed because everything the camera does is inverted
-  D3DXMatrixMultiply(&matView, &m, &matView); // Mc * Mr
-  _inversetransform(m.m);
-  D3DXMatrixMultiply(&matView, &matView, &m); // * Mc inverse
-  D3DXMatrixMultiply(&matView, &matView, &matCamPos_NoScale); // * Mt
-
+  BSS_ALIGN(16) Matrix<float, 4, 4> cam;
+  Matrix<float, 4, 4>::AffineTransform_T(pos.x, pos.y, pos.z, rotation, pivot.x, pivot.y, cam.v);
+  cam.Inverse(matView.m); // inverse cam and store the result in matView
   D3DXMatrixMultiply(&m, &matView, &matProj); // Assemble ViewProj (WorldViewProj is assembled in the shader)
   _setcambuf(_cam_def, m, identity);
   _setcambuf(_cam_usr, m, identity);
-
-  /*D3DXMATRIX m;
-  D3DXMATRIX matScaleZ;
-  D3DXMatrixTranslation(&m, vp.Width*-0.5f*_extent.y, vp.Height*-0.5f*_extent.y, 0);
-  D3DXMatrixMultiply(&matProj, &m, &matProj);
-  D3DXMatrixScaling(&matScaleZ, _extent.y, _extent.y, 1.0f);
-
-  matCamPos_NoScale._41=-pos.x-pivot.x; //This is faster then rebuilding the entire matrix every time for no reason
-  matCamPos_NoScale._42=-pos.y-pivot.y;
-
-  D3DXMATRIX matMid;
-  D3DXMATRIX matCamRotate_NoScale;
-  D3DXMATRIX matCamRotate;
-  D3DXMatrixTranslation(&matMid, -pos.x, -pos.y, 0.0f);
-  D3DXMatrixRotationZ(&matCamRotate, -rotation); // This has to be reversed because of coordinate system weirdness
-  D3DXMatrixMultiply(&matCamRotate_NoScale, &matMid, &matCamRotate); // Mc * Mr
-  _inversetransform(matMid.m);
-  D3DXMatrixMultiply(&matCamRotate_NoScale, &matCamRotate_NoScale, &matMid); // * Mc inverse
-  _zerocamrot=bss_util::fsmall(rotation);
-
-  D3DXMatrixMultiply(&matView, &matCamRotate_NoScale, &matCamPos_NoScale); //This builds the double
-  //D3DXMatrixMultiply(&matCamRotPos, &matCamPos_NoScale, &matCamRotate_NoScale); //This builds the double
-  D3DXMatrixMultiply(&matView, &matView, &matScaleZ);
-  D3DXMatrixMultiply(&m, &matProj, &matView);
-
-  _setcambuf(_cam_def, m, identity);
-  _setcambuf(_cam_usr, m, identity);*/
+  _setcambuf(_proj_def, matProj, identity);
+  _setcambuf(_proj_usr, matProj, identity);
 }
 void BSS_FASTCALL psDirectX10::ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport) 
 {
@@ -463,13 +495,16 @@ void BSS_FASTCALL psDirectX10::ApplyCamera3D(const float(&m)[4][4], const psRect
 
   _setcambuf(_cam_def, matProj, identity);
   _setcambuf(_cam_usr, matProj, identity);
+  _setcambuf(_proj_def, matProj, identity);
+  _setcambuf(_proj_usr, matProj, identity);
 }
 void psDirectX10::DrawFullScreenQuad()
 { 
   PROFILE_FUNC();
-  _device->VSSetShader(_fsquadVS);
+  if(_lastVS != _fsquadVS) _device->VSSetShader(_fsquadVS);
   _device->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
   _device->Draw(3, 0);
+  if(_lastVS != _fsquadVS) _device->VSSetShader(_lastVS); // restore last shader
 }
 void BSS_FASTCALL psDirectX10::SetExtent(float znear, float zfar) { _extent.x=zfar; _extent.y=znear+1.0f; }
 void* BSS_FASTCALL psDirectX10::CreateBuffer(unsigned short bytes, unsigned int usage, const void* initdata)
@@ -533,13 +568,14 @@ inline const char* BSS_FASTCALL psDirectX10::_geterror(HRESULT err)
   return buf;
 }
 
-
 void BSS_FASTCALL psDirectX10::UnlockBuffer(void* target)
 {
   PROFILE_FUNC();
   ((ID3D10Buffer*)target)->Unmap();
 }
-void* BSS_FASTCALL psDirectX10::CreateTexture(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, const void* initdata, void** additionalview)
+
+// DX10 ignores the texblock parameter because it doesn't bind those states to the texture at creation time.
+void* BSS_FASTCALL psDirectX10::CreateTexture(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, const void* initdata, void** additionalview, psTexblock* texblock)
 {
   PROFILE_FUNC();
   ID3D10Texture2D* tex = 0;
@@ -553,6 +589,7 @@ void* BSS_FASTCALL psDirectX10::CreateTexture(psVeciu dim, FORMATS format, unsig
     *additionalview = _createdepthview(tex);
   return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
 }
+
 void BSS_FASTCALL psDirectX10::_loadtexture(D3DX10_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim)
 {
   memset(info, -1, sizeof(D3DX10_IMAGE_LOAD_INFO));
@@ -569,7 +606,8 @@ void BSS_FASTCALL psDirectX10::_loadtexture(D3DX10_IMAGE_LOAD_INFO* info, unsign
   info->pSrcInfo=0;
   if(format != FMT_UNKNOWN) info->Format = (DXGI_FORMAT)_fmttodx10(format);
 }
-void* BSS_FASTCALL psDirectX10::LoadTexture(const char* path, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim)
+
+void* BSS_FASTCALL psDirectX10::LoadTexture(const char* path, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock)
 { 
   PROFILE_FUNC();
   D3DX10_IMAGE_LOAD_INFO info;
@@ -583,7 +621,8 @@ void* BSS_FASTCALL psDirectX10::LoadTexture(const char* path, unsigned int usage
     *additionalview = _createdepthview(tex);
   return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
 }
-void* BSS_FASTCALL psDirectX10::LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim)
+
+void* BSS_FASTCALL psDirectX10::LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock)
 {
   PROFILE_FUNC();
   D3DX10_IMAGE_LOAD_INFO info;
@@ -597,12 +636,14 @@ void* BSS_FASTCALL psDirectX10::LoadTextureInMemory(const void* data, size_t dat
     *additionalview = _createdepthview(tex);
   return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
 }
+
 void BSS_FASTCALL psDirectX10::PushScissorRect(const psRectl& rect)
 { 
   PROFILE_FUNC();
   _scissorstack.Push(rect);
   _device->RSSetScissorRects(1, (D3D10_RECT*)&rect); 
 }
+
 void psDirectX10::PopScissorRect()
 { 
   PROFILE_FUNC();
@@ -610,6 +651,7 @@ void psDirectX10::PopScissorRect()
     _scissorstack.Discard(); 
   _device->RSSetScissorRects(1, (D3D10_RECT*)&_scissorstack.Peek());
 }
+
 void BSS_FASTCALL psDirectX10::SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil)
 { 
   PROFILE_FUNC();
@@ -626,7 +668,7 @@ void BSS_FASTCALL psDirectX10::SetShaderConstants(void* constbuf, SHADER_VER sha
   if(shader<=VERTEX_SHADER_5_0)
     _device->VSSetConstantBuffers(1, 1, (ID3D10Buffer**)&constbuf);
   else if(shader<=PIXEL_SHADER_5_0)
-    _device->PSSetConstantBuffers(0, 1, (ID3D10Buffer**)&constbuf);
+    _device->PSSetConstantBuffers(1, 1, (ID3D10Buffer**)&constbuf);
   else if(shader<=GEOMETRY_SHADER_5_0)
     _device->GSSetConstantBuffers(1, 1, (ID3D10Buffer**)&constbuf);
 }
@@ -635,38 +677,56 @@ void BSS_FASTCALL psDirectX10::SetTextures(const psTex* const* texes, unsigned c
 {
   PROFILE_FUNC();
   DYNARRAY(ID3D10ShaderResourceView*, views, num);
-  for(unsigned char i = 0; i < num; ++i) views[i] = (ID3D10ShaderResourceView*)texes[i]->GetRes();
+  DYNARRAY(ID3D10SamplerState*, states, num);
+  for(unsigned char i = 0; i < num; ++i)
+  {
+    views[i] = (ID3D10ShaderResourceView*)texes[i]->GetRes();
+    const psTexblock* texblock = texes[i]->GetTexblock();
+    states[i] = !texblock?_defaultSS:(ID3D10SamplerState*)texblock->GetSB();
+  }
+
   if(shader<=VERTEX_SHADER_5_0)
+  {
     _device->VSSetShaderResources(0, num, views);
+    _device->VSSetSamplers(0, num, states);
+  }
   else if(shader<=PIXEL_SHADER_5_0)
+  {
     _device->PSSetShaderResources(0, num, views);
+    _device->PSSetSamplers(0, num, states);
+  }
   else if(shader<=GEOMETRY_SHADER_5_0)
+  {
     _device->GSSetShaderResources(0, num, views);
+    _device->GSSetSamplers(0, num, states);
+  }
 }
 // Builds a stateblock from the given set of state changes
 void* BSS_FASTCALL psDirectX10::CreateStateblock(const STATEINFO* states)
 {
   PROFILE_FUNC();
-  // Build each type of stateblock and independently check for duplicates. Allocate array of sampler pointers at end
-  DX10_SB* sb = 0;
-  D3D10_BLEND_DESC bs ={ 0, { 0 }, D3D10_BLEND_ONE, D3D10_BLEND_ZERO, D3D10_BLEND_OP_ADD, D3D10_BLEND_ONE, D3D10_BLEND_ZERO, D3D10_BLEND_OP_ADD, { D3D10_COLOR_WRITE_ENABLE_ALL } };
+  // Build each type of stateblock and independently check for duplicates.
+  DX10_SB* sb = new DX10_SB{ 0, 0, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, 0xffffffff };
+  //D3D10_BLEND_DESC bs ={ 0, { 1 }, D3D10_BLEND_SRC_ALPHA, D3D10_BLEND_INV_SRC_ALPHA, D3D10_BLEND_OP_ADD, D3D10_BLEND_SRC_COLOR, D3D10_BLEND_ONE, D3D10_BLEND_OP_ADD, { D3D10_COLOR_WRITE_ENABLE_ALL } };
+  D3D10_BLEND_DESC bs ={ 0, { 1, 0, 0, 0, 0, 0, 0, 0 }, D3D10_BLEND_SRC_ALPHA, D3D10_BLEND_INV_SRC_ALPHA, D3D10_BLEND_OP_ADD, D3D10_BLEND_SRC_ALPHA, D3D10_BLEND_ONE, D3D10_BLEND_OP_ADD, { D3D10_COLOR_WRITE_ENABLE_ALL } };
   D3D10_DEPTH_STENCIL_DESC ds ={ 1, D3D10_DEPTH_WRITE_MASK_ALL, D3D10_COMPARISON_LESS, 0, D3D10_DEFAULT_STENCIL_READ_MASK, D3D10_DEFAULT_STENCIL_WRITE_MASK,
     { D3D10_STENCIL_OP_KEEP, D3D10_STENCIL_OP_KEEP, D3D10_STENCIL_OP_KEEP, D3D10_COMPARISON_ALWAYS },
     { D3D10_STENCIL_OP_KEEP, D3D10_STENCIL_OP_KEEP, D3D10_STENCIL_OP_KEEP, D3D10_COMPARISON_ALWAYS } };
   D3D10_RASTERIZER_DESC rs ={ D3D10_FILL_SOLID, D3D10_CULL_NONE, 0, 0, 0.0f, 0.0f, 1, 1, 0, 1 };
-  D3D10_SAMPLER_DESC ss ={ D3D10_FILTER_MIN_MAG_MIP_POINT, D3D10_TEXTURE_ADDRESS_CLAMP, D3D10_TEXTURE_ADDRESS_CLAMP, D3D10_TEXTURE_ADDRESS_CLAMP, 0.0f, 16, D3D10_COMPARISON_NEVER, { 0.0f, 0.0f, 0.0f, 0.0f }, 0.0f, FLT_MAX };
   
   const STATEINFO* cur=states;
   if(cur!=0 && cur->type == TYPE_BLEND_ALPHATOCOVERAGEENABLE) bs.AlphaToCoverageEnable = (cur++)->value;
-  while(cur!=0 && cur->type == TYPE_BLEND_BLENDENABLE) bs.BlendEnable[cur->index] = (cur++)->value;
+  while(cur!=0 && cur->type == TYPE_BLEND_BLENDENABLE && cur->index<=7) bs.BlendEnable[cur->index] = (cur++)->value;
   if(cur!=0 && cur->type == TYPE_BLEND_SRCBLEND) bs.SrcBlend = (D3D10_BLEND)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_BLEND_DESTBLEND) bs.DestBlend = (D3D10_BLEND)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_BLEND_BLENDOP) bs.BlendOp = (D3D10_BLEND_OP)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_BLEND_SRCBLENDALPHA) bs.SrcBlendAlpha = (D3D10_BLEND)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_BLEND_DESTBLENDALPHA) bs.DestBlendAlpha = (D3D10_BLEND)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_BLEND_BLENDOPALPHA) bs.BlendOpAlpha = (D3D10_BLEND_OP)(cur++)->value;
-  while(cur!=0 && cur->type == TYPE_BLEND_RENDERTARGETWRITEMASK) bs.RenderTargetWriteMask[cur->index] = (cur++)->value;
-
+  while(cur!=0 && cur->type == TYPE_BLEND_RENDERTARGETWRITEMASK && cur->index<=7) bs.RenderTargetWriteMask[cur->index] = (cur++)->value;
+  while(cur!=0 && cur->type == TYPE_BLEND_BLENDFACTOR && cur->index<=3) sb->blendfactor[cur->index] = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_BLEND_SAMPLEMASK) sb->sampleMask = (cur++)->value;
+  
   if(cur!=0 && cur->type == TYPE_DEPTH_DEPTHENABLE) ds.DepthEnable = (cur++)->value;
   if(cur!=0 && cur->type == TYPE_DEPTH_DEPTHWRITEMASK) ds.DepthWriteMask = (D3D10_DEPTH_WRITE_MASK)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_DEPTH_DEPTHFUNC) ds.DepthFunc = (D3D10_COMPARISON_FUNC)(cur++)->value;
@@ -681,6 +741,7 @@ void* BSS_FASTCALL psDirectX10::CreateStateblock(const STATEINFO* states)
   if(cur!=0 && cur->type == TYPE_DEPTH_BACK_STENCILDEPTHFAILOP) ds.BackFace.StencilDepthFailOp = (D3D10_STENCIL_OP)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_DEPTH_BACK_STENCILPASSOP) ds.BackFace.StencilPassOp = (D3D10_STENCIL_OP)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_DEPTH_BACK_STENCILFUNC) ds.BackFace.StencilFunc = (D3D10_COMPARISON_FUNC)(cur++)->value;
+  if(cur!=0 && cur->type == TYPE_DEPTH_STENCILVALUE) sb->stencilref = (cur++)->value;
 
   if(cur!=0 && cur->type == TYPE_RASTER_FILLMODE) rs.FillMode = (D3D10_FILL_MODE)(cur++)->value;
   if(cur!=0 && cur->type == TYPE_RASTER_CULLMODE) rs.CullMode = (D3D10_CULL_MODE)(cur++)->value;
@@ -693,61 +754,44 @@ void* BSS_FASTCALL psDirectX10::CreateStateblock(const STATEINFO* states)
   if(cur!=0 && cur->type == TYPE_RASTER_MULTISAMPLEENABLE) rs.MultisampleEnable = (cur++)->value;
   if(cur!=0 && cur->type == TYPE_RASTER_ANTIALIASEDLINEENABLE) rs.AntialiasedLineEnable = (cur++)->value;
 
-  states=cur;
-  unsigned char numvs=0;
-  unsigned char numps=0;
-  unsigned char numgs=0;
-  while(cur)
-  {
-    if(cur->index<psStateblock::MAXSAMPLERS && cur->index>numps) numps=cur->index;
-    if(cur->index<(psStateblock::MAXSAMPLERS*2) && cur->index>numvs) numvs=cur->index;
-    if(cur->index<(psStateblock::MAXSAMPLERS*3) && cur->index>numgs) numgs=cur->index;
-    ++cur;
-  }
-  cur=states;
-  sb = (DX10_SB*)malloc(sizeof(DX10_SB)+(numvs+numps+numgs)*sizeof(D3D10_SAMPLER_DESC));
-  sb->numsamplervs=numvs;
-  sb->numsamplerps=numps;
-  sb->numsamplergs=numgs;
-  unsigned char total = numvs+numps+numgs;
-  D3D10_SAMPLER_DESC curss;
-  for(unsigned char i = 0; i < total; ++i)
-  {
-    MEMCPY(&curss, sizeof(D3D10_SAMPLER_DESC), &ss, sizeof(D3D10_SAMPLER_DESC));
-    unsigned char index = i + (psStateblock::MAXSAMPLERS*((i>numps)+(i>numvs)+(i>numgs)));
-    if(cur!=0 && cur->type == TYPE_SAMPLER_FILTER && cur->index==index) ss.Filter = (D3D10_FILTER)(cur++)->value;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_ADDRESSU && cur->index==index) ss.AddressU = (D3D10_TEXTURE_ADDRESS_MODE)(cur++)->value;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_ADDRESSV && cur->index==index) ss.AddressV = (D3D10_TEXTURE_ADDRESS_MODE)(cur++)->value;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_ADDRESSW && cur->index==index) ss.AddressW = (D3D10_TEXTURE_ADDRESS_MODE)(cur++)->value;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_MIPLODBIAS && cur->index==index) ss.MipLODBias = (cur++)->valuef;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_MAXANISOTROPY && cur->index==index) ss.MaxAnisotropy = (cur++)->value;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_COMPARISONFUNC && cur->index==index) ss.ComparisonFunc = (D3D10_COMPARISON_FUNC)(cur++)->value;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR1 && cur->index==index) ss.BorderColor[0] = (cur++)->valuef;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR2 && cur->index==index) ss.BorderColor[1] = (cur++)->valuef;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR3 && cur->index==index) ss.BorderColor[2] = (cur++)->valuef;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR4 && cur->index==index) ss.BorderColor[3] = (cur++)->valuef;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_MINLOD && cur->index==index) ss.MinLOD = (cur++)->valuef;
-    if(cur!=0 && cur->type == TYPE_SAMPLER_MAXLOD && cur->index==index) ss.MaxLOD = (cur++)->valuef;
-    LOGFAILURERETNULL(_device->CreateSamplerState(&curss, (ID3D10SamplerState**)(DX10_SB::GetPS(sb)+i)));
-  }
-
   LOGFAILURERETNULL(_device->CreateBlendState(&bs, &sb->bs), "CreateBlendState failed")
   LOGFAILURERETNULL(_device->CreateDepthStencilState(&ds, &sb->ds), "CreateDepthStencilState failed")
   LOGFAILURERETNULL(_device->CreateRasterizerState(&rs, &sb->rs), "CreateRasterizerState failed")
 
   return sb;
 }
+
+void* BSS_FASTCALL psDirectX10::CreateTexblock(const STATEINFO* states)
+{
+  D3D10_SAMPLER_DESC ss ={ D3D10_FILTER_MIN_MAG_MIP_LINEAR, D3D10_TEXTURE_ADDRESS_CLAMP, D3D10_TEXTURE_ADDRESS_CLAMP, D3D10_TEXTURE_ADDRESS_CLAMP, 0.0f, 16, D3D10_COMPARISON_NEVER, { 0.0f, 0.0f, 0.0f, 0.0f }, 0.0f, FLT_MAX };
+
+  ID3D10SamplerState* ret;
+  const STATEINFO* cur=states;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_FILTER) ss.Filter = (D3D10_FILTER)(cur++)->value;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_ADDRESSU) ss.AddressU = (D3D10_TEXTURE_ADDRESS_MODE)(cur++)->value;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_ADDRESSV) ss.AddressV = (D3D10_TEXTURE_ADDRESS_MODE)(cur++)->value;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_ADDRESSW) ss.AddressW = (D3D10_TEXTURE_ADDRESS_MODE)(cur++)->value;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_MIPLODBIAS) ss.MipLODBias = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_MAXANISOTROPY) ss.MaxAnisotropy = (cur++)->value;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_COMPARISONFUNC) ss.ComparisonFunc = (D3D10_COMPARISON_FUNC)(cur++)->value;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR1) ss.BorderColor[0] = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR2) ss.BorderColor[1] = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR3) ss.BorderColor[2] = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_BORDERCOLOR4) ss.BorderColor[3] = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_MINLOD) ss.MinLOD = (cur++)->valuef;
+  if(cur!=0 && cur->type == TYPE_SAMPLER_MAXLOD) ss.MaxLOD = (cur++)->valuef;
+  LOGFAILURERETNULL(_device->CreateSamplerState(&ss, &ret));
+  return ret;
+}
+
 // Sets a given stateblock
 void BSS_FASTCALL psDirectX10::SetStateblock(void* stateblock)
 {
   PROFILE_FUNC();
-  DX10_SB* sb = (DX10_SB*)stateblock;
+  DX10_SB* sb = !stateblock?_defaultSB:(DX10_SB*)stateblock;
   _device->RSSetState(sb->rs);
   _device->OMSetDepthStencilState(sb->ds, sb->stencilref);
   _device->OMSetBlendState(sb->bs, sb->blendfactor, sb->sampleMask);
-  _device->PSSetSamplers(0, sb->numsamplerps, DX10_SB::GetPS(sb));
-  _device->VSSetSamplers(0, sb->numsamplervs, DX10_SB::GetVS(sb));
-  _device->GSSetSamplers(0, sb->numsamplergs, DX10_SB::GetGS(sb));
 }
 void* BSS_FASTCALL psDirectX10::CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num)
 {
@@ -883,13 +927,11 @@ void BSS_FASTCALL psDirectX10::FreeResource(void* p, RESOURCE_TYPE t)
     sb->rs->Release();
     sb->ds->Release();
     sb->bs->Release();
-    ID3D10SamplerState* const* cur=DX10_SB::GetPS(sb);
-    for(unsigned char i = 0; i < sb->numsamplerps; ++i) cur[i]->Release();
-    cur=DX10_SB::GetVS(sb);
-    for(unsigned char i = 0; i < sb->numsamplervs; ++i) cur[i]->Release();
-    cur=DX10_SB::GetGS(sb);
-    for(unsigned char i = 0; i < sb->numsamplergs; ++i) cur[i]->Release();
+    delete sb;
   }
+    break;
+  case RES_TEXBLOCK:
+    ((ID3D10SamplerState*)p)->Release();
     break;
   case RES_LAYOUT:
     ((ID3D10InputLayout*)p)->Release();
@@ -1030,12 +1072,12 @@ void* BSS_FASTCALL psDirectX10::CreateShader(const void* data, size_t datasize, 
 char BSS_FASTCALL psDirectX10::SetShader(void* shader, SHADER_VER profile)
 {
   PROFILE_FUNC();
-  if(profile<=VERTEX_SHADER_5_0)
-    _device->VSSetShader((ID3D10VertexShader*)shader);
-  else if(profile<=PIXEL_SHADER_5_0)
-    _device->PSSetShader((ID3D10PixelShader*)shader);
-  else if(profile<=GEOMETRY_SHADER_5_0)
-    _device->GSSetShader((ID3D10GeometryShader*)shader);
+  if(profile<=VERTEX_SHADER_5_0 && _lastVS != shader)
+    _device->VSSetShader(_lastVS = (ID3D10VertexShader*)shader);
+  else if(profile<=PIXEL_SHADER_5_0 && _lastPS != shader)
+    _device->PSSetShader(_lastPS = (ID3D10PixelShader*)shader);
+  else if(profile<=GEOMETRY_SHADER_5_0 && _lastGS != shader)
+    _device->GSSetShader(_lastGS = (ID3D10GeometryShader*)shader);
   else
     return -1;
   return 0;

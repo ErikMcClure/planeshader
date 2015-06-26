@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __PASS_H__PS__
@@ -9,6 +9,9 @@
 #include "psCamera.h"
 
 namespace planeshader {
+  class psSolid;
+
+  // Defines a single, encapsulated render pass in the pipeline
   class PS_DLLEXPORT psPass : public psDriverHold
   {
   public:
@@ -22,13 +25,32 @@ namespace planeshader {
     inline void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
+    void ClearRenderBuffer();
+    void FlushQueue();
 
     static BSS_FORCEINLINE bss_util::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
+    static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r) { char c = SGNCOMPARE(l->_zorder, r->_zorder); if(!c) c = SGNCOMPARE(l->_internaltype(), r->_internaltype()); if(!c) return l->_sort(r); return c; }
+
+    typedef bss_util::BlockPolicy<bss_util::TRB_Node<psRenderable*>> ALLOC;
+    friend class psRenderable;
+    friend class psCullGroup;
 
   protected:
+    static psPass* _curpass;
+
+    void _queue(psRenderable* r);
+    void _sort(psRenderable* r);
+    void _addcullgroup(psCullGroup* g);
+    void _removecullgroup(psCullGroup* g);
+
     const psCamera* _cam;
     psRenderable* _renderables;
+    psRenderable* _solids;
+    psCullGroup* _cullgroups;
     const psTex* _defaultrt;
+    ALLOC _renderalloc;
+    bss_util::cTRBtree<psRenderable*, StandardCompare, ALLOC> _renderlist;
+    bss_util::cDynArray<psRenderable*> _renderqueue;
   };
 }
 

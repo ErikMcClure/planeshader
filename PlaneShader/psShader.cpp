@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psShader.h"
@@ -24,7 +24,7 @@ void psShader::Activate()
   _driver->SetLayout(_layout);
 }
 
-bool BSS_FASTCALL psShader::SetConstants(void* data, size_t sz, unsigned char I)
+bool BSS_FASTCALL psShader::SetConstants(const void* data, size_t sz, unsigned char I)
 {
   PROFILE_FUNC();
   void* target=_driver->LockBuffer(_sc[I], LOCK_WRITE_DISCARD);
@@ -84,7 +84,7 @@ psShader* psShader::CreateShader(psShader* copy)
   r->Grab();
   return r;
 }
-psShader* BSS_FASTCALL psShader::CreateShader(unsigned int num, const psShader* first, ...)
+psShader* BSS_FASTCALL psShader::MergeShaders(unsigned int num, const psShader* first, ...)
 {
   PROFILE_FUNC();
   if(!num) return 0;

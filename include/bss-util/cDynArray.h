@@ -22,6 +22,7 @@ namespace bss_util {
     inline cDynArray(const cDynArray& copy) : AT_(copy), _length(copy._length) {}
     inline cDynArray(cDynArray&& mov) : AT_(std::move(mov)), _length(mov._length) {}
     inline explicit cDynArray(ST_ size=0) : AT_(size), _length(0) {}
+    inline cDynArray(const std::initializer_list<T> list) : AT_(list), _length(list.size()) {}
     BSS_FORCEINLINE ST_ Add(const T_& t) { return _add(t); }
     BSS_FORCEINLINE ST_ Add(T_&& t) { return _add(std::move(t)); }
     BSS_FORCEINLINE void Remove(ST_ index) { AT_::RemoveInternal(index); --_length; }
@@ -49,7 +50,7 @@ namespace bss_util {
     inline cDynArray& operator=(const cDynArray& copy) { AT_::operator=(copy); _length=copy._length; return *this; }
     inline cDynArray& operator=(cDynArray&& mov) { AT_::operator=(std::move(mov)); _length=mov._length; return *this; }
     inline cDynArray& operator +=(const cDynArray& add) { AT_::SetSize(_length); AT_::operator+=(add); _length+=add._length; return *this; }
-    inline const cDynArray operator +(const cDynArray& add) const { cDynArray r(*this); return (r+=add); }
+    inline cDynArray operator +(const cDynArray& add) const { cDynArray r(*this); return (r+=add); }
 
   protected:
     template<typename U>

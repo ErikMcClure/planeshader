@@ -90,6 +90,15 @@
     <ClInclude Include="..\include\psEllipse.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psLine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psGroup.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psCullGroup.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -128,6 +137,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psGUIManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psSolid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psGroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

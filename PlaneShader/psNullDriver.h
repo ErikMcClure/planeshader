@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __NULLDRIVER_H__PS__
@@ -24,8 +24,6 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags, const float xform[4][4]) { }
     virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, const unsigned int(&vertexcolor)[4], FLAG_TYPE flags) { }
     virtual void DrawRectBatchEnd() { }
-    // Draws a circle
-    virtual void BSS_FASTCALL DrawCircle() { }
     // Draws a polygon
     virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags) { }
     // Draws points (which are always batch rendered)
@@ -33,8 +31,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num) { }
     virtual void DrawPointsEnd() { }
     // Draws lines (which are also always batch rendered)
-    virtual void BSS_FASTCALL DrawLinesStart(int num, FLAG_TYPE flags) { }
-    virtual void BSS_FASTCALL DrawLines(const cLineT<float>& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags) { }
+    virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags) { }
+    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags) { }
     virtual void DrawLinesEnd() { }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) { }
@@ -49,9 +47,9 @@ namespace planeshader {
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags) { return 0; }
     virtual void BSS_FASTCALL UnlockBuffer(void* target) { }
     // Creates a texture
-    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0) { return 0; }
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO) { return 0; }
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO) { return 0; }
+    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0) { return 0; }
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0) { return 0; }
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0) { return 0; }
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect) { }
     virtual void PopScissorRect() { }
@@ -65,6 +63,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1) { }
     // Builds a stateblock from the given set of state changes
     virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states) { return 0; }
+    // Builds a texblock from the given set of sampler states
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states) { return 0; }
     // Sets a given stateblock
     virtual void BSS_FASTCALL SetStateblock(void* stateblock) { }
     // Create a vertex layout from several element descriptions

@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __DIRECTX10_H__PS__
@@ -20,35 +20,22 @@ namespace planeshader {
     float u, v, u2, v2;
     unsigned int color;
   };
-  // Vertex layout used by the default (null) shader replacement.
-  struct DX10_defaultvert
-  {
-    float x, y, z;
-    float u, v;
-    unsigned int color;
-  };
-  // Vertex used for polygons, circles, lines and point rendering
+  // Vertex used for polygons, lines and point rendering
   struct DX10_simplevert
   {
-    float x, y, z;
+    float x, y, z, w;
     unsigned int color;
   };
   struct DX10_SB
   {
     ID3D10RasterizerState* rs;
     ID3D10DepthStencilState* ds;
-    UINT stencilref;
     ID3D10BlendState* bs;
+    UINT stencilref;
     FLOAT blendfactor[4];
     UINT sampleMask;
-    unsigned char numsamplerps;
-    unsigned char numsamplervs;
-    unsigned char numsamplergs;
-
-    static inline ID3D10SamplerState* const* GetPS(DX10_SB* sb) { return (ID3D10SamplerState* const*)(sb+1); }
-    static inline ID3D10SamplerState* const* GetVS(DX10_SB* sb) { return ((ID3D10SamplerState* const*)(sb+1))+sb->numsamplerps; }
-    static inline ID3D10SamplerState* const* GetGS(DX10_SB* sb) { return ((ID3D10SamplerState* const*)(sb+1))+sb->numsamplerps+sb->numsamplervs; }
   };
+
   class psDirectX10 : public psDriver, public psDriverHold
   {
   public:
@@ -66,8 +53,6 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags);
     virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4]=identity);
     virtual void DrawRectBatchEnd(const float(&xform)[4][4]=identity);
-    // Draws a circle
-    virtual void BSS_FASTCALL DrawCircle();
     // Draws a polygon
     virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags);
     // Draws points (which are always batch rendered)
@@ -75,8 +60,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num);
     virtual void DrawPointsEnd();
     // Draws lines (which are also always batch rendered)
-    virtual void BSS_FASTCALL DrawLinesStart(int num, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawLines(const cLineT<float>& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags);
     virtual void DrawLinesEnd();
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport);
@@ -91,9 +76,9 @@ namespace planeshader {
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags);
     virtual void BSS_FASTCALL UnlockBuffer(void* target);
     // Creates a texture
-    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0);
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO);
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO);
+    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0);
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0);
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0);
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect);
     virtual void PopScissorRect();
@@ -105,6 +90,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1);
     // Builds a stateblock from the given set of state changes
     virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states);
+    // Builds a texblock from the given set of sampler states
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states);
     // Sets a given stateblock
     virtual void BSS_FASTCALL SetStateblock(void* stateblock);
     // Create a vertex layout from several element descriptions
@@ -153,18 +140,20 @@ namespace planeshader {
     void* _creatertview(ID3D10Resource* src);
     void* _createdepthview(ID3D10Resource* src);
     long _lasterr;
-
+    
     IDXGIFactory* _factory;
     ID3D10Device* _device;
     IDXGISwapChain* _swapchain;
     psTex* _backbuffer;
-    D3DXMATRIX matProj;
-    D3DXMATRIX matView;
-    D3DXMATRIX matCamPos_NoScale;
+    BSS_ALIGN(16) D3DXMATRIX matProj;
+    BSS_ALIGN(16) D3DXMATRIX matView;
+    BSS_ALIGN(16) D3DXMATRIX matCamPos_NoScale;
     void* _rectvertbuf;
     void* _batchvertbuf;
     void* _batchindexbuf;
     psVertObj _batchobjbuf;
+    psVertObj _ptobjbuf;
+    psVertObj _lineobjbuf;
     psVertObj _rectobjbuf;
     DX10_rectvert* _lockedrectbuf;
     DX10_simplevert* _lockedptbuf;
@@ -176,9 +165,16 @@ namespace planeshader {
     bss_util::cStack<psRectl> _scissorstack;
     ID3D10VertexShader* _fsquadVS;
     ID3D10VertexShader* _defaultVS;
+    ID3D10VertexShader* _lastVS;
+    ID3D10GeometryShader* _lastGS;
+    ID3D10PixelShader* _lastPS;
     ID3D10PixelShader* _defaultPS; //single texture pixel shader
+    ID3D10SamplerState* _defaultSS; //default sampler state
+    DX10_SB* _defaultSB; // default stateblock
     ID3D10Buffer* _cam_def; //viewproj matrix and identity world matrix
     ID3D10Buffer* _cam_usr; //viewproj matrix and custom world matrix
+    ID3D10Buffer* _proj_def; //proj matrix and identity world matrix
+    ID3D10Buffer* _proj_usr; //proj matrix and custom world matrix
   };
 }
 

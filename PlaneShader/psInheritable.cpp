@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psInheritable.h"
@@ -36,6 +36,11 @@ psInheritable::~psInheritable()
 {
   while(_children!=0) _children->SetParent(0);
   SetParent(0);
+}
+void psInheritable::Render()
+{
+  for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
+    cur->Render();
 }
 void psInheritable::SetParent(psInheritable* parent)
 {
