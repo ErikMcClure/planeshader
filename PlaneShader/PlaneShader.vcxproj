@@ -107,12 +107,15 @@
     <ClInclude Include="..\include\psCamera.h" />
     <ClInclude Include="..\include\psCircle.h" />
     <ClInclude Include="..\include\psColor.h" />
+    <ClInclude Include="..\include\psCullGroup.h" />
     <ClInclude Include="..\include\psDriver.h" />
     <ClInclude Include="..\include\psEllipse.h" />
     <ClInclude Include="..\include\psEngine.h" />
+    <ClInclude Include="..\include\psGroup.h" />
     <ClInclude Include="..\include\psGUIEvent.h" />
     <ClInclude Include="..\include\psGUIManager.h" />
     <ClInclude Include="..\include\psInheritable.h" />
+    <ClInclude Include="..\include\psLine.h" />
     <ClInclude Include="..\include\psLocatable.h" />
     <ClInclude Include="..\include\psPass.h" />
     <ClInclude Include="..\include\psRect.h" />
@@ -136,12 +139,14 @@
     <ClCompile Include="psCamera.cpp" />
     <ClCompile Include="psDirectX10.cpp" />
     <ClCompile Include="psEngine.cpp" />
+    <ClCompile Include="psGroup.cpp" />
     <ClCompile Include="psGUIManager.cpp" />
     <ClCompile Include="psInheritable.cpp" />
     <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psPass.cpp" />
     <ClCompile Include="psRenderable.cpp" />
     <ClCompile Include="psShader.cpp" />
+    <ClCompile Include="psSolid.cpp" />
     <ClCompile Include="psStateblock.cpp" />
     <ClCompile Include="psTex.cpp" />
   </ItemGroup>

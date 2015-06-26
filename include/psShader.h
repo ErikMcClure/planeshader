@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __SHADER_H__PS__
@@ -9,8 +9,10 @@
 #include <stdarg.h>
 
 namespace planeshader {
+  // Represents a single shader program of a certain type (pixel/vertex/etc.)
   struct SHADER_INFO : psDriverHold
   {
+    // Directly creates a shader info object, which is not usually suggested but can be done if you have no constant data you care about.
     SHADER_INFO(void* Shader, SHADER_VER V, unsigned short sz=0, const void* Init=0) : shader(Shader), v(V), init(Init), ty_sz(sz) {}
     SHADER_INFO(const char* Shader, const char* entrypoint, SHADER_VER V, unsigned short sz=0, const void* Init=0) : shader(_driver->CompileShader(Shader, V, entrypoint)), v(V), init(Init), ty_sz(sz) {}
     void* shader;
@@ -18,20 +20,27 @@ namespace planeshader {
     unsigned short ty_sz;
     const void* init;
 
+    // Creates a shader from either precompiled source, or a string with a given entrypoint, with optional initial data of type T stored as a constant buffer.
     template<class T> // We can't have templates on constructors so we have to do this instead
-    BSS_FORCEINLINE static SHADER_INFO From(void* Shader, SHADER_VER V, const void* Init=0) { return SHADER_INFO(Shader, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value,char,T>::type), Init); }
+    BSS_FORCEINLINE static SHADER_INFO From(void* Shader, SHADER_VER V, const T* Init=0) { return SHADER_INFO(Shader, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value,char,T>::type), Init); }
     template<class T>
-    BSS_FORCEINLINE static SHADER_INFO From(const char* Shader, const char* entrypoint, SHADER_VER V, const void* Init=0) { return SHADER_INFO(Shader, entrypoint, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value, char, T>::type), Init); }
+    BSS_FORCEINLINE static SHADER_INFO From(const char* Shader, const char* entrypoint, SHADER_VER V, const T* Init=0) { return SHADER_INFO(Shader, entrypoint, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value, char, T>::type), Init); }
   };
 
+  // Encapsulates an entire shader effect: each type of shader program (vertex/pixel/etc.), the constants for each individual shader program, and the shader layout.
   class PS_DLLEXPORT psShader : protected psDriverHold, public bss_util::cRefCounter
   {
   public:
     void Activate();
     template<typename T, int I>
-    inline bool BSS_FASTCALL SetConstants(const T& src) { static_assert(I>=0 && I < 6); SetConstants(&src, sizeof(T), I); }
-    bool BSS_FASTCALL SetConstants(void* data, size_t sz, unsigned char I);
+    inline bool BSS_FASTCALL SetConstants(const T& src)
+    { 
+      static_assert(I>=0 && I < 6, "I must be less than 6");
+      return SetConstants(&src, sizeof(T), I);
+    }
+    bool BSS_FASTCALL SetConstants(const void* data, size_t sz, unsigned char I);
 
+    // Creates a new shader object out of a given layout and a list of SHADER_INFOs, which represent all included shader programs and their associated constant buffers.
     template<unsigned char I>
     inline static psShader* BSS_FASTCALL CreateShader(const ELEMENT_DESC(&layout)[I], unsigned char num, ...)
     {
@@ -49,7 +58,7 @@ namespace planeshader {
     // Copies a single shader
     static psShader* BSS_FASTCALL CreateShader(psShader* copy); 
     // merges num shaders into a new shader in left to right order (so the first will be overwritten by the rest). num cannot be 0.
-    static psShader* BSS_FASTCALL CreateShader(unsigned int num, const psShader* first, ...); 
+    static psShader* BSS_FASTCALL MergeShaders(unsigned int num, const psShader* first, ...); 
 
     psShader& operator+=(const psShader& right);
 

@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __LOCATABLE_H__PS__
@@ -58,9 +58,8 @@ namespace planeshader {
     FNUM rotation;
   };
 }
-//typename V, typename D = V, typename S = void, typename A = void, typename DEL = delegate<A, V>
-namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::POSITION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec>{ AniAttributeT() : AniAttributeSmooth(planeshader::POSITION_ANI_TYPEID) {} }; }
-namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::ROTATION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, float>{ AniAttributeT() : AniAttributeSmooth(planeshader::ROTATION_ANI_TYPEID) {} }; }
-namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::PIVOT_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec>{ AniAttributeT() : AniAttributeSmooth(planeshader::PIVOT_ANI_TYPEID) {} }; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::POSITION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::POSITION_ANI_TYPEID>{ }; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::ROTATION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, float, planeshader::ROTATION_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::PIVOT_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::PIVOT_ANI_TYPEID>{ }; }
 
 #endif

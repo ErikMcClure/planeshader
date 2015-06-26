@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __INHERITABLE_H__PS__
@@ -18,6 +18,7 @@ namespace planeshader {
     psInheritable(const DEF_INHERITABLE& def);
     explicit psInheritable(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, unsigned short pass=(unsigned short)-1, psInheritable* parent=0);
     virtual ~psInheritable();
+    virtual void Render();
     // Sets/gets the parent
     void SetParent(psInheritable* parent);
     inline psInheritable* GetParent() const { return _parent; }
@@ -38,6 +39,12 @@ namespace planeshader {
     psInheritable& operator=(psInheritable&& mov);
 
     inline static bss_util::LLBase<psInheritable>& GetLLBase(psInheritable* x) { return x->_lchild; }
+    template<typename F>
+    BSS_FORCEINLINE void MapToChildren(F && fn) const
+    {
+      for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
+        fn(cur);
+    }
 
   protected:
     void _gettotalpos(psVec3D& pos) const;

@@ -2,7 +2,7 @@
 // -------------------------
 // This example runs a series of verification tests to ensure Planeshader is working properly.
 //
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -108,6 +108,7 @@ TESTDEF::RETPAIR test_psVec()
   float ee[2] ={ -1.0f, 1.0f };
   psVec e(ee);
   TESTVEC(e, -1.0f, 1.0f);
+  /*
   TEST(psVeci(2, 2).IntersectCircle(psVeci(1, 2), 1));
   TEST(!psVeci(2, 2).IntersectCircle(psVeci(1, 1), 1));
   TEST(psVec(2, 2).IntersectCircle(psVec(1.5f, 1.5f), 2));
@@ -282,13 +283,24 @@ TESTDEF::RETPAIR test_psDirectX10()
   auto timer = psEngine::OpenProfiler();
   int fps=0;
   psTex* pslogo = psTex::Create("../media/pslogo.png");
+  const int NUMBATCH = 30;
+  psDriver* driver = engine->GetDriver();
+
+  psVec imgpos[NUMBATCH];
+  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->screendim.x), RANDINTGEN(0, driver->screendim.y));
 
   while(engine->Begin())
   {
     shader->Activate();
-    engine->GetDriver()->library.PARTICLE->Activate();
-    //engine->GetDriver()->DrawFullScreenQuad();
-    engine->GetDriver()->DrawRect(psRectRotateZ(100, 100, 200, 200, 0), RECT_UNITRECT, 0xFFFFFFFF, &pslogo, 1, 0);
+    driver->Clear(0);
+    driver->library.CIRCLE->Activate();
+    driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 1, psRectiu(VEC_ZERO, driver->screendim));
+    driver->DrawRect(psRectRotateZ(100, 100, 100+pslogo->GetDim().x, 100+pslogo->GetDim().y, 1, psVec(50, 50)), RECT_UNITRECT, 0xFFFFFFFF, &pslogo, 1, 0);
+    driver->DrawRectBatchBegin(&pslogo, 1, NUMBATCH, 0);
+    for(int i = 0; i < NUMBATCH; ++i) {
+      driver->DrawRectBatch(psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), RECT_UNITRECT, 0xFFFFFFFF);
+    }
+    driver->DrawRectBatchEnd();
     engine->End();
     if(psEngine::CloseProfiler(timer)>1000000000)
     {
@@ -347,7 +359,7 @@ int main(int argc, char** argv)
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
 
   std::cout << "Black Sphere Studios - PlaneShader v" << (uint)PS_VERSION_MAJOR << '.' << (uint)PS_VERSION_MINOR << '.' <<
-    (uint)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2014 Black Sphere Studios\n" << std::endl;
+    (uint)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2015 Black Sphere Studios\n" << std::endl;
   const int COLUMNS[3] ={ 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 

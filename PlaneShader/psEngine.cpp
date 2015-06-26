@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psEngine.h"
@@ -30,7 +30,7 @@ const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
-psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), delta(_delta), secdelta(_secdelta), _curpass(0), _passes(1), _mainpass(0)
+psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), delta(_delta), secdelta(_secdelta), _curpass(0), _passes(1), _mainpass(0), _timewarp(1.0), _secdelta(0.0)
 {
   PROFILE_FUNC();
   if(_instance!=0) // If you try to make another instance, it violently explodes.
