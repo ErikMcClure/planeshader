@@ -23,16 +23,6 @@ const psVec& psCamera::GetMouseAbsolute() const
 {
   return VEC_ZERO;
 }
-psVec psCamera::TransformPoint(const psVec3D& point, FLAG_TYPE flags) const
-{
-  return point.xy;
-
-}
-psVec psCamera::ReversePoint(const psVec3D& point, FLAG_TYPE flags) const
-{
-  return point.xy;
-
-}
 // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
 const psRectRotate psCamera::GetScreenRect(FLAG_TYPE flags) const
 {

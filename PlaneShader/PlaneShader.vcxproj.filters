@@ -99,6 +99,27 @@
     <ClInclude Include="..\include\psCullGroup.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psColored.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psTriangle.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psPolygon.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psTexFont.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psFont.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psTextured.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ps_abstract.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -143,6 +164,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psGroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psCullGroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psTexFont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psFont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

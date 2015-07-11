@@ -5,6 +5,7 @@
 #define __RENDERABLE_H__PS__
 
 #include "ps_dec.h"
+#include "ps_abstract.h"
 #include "bss-util/cBitField.h"
 #include "bss-util/LLBase.h"
 #include "bss-util/cTRBtree.h"
@@ -13,9 +14,9 @@ namespace planeshader {
   struct DEF_RENDERABLE;
   class psStateblock;
   class psShader;
-  class psTex;
+  class psTex;  
 
-  class PS_DLLEXPORT psRenderable
+  class PS_DLLEXPORT psRenderable : public psTexturedAbstract
   {
     friend class psPass;
 
@@ -33,7 +34,7 @@ namespace planeshader {
     inline bss_util::cBitField<FLAG_TYPE>& GetFlags() { return _flags; }
     inline FLAG_TYPE GetFlags() const { return _flags; }
     inline psShader* GetShader() const { return _shader; }
-    inline void BSS_FASTCALL SetShader(psShader* shader) { _shader=shader; }
+    inline void BSS_FASTCALL SetShader(psShader* shader) { _shader=shader; _invalidate(); }
     inline psStateblock* GetStateblock() const { return _stateblock; }
     void BSS_FASTCALL SetStateblock(psStateblock* stateblock);
     virtual psTex* const* GetTextures() const;

@@ -5,6 +5,8 @@
 #include "psPass.h"
 #include "psSolid.h"
 #include "psCullGroup.h"
+#include "psStateblock.h"
+#include "psShader.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -51,12 +53,8 @@ void psPass::Begin()
 
   // We go through all the renderables and solids when the pass begins because we've already applied
   // the camera, and this allows you to do proper post-processing with immediate render commands.
-  psRenderable* cur = _renderables;
-  while(cur)
-  {
+  for(psRenderable* cur = _renderables; cur != 0; cur=cur->_llist.next)
     _sort(cur);
-    cur=cur->_llist.next;
-  }
 
   // Go through the solids seperately, because they should be culled
   const psVec3D& p = _cam->GetPosition();
@@ -76,7 +74,7 @@ void psPass::Begin()
   FLAG_TYPE flags;
   float adjust;
 
-  for(psSolid* solid = static_cast<psSolid*>(_solids); cur!=0; cur=static_cast<psSolid*>(cur->_llist.next))
+  for(psSolid* solid = static_cast<psSolid*>(_solids); solid!=0; solid=static_cast<psSolid*>(solid->_llist.next))
   {
     flags=solid->GetTotalFlags();
     if((flags&PSFLAG_DONOTCULL)!=0) { _sort(solid); continue; } // Don't cull if it has a DONOTCULL flag
@@ -94,6 +92,10 @@ void psPass::Begin()
       if(rect.IntersectRect(winfixed)) _sort(solid);
     }
   }
+
+  // Then we go through any specialized culling groups
+  for(psCullGroup* group = _cullgroups; group != 0; group=group->next)
+    group->Traverse(window._ltrbarray, p.z);
 
   // Go through our sorted list of renderables and queue them all.
   auto node = _renderlist.Front(); 
@@ -134,10 +136,16 @@ void psPass::Remove(psRenderable* r)
 
 void psPass::FlushQueue()
 {
-  if(_renderqueue.Length() == 1)
-    _renderqueue[0]->_render();
-  else if(_renderqueue.Length() > 1) // Don't render an empty render queue, which can happen if you call this manually or at the end of a pass that has nothing in it.
-    _renderqueue[0]->_renderbatch(_renderqueue);
+  if(_renderqueue.Length() > 0) // Don't render an empty render queue, which can happen if you call this manually or at the end of a pass that has nothing in it.
+  {
+    _renderqueue[0]->GetShader()->Activate();
+    _driver->SetStateblock(_renderqueue[0]->GetStateblock()->GetSB());
+
+    if(_renderqueue.Length() == 1)
+      _renderqueue[0]->_render();
+    else
+      _renderqueue[0]->_renderbatch(_renderqueue);
+  }
 }
 
 void psPass::_queue(psRenderable* r)

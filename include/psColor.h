@@ -143,6 +143,27 @@ namespace planeshader {
       return ret;
     }
   };
+
+  // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
+  BSS_ALIGNED_STRUCT(16) BSS_COMPILER_DLLEXPORT psColor32
+  {
+    psColor32(unsigned char A, unsigned char R, unsigned char G, unsigned char B) : a(A), r(R), g(G), b(B) {}
+    explicit psColor32(unsigned char(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
+    psColor32(unsigned __int32 c) : color(c) {}
+    psColor32& operator=(unsigned __int32 c) { color=c; return *this; }
+    operator unsigned __int32() const { return color; }
+    union
+    {
+      unsigned __int32 color;
+      unsigned char colors[4];
+      struct {
+        unsigned char a;
+        unsigned char r;
+        unsigned char g;
+        unsigned char b;
+      };
+    };
+  };
 }
 
 #endif

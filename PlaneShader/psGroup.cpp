@@ -7,13 +7,13 @@ using namespace planeshader;
 
 psGroup::psGroup(const DEF_GROUP& def) : psInheritable(def) 
 {
-  for(int i = 0; i < def.NumInheritables(); ++i)
+  for(unsigned int i = 0; i < def.NumInheritables(); ++i)
     AddDef(*def.GetInheritable(i));
 }
 
 psGroup::psGroup(const psGroup& copy) : psInheritable(copy)
 { 
-  copy.MapToChildren([this](psInheritable* p) { AddClone(p); });
+  copy.MapToChildren(bss_util::delegate<psInheritable*, psInheritable*>::From<psGroup, &psGroup::AddClone>(this));
 }
 
 psGroup::psGroup(psGroup&& mov) : psInheritable(std::move(mov)), _list(std::move(mov._list)) {}
@@ -33,7 +33,7 @@ psInheritable* BSS_FASTCALL psGroup::AddClone(psInheritable* inheritable)
 {
   psInheritable* n = inheritable->Clone();
   AddRef(n);
-  _list.Insert(n,0);
+  _list.Insert(n);
   return n;
 }
 
@@ -41,7 +41,7 @@ psInheritable* BSS_FASTCALL psGroup::AddDef(const DEF_INHERITABLE& inheritable)
 {
   psInheritable* n = inheritable.Spawn();
   AddRef(n);
-  _list.Insert(n, 0);
+  _list.Insert(n);
   return n;
 }
 

@@ -296,7 +296,7 @@ TESTDEF::RETPAIR test_psDirectX10()
     driver->library.CIRCLE->Activate();
     driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 1, psRectiu(VEC_ZERO, driver->screendim));
     driver->DrawRect(psRectRotateZ(100, 100, 100+pslogo->GetDim().x, 100+pslogo->GetDim().y, 1, psVec(50, 50)), RECT_UNITRECT, 0xFFFFFFFF, &pslogo, 1, 0);
-    driver->DrawRectBatchBegin(&pslogo, 1, NUMBATCH, 0);
+    driver->DrawRectBatchBegin(&pslogo, 1, 0);
     for(int i = 0; i < NUMBATCH; ++i) {
       driver->DrawRectBatch(psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), RECT_UNITRECT, 0xFFFFFFFF);
     }
