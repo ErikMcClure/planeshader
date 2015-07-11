@@ -124,7 +124,6 @@ _backbuffer(0), _extent(10000, 1)
   backbuffer->Release();
 
   _scissorstack.Push(RECT_ZERO); //push the initial scissor rect (it'll get set in ApplyCamera)
-  D3DXMatrixIdentity(&matCamPos_NoScale);
   SetDefaultRenderTarget();
   SetRenderTargets(0, 0, 0);
   screendim = _backbuffer->GetDim();
@@ -293,6 +292,8 @@ psDirectX10::~psDirectX10()
   if(_factory)
     r=_factory->Release();
 }
+void* psDirectX10::operator new(std::size_t sz) { return _aligned_malloc(sz, 16); }
+void psDirectX10::operator delete(void* ptr, std::size_t sz) { _aligned_free(ptr); }
 bool psDirectX10::Begin() { return true; }
 char psDirectX10::End()
 {
@@ -335,11 +336,11 @@ void BSS_FASTCALL psDirectX10::Draw(psVertObj* buf, FLAG_TYPE flags, const float
 void BSS_FASTCALL psDirectX10::DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)
 { // Because we have to send the rect position in SOMEHOW and DX10 forces us to send matrices through the shaders, we will lock a buffer no matter what we do. 
   PROFILE_FUNC();
-  DrawRectBatchBegin(texes, numtex, 1, flags); // So it's easy and just as fast to "batch render" a single rect instead of try and use an existing vertex buffer
+  DrawRectBatchBegin(texes, numtex, flags); // So it's easy and just as fast to "batch render" a single rect instead of try and use an existing vertex buffer
   DrawRectBatch(rect, uv, color);
   DrawRectBatchEnd();
 }
-void BSS_FASTCALL psDirectX10::DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)
 { 
   PROFILE_FUNC();
   _lockedrectbuf = (DX10_rectvert*)LockBuffer(_rectobjbuf.verts, LOCK_WRITE_DISCARD);
@@ -476,9 +477,9 @@ void BSS_FASTCALL psDirectX10::ApplyCamera(const psVec3D& pos, const psVec& pivo
   BSS_ALIGN(16) Matrix<float, 4, 4> cam;
   Matrix<float, 4, 4>::AffineTransform_T(pos.x, pos.y, pos.z, rotation, pivot.x, pivot.y, cam.v);
   cam.Inverse(matView.m); // inverse cam and store the result in matView
-  D3DXMatrixMultiply(&m, &matView, &matProj); // Assemble ViewProj (WorldViewProj is assembled in the shader)
-  _setcambuf(_cam_def, m, identity);
-  _setcambuf(_cam_usr, m, identity);
+  D3DXMatrixMultiply(&matViewProj, &matView, &matProj); // Assemble ViewProj (WorldViewProj is assembled in the shader)
+  _setcambuf(_cam_def, matViewProj, identity);
+  _setcambuf(_cam_usr, matViewProj, identity);
   _setcambuf(_proj_def, matProj, identity);
   _setcambuf(_proj_usr, matProj, identity);
 }
@@ -489,14 +490,32 @@ void BSS_FASTCALL psDirectX10::ApplyCamera3D(const float(&m)[4][4], const psRect
   _device->RSSetViewports(1, &vp);
 
   memcpy_s(&matProj, sizeof(float)*16, m, sizeof(float)*16);
-
-  D3DXMatrixIdentity(&matCamPos_NoScale);
+  memcpy_s(&matViewProj, sizeof(float)*16, m, sizeof(float)*16);
+  
   D3DXMatrixIdentity(&matView);
 
-  _setcambuf(_cam_def, matProj, identity);
-  _setcambuf(_cam_usr, matProj, identity);
+  _setcambuf(_cam_def, matViewProj, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
+  _setcambuf(_cam_usr, matViewProj, identity);
   _setcambuf(_proj_def, matProj, identity);
   _setcambuf(_proj_usr, matProj, identity);
+}
+// Applies the camera transform (or it's inverse) according to the flags to a point.
+psVec3D BSS_FASTCALL psDirectX10::TransformPoint(const psVec3D& point, FLAG_TYPE flags) const
+{
+  D3DXVECTOR4 v ={ point.x, point.y, point.z, 1 };
+  D3DXVECTOR4 out;
+  D3DXVec4Transform(&out, &v, (flags&PSFLAG_FIXED)?&matProj:&matViewProj);
+  return psVec3D(out.x, out.y, out.z);
+}
+psVec3D BSS_FASTCALL psDirectX10::ReversePoint(const psVec3D& point, FLAG_TYPE flags) const
+{
+  D3DXVECTOR4 v ={ point.x, point.y, point.z, 1 };
+  D3DXVECTOR4 out;
+  D3DXMATRIX mat;
+  FLOAT det;
+  D3DXMatrixInverse(&mat, &det, (flags&PSFLAG_FIXED)?&matProj:&matViewProj);
+  D3DXVec4Transform(&out, &v, &mat);
+  return psVec3D(out.x, out.y, out.z);
 }
 void psDirectX10::DrawFullScreenQuad()
 { 
@@ -532,6 +551,35 @@ void* BSS_FASTCALL psDirectX10::LockBuffer(void* target, unsigned int flags)
   return r;
 }
 
+ID3D10Texture2D* psDirectX10::_textotex2D(void* t)
+{
+  ID3D10Resource* r;
+  ((ID3D10ShaderResourceView*)t)->GetResource(&r);
+  return static_cast<ID3D10Texture2D*>(r);
+}
+
+void* BSS_FASTCALL psDirectX10::LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel)
+{
+  PROFILE_FUNC();
+  D3D10_MAPPED_TEXTURE2D tex;
+
+  _textotex2D(target)->Map(D3D10CalcSubresource(miplevel, 0, 1), (D3D10_MAP)(flags&LOCK_TYPEMASK), (flags&LOCK_DONOTWAIT)?D3D10_MAP_FLAG_DO_NOT_WAIT:0, &tex);
+  pitch = tex.RowPitch;
+  return tex.pData;
+}
+
+void BSS_FASTCALL psDirectX10::UnlockBuffer(void* target)
+{
+  PROFILE_FUNC();
+  ((ID3D10Buffer*)target)->Unmap();
+}
+void BSS_FASTCALL psDirectX10::UnlockTexture(void* target, unsigned char miplevel)
+{
+  PROFILE_FUNC();
+  _textotex2D(target)->Unmap(D3D10CalcSubresource(miplevel, 0, 1));
+}
+
+
 inline const char* BSS_FASTCALL psDirectX10::_geterror(HRESULT err)
 {
   static char buf[64]={ 0 };
@@ -566,12 +614,6 @@ inline const char* BSS_FASTCALL psDirectX10::_geterror(HRESULT err)
 
   _itoa_s(err, buf, 16);
   return buf;
-}
-
-void BSS_FASTCALL psDirectX10::UnlockBuffer(void* target)
-{
-  PROFILE_FUNC();
-  ((ID3D10Buffer*)target)->Unmap();
 }
 
 // DX10 ignores the texblock parameter because it doesn't bind those states to the texture at creation time.
@@ -635,6 +677,18 @@ void* BSS_FASTCALL psDirectX10::LoadTextureInMemory(const void* data, size_t dat
   else if(usage&USAGE_DEPTH_STENCIL)
     *additionalview = _createdepthview(tex);
   return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
+}
+void BSS_FASTCALL psDirectX10::CopyTextureRect(psRectiu srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel)
+{
+  D3D10_BOX box = {
+    srcrect.left,
+    srcrect.top,
+    0,
+    srcrect.right,
+    srcrect.bottom,
+    1,
+  };
+  _device->CopySubresourceRegion(_textotex2D(dest), D3D10CalcSubresource(miplevel, 0, 1), destpos.x, destpos.y, 0, _textotex2D(src), D3D10CalcSubresource(miplevel, 0, 1), &box);
 }
 
 void BSS_FASTCALL psDirectX10::PushScissorRect(const psRectl& rect)
@@ -1099,6 +1153,11 @@ bool BSS_FASTCALL psDirectX10::ShaderSupported(SHADER_VER profile) //With DX10 s
     return false;
   }
   return true;
+}
+
+unsigned short psDirectX10::GetBytesPerPixel(FORMATS format)
+{
+  return (_getbitsperpixel(format)+7)<<3;
 }
 
 unsigned int BSS_FASTCALL psDirectX10::_usagetodxtype(unsigned int types)

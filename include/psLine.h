@@ -24,8 +24,8 @@ namespace planeshader {
     inline bool BSS_FASTCALL IntersectCircle(T X, T Y, T R) const { return DistanceToPointSquared(X, Y) <= R*R; }
     inline bool BSS_FASTCALL IntersectRect(const psRectT<T>& rect) const { return RectLineIntersect(x1, y1, x2, y2, rect._ltrbarray); }
     inline bool BSS_FASTCALL IntersectRect(const T(&rect)[4]) const { return RectLineIntersect(x1, y1, x2, y2, rect); }
-    inline bool BSS_FASTCALL IntersectLine(const psLineT<T>& other) const { T da = other.x2-other.x1; T db = other.y2-other.y1; T dx = x2-x1; T dy = y2-y1; T s = (dx*(other.y1-y1)+dy*(x1-other.x1))/(da*dy-db*dx); T t = (da*(y1-other.y1)+db*(other.x1-x1))/(db*dx-da*dy); return (s >= 0 && s <= 1 && t >= 0 && t <= 1); }
-    inline bool BSS_FASTCALL IntersectLine(T X1, T Y1, T X2, T Y2) const { T da = X2-X1; T db = Y2-Y1; T dx = x2-x1; T dy = y2-y1; T s = (dx*(Y1-y1)+dy*(x1-X1))/(da*dy-db*dx); T t = (da*(y1-Y1)+db*(X1-x1))/(db*dx-da*dy); return (s >= 0 && s <= 1 && t >= 0 && t <= 1); }
+    inline bool BSS_FASTCALL IntersectLine(const psLineT<T>& other) const { return LineLineIntersect(x1, y1, x2, y2, other.x1, other.y1, other.x2, other.y2); }
+    inline bool BSS_FASTCALL IntersectLine(T X1, T Y1, T X2, T Y2) const { return LineLineIntersect(x1, y1, x2, y2, X1, Y1, X2, Y2); }
     inline bool BSS_FASTCALL IntersectVertLine(T X, T Y1, T Y2) const
     {
       T db = Y2-Y1;
@@ -67,6 +67,17 @@ namespace planeshader {
     inline VEC BSS_FASTCALL ParametricPoint(float s) const { return pos1 + (pos2-pos1)*s; }
     inline psLineT<T>& BSS_FASTCALL Rotate(float r, VEC center) { return Rotate(r, center.x, center.y); }
     inline psLineT<T>& BSS_FASTCALL Rotate(float r, float x, float y) { pos1.Rotate(r, x, y); pos2.Rotate(r, x, y); return *this; }
+
+    static inline bool LineLineIntersect(T x1, T y1, T x2, T y2, T X1, T Y1, T X2, T Y2)
+    {
+      T da = X2-X1;
+      T db = Y2-Y1;
+      T dx = x2-x1;
+      T dy = y2-y1;
+      T s = (dx*(Y1-y1)+dy*(x1-X1))/(da*dy-db*dx);
+      T t = (da*(y1-Y1)+db*(X1-x1))/(db*dx-da*dy);
+      return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
+    }
 
     static inline bool RectLineIntersect(T X1, T Y1, T X2, T Y2, const T(&rect)[4])
     {

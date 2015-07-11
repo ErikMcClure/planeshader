@@ -82,6 +82,7 @@ void BSS_FASTCALL psRenderable::SetStateblock(psStateblock* stateblock)
   _stateblock = stateblock;
   if(_stateblock)
     _stateblock->Grab();
+  _invalidate();
 }
 
 psTex* const* psRenderable::GetTextures() const { return 0; } // these aren't inline because they're virtual

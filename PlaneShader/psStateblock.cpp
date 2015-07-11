@@ -17,7 +17,7 @@ STATEINFO::STATEINFOS* STATEINFO::Exists(STATEINFOS* infos)
   khiter_t iter = _blocks.Iterator(infos);
   if(_blocks.ExistsIter(iter))
     return _blocks.GetKey(iter);
-  _blocks.Insert(infos, 0);
+  _blocks.Insert(infos);
   return 0;
 }
 psStateblock::psStateblock(const STATEINFO* infos, unsigned int numstates) : bss_util::cArray<STATEINFO, unsigned short>(numstates)

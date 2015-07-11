@@ -11,7 +11,7 @@ namespace planeshader {
   struct DEF_GROUP;
 
   // A group of inheritables that can be managed as one unit.
-  class psGroup : public psInheritable
+  class PS_DLLEXPORT psGroup : public psInheritable
   {
   public:
     psGroup(const DEF_GROUP& def);
@@ -32,7 +32,7 @@ namespace planeshader {
   protected:
     virtual void _render();
 
-    bss_util::cHash<psInheritable*, char, false> _list; // list of owned inheritables that will be deleted with the group
+    bss_util::cHash<psInheritable*> _list; // list of owned inheritables that will be deleted with the group
   };
 
   struct BSS_COMPILER_DLLEXPORT DEF_GROUP : DEF_INHERITABLE

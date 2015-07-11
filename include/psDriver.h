@@ -234,7 +234,7 @@ namespace planeshader {
     virtual void BSS_FASTCALL Draw(psVertObj* buf, FLAG_TYPE flags, const float(&transform)[4][4]=identity)=0;
     // Draws a rectangle
     virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)=0;
-    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned int numrects, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)=0;
     virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4]=identity)=0;
     virtual void DrawRectBatchEnd(const float(&xform)[4][4]=identity)=0;
     // Draws a polygon
@@ -250,6 +250,9 @@ namespace planeshader {
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)=0;
     virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
+    // Applies the camera transform (or it's inverse) according to the flags to a point.
+    virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, FLAG_TYPE flags) const=0;
+    virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, FLAG_TYPE flags) const=0;
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad()=0;
     // Gets/Sets the extent
@@ -259,10 +262,13 @@ namespace planeshader {
     virtual void* BSS_FASTCALL CreateBuffer(unsigned short bytes, unsigned int usage, const void* initdata=0)=0;
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags)=0;
     virtual void BSS_FASTCALL UnlockBuffer(void* target)=0;
+    virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0)=0;
+    virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0)=0;
     // Creates a texture
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0)=0;
     virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
+    virtual void BSS_FASTCALL CopyTextureRect(psRectiu srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect)=0;
     virtual void PopScissorRect()=0;
@@ -296,6 +302,8 @@ namespace planeshader {
     virtual RealDriver GetRealDriver()=0;
     // Sets default rendertarget
     virtual void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = !rt?GetBackBuffer():rt; }
+    // Gets number of bytes per pixel of a given format
+    virtual unsigned short GetBytesPerPixel(FORMATS format)=0;
 
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="")=0;

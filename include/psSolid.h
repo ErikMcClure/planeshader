@@ -13,7 +13,7 @@ namespace planeshader {
   struct DEF_SOLID;
 
   // A solid is an inheritable with dimensions. Only objects inheriting from psSolid can be culled.
-  class psSolid : public psInheritable
+  class PS_DLLEXPORT psSolid : public psInheritable
   {
   public:
     psSolid(const psSolid& copy);
