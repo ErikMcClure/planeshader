@@ -5,7 +5,6 @@
 #define __RENDERABLE_H__PS__
 
 #include "ps_dec.h"
-#include "ps_abstract.h"
 #include "bss-util/cBitField.h"
 #include "bss-util/LLBase.h"
 #include "bss-util/cTRBtree.h"
@@ -16,23 +15,25 @@ namespace planeshader {
   class psShader;
   class psTex;  
 
-  class PS_DLLEXPORT psRenderable : public psTexturedAbstract
+  class PS_DLLEXPORT psRenderable
   {
     friend class psPass;
 
   public:
     psRenderable(const psRenderable& copy);
     psRenderable(psRenderable&& mov);
-    psRenderable(const DEF_RENDERABLE& def);
-    explicit psRenderable(FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, unsigned short pass=(unsigned short)-1);
+    psRenderable(const DEF_RENDERABLE& def, unsigned char internaltype=0);
+    explicit psRenderable(FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass=0, unsigned char internaltype=0);
     virtual ~psRenderable();
     virtual void Render();
     inline int GetZOrder() const { return _zorder; }
     inline void BSS_FASTCALL SetZOrder(int zorder) { _zorder=zorder; _invalidate(); }
-    inline unsigned short GetPass() const { return _pass; }
-    virtual void BSS_FASTCALL SetPass(unsigned short pass);
+    inline psPass* GetPass() const { return _pass; }
+    virtual void BSS_FASTCALL SetPass(psPass* pass);
+    void BSS_FASTCALL SetPass(); // Sets the pass to the 0th pass.
     inline bss_util::cBitField<FLAG_TYPE>& GetFlags() { return _flags; }
     inline FLAG_TYPE GetFlags() const { return _flags; }
+    virtual FLAG_TYPE GetAllFlags() const;
     inline psShader* GetShader() const { return _shader; }
     inline void BSS_FASTCALL SetShader(psShader* shader) { _shader=shader; _invalidate(); }
     inline psStateblock* GetStateblock() const { return _stateblock; }
@@ -48,14 +49,14 @@ namespace planeshader {
   protected:
     void _destroy();
     void _invalidate();
-    BSS_FORCEINLINE unsigned char _internaltype() { return _internalflags&0x3F; }
+    BSS_FORCEINLINE unsigned char _internaltype() { return _internalflags&INTERNALFLAG_MASK; }
     virtual void _render()=0;
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist);
-    virtual char BSS_FASTCALL _sort(psRenderable* r) const;
+    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+    //virtual char BSS_FASTCALL _sort(psRenderable* r) const;
     virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
 
     bss_util::cBitField<FLAG_TYPE> _flags;
-    unsigned short _pass; // Stores what pass we are in, or is set to -1 if we aren't assigned to a pass
+    psPass* _pass; // Stores what pass we are in
     unsigned char _internalflags;
     int _zorder;
     psStateblock* _stateblock;
@@ -67,6 +68,9 @@ namespace planeshader {
     {
       INTERNALTYPE_NONE = 0,
       INTERNALTYPE_IMAGE,
+      INTERNALTYPE_LINE,
+      INTERNALTYPE_POINT,
+      INTERNALTYPE_TILESET,
     };
 
     enum INTERNALFLAGS : unsigned char
@@ -79,13 +83,13 @@ namespace planeshader {
 
   struct BSS_COMPILER_DLLEXPORT DEF_RENDERABLE
   {
-    DEF_RENDERABLE() : flags(0), zorder(0), pass((unsigned short)-1) {}
+    DEF_RENDERABLE() : flags(0), zorder(0), pass(0) {}
     inline virtual psRenderable* BSS_FASTCALL Spawn() const { return 0; } //This creates a new instance of whatever class this definition defines
     inline virtual DEF_RENDERABLE* BSS_FASTCALL Clone() const { return new DEF_RENDERABLE(*this); }
 
     FLAG_TYPE flags;
     int zorder;
-    unsigned short pass;
+    psPass* pass;
     psStateblock* stateblock;
     psShader* shader;
   };

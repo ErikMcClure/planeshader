@@ -95,12 +95,7 @@ bool psEngine::Begin()
 void psEngine::End()
 {
   PROFILE_FUNC();
-  while((_curpass+1)<_passes.Size())
-    NextPass();
-  _passes[_curpass]->End();
-
-  //_linerenderer->Render();
-  //cRenderList::SwapAlloc();
+  while(NextPass());
 
   //if(_realdriver.dx9->_mousehittest!=0) //if this is nonzero we need to toggle transparency based on a system wide mouse hit test
   //  if(_realdriver.dx9->MouseHitTest(GetMouseExact(), _alphacutoff))
@@ -124,11 +119,14 @@ void psEngine::End(double delta)
 {
   End();
 }
-void psEngine::NextPass()
+bool psEngine::NextPass()
 {
   PROFILE_FUNC();
+  if(_curpass >= _passes.Size()) return false;
   _passes[_curpass]->End();
-  _passes[++_curpass]->Begin();
+  if(++_curpass >= _passes.Size()) return false;
+  _passes[_curpass]->Begin();
+  return true;
 }
 psEngine* psEngine::Instance()
 {

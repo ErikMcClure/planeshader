@@ -233,19 +233,20 @@ namespace planeshader {
     // Draws a vertex object
     virtual void BSS_FASTCALL Draw(psVertObj* buf, FLAG_TYPE flags, const float(&transform)[4][4]=identity)=0;
     // Draws a rectangle
-    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)=0;
-    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)=0;
-    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4]=identity)=0;
+    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags, const float(&xform)[4][4]=identity)=0;
+    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned char numuv, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect* uv, unsigned int color, const float(&xform)[4][4]=identity)=0;
     virtual void DrawRectBatchEnd(const float(&xform)[4][4]=identity)=0;
     // Draws a polygon
-    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, FNUM Z, unsigned long vertexcolor, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags)=0;
     // Draws points (which are always batch rendered)
     virtual void BSS_FASTCALL DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags)=0;
     virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num)=0;
     virtual void DrawPointsEnd()=0;
     // Draws lines (which are also always batch rendered)
     virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags)=0;
-    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags)=0;
+    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor)=0;
     virtual void DrawLinesEnd()=0;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)=0;
@@ -268,7 +269,7 @@ namespace planeshader {
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0)=0;
     virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
-    virtual void BSS_FASTCALL CopyTextureRect(psRectiu srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
+    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect)=0;
     virtual void PopScissorRect()=0;
@@ -323,11 +324,13 @@ namespace planeshader {
 
     struct SHADER_LIBRARY
     {
+      psShader* IMAGE0;
       psShader* IMAGE;
       psShader* IMAGE2;
       psShader* IMAGE3;
       psShader* IMAGE4;
-      psShader* RECT; // Same as IMAGE but with no texture lookups
+      psShader* IMAGE5;
+      psShader* IMAGE6;
       psShader* CIRCLE;
       psShader* POLYGON;
       psShader* LINE;

@@ -15,12 +15,12 @@ void psShader::Activate()
   _driver->SetShader(_ss[3], COMPUTE_SHADER_4_0);
   _driver->SetShader(_ss[4], DOMAIN_SHADER_5_0);
   _driver->SetShader(_ss[5], HULL_SHADER_5_0);
-  if(_sc[0]) { _driver->SetShaderConstants(_sc[0], VERTEX_SHADER_1_1); }
-  if(_sc[1]) { _driver->SetShaderConstants(_sc[1], PIXEL_SHADER_1_1); }
-  if(_sc[2]) { _driver->SetShaderConstants(_sc[2], GEOMETRY_SHADER_4_0); }
-  if(_sc[3]) { _driver->SetShaderConstants(_sc[3], COMPUTE_SHADER_4_0); }
-  if(_sc[4]) { _driver->SetShaderConstants(_sc[4], DOMAIN_SHADER_5_0); }
-  if(_sc[5]) { _driver->SetShaderConstants(_sc[5], HULL_SHADER_5_0); }
+  _driver->SetShaderConstants(_sc[0], VERTEX_SHADER_1_1);
+  _driver->SetShaderConstants(_sc[1], PIXEL_SHADER_1_1);
+  _driver->SetShaderConstants(_sc[2], GEOMETRY_SHADER_4_0); 
+  _driver->SetShaderConstants(_sc[3], COMPUTE_SHADER_4_0);
+  _driver->SetShaderConstants(_sc[4], DOMAIN_SHADER_5_0);
+  _driver->SetShaderConstants(_sc[5], HULL_SHADER_5_0);
   _driver->SetLayout(_layout);
 }
 
@@ -125,12 +125,14 @@ void psShader::_copy(const psShader& copy)
   for(unsigned char i = 0; i < 6; ++i) _ss[i]=copy._ss[i];
   for(unsigned char i = 0; i < 6; ++i) _sz[i]=copy._sz[i];
   for(unsigned char i = 0; i < 6; ++i)
+  {
+    _sc[i] = 0;
     if(copy._sc[i])
     {
       _sc[i]=_driver->CreateBuffer(copy._sz[i], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, 0);
       _driver->CopyResource(_sc[i], copy._sc[i], psDriver::RES_CONSTBUF);
     }
-
+  }
   for(unsigned char i = 0; i < 6; ++i)
     if(_ss[i]) _driver->GrabResource(_ss[i], (psDriver::RESOURCE_TYPE)(psDriver::RES_SHADERVS+i));
 }

@@ -34,8 +34,8 @@ namespace planeshader {
     // Ends a frame
     void End();
     void End(double delta);
-    // Renders the next pass
-    void NextPass();
+    // Renders the next pass, returns false if there are no more passes to render.
+    bool NextPass();
     // Begins and ends a frame, returning false if rendering should stop.
     inline bool Render() {
       if(!Begin()) return false;

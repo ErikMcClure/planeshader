@@ -147,6 +147,50 @@ namespace planeshader {
   typedef psLineT<unsigned int> psLineiu;
   typedef psLineT<unsigned short> psLinesu;
   typedef psLineT<unsigned long> psLinelu;
+
+  // Represents a 3D line
+  template <class T>
+  struct BSS_COMPILER_DLLEXPORT psLine3DT
+  {
+    typedef bss_util::Vector<T, 3> VEC;
+
+    inline psLine3DT() {} //The following constructors allow for implicit conversion between types
+    template<class U>
+    inline psLine3DT(const psLine3DT<U>& other) : p1(other.p1), p2(other.p2) {}
+    inline psLine3DT(T X1, T Y1, T Z1, T X2, T Y2, T Z2) : x1(X1), y1(Y1), z1(Z1), x2(X2), y2(Y2), z2(Z2) {}
+    inline psLine3DT(const VEC& P1, T X2, T Y2, T Z2) : p1(P1), x2(X2), y2(Y2), z2(Z2) {}
+    inline psLine3DT(const VEC& P1, const VEC& P2) : p1(P1), p2(P2) {}
+
+    inline VEC BSS_FASTCALL ParametricPoint(float s) const { return pos1 + (pos2-pos1)*s; }
+
+    template<class U>
+    inline psLine3DT& operator=(const psLine3DT<U>& other) { p1=other.p1; p2=other.p2; }
+    inline operator psLineT<T>() const { return psLineT<T>(p1.xy, p2.xy); }
+
+    union {
+      struct {
+        VEC p1;
+        VEC p2;
+      };
+      struct {
+        T x1;
+        T y1;
+        T z1;
+        T x2;
+        T y2;
+        T z2;
+      };
+    };
+  };
+
+  typedef psLine3DT<float> psLine3D; //default typedef
+  typedef psLine3DT<int> psLine3Di;
+  typedef psLine3DT<double> psLine3Dd;
+  typedef psLine3DT<short> psLine3Ds;
+  typedef psLine3DT<long> psLine3Dl;
+  typedef psLine3DT<unsigned int> psLine3Diu;
+  typedef psLine3DT<unsigned short> psLine3Dsu;
+  typedef psLine3DT<unsigned long> psLine3Dlu;
 }
 
 #endif

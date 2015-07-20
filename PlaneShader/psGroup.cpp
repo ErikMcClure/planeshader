@@ -18,7 +18,7 @@ psGroup::psGroup(const psGroup& copy) : psInheritable(copy)
 
 psGroup::psGroup(psGroup&& mov) : psInheritable(std::move(mov)), _list(std::move(mov._list)) {}
 
-psGroup::psGroup(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, unsigned short pass, psInheritable* parent) :
+psGroup::psGroup(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent) :
   psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent)
 {
 }

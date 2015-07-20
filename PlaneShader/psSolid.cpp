@@ -8,15 +8,15 @@ using namespace planeshader;
 psSolid::psSolid(const psSolid& copy) : psInheritable(copy), _scale(copy._scale), _dim(copy._dim), _realdim(copy._realdim), _collisionrect(copy._collisionrect), _boundingrect(copy._boundingrect) { _internalflags|=INTERNALFLAG_SOLID; }
 psSolid::psSolid(psSolid&& mov) : psInheritable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _collisionrect(mov._collisionrect), _boundingrect(mov._boundingrect) { _internalflags|=INTERNALFLAG_SOLID; }
 
-psSolid::psSolid(const DEF_SOLID& def) : psInheritable(def), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
+psSolid::psSolid(const DEF_SOLID& def, unsigned char internaltype) : psInheritable(def, internaltype), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
 { 
   _internalflags|=INTERNALFLAG_SOLID;
   psSolid::SetScale(def.scale);
   UpdateBoundingRect();
 }
 
-psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, unsigned short pass, psInheritable* parent, const psVec& scale) :
-  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, 0), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
+psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned char internaltype) :
+  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, 0, internaltype), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
 {
   _internalflags|=INTERNALFLAG_SOLID;
   psSolid::SetScale(scale);
@@ -54,7 +54,7 @@ void psSolid::UpdateBoundingRect()
   //_internalflags&=(~2);
 }
 
-void BSS_FASTCALL psSolid::SetPass(unsigned short pass) 
+void BSS_FASTCALL psSolid::SetPass(psPass* pass) 
 {
   UpdateBoundingRect();
   psInheritable::SetPass(pass);

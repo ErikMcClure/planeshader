@@ -18,8 +18,8 @@ namespace planeshader {
   public:
     psSolid(const psSolid& copy);
     psSolid(psSolid&& mov);
-    psSolid(const DEF_SOLID& def);
-    explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, unsigned short pass=(unsigned short)-1, psInheritable* parent=0, const psVec& scale=VEC_ONE);
+    psSolid(const DEF_SOLID& def, unsigned char internaltype=0);
+    explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned char internaltype=0);
     virtual ~psSolid();
     // Recalculates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 
     inline const psRectRotateZ& GetCollisionRect() { UpdateBoundingRect(); return _collisionrect; }
@@ -32,7 +32,7 @@ namespace planeshader {
     // Returns boudning rect without updating it 
     inline const psRect& GetBoundingRectStatic() const { return _boundingrect; } //This does not update the bounding rect
     // Overriden pass set 
-    virtual void BSS_FASTCALL SetPass(unsigned short pass);
+    virtual void BSS_FASTCALL SetPass(psPass* pass);
     // Gets the dimensions of the object 
     inline const psVec& GetDim() const { return _dim; }
     inline const psVec& GetUnscaledDim() const { return _realdim; }

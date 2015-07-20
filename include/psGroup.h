@@ -17,7 +17,7 @@ namespace planeshader {
     psGroup(const DEF_GROUP& def);
     psGroup(const psGroup& copy);
     psGroup(psGroup&& copy);
-    explicit psGroup(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, unsigned short pass=(unsigned short)-1, psInheritable* parent=0);
+    explicit psGroup(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0);
     virtual ~psGroup();
     // Clone function 
     inline virtual psGroup* BSS_FASTCALL Clone() const { return new psGroup(*this); }

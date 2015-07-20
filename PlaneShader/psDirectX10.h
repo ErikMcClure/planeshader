@@ -8,16 +8,19 @@
 #include "psShader.h"
 #include "bss-util/bss_stack.h"
 #include "bss-util/bss_win32_includes.h"
+#ifdef USE_DX10_1
+#include "directx/D3D10_1.h"
+#else
 #include "directx/D3D10.h"
+#endif
 #include "directx/D3DX10.h"
 
 namespace planeshader {
-  // Vertex input to geometry shader for rect rendering
+  // Vertex input to geometry shader for rect rendering (UV coordinates are added in batches of 4 floats after the end)
   struct DX10_rectvert 
   {
     float x, y, z, rot;
     float w, h, pivot_x, pivot_y;
-    float u, v, u2, v2;
     unsigned int color;
   };
   // Vertex used for polygons, lines and point rendering
@@ -36,6 +39,24 @@ namespace planeshader {
     UINT sampleMask;
   };
 
+  // Represents a fake view so we can have a consistent method of accessing resources even if they aren't bound to anything.
+  struct DX10_EmptyView : ID3D10View
+  {
+    DX10_EmptyView(ID3D10Resource* res) : _res(res), _ref(1) {}
+    ~DX10_EmptyView() { if(_res) _res->Release(); }
+    void STDMETHODCALLTYPE GetResource(ID3D10Resource **ppResource) { *ppResource = _res; }
+    void STDMETHODCALLTYPE GetDevice(ID3D10Device **ppDevice) { *ppDevice = 0; }
+    HRESULT STDMETHODCALLTYPE GetPrivateData(REFGUID guid, UINT *pDataSize, void *pData) { return E_NOTIMPL; }
+    HRESULT STDMETHODCALLTYPE SetPrivateData(REFGUID guid, UINT DataSize, const void *pData) { return E_NOTIMPL; }
+    ULONG STDMETHODCALLTYPE AddRef() { return ++_ref; }
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) { return !ppvObject?E_POINTER:E_NOINTERFACE; }
+    ULONG STDMETHODCALLTYPE Release() { ULONG r = --_ref; if(_ref <= 0) delete this; return r; }
+    HRESULT STDMETHODCALLTYPE SetPrivateDataInterface(REFGUID  guid, const IUnknown *pData) { return E_NOTIMPL; }
+
+    ID3D10Resource* _res;
+    ULONG _ref;
+  };
+
   class psDirectX10 : public psDriver, public psDriverHold
   {
   public:
@@ -49,19 +70,20 @@ namespace planeshader {
     // Draws a vertex object
     virtual void BSS_FASTCALL Draw(psVertObj* buf, FLAG_TYPE flags, const float(&transform)[4][4]=identity);
     // Draws a rectangle
-    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4]=identity);
+    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags, const float(&xform)[4][4]=identity);
+    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned char numuv, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect* uv, unsigned int color, const float(&xform)[4][4]=identity);
     virtual void DrawRectBatchEnd(const float(&xform)[4][4]=identity);
     // Draws a polygon
-    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, FNUM Z, unsigned long vertexcolor, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags);
     // Draws points (which are always batch rendered)
     virtual void BSS_FASTCALL DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags);
     virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num);
     virtual void DrawPointsEnd();
     // Draws lines (which are also always batch rendered)
     virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor);
     virtual void DrawLinesEnd();
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport);
@@ -84,7 +106,7 @@ namespace planeshader {
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0);
     virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0);
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0);
-    virtual void BSS_FASTCALL CopyTextureRect(psRectiu srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0);
+    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0);
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect);
     virtual void PopScissorRect();
@@ -129,6 +151,7 @@ namespace planeshader {
     inline long GetLastError() const { return _lasterr; }
 
     static const int BATCHSIZE = 512;
+    static const int RECTBUFSIZE = sizeof(DX10_rectvert)*(BATCHSIZE + (BATCHSIZE/2));
 
     static void* operator new(std::size_t sz);
     static void operator delete(void* ptr, std::size_t sz);
@@ -148,13 +171,19 @@ namespace planeshader {
     static void BSS_FASTCALL _loadtexture(D3DX10_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim);
     static ID3D10Texture2D* _textotex2D(void* t);
     void _setcambuf(ID3D10Buffer* buf, const float* cam, const float(&world)[4][4]);
-    void* _createshaderview(ID3D10Resource* src);
-    void* _creatertview(ID3D10Resource* src);
-    void* _createdepthview(ID3D10Resource* src);
+    ID3D10View* _createshaderview(ID3D10Resource* src);
+    ID3D10View* _creatertview(ID3D10Resource* src);
+    ID3D10View* _createdepthview(ID3D10Resource* src);
     long _lasterr;
-    
+    void _processdebugqueue();
+    void BSS_FASTCALL _processdebugmessage(UINT64 index, SIZE_T len);
+
     IDXGIFactory* _factory;
+#ifdef USE_DX10_1
+    ID3D10Device1* _device;
+#else
     ID3D10Device* _device;
+#endif
     IDXGISwapChain* _swapchain;
     psTex* _backbuffer;
     BSS_ALIGN(16) D3DXMATRIX matProj;
@@ -169,7 +198,9 @@ namespace planeshader {
     psVertObj _rectobjbuf;
     DX10_rectvert* _lockedrectbuf;
     DX10_simplevert* _lockedptbuf;
+    DX10_simplevert* _lockedlinebuf;
     unsigned int _lockedcount;
+    unsigned int _lockedrectuv;
     FLAG_TYPE _lockedflag;
     psVec _extent;
     bool _zerocamrot;
@@ -187,6 +218,7 @@ namespace planeshader {
     ID3D10Buffer* _cam_usr; //viewproj matrix and custom world matrix
     ID3D10Buffer* _proj_def; //proj matrix and identity world matrix
     ID3D10Buffer* _proj_usr; //proj matrix and custom world matrix
+    ID3D10InfoQueue * _infoqueue;
   };
 }
 

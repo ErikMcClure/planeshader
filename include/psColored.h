@@ -12,28 +12,31 @@ namespace planeshader {
   struct DEF_COLORED;
 
   // Represents something that has color.
-  class PS_DLLEXPORT psColored : public AbstractAni
+  class PS_DLLEXPORT psColored : AbstractAni
   {
   public:
     psColored(const psColored& copy);
     psColored(const DEF_COLORED& def);
     explicit psColored(unsigned int color=0xFFFFFFFF);
+    virtual ~psColored();
     inline const psColor32& GetColor() const { return _color; }
     virtual void BSS_FASTCALL SetColor(unsigned int color);
     inline void BSS_FASTCALL SetColor(unsigned char a, unsigned char r, unsigned char g, unsigned char b) { SetColor(psColor32(a,r,g,b)); }
 
     inline psColored& operator=(const psColored& right) { _color = right._color; return *this; }
     inline virtual psColored* BSS_FASTCALL Clone() const { return new psColored(*this); } // Clone function
+    void* operator new(std::size_t sz);
+    void operator delete(void* ptr, std::size_t sz);
 
     // Interpolation functions for animation
-    template<unsigned char TypeID>
-    static inline unsigned int BSS_FASTCALL colorinterpolate(const typename bss_util::AniAttributeT<TypeID>::TVT_ARRAY_T& rarr, bss_util::AniAttribute::IDTYPE index, double factor) {
-      return psColor::Interpolate(rarr[index-1].value, rarr[index].value, factor);
-    }
+    //template<unsigned char TypeID>
+    //static inline unsigned int BSS_FASTCALL colorinterpolate(const typename bss_util::AniAttributeT<TypeID>::TVT_ARRAY_T& rarr, bss_util::AniAttribute::IDTYPE index, double factor) {
+    //  return psColor::Interpolate(rarr[index-1].value, rarr[index].value, factor);
+    //}
 
   protected:
-    void BSS_FASTCALL _setcolor(unsigned int color) { SetColor(color); }
     virtual void BSS_FASTCALL TypeIDRegFunc(bss_util::AniAttribute*);
+    void BSS_FASTCALL _setcolor(unsigned int color) { SetColor(color); }
 
     psColor32 _color;
   };
@@ -48,5 +51,6 @@ namespace planeshader {
     unsigned int color;
   };
 }
+
 
 #endif

@@ -58,8 +58,5 @@ namespace planeshader {
     FNUM rotation;
   };
 }
-namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::POSITION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::POSITION_ANI_TYPEID>{ }; }
-namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::ROTATION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, float, planeshader::ROTATION_ANI_TYPEID>{}; }
-namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::PIVOT_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::PIVOT_ANI_TYPEID>{ }; }
 
 #endif
