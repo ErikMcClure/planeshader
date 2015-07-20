@@ -117,7 +117,10 @@
     <ClInclude Include="..\include\psTextured.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ps_abstract.h">
+    <ClInclude Include="..\include\psImage.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psRenderGeometry.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -173,6 +176,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psFont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psColored.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psTextured.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

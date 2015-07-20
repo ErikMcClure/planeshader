@@ -6,6 +6,7 @@
 
 #include "bss-util/cAnimation.h"
 #include "bss-util/LLBase.h"
+#include "psRect.h"
 
 namespace planeshader {
   class psAnimation : public bss_util::cAnimation<bss_util::StaticAllocPolicy<char>>, protected bss_util::LLBase<psAnimation>
@@ -52,19 +53,24 @@ namespace planeshader {
   enum AniIDList : unsigned char
   {
     POSITION_ANI_TYPEID=0,
-    SCALE_ANI_TYPEID,
     ROTATION_ANI_TYPEID,
+    PIVOT_ANI_TYPEID,
     COLOR_ANI_TYPEID,
+    SCALE_ANI_TYPEID,
     TEXTURE_ANI_TYPEID,
     SOURCE_ANI_TYPEID,
-    PIVOT_ANI_TYPEID,
-    ZORDER_ANI_TYPEID,
-    EVENT_ANI_TYPEID,
     NUM_ANI_TYPEIDS //If you are adding custom animation IDs, start here.
   };
+
+  class psTex;
 }
-
-
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::POSITION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::POSITION_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::ROTATION_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, float, planeshader::ROTATION_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::PIVOT_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::PIVOT_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::COLOR_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, unsigned int, planeshader::COLOR_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::SCALE_ANI_TYPEID, Alloc> : public AniAttributeSmooth<Alloc, planeshader::psVec, planeshader::SCALE_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::TEXTURE_ANI_TYPEID, Alloc> : public AniAttributeDiscrete<Alloc, planeshader::psTex*, planeshader::TEXTURE_ANI_TYPEID>{}; }
+namespace bss_util { template<typename Alloc> struct AniAttributeT<planeshader::SOURCE_ANI_TYPEID, Alloc> : public AniAttributeDiscrete<Alloc, planeshader::psRect, planeshader::SOURCE_ANI_TYPEID>{}; }
 
 
 #endif

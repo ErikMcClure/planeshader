@@ -163,6 +163,15 @@ namespace planeshader {
   protected:
     bss_util::cArray<VEC> _verts;
   };
+
+  typedef psPolygonT<float> psPolygon; //default typedef
+  typedef psPolygonT<int> psPolygoni;
+  typedef psPolygonT<double> psPolygond;
+  typedef psPolygonT<short> psPolygons;
+  typedef psPolygonT<long> psPolygonl;
+  typedef psPolygonT<unsigned int> psPolygoniu;
+  typedef psPolygonT<unsigned short> psPolygonsu;
+  typedef psPolygonT<unsigned long> psPolygonlu;
 }
 
 #endif

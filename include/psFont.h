@@ -41,6 +41,7 @@ namespace planeshader {
     void _cleanupfont();
     void _adjustantialias(FONT_ANTIALIAS antialiased);
     void _enforceantialias();
+    void _stage();
 
     psFont& operator=(const psFont&) = delete;
 
@@ -53,6 +54,7 @@ namespace planeshader {
     unsigned char _curtex;
     cStr _path;
     cStr _hash;
+    bss_util::cArray<psTex*, unsigned char> _staging;
 
     static bss_util::cHash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.
   };

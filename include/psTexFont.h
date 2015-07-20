@@ -9,6 +9,7 @@
 #include "bss-util/cRefCounter.h"
 #include "bss-util/cHash.h"
 #include "bss-util/cArray.h"
+#include "bss-util/delegate.h"
 
 namespace planeshader {
   struct psGlyph
@@ -33,10 +34,13 @@ namespace planeshader {
   };
 
   // Represents any arbitrary font created out of a texture. This is used to implement psFont.
-  class PS_DLLEXPORT psTexFont : public bss_util::cRefCounter, psDriverHold
+  class PS_DLLEXPORT psTexFont : public bss_util::cRefCounter, protected psDriverHold
   {
+  public:
+    typedef bss_util::delegate<void, psRectRotateZ&, unsigned int&> DELEGATE;
     // Draws text in the given rectangle. Returns the dimensions of the text which can be cached used to assemble an area if the text doesn't change.
-    psVec DrawText(const int* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO);
+    psVec DrawText(const int* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO, DELEGATE d = DELEGATE(0,0));
+    psVec DrawText(const char* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO, DELEGATE d = DELEGATE(0, 0));
     // Given the drawing flags and text, this calculates what size would be required to display all the text. If dest has nonzero width or height, that dimension is kept constant while calculating the other. If both are nonzero, it is treated as though both were zero in case you forgot to zero-initialize. 
     void CalcTextDim(const int* text, psVec& dest, unsigned short drawflags=0);
     // Lets you access the underlying textures
@@ -53,9 +57,11 @@ namespace planeshader {
     psTexFont(const psTexFont& copy);
     psTexFont(psTexFont&& mov);
     psTexFont(psTex* tex, float lineheight);
-    ~psTexFont();
+    explicit psTexFont(float lineheight);
+    virtual ~psTexFont();
     float _getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float& cur);
     virtual psGlyph* _loadglyph(unsigned int codepoint);
+    static bool _isspace(int c);
 
     bss_util::cHash<int, psGlyph> _glyphs;
     bss_util::cArray<psTex*, unsigned char> _textures;

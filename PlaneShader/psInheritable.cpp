@@ -21,13 +21,13 @@ psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov))
     _children->_parent=this;
   SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor
 }
-psInheritable::psInheritable(const DEF_INHERITABLE& def) : psRenderable(def), psLocatable(def), _parent(0), _children(0)
+psInheritable::psInheritable(const DEF_INHERITABLE& def, unsigned char internaltype) : psRenderable(def, internaltype), psLocatable(def), _parent(0), _children(0)
 {
   _lchild.next=_lchild.prev=0;
   SetParent(def.parent);
 }
-psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, unsigned short pass, psInheritable* parent) : 
-  psRenderable(flags,zorder,stateblock,shader,pass), psLocatable(position,rotation,pivot), _parent(0), _children(0)
+psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, unsigned char internaltype) :
+  psRenderable(flags, zorder, stateblock, shader, pass, internaltype), psLocatable(position, rotation, pivot), _parent(0), _children(0)
 {
   _lchild.next=_lchild.prev=0;
   SetParent(parent);
@@ -63,7 +63,7 @@ void psInheritable::SetParent(psInheritable* parent)
   }
 }
 
-void BSS_FASTCALL psInheritable::SetPass(unsigned short pass)
+void BSS_FASTCALL psInheritable::SetPass(psPass* pass)
 {
   PROFILE_FUNC();
   psRenderable::SetPass(pass);

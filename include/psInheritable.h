@@ -15,8 +15,8 @@ namespace planeshader {
   public:
     psInheritable(const psInheritable& copy);
     psInheritable(psInheritable&& mov);
-    psInheritable(const DEF_INHERITABLE& def);
-    explicit psInheritable(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, unsigned short pass=(unsigned short)-1, psInheritable* parent=0);
+    psInheritable(const DEF_INHERITABLE& def, unsigned char internaltype=0);
+    explicit psInheritable(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, unsigned char internaltype=0);
     virtual ~psInheritable();
     virtual void Render();
     // Sets/gets the parent
@@ -29,9 +29,9 @@ namespace planeshader {
     // Gets the absolute position by adding up all the parent positions.
     inline void GetTotalPosition(psVec3D& pos) const { pos = _relpos; if(_parent!=0) _parent->_gettotalpos(pos); }
     // Gets all the flags inherited from the parent
-    inline FLAG_TYPE GetTotalFlags() const { return !_parent?_flags:(_flags|(_parent->GetTotalFlags()&PSFLAG_INHERITABLE)); }
+    virtual FLAG_TYPE GetAllFlags() const { return !_parent?_flags:(_flags|(_parent->GetAllFlags()&PSFLAG_INHERITABLE)); }
     // Overloads SetPass so it propogates to our children
-    virtual void BSS_FASTCALL SetPass(unsigned short pass);
+    virtual void BSS_FASTCALL SetPass(psPass* pass);
     // Clone function
     virtual psInheritable* BSS_FASTCALL Clone() const { return 0; }
 

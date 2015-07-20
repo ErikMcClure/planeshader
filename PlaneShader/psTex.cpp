@@ -19,15 +19,16 @@ psTex::psTex(const psTex& copy) : _texblock(copy._texblock)
   if(_texblock) _texblock->Grab();
   _res = _driver->CreateTexture(copy._dim, copy._format, copy._usage, copy._miplevels, 0, &_view, _texblock);
   _driver->CopyResource(_res, copy._res, psDriver::RES_TEXTURE);
-  _applydesc(_driver->GetTextureDesc(_res));
+  if(_res) _applydesc(_driver->GetTextureDesc(_res));
   Grab();
 }
 
 psTex::psTex(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock) : _texblock(texblock)
 {
   if(_texblock) _texblock->Grab();
-  _res = _driver->CreateTexture(dim, format, usage|USAGE_SHADER_RESOURCE, miplevels, 0, &_view, _texblock);
-  _applydesc(_driver->GetTextureDesc(_res));
+  if(!(usage&USAGE_STAGING)) usage |= USAGE_SHADER_RESOURCE;
+  _res = _driver->CreateTexture(dim, format, usage, miplevels, 0, &_view, _texblock);
+  if(_res) _applydesc(_driver->GetTextureDesc(_res));
   Grab();
 }
 
@@ -95,6 +96,7 @@ inline void psTex::Unlock(unsigned char miplevel)
 
 inline bool psTex::Resize(psVeciu dim, RESIZE resize)
 {
+  if(dim == _dim) return true; //nothing to do
   if(resize == RESIZE_STRETCH) return false; // Not supported
   void* view;
   void* res = _driver->CreateTexture(dim, _format, _usage, _miplevels, 0, &view, _texblock);
@@ -104,7 +106,7 @@ inline bool psTex::Resize(psVeciu dim, RESIZE resize)
   switch(resize)
   {
   case RESIZE_CLIP:
-    _driver->CopyTextureRect(psRectiu(0, 0, bssmin(dim.x, _dim.x), bssmin(dim.y, _dim.y)), psVeciu(0, 0), _res, res);
+    _driver->CopyTextureRect(&psRectiu(0, 0, bssmin(dim.x, _dim.x), bssmin(dim.y, _dim.y)), psVeciu(0, 0), _res, res);
     break;
   case RESIZE_STRETCH:
     break; // Not supported

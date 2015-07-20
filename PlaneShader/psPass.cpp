@@ -11,16 +11,16 @@
 using namespace planeshader;
 using namespace bss_util;
 
-psPass* psPass::_curpass = 0;
+psPass* psPass::CurPass = 0;
 
-psPass::psPass() : _cam(&psCamera::default_camera), _renderables(0), _defaultrt(0), _renderlist(&_renderalloc)
+psPass::psPass() : _cam(&psCamera::default_camera), _renderables(0), _defaultrt(0), _renderlist(&_renderalloc), _solids(0), _cullgroups(0)
 {
 
 }
 psPass::~psPass()
 {
-  while(_renderables) _renderables->SetPass((unsigned short)-1);
-  while(_solids) _solids->SetPass((unsigned short)-1);
+  while(_renderables) _renderables->SetPass(0);
+  while(_solids) _solids->SetPass(0);
   while(_cullgroups) _cullgroups->SetPass(0);
 }
 
@@ -45,7 +45,7 @@ float BSS_FASTCALL r_gettotalz(psInheritable* p)
 void psPass::Begin()
 {
   PROFILE_FUNC();
-  _curpass = this;
+  CurPass = this;
   auto& vp = _cam->GetViewPort();
   psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->screendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->screendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->screendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->screendim.y) };
   _driver->ApplyCamera(_cam->GetPosition(), _cam->GetPivot(), _cam->GetRotation(), realvp);
@@ -76,7 +76,7 @@ void psPass::Begin()
 
   for(psSolid* solid = static_cast<psSolid*>(_solids); solid!=0; solid=static_cast<psSolid*>(solid->_llist.next))
   {
-    flags=solid->GetTotalFlags();
+    flags=solid->GetAllFlags();
     if((flags&PSFLAG_DONOTCULL)!=0) { _sort(solid); continue; } // Don't cull if it has a DONOTCULL flag
 
     const psRect& rect = solid->GetBoundingRect(); // Recalculates the bounding rect
@@ -115,7 +115,7 @@ void psPass::Begin()
 
 void psPass::End()
 {
-  _curpass = 0;
+  CurPass = 0;
   FlushQueue();
   PROFILE_FUNC();
 }
@@ -144,13 +144,19 @@ void psPass::FlushQueue()
     if(_renderqueue.Length() == 1)
       _renderqueue[0]->_render();
     else
-      _renderqueue[0]->_renderbatch(_renderqueue);
+    {
+      _renderqueue[0]->_renderbatch(_renderqueue, _renderqueue.Length());
+    }
   }
 }
 
 void psPass::_queue(psRenderable* r)
 {
-  if(_renderqueue.Length() > 0 && !_renderqueue[0]->_batch(r))
+  if(_renderqueue.Length() > 0 &&
+    _renderqueue[0]->_internaltype() == r->_internaltype() &&
+    _renderqueue[0]->GetShader() == r->GetShader() &&
+    _renderqueue[0]->GetStateblock() == r->GetStateblock() &&
+    !_renderqueue[0]->_batch(r))
     FlushQueue();
   _renderqueue.Add(r);
 }

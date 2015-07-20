@@ -13,6 +13,7 @@
 #include <Shlobj.h>
 #include <algorithm>
 
+#ifdef BSS_COMPILER_MSC
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../lib/freetype64_d.lib")
 #elif defined(BSS_CPU_x86_64)
@@ -22,18 +23,20 @@
 #else
 #pragma comment(lib, "../lib/freetype.lib")
 #endif
+#endif
 
 using namespace planeshader;
 
 FT_Library psFont::PTRLIB=0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
-psFont::psFont(const char* file, int psize, float lineheight, FONT_ANTIALIAS antialias) : psTexFont(0, lineheight), _path(file), _pointsize(psize), _curtex(0),
+psFont::psFont(const char* file, int psize, float lineheight, FONT_ANTIALIAS antialias) : psTexFont(lineheight), _path(file), _pointsize(psize), _curtex(0),
   _curpos(VEC_ZERO), _ft2face(0), _buf(0)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
-  _textures.Insert(new psTex(psVeciu(psize*8, psize*8), FMT_A8R8G8B8, USAGE_AUTOGENMIPMAP|USAGE_DYNAMIC, 0), 0);
+  _textures.Insert(new psTex(psVeciu(psize*8, psize*8), FMT_A8R8G8B8, USAGE_AUTOGENMIPMAP|USAGE_DEFAULT|USAGE_RENDERTARGET, 0), 0);
+  _staging.Insert(new psTex(psVeciu(psize*8, psize*8), FMT_A8R8G8B8, USAGE_STAGING, 1), 0);
 
   if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
@@ -144,11 +147,17 @@ void psFont::_cleanupfont()
   _buf = 0;
 }
 
+void psFont::_stage()
+{
+  for(unsigned char i = 0; i < _staging.Size(); ++i)
+    _driver->CopyTextureRect(0, psVeciu(0, 0), _staging[i]->GetRes(), _textures[i]->GetRes());
+}
+
 void psFont::_loadfont()
 {
   const float FT_COEF = (1.0f/64.0f);
   _curtex = 0;
-  _curpos = VEC_ZERO;
+  _curpos = psVeciu(1,1);
   _nexty = 0;
   FILE* f;
   WFOPEN(f, cStrW(_path), L"rb"); //load font into memory
@@ -237,18 +246,21 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
 
   FT_Bitmap& gbmp = _ft2face->glyph->bitmap;
   const float FT_COEF = (1.0f/64.0f);
-  unsigned int width=gbmp.pixel_mode==FT_PIXEL_MODE_LCD?gbmp.width/3:gbmp.width;
+  unsigned int width = (gbmp.pixel_mode==FT_PIXEL_MODE_LCD)?(gbmp.width/3):gbmp.width;
   unsigned int height=gbmp.rows;
-  if(_curpos.x+width+1>_textures[_curtex]->GetDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
+  if(_curpos.x+width+1>_staging[_curtex]->GetDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
   {
     _curpos.x=1;
     _curpos.y=_nexty;
   }
-  if(_curpos.y+height+1>_textures[_curtex]->GetDim().y) //if true we ran off the bottom of the texture, so we attempt a resize
+  if(_curpos.y+height+1>_staging[_curtex]->GetDim().y) //if true we ran off the bottom of the texture, so we attempt a resize
   {
-    if(!_textures[_curtex]->Resize(_textures[_curtex]->GetDim()*2u, psTex::RESIZE_CLIP)) //if this fails we make a new texture
+    psVeciu ndim = _staging[_curtex]->GetDim()*2u;
+    if(!_textures[_curtex]->Resize(ndim, psTex::RESIZE_CLIP) ||
+      !_staging[_curtex]->Resize(ndim, psTex::RESIZE_CLIP)) //if this fails we make a new texture
     {
-      if(!_textures[_curtex]->Resize(_textures[_curtex]->GetDim()*2u, psTex::RESIZE_DISCARD)) //first we try to just replace our old one with a bigger texture.
+      if(!_textures[_curtex]->Resize(ndim, psTex::RESIZE_DISCARD) ||
+        !_staging[_curtex]->Resize(ndim, psTex::RESIZE_DISCARD)) //first we try to just replace our old one with a bigger texture.
       {
         //TODO implement multiple texture buffers
       } 
@@ -270,12 +282,12 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
   }
 
   unsigned int lockpitch;
-  void* lockbytes = _textures[_curtex]->Lock(lockpitch, _curpos, LOCK_WRITE);
-  //lockbytes = _textures[_curtex]->LockRect(0, &psRectl(_curpos.x, _curpos.y, _curpos.x+width, _curpos.y+height), D3DLOCK_NOOVERWRITE);
+  void* lockbytes = _staging[_curtex]->Lock(lockpitch, _curpos, LOCK_WRITE);
+  //lockbytes = _staging[_curtex]->LockRect(0, &psRectl(_curpos.x, _curpos.y, _curpos.x+width, _curpos.y+height), D3DLOCK_NOOVERWRITE);
 
   if(!lockbytes) return retval;
 
-  psVec dim=_textures[_curtex]->GetDim();
+  psVec dim=_staging[_curtex]->GetDim();
   retval->uv=psRect(_curpos.x/dim.x, _curpos.y/dim.y, (_curpos.x+width)/dim.x, (_curpos.y+height)/dim.y);
   retval->width=(_ft2face->glyph->metrics.horiAdvance * FT_COEF);
   retval->ascender=(-_ft2face->glyph->metrics.horiBearingY * FT_COEF);
@@ -331,11 +343,12 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
     }
     break;
   default:
-    _textures[_curtex]->Unlock(0);
+    _staging[_curtex]->Unlock(0);
     return retval;
   }
 
   retval->texnum=_curtex;
-  _textures[_curtex]->Unlock(0);
+  _staging[_curtex]->Unlock(0);
+  _stage();
   return retval;
 }

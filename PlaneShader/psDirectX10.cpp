@@ -15,7 +15,11 @@ using namespace planeshader;
 using namespace bss_util;
 
 #ifdef BSS_CPU_x86_64
+#ifdef USE_DX10_1
+#pragma comment(lib, "../lib/dxlib/x64/d3d10_1.lib")
+#else
 #pragma comment(lib, "../lib/dxlib/x64/d3d10.lib")
+#endif
 #pragma comment(lib, "../lib/dxlib/x64/dxguid.lib")
 #pragma comment(lib, "../lib/dxlib/x64/dxgi.lib")
 #pragma comment(lib, "../lib/dxlib/x64/DxErr.lib")
@@ -25,7 +29,11 @@ using namespace bss_util;
 #pragma comment(lib, "../lib/dxlib/x64/d3dx10.lib")
 #endif
 #else
+#ifdef USE_DX10_1
+#pragma comment(lib, "../lib/dxlib/d3d10_1.lib")
+#else
 #pragma comment(lib, "../lib/dxlib/d3d10.lib")
+#endif
 #pragma comment(lib, "../lib/dxlib/dxguid.lib")
 #pragma comment(lib, "../lib/dxlib/DxErr.lib")
 #pragma comment(lib, "../lib/dxlib/dxgi.lib")
@@ -36,9 +44,15 @@ using namespace bss_util;
 #endif
 #endif
 
+#ifdef BSS_DEBUG
+#define PROCESSQUEUE() _processdebugqueue()
+#else
+#define PROCESSQUEUE()
+#endif
+
 #define LOGEMPTY  
 //#define LOGFAILURERET(fn,rn,errmsg,...) { HRESULT hr = fn; if(FAILED(hr)) { return rn; } }
-#define LOGFAILURERET(fn,rn,...) { _lasterr = (fn); if(FAILED(_lasterr)) { PSLOGV(1,__VA_ARGS__); return rn; } }
+#define LOGFAILURERET(fn,rn,...) { _lasterr = (fn); if(FAILED(_lasterr)) { PSLOGV(1,__VA_ARGS__); PROCESSQUEUE(); return rn; } }
 #define LOGFAILURE(fn,...) LOGFAILURERET(fn,LOGEMPTY,__VA_ARGS__)
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
 
@@ -82,7 +96,11 @@ _backbuffer(0), _extent(10000, 1)
   }
   output=_outputs[0];
 
+#ifdef USE_DX10_1
+  LOGFAILURE(D3D10CreateDevice1(adapter, D3D10_DRIVER_TYPE_HARDWARE, NULL, DEVICEFLAGS, D3D10_FEATURE_LEVEL_10_0, D3D10_1_SDK_VERSION, &_device), "D3D10CreateDevice1 failed with error: ", _lasterr);
+#else
   LOGFAILURE(D3D10CreateDevice(adapter, D3D10_DRIVER_TYPE_HARDWARE, NULL, DEVICEFLAGS, D3D10_SDK_VERSION, &_device), "D3D10CreateDevice failed with error: ", _lasterr);
+#endif
   DXGI_MODE_DESC target ={
     dim.x,
     dim.y,
@@ -155,8 +173,8 @@ _backbuffer(0), _extent(10000, 1)
     ELEMENT_DESC desc[4] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
       { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 }
     };
 
     library.IMAGE = psShader::CreateShader(desc, 3,
@@ -166,10 +184,53 @@ _backbuffer(0), _extent(10000, 1)
   }
 
   {
-    auto a = fnload("../media/fsrect.hlsl");
+    auto a = fnload("../media/fsimage0.hlsl");
 
-    library.RECT = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+    ELEMENT_DESC desc[3] ={
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+    };
+
+    library.IMAGE0 = psShader::CreateShader(desc, 3,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload("../media/fsimage2.hlsl");
+
+    ELEMENT_DESC desc[5] ={
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 2, FMT_A32B32G32R32F, 0, -1 }
+    };
+
+    library.IMAGE2 = psShader::CreateShader(desc, 3,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload("../media/fsimage3.hlsl");
+
+    ELEMENT_DESC desc[6] ={
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 2, FMT_A32B32G32R32F, 0, -1 },
+      { ELEMENT_TEXCOORD, 3, FMT_A32B32G32R32F, 0, -1 }
+    };
+
+    library.IMAGE3 = psShader::CreateShader(desc, 3,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
@@ -190,6 +251,7 @@ _backbuffer(0), _extent(10000, 1)
     library.LINE = psShader::CreateShader(desc, 2,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+    library.POLYGON = library.LINE;
   }
 
   {
@@ -198,8 +260,8 @@ _backbuffer(0), _extent(10000, 1)
     ELEMENT_DESC desc[4] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
       { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 }
     };
 
     library.PARTICLE = psShader::CreateShader(desc, 3,
@@ -208,7 +270,7 @@ _backbuffer(0), _extent(10000, 1)
       &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
-  _rectvertbuf = CreateBuffer(sizeof(DX10_rectvert)*BATCHSIZE, USAGE_VERTEX|USAGE_DYNAMIC, 0);
+  _rectvertbuf = CreateBuffer(RECTBUFSIZE, USAGE_VERTEX|USAGE_DYNAMIC, 0);
   _rectobjbuf.indices=0;
   _rectobjbuf.mode = POINTLIST;
   _rectobjbuf.nindice=0;
@@ -218,11 +280,11 @@ _backbuffer(0), _extent(10000, 1)
 
   unsigned short ind[BATCHSIZE*3];
   unsigned int k = 0;
-  for(unsigned int i = 0; i < BATCHSIZE-3; ++i)
+  for(unsigned short i = 0; i < BATCHSIZE-3; ++i)
   {
-    ind[k++] = 1;
+    ind[k++] = 0;
+    ind[k++] = 1+i;
     ind[k++] = 2+i;
-    ind[k++] = 3+i;
   }
   _batchindexbuf = CreateBuffer(sizeof(unsigned short)*BATCHSIZE*3, USAGE_INDEX|USAGE_IMMUTABLE, ind);
   _batchvertbuf = CreateBuffer(sizeof(DX10_simplevert)*BATCHSIZE, USAGE_VERTEX|USAGE_DYNAMIC, 0);
@@ -248,6 +310,13 @@ _backbuffer(0), _extent(10000, 1)
   _lineobjbuf.verts = _batchvertbuf;
   _lineobjbuf.nvert = BATCHSIZE;
   
+  _infoqueue = 0;
+#ifdef BSS_DEBUG
+  _device->QueryInterface(__uuidof(ID3D10InfoQueue), (void **)&_infoqueue);
+#endif
+#ifdef D3D_DIAG_DLL
+  D3DX10DebugMute(TRUE);
+#endif
 
   // Create default stateblock and sampler state, then activate the default stateblock.
   _defaultSB = (DX10_SB*)CreateStateblock(0);
@@ -259,6 +328,8 @@ _backbuffer(0), _extent(10000, 1)
 psDirectX10::~psDirectX10()
 {
   PROFILE_FUNC();
+  PROCESSQUEUE(); // Because many errors happen during resource deallocation, process any messages we currently have before cleaning up
+
   if(_cam_def)
     FreeResource(_cam_def, RES_CONSTBUF);
   if(_cam_usr)
@@ -286,6 +357,8 @@ psDirectX10::~psDirectX10()
 
   if(_backbuffer)
     delete _backbuffer;
+
+  PROCESSQUEUE();
   int r;
   if(_device)
     r=_device->Release();
@@ -294,11 +367,18 @@ psDirectX10::~psDirectX10()
 }
 void* psDirectX10::operator new(std::size_t sz) { return _aligned_malloc(sz, 16); }
 void psDirectX10::operator delete(void* ptr, std::size_t sz) { _aligned_free(ptr); }
-bool psDirectX10::Begin() { return true; }
+bool psDirectX10::Begin()
+{
+  PROCESSQUEUE();
+  return true; 
+}
 char psDirectX10::End()
 {
   PROFILE_FUNC();
   HRESULT hr = _swapchain->Present(_vsync, 0); // DXGI_PRESENT_DO_NOT_SEQUENCE doesn't seem to do anything other than break everything.
+
+  PROCESSQUEUE();
+
   switch(hr)
   {
   case DXGI_ERROR_DEVICE_RESET:
@@ -333,28 +413,32 @@ void BSS_FASTCALL psDirectX10::Draw(psVertObj* buf, FLAG_TYPE flags, const float
     _device->DrawIndexed(buf->nindice, 0, 0);
   }
 }
-void BSS_FASTCALL psDirectX10::DrawRect(const psRectRotateZ rect, const psRect& uv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags, const float(&xform)[4][4])
 { // Because we have to send the rect position in SOMEHOW and DX10 forces us to send matrices through the shaders, we will lock a buffer no matter what we do. 
   PROFILE_FUNC();
-  DrawRectBatchBegin(texes, numtex, flags); // So it's easy and just as fast to "batch render" a single rect instead of try and use an existing vertex buffer
-  DrawRectBatch(rect, uv, color);
-  DrawRectBatchEnd();
+  DrawRectBatchBegin(texes, numtex, numuv, flags); // So it's easy and just as fast to "batch render" a single rect instead of try and use an existing vertex buffer
+  DrawRectBatch(rect, uv, color, xform);
+  DrawRectBatchEnd(xform);
 }
-void BSS_FASTCALL psDirectX10::DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned char numuv, FLAG_TYPE flags)
 { 
   PROFILE_FUNC();
+  _rectobjbuf.vsize = sizeof(DX10_rectvert)+sizeof(psRect)*numuv;
   _lockedrectbuf = (DX10_rectvert*)LockBuffer(_rectobjbuf.verts, LOCK_WRITE_DISCARD);
   _lockedcount = 0;
+  _lockedrectuv = numuv;
   _lockedflag = flags;
   SetTextures(texes, numtex, PIXEL_SHADER_1_1);
 }
-void BSS_FASTCALL psDirectX10::DrawRectBatch(const psRectRotateZ rect, const psRect& uv, unsigned int color, const float(&xform)[4][4])
+void BSS_FASTCALL psDirectX10::DrawRectBatch(const psRectRotateZ rect, const psRect* uv, unsigned int color, const float(&xform)[4][4])
 { 
-  _lockedrectbuf[_lockedcount++] ={ rect.left, rect.top, rect.z, rect.rotation,
+  DX10_rectvert* buf = (DX10_rectvert*)(((char*)_lockedrectbuf)+(_lockedcount*_rectobjbuf.vsize));
+  *buf ={ rect.left, rect.top, rect.z, rect.rotation,
     rect.right-rect.left, rect.bottom-rect.top, rect.pivot.x, rect.pivot.y,
-    uv.left, uv.top, uv.right, uv.bottom,
-    color };
-  if(_lockedcount >= BATCHSIZE)
+    color};
+  memcpy(buf+1, uv, sizeof(psRect)*_lockedrectuv);
+
+  if(((++_lockedcount)*_rectobjbuf.vsize) >= RECTBUFSIZE)
   {
     DrawRectBatchEnd(xform);
     _lockedrectbuf = (DX10_rectvert*)LockBuffer(_rectobjbuf.verts, LOCK_WRITE_DISCARD);
@@ -367,16 +451,30 @@ void psDirectX10::DrawRectBatchEnd(const float(&xform)[4][4])
   _rectobjbuf.nvert = _lockedcount;
   Draw(&_rectobjbuf, _lockedflag, xform);
 }
-void BSS_FASTCALL psDirectX10::DrawPolygon(const psVec* verts, FNUM Z, int num, unsigned long vertexcolor, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawPolygon(const psVec* verts, int num, FNUM Z, unsigned long vertexcolor, FLAG_TYPE flags)
 { 
   DX10_simplevert* buf = (DX10_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
+  if(num > BATCHSIZE) return;
   for(int i = 0; i < num; ++i)
   {
     buf[i].x = verts[i].x;
     buf[i].y = verts[i].y;
     buf[i].z = Z;
+    buf[i].w = 1;
     buf[i].color = vertexcolor;
   }
+  UnlockBuffer(_batchobjbuf.verts);
+  _batchobjbuf.nvert = num;
+  _batchobjbuf.nindice = (num-2)*3;
+  Draw(&_batchobjbuf, flags);
+}
+void BSS_FASTCALL psDirectX10::DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags)
+{
+  static_assert(sizeof(psVertex) == sizeof(DX10_simplevert), "Error, psVertex is not equal to DX10_simplevert");
+  DX10_simplevert* buf = (DX10_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
+  if(num > BATCHSIZE) return;
+  memcpy(buf, verts, num*sizeof(psVertex));
+  UnlockBuffer(_batchobjbuf.verts);
   _batchobjbuf.nvert = num;
   _batchobjbuf.nindice = (num-2)*3;
   Draw(&_batchobjbuf, flags);
@@ -416,29 +514,29 @@ void psDirectX10::DrawPointsEnd()
 }
 void BSS_FASTCALL psDirectX10::DrawLinesStart(FLAG_TYPE flags)
 {
-  _lockedptbuf = (DX10_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
+  _lockedlinebuf = (DX10_simplevert*)LockBuffer(_lineobjbuf.verts, LOCK_WRITE_DISCARD);
   _lockedcount = 0;
   _lockedflag = flags;
   SetTextures(0, 0, PIXEL_SHADER_1_1);
 }
-void BSS_FASTCALL psDirectX10::DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
 { 
-  _lockedptbuf[_lockedcount++] ={ line.x1, line.y1, Z1, vertexcolor };
-  _lockedptbuf[_lockedcount++] ={ line.x2, line.y2, Z2, vertexcolor };
+  _lockedlinebuf[_lockedcount++] ={ line.x1, line.y1, Z1, 1, vertexcolor };
+  _lockedlinebuf[_lockedcount++] ={ line.x2, line.y2, Z2, 1, vertexcolor };
 
   if(_lockedcount >= BATCHSIZE)
   {
     DrawLinesEnd();
-    _lockedptbuf = (DX10_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
+    _lockedlinebuf = (DX10_simplevert*)LockBuffer(_lineobjbuf.verts, LOCK_WRITE_DISCARD);
     _lockedcount = 0;
   }
 }
 void psDirectX10::DrawLinesEnd()
 {
   PROFILE_FUNC();
-  UnlockBuffer(_lockedptbuf);
-  _ptobjbuf.nvert = _lockedcount;
-  Draw(&_ptobjbuf, _lockedflag);
+  UnlockBuffer(_lineobjbuf.verts);
+  _lineobjbuf.nvert = _lockedcount;
+  Draw(&_lineobjbuf, _lockedflag);
 }
 void BSS_FASTCALL psDirectX10::ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) 
 { 
@@ -565,6 +663,7 @@ void* BSS_FASTCALL psDirectX10::LockTexture(void* target, unsigned int flags, un
 
   _textotex2D(target)->Map(D3D10CalcSubresource(miplevel, 0, 1), (D3D10_MAP)(flags&LOCK_TYPEMASK), (flags&LOCK_DONOTWAIT)?D3D10_MAP_FLAG_DO_NOT_WAIT:0, &tex);
   pitch = tex.RowPitch;
+  PROCESSQUEUE();
   return tex.pData;
 }
 
@@ -572,11 +671,13 @@ void BSS_FASTCALL psDirectX10::UnlockBuffer(void* target)
 {
   PROFILE_FUNC();
   ((ID3D10Buffer*)target)->Unmap();
+  PROCESSQUEUE(); 
 }
 void BSS_FASTCALL psDirectX10::UnlockTexture(void* target, unsigned char miplevel)
 {
   PROFILE_FUNC();
   _textotex2D(target)->Unmap(D3D10CalcSubresource(miplevel, 0, 1));
+  PROCESSQUEUE();
 }
 
 
@@ -621,15 +722,15 @@ void* BSS_FASTCALL psDirectX10::CreateTexture(psVeciu dim, FORMATS format, unsig
 {
   PROFILE_FUNC();
   ID3D10Texture2D* tex = 0;
-  D3D10_TEXTURE2D_DESC desc ={ dim.x, dim.y, miplevels, 1, (DXGI_FORMAT)_fmttodx10(format), { 0, 0 }, (D3D10_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage) };
-  D3D10_SUBRESOURCE_DATA subdata ={ initdata, (((_getbitsperpixel(format)*dim.x)+7)<<3), 0 }; // The +7 here is to force the per-line bits to correctly round up the number of bytes.
+  D3D10_TEXTURE2D_DESC desc ={ dim.x, dim.y, miplevels, 1, (DXGI_FORMAT)_fmttodx10(format), { 1, 0 }, (D3D10_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage) };
+  D3D10_SUBRESOURCE_DATA subdata ={ initdata, (((_getbitsperpixel(format)*dim.x)+7)>>3), 0 }; // The +7 here is to force the per-line bits to correctly round up the number of bytes.
 
-  LOGFAILURERETNULL(_device->CreateTexture2D(&desc, !initdata?0:&subdata, &tex), "CreateTexture failed")
+  LOGFAILURERETNULL(_device->CreateTexture2D(&desc, !initdata?0:&subdata, &tex), "CreateTexture failed, error: ", _geterror(_lasterr))
   if(usage&USAGE_RENDERTARGET)
     *additionalview = _creatertview(tex);
   else if(usage&USAGE_DEPTH_STENCIL)
     *additionalview = _createdepthview(tex);
-  return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
+  return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):new DX10_EmptyView(tex);
 }
 
 void BSS_FASTCALL psDirectX10::_loadtexture(D3DX10_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim)
@@ -657,11 +758,15 @@ void* BSS_FASTCALL psDirectX10::LoadTexture(const char* path, unsigned int usage
 
   ID3D10Resource* tex=0;
   LOGFAILURERETNULL(D3DX10CreateTextureFromFileW(_device, cStrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path);
+
+#ifdef BSS_DEBUG
+  tex->SetPrivateData(WKPDID_D3DDebugObjectName, strlen(path), path);
+#endif
   if(usage&USAGE_RENDERTARGET)
     *additionalview = _creatertview(tex);
   else if(usage&USAGE_DEPTH_STENCIL)
     *additionalview = _createdepthview(tex);
-  return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
+  return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):new DX10_EmptyView(tex);
 }
 
 void* BSS_FASTCALL psDirectX10::LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock)
@@ -676,16 +781,22 @@ void* BSS_FASTCALL psDirectX10::LoadTextureInMemory(const void* data, size_t dat
     *additionalview = _creatertview(tex);
   else if(usage&USAGE_DEPTH_STENCIL)
     *additionalview = _createdepthview(tex);
-  return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):tex;
+  return ((usage&USAGE_SHADER_RESOURCE)!=0)?_createshaderview(tex):new DX10_EmptyView(tex);
 }
-void BSS_FASTCALL psDirectX10::CopyTextureRect(psRectiu srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel)
+void BSS_FASTCALL psDirectX10::CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel)
 {
+  if(!srcrect)
+  {
+    _device->CopySubresourceRegion(_textotex2D(dest), D3D10CalcSubresource(miplevel, 0, 1), destpos.x, destpos.y, 0, _textotex2D(src), D3D10CalcSubresource(miplevel, 0, 1), 0);
+    return;
+  }
+
   D3D10_BOX box = {
-    srcrect.left,
-    srcrect.top,
+    srcrect->left,
+    srcrect->top,
     0,
-    srcrect.right,
-    srcrect.bottom,
+    srcrect->right,
+    srcrect->bottom,
     1,
   };
   _device->CopySubresourceRegion(_textotex2D(dest), D3D10CalcSubresource(miplevel, 0, 1), destpos.x, destpos.y, 0, _textotex2D(src), D3D10CalcSubresource(miplevel, 0, 1), &box);
@@ -1157,7 +1268,58 @@ bool BSS_FASTCALL psDirectX10::ShaderSupported(SHADER_VER profile) //With DX10 s
 
 unsigned short psDirectX10::GetBytesPerPixel(FORMATS format)
 {
-  return (_getbitsperpixel(format)+7)<<3;
+  return (_getbitsperpixel(format)+7)>>3;
+}
+
+void psDirectX10::_processdebugqueue()
+{
+  if(!_infoqueue) return;
+  UINT64 max = _infoqueue->GetNumStoredMessagesAllowedByRetrievalFilter();
+  HRESULT hr;
+
+  for(UINT64 i = 0; i <= max; ++i) {
+    SIZE_T len = 0;
+    if(FAILED(hr = _infoqueue->GetMessageA(i, NULL, &len)))
+      continue;
+
+    _processdebugmessage(i, len); // We do this in a seperate function call because we can't dynamically allocate on the stack inside of a for loop.
+  }
+
+  _infoqueue->ClearStoredMessages();
+}
+void BSS_FASTCALL psDirectX10::_processdebugmessage(UINT64 index, SIZE_T len)
+{
+  HRESULT hr;
+  DYNARRAY(char, buf, len);
+  D3D10_MESSAGE* message = (D3D10_MESSAGE*)buf;
+  if(FAILED(hr = _infoqueue->GetMessageA(index, message, &len)))
+    return;
+  
+  int level = 5;
+  switch(message->Severity)
+  {
+  case D3D10_MESSAGE_SEVERITY_INFO: level = 4; break; // INFO
+  case D3D10_MESSAGE_SEVERITY_WARNING: level = 2; break; // WARNING
+  case D3D10_MESSAGE_SEVERITY_ERROR: level = 1; break; // ERROR
+  case D3D10_MESSAGE_SEVERITY_CORRUPTION: level = 0; break; // FATAL ERROR
+  }
+
+  const char* category = "";
+  switch(message->Category)
+  {
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_APPLICATION_DEFINED: category = ":Application"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_CLEANUP: category = ":Cleanup"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_COMPILATION: category = ":Compilation"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_EXECUTION: category = ":Execution"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_INITIALIZATION: category = ":Initialization"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_MISCELLANEOUS: category = ":Misc"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_RESOURCE_MANIPULATION: category = ":Resource"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_STATE_CREATION: category = ":State Creation"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_STATE_GETTING: category = ":State Getting"; break;
+  case D3D10_MESSAGE_CATEGORY::D3D10_MESSAGE_CATEGORY_STATE_SETTING: category = ":State Setting"; break;
+  }
+
+  PSLOG(level) << "(DirectX10" << category << ") " << cStr(message->pDescription, message->DescriptionByteLength) << std::endl;
 }
 
 unsigned int BSS_FASTCALL psDirectX10::_usagetodxtype(unsigned int types)
@@ -1479,7 +1641,7 @@ void psDirectX10::_setcambuf(ID3D10Buffer* buf, const float* cam, const float(&w
   MEMCPY(r+16, 16*sizeof(float), world, 16*sizeof(float));
   UnlockBuffer(buf);
 }
-void* psDirectX10::_createshaderview(ID3D10Resource* src)
+ID3D10View* psDirectX10::_createshaderview(ID3D10Resource* src)
 {
   PROFILE_FUNC();
   D3D10_SHADER_RESOURCE_VIEW_DESC desc;
@@ -1533,7 +1695,7 @@ void* psDirectX10::_createshaderview(ID3D10Resource* src)
   }
   return r;
 }
-void* psDirectX10::_creatertview(ID3D10Resource* src)
+ID3D10View* psDirectX10::_creatertview(ID3D10Resource* src)
 {
   PROFILE_FUNC();
   /*D3D10_RENDER_TARGET_VIEW_DESC rtDesc;
@@ -1568,7 +1730,7 @@ void* psDirectX10::_creatertview(ID3D10Resource* src)
   }
   return r;
 }
-void* psDirectX10::_createdepthview(ID3D10Resource* src)
+ID3D10View* psDirectX10::_createdepthview(ID3D10Resource* src)
 {
   PROFILE_FUNC();
   D3D10_DEPTH_STENCIL_VIEW_DESC dDesc;

@@ -9,11 +9,6 @@
 #include "bss-util/bss_sse.h"
 #include "psVec.h"
 
-//#define getA(c) (((c)&0xff000000)>>24)
-//#define getR(c) (((c)&0x00ff0000)>>16)
-//#define getG(c) (((c)&0x0000ff00)>>8)
-//#define getB(c) ((c)&0x000000ff)
-
 namespace planeshader {
   BSS_ALIGNED_STRUCT(16) BSS_COMPILER_DLLEXPORT psColor : bss_util::Vector<float, 4>
   {
@@ -147,6 +142,7 @@ namespace planeshader {
   // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
   BSS_ALIGNED_STRUCT(16) BSS_COMPILER_DLLEXPORT psColor32
   {
+    psColor32() {}
     psColor32(unsigned char A, unsigned char R, unsigned char G, unsigned char B) : a(A), r(R), g(G), b(B) {}
     explicit psColor32(unsigned char(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
     psColor32(unsigned __int32 c) : color(c) {}

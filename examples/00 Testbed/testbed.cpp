@@ -10,6 +10,7 @@
 #include "psShader.h"
 #include "psColor.h"
 #include "psTex.h"
+#include "psFont.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
 #include "bss-util/cStr.h"
@@ -19,11 +20,14 @@
 #include <iostream>
 #include <functional>
 
+#undef DrawText
+
 using namespace planeshader;
 using namespace bss_util;
 
 cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
 psEngine* engine=0;
+bool gotonext = false;
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../../bin/PlaneShader64_d.lib")
@@ -289,19 +293,30 @@ TESTDEF::RETPAIR test_psDirectX10()
   psVec imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->screendim.x), RANDINTGEN(0, driver->screendim.y));
 
-  while(engine->Begin())
+  while(engine->Begin() && !gotonext)
   {
-    shader->Activate();
     driver->Clear(0);
+    driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 0.5f, psRectiu(VEC_ZERO, driver->screendim));
+    driver->library.IMAGE->Activate();
+    driver->DrawRect(psRectRotateZ(100, 100, 100+pslogo->GetDim().x, 100+pslogo->GetDim().y, 0.5f, psVec(50, 50)), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
     driver->library.CIRCLE->Activate();
-    driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 1, psRectiu(VEC_ZERO, driver->screendim));
-    driver->DrawRect(psRectRotateZ(100, 100, 100+pslogo->GetDim().x, 100+pslogo->GetDim().y, 1, psVec(50, 50)), RECT_UNITRECT, 0xFFFFFFFF, &pslogo, 1, 0);
-    driver->DrawRectBatchBegin(&pslogo, 1, 0);
+    driver->DrawRectBatchBegin(&pslogo, 1, 1, 0);
     for(int i = 0; i < NUMBATCH; ++i) {
-      driver->DrawRectBatch(psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), RECT_UNITRECT, 0xFFFFFFFF);
+      driver->DrawRectBatch(psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), &RECT_UNITRECT, 0xFFFFFFFF);
     }
     driver->DrawRectBatchEnd();
+
+    driver->library.LINE->Activate();
+    driver->DrawLinesStart(PSFLAG_FIXED);
+    driver->DrawLines(psLine(0, 0, 100, 200), 0, 0, 0xFFFFFFFF);
+    driver->DrawLines(psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
+    driver->DrawLinesEnd();
+
+    driver->library.POLYGON->Activate();
+    psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
+    driver->DrawPolygon(polygon, 5, 0, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
+
     if(psEngine::CloseProfiler(timer)>1000000000)
     {
       timer = psEngine::OpenProfiler();
@@ -336,6 +351,47 @@ TESTDEF::RETPAIR test_psRenderable()
   ENDTEST;
 }
 
+TESTDEF::RETPAIR test_psPass()
+{
+  BEGINTEST;
+  ENDTEST;
+}
+
+TESTDEF::RETPAIR test_psFont()
+{
+  BEGINTEST;
+
+  psFont* font = psFont::Create("arial.ttf", 14);
+
+  int fps=0;
+  auto timer = psEngine::OpenProfiler();
+  psDriver* driver = engine->GetDriver();
+
+  while(engine->Begin() && !gotonext)
+  {
+    driver->Clear(0xFF999999);
+    driver->library.IMAGE0->Activate();
+    driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF000000, 0, 0, PSFLAG_FIXED);
+    driver->library.IMAGE->Activate();
+    //font->DrawText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla maximus sem at ante porttitor vehicula. Nulla a lorem imperdiet, consectetur metus id, congue enim. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse potenti. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin placerat a ipsum ac sodales. Curabitur vel neque scelerisque elit mollis convallis. Proin porta augue metus, sed pulvinar nisl mollis ut. Proin at aliquam erat. Quisque at diam tellus. Aenean facilisis justo ut mauris egestas dignissim. Maecenas scelerisque, ante ac blandit consectetur, magna sem pharetra massa, eu luctus orci ligula luctus augue. Integer at metus eros. Donec sed eros molestie, posuere nunc id, porta sem. \nMauris fermentum mauris ac eleifend ultrices.Fusce nec sollicitudin turpis, a ultricies metus.Nulla suscipit cursus orci, ac fringilla massa volutpat et.Nullam vestibulum dolor at tortor bibendum condimentum.Donec vitae faucibus risus, ut placerat mauris.Curabitur quis purus at urna pharetra lobortis.Pellentesque turpis velit, molestie aliquet elit sed, vestibulum rutrum nibh. \nSuspendisse ultricies leo nec ante accumsan ullamcorper.Suspendisse scelerisque molestie enim sit amet lacinia.Proin at lorem justo.Curabitur lectus ipsum, accumsan at quam eu, iaculis pellentesque felis.Fusce blandit feugiat dui, id placerat justo sollicitudin sed.Cras auctor lorem hendrerit leo facilisis porttitor.Sed vitae pulvinar purus, sed ornare ligula.\nPhasellus blandit, magna quis bibendum mattis, neque quam gravida quam, at tempus sem sapien eu mi.Phasellus ornare laoreet neque at blandit.Suspendisse vulputate fringilla fermentum.Fusce ante eros, laoreet ultricies eros sit amet, lobortis viverra elit.Curabitur consequat erat neque, in fringilla eros elementum eu.Quisque aliquam laoreet metus, volutpat vulputate tortor vehicula ut.Fusce sodales commodo justo, in condimentum ipsum aliquam at.Phasellus eget tellus ac arcu ultrices vehicula.Integer sagittis metus nibh, in varius mi scelerisque quis.Etiam ullamcorper gravida urna, et vestibulum velit posuere id.Aenean fermentum nibh ac dui rhoncus volutpat.Cras quis felis eget tortor vehicula interdum.In efficitur nulla quam, non condimentum ipsum pulvinar non.\nCras ultricies mi sed lacinia consequat.Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Suspendisse potenti.Nam consectetur eleifend libero sed pharetra.Suspendisse in dolor dui.Sed imperdiet pellentesque fermentum.Vivamus ac tortor felis.Aliquam id turpis euismod, tincidunt sapien ac, varius sapien.Vivamus id nulla mauris.");
+    font->DrawText("the dog jumped over \nthe lazy fox", psRect(0,0,100,0), TDT_WORDBREAK);
+    const psTex* t = font->GetTex();
+    driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, &t, 1, PSFLAG_FIXED);
+    engine->End();
+
+    if(psEngine::CloseProfiler(timer)>1000000000)
+    {
+      timer = psEngine::OpenProfiler();
+      char text[10]={ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+      _itoa_r(fps, text, 10);
+      engine->SetWindowTitle(text);
+      fps=0;
+    }
+    ++fps;
+  }
+  ENDTEST;
+}
+
 // Main program function
 int main(int argc, char** argv)
 {
@@ -354,6 +410,8 @@ int main(int argc, char** argv)
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
     { "psDirectX10", &test_psDirectX10 },
+    { "psPass", &test_psPass },
+    { "psFont", &test_psFont },
   };
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
@@ -374,7 +432,14 @@ int main(int argc, char** argv)
   {
     psEngine ps(init);
     if(ps.GetQuit()) return 0;
-    std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool { if(evt.type == GUI_KEYDOWN && evt.keycode == KEY_ESCAPE) ps.Quit(); return false; };
+    std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool
+    { 
+      if(evt.type == GUI_KEYDOWN && evt.keycode == KEY_ESCAPE)
+        ps.Quit();
+      if(evt.type == GUI_KEYDOWN && evt.keycode == KEY_RETURN)
+        gotonext = true;
+      return false;
+    };
     ps.SetInputReceiver(guicallback);
     //ps[0].SetClear(true, 0);
     engine=&ps;
@@ -382,6 +447,7 @@ int main(int argc, char** argv)
     TESTDEF::RETPAIR numpassed;
     for(uint i = 0; i < NUMTESTS; ++i)
     {
+      gotonext = false;
       numpassed=tests[i].FUNC(); //First is total, second is succeeded
       if(numpassed.first!=numpassed.second) failures.push_back(i);
 

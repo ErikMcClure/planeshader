@@ -29,15 +29,14 @@ namespace planeshader {
     void FlushQueue();
 
     static BSS_FORCEINLINE bss_util::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
-    static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r) { char c = SGNCOMPARE(l->_zorder, r->_zorder); if(!c) c = SGNCOMPARE(l->_internaltype(), r->_internaltype()); if(!c) return l->_sort(r); return c; }
+    static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r) { char c = SGNCOMPARE(l->_zorder, r->_zorder); if(!c) c = SGNCOMPARE(l->_internaltype(), r->_internaltype()); if(!c) c = SGNCOMPARE(l,r); return c; } //if(!c) return l->_sort(r); return c; }
+    static psPass* CurPass;
 
     typedef bss_util::BlockPolicy<bss_util::TRB_Node<psRenderable*>> ALLOC;
     friend class psRenderable;
     friend class psCullGroup;
 
   protected:
-    static psPass* _curpass;
-
     void _queue(psRenderable* r);
     void _sort(psRenderable* r);
     void _addcullgroup(psCullGroup* g);
