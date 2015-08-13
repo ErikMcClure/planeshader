@@ -58,7 +58,7 @@ using namespace bss_util;
 
 // Constructors
 psDirectX10::psDirectX10(const psVeciu& dim, unsigned antialias, bool vsync, bool fullscreen, bool destalpha, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
-_backbuffer(0), _extent(10000, 1)
+_backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
 {
   PROFILE_FUNC();
   memset(&library, 0, sizeof(SHADER_LIBRARY));
@@ -69,8 +69,10 @@ _backbuffer(0), _extent(10000, 1)
   const UINT DEVICEFLAGS = D3D10_CREATE_DEVICE_SINGLETHREADED;
 #endif
 
-  LOGFAILURE(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&_factory)), "CreateDXGIFactory failed with error: ", _geterror(_lasterr))
+  LOGFAILURE(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&_factory)), "CreateDXGIFactory failed with error: ", _geterror(_lasterr));
 
+  _dpi = psGUIManager::GetMonitorDPI();
+  //_dpi = psVeciu(192); // DEBUG
   _driver = this;
   cDynArray<IDXGIAdapter*, unsigned char> _adapters;
   IDXGIAdapter* adapter = NULL;
@@ -144,12 +146,13 @@ _backbuffer(0), _extent(10000, 1)
   _scissorstack.Push(RECT_ZERO); //push the initial scissor rect (it'll get set in ApplyCamera)
   SetDefaultRenderTarget();
   SetRenderTargets(0, 0, 0);
-  screendim = _backbuffer->GetDim();
+  rawscreendim = _backbuffer->GetDim();
+  screendim = ((_dpi == psVeciu(BASE_DPI)) ? psVec(rawscreendim) : (psVec(rawscreendim) * (psVec(BASE_DPI) / psVec(_dpi))));
   _cam_def = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
   _cam_usr = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
   _proj_def = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
   _proj_usr = (ID3D10Buffer*)CreateBuffer(sizeof(float)*4*4*2, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC);
-  ApplyCamera(VEC3D_ZERO, VEC_ZERO, 0, psRectiu(0, 0, screendim.x, screendim.y));
+  ApplyCamera(VEC3D_ZERO, VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y));
 
   _fsquadVS = (ID3D10VertexShader*)CreateShader(fsquadVS_main, sizeof(fsquadVS_main), VERTEX_SHADER_4_0);
 
@@ -171,10 +174,10 @@ _backbuffer(0), _extent(10000, 1)
     auto a = fnload("../media/fsimage.hlsl");
 
     ELEMENT_DESC desc[4] ={
-      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
-      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 }
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, (uint)-1 }
     };
 
     library.IMAGE = psShader::CreateShader(desc, 3,
@@ -187,9 +190,9 @@ _backbuffer(0), _extent(10000, 1)
     auto a = fnload("../media/fsimage0.hlsl");
 
     ELEMENT_DESC desc[3] ={
-      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, (uint)-1 }
     };
 
     library.IMAGE0 = psShader::CreateShader(desc, 3,
@@ -202,11 +205,11 @@ _backbuffer(0), _extent(10000, 1)
     auto a = fnload("../media/fsimage2.hlsl");
 
     ELEMENT_DESC desc[5] ={
-      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
-      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 2, FMT_A32B32G32R32F, 0, -1 }
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_A32B32G32R32F, 0, (uint)-1 }
     };
 
     library.IMAGE2 = psShader::CreateShader(desc, 3,
@@ -219,12 +222,12 @@ _backbuffer(0), _extent(10000, 1)
     auto a = fnload("../media/fsimage3.hlsl");
 
     ELEMENT_DESC desc[6] ={
-      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
-      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 2, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 3, FMT_A32B32G32R32F, 0, -1 }
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 3, FMT_A32B32G32R32F, 0, (uint)-1 }
     };
 
     library.IMAGE3 = psShader::CreateShader(desc, 3,
@@ -244,8 +247,8 @@ _backbuffer(0), _extent(10000, 1)
     auto a = fnload("../media/fsline.hlsl");
 
     ELEMENT_DESC desc[2] ={
-      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 }
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, (uint)-1 }
     };
 
     library.LINE = psShader::CreateShader(desc, 2,
@@ -258,10 +261,10 @@ _backbuffer(0), _extent(10000, 1)
     auto a = fnload("../media/fspoint.hlsl");
 
     ELEMENT_DESC desc[4] ={
-      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, -1 },
-      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, -1 },
-      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, -1 }
+      { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_A8R8G8B8, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_A32B32G32R32F, 0, (uint)-1 }
     };
 
     library.PARTICLE = psShader::CreateShader(desc, 3,
@@ -541,7 +544,7 @@ void psDirectX10::DrawLinesEnd()
 void BSS_FASTCALL psDirectX10::ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) 
 { 
   PROFILE_FUNC();
-  D3D10_VIEWPORT vp ={ viewport.left, viewport.top, viewport.right, viewport.bottom, 0.0f, 1.0f };
+  D3D10_VIEWPORT vp ={ (INT)viewport.left, (INT)viewport.top, viewport.right, viewport.bottom, 0.0f, 1.0f };
   _device->RSSetViewports(1, &vp);
   _scissorstack[0].left = viewport.left;
   _scissorstack[0].top = viewport.top;
@@ -571,6 +574,11 @@ void BSS_FASTCALL psDirectX10::ApplyCamera(const psVec3D& pos, const psVec& pivo
   D3DXMATRIX m;
   D3DXMatrixTranslation(&m, vp.Width*-0.5f, vp.Height*-0.5f, 1);
   D3DXMatrixMultiply(&matProj, &m, &matProj);
+  if(_dpi != psVeciu(BASE_DPI)) // Do we need to do DPI scaling?
+  {
+    D3DXMatrixScaling(&m, _dpi.x/(float)BASE_DPI, _dpi.y / (float)BASE_DPI, 1);
+    D3DXMatrixMultiply(&matProj, &m, &matProj);
+  }
 
   BSS_ALIGN(16) Matrix<float, 4, 4> cam;
   Matrix<float, 4, 4>::AffineTransform_T(pos.x, pos.y, pos.z, rotation, pivot.x, pivot.y, cam.v);
@@ -802,11 +810,13 @@ void BSS_FASTCALL psDirectX10::CopyTextureRect(const psRectiu* srcrect, psVeciu 
   _device->CopySubresourceRegion(_textotex2D(dest), D3D10CalcSubresource(miplevel, 0, 1), destpos.x, destpos.y, 0, _textotex2D(src), D3D10CalcSubresource(miplevel, 0, 1), &box);
 }
 
-void BSS_FASTCALL psDirectX10::PushScissorRect(const psRectl& rect)
+void BSS_FASTCALL psDirectX10::PushScissorRect(const psRect& rect)
 { 
   PROFILE_FUNC();
-  _scissorstack.Push(rect);
-  _device->RSSetScissorRects(1, (D3D10_RECT*)&rect); 
+  psVec scale = GetDPIScale();
+  psRectl r(fFastTruncate(floor(rect.left*scale.x)), fFastTruncate(floor(rect.top*scale.y)), fFastTruncate(ceilf(rect.right*scale.x)), fFastTruncate(ceil(rect.bottom*scale.y)));
+  _scissorstack.Push(r);
+  _device->RSSetScissorRects(1, (D3D10_RECT*)&r); 
 }
 
 void psDirectX10::PopScissorRect()
@@ -1269,6 +1279,14 @@ bool BSS_FASTCALL psDirectX10::ShaderSupported(SHADER_VER profile) //With DX10 s
 unsigned short psDirectX10::GetBytesPerPixel(FORMATS format)
 {
   return (_getbitsperpixel(format)+7)>>3;
+}
+void psDirectX10::SetDPI(psVeciu dpi)
+{
+  _dpi = dpi;
+}
+psVeciu psDirectX10::GetDPI()
+{
+  return _dpi;
 }
 
 void psDirectX10::_processdebugqueue()

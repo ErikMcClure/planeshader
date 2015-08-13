@@ -51,7 +51,6 @@ namespace planeshader {
     friend class psCullGroup;
 
   protected:
-    virtual void BSS_FASTCALL TypeIDRegFunc(bss_util::AniAttribute*);
     void BSS_FASTCALL SetDim(const psVec& dim);
     void _treeremove();
 

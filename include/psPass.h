@@ -7,6 +7,8 @@
 #include "psDriver.h"
 #include "psRenderable.h"
 #include "psCamera.h"
+#include "bss-util\bss_alloc_block.h"
+#include "bss-util\cDynArray.h"
 
 namespace planeshader {
   class psSolid;

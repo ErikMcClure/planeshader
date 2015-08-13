@@ -271,7 +271,7 @@ namespace planeshader {
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
     // Pushes or pops a scissor rect on to the stack
-    virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect)=0;
+    virtual void BSS_FASTCALL PushScissorRect(const psRect& rect)=0;
     virtual void PopScissorRect()=0;
     // Sets the current rendertargets, setting all the rest to null.
     virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0)=0;
@@ -305,7 +305,20 @@ namespace planeshader {
     virtual void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = !rt?GetBackBuffer():rt; }
     // Gets number of bytes per pixel of a given format
     virtual unsigned short GetBytesPerPixel(FORMATS format)=0;
-
+    // Gets/Sets the effective DPI
+    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI))=0;
+    virtual psVeciu GetDPI() = 0;
+    inline psVec GetDPIScale() { psVeciu dpi = GetDPI(); return ((dpi == psVeciu(BASE_DPI)) ? psVec(1.0f) : (psVec(GetDPI()) / psVec((float)BASE_DPI))); }
+    inline psVec GetInvDPIScale() { psVeciu dpi = GetDPI(); return ((dpi == psVeciu(BASE_DPI)) ? psVec(1.0f) : (psVec((float)BASE_DPI) / psVec(GetDPI()))); }
+    // Snaps a coordinate to a pixel value that will correspond to a pixel after it gets scaled by DPI for rendering on the backbuffer
+    inline psVec SnapToDPI(const psVec& p)
+    { 
+      psVec s = (GetDPI() == psVeciu(BASE_DPI))?psVec(1.0f):(GetDPI() / psVec((float)BASE_DPI));
+      psVec r = p*s; // Scale to actual destination coordinates
+      r.x = roundf(r.x); // Round to nearest integer
+      r.y = roundf(r.y);
+      return r / s; // Convert back to scaled coordinates
+    }
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="")=0;
     // Create an actual shader object from compiled shader source (either precompiled or from CompileShader())
@@ -321,6 +334,7 @@ namespace planeshader {
     BSS_FORCEINLINE static void BSS_FASTCALL _inversetransform(float(&mat)[4][4]) { mat[3][0]=(-mat[3][0]); mat[3][1]=(-mat[3][1]); }
     BSS_FORCEINLINE static void BSS_FASTCALL _inversetransformadd(float(&mat)[4][4], const float(&add)[4][4]) { mat[3][0]=add[3][0]-mat[3][0]; mat[3][1]=add[3][1]-mat[3][1]; mat[3][2]=add[3][2]; }
     static const float identity[4][4];
+    static const int BASE_DPI = 96;
 
     struct SHADER_LIBRARY
     {
@@ -337,7 +351,8 @@ namespace planeshader {
       psShader* PARTICLE;
     } library;
 
-    psVeciu screendim;
+    psVec screendim; // DPI scaled screen dimensions, which can theoretically be fractional due to 1.5x DPI scaling
+    psVeciu rawscreendim;
 
   protected:
     const psTex* _defaultrt;

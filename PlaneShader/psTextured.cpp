@@ -60,5 +60,3 @@ psTextured& psTextured::operator=(psTextured&& right)
   _tex = std::move(right._tex);
   return *this;
 }
-
-void BSS_FASTCALL psTextured::TypeIDRegFunc(bss_util::AniAttribute*) {}

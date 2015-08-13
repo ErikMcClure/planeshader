@@ -28,10 +28,10 @@ const psRectRotate psCamera::GetScreenRect(FLAG_TYPE flags) const
 {
   return psRectRotate(0, 0, 0, 0, 0, VEC_ZERO);
 }
-void psCamera::SetViewPort(const psRectiu& vp)
+void psCamera::SetViewPort(const psRect& vp)
 {
   PROFILE_FUNC();
-  psVec dim = psEngine::Instance()->GetDriver()->screendim;
+  const psVec& dim = psEngine::Instance()->GetDriver()->screendim;
   _viewport.topleft = vp.topleft/dim;
   _viewport.bottomright = (vp.bottomright-vp.topleft)/dim;
 }

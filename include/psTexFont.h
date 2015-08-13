@@ -37,12 +37,12 @@ namespace planeshader {
   class PS_DLLEXPORT psTexFont : public bss_util::cRefCounter, protected psDriverHold
   {
   public:
-    typedef bss_util::delegate<void, psRectRotateZ&, unsigned int&> DELEGATE;
+    typedef bss_util::delegate<void, size_t, psRectRotateZ&, unsigned int&> DELEGATE;
     // Draws text in the given rectangle. Returns the dimensions of the text which can be cached used to assemble an area if the text doesn't change.
-    psVec DrawText(const int* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO, DELEGATE d = DELEGATE(0,0));
-    psVec DrawText(const char* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO, DELEGATE d = DELEGATE(0, 0));
+    psVec DrawText(const int* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO, float letterspacing = 0.0f, DELEGATE d = DELEGATE(0,0));
+    psVec DrawText(const char* text, psRect area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, FLAG_TYPE flags = 0, psVec textdim = VEC_ZERO, float letterspacing = 0.0f, DELEGATE d = DELEGATE(0, 0));
     // Given the drawing flags and text, this calculates what size would be required to display all the text. If dest has nonzero width or height, that dimension is kept constant while calculating the other. If both are nonzero, it is treated as though both were zero in case you forgot to zero-initialize. 
-    void CalcTextDim(const int* text, psVec& dest, unsigned short drawflags=0);
+    void CalcTextDim(const int* text, psVec& dest, unsigned short drawflags=0, float letterspacing = 0.0f);
     // Lets you access the underlying textures
     inline const psTex* GetTex(unsigned short index=0) const { assert(index<_textures.Size()); return _textures[index]; }
     // Adds a glyph definition
@@ -59,7 +59,7 @@ namespace planeshader {
     psTexFont(psTex* tex, float lineheight);
     explicit psTexFont(float lineheight);
     virtual ~psTexFont();
-    float _getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float& cur);
+    float _getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float letterspacing, float& cur);
     virtual psGlyph* _loadglyph(unsigned int codepoint);
     static bool _isspace(int c);
 

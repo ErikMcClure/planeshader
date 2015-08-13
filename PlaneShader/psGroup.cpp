@@ -2,6 +2,7 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psGroup.h"
+#include "bss-util\delegate.h"
 
 using namespace planeshader;
 

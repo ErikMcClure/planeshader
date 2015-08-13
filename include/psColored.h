@@ -5,14 +5,13 @@
 #define __COLORED_H__PS__
 
 #include "ps_dec.h"
-#include "ps_ani.h"
 #include "psColor.h"
 
 namespace planeshader {
   struct DEF_COLORED;
 
   // Represents something that has color.
-  class PS_DLLEXPORT psColored : AbstractAni
+  class PS_DLLEXPORT psColored
   {
   public:
     psColored(const psColored& copy);
@@ -35,7 +34,6 @@ namespace planeshader {
     //}
 
   protected:
-    virtual void BSS_FASTCALL TypeIDRegFunc(bss_util::AniAttribute*);
     void BSS_FASTCALL _setcolor(unsigned int color) { SetColor(color); }
 
     psColor32 _color;

@@ -108,7 +108,7 @@ namespace planeshader {
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0);
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0);
     // Pushes or pops a scissor rect on to the stack
-    virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect);
+    virtual void BSS_FASTCALL PushScissorRect(const psRect& rect);
     virtual void PopScissorRect();
     // Sets the rendertargets
     virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0);
@@ -147,6 +147,9 @@ namespace planeshader {
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile);
     // Gets number of bytes per pixel of a given format
     virtual unsigned short GetBytesPerPixel(FORMATS format);
+    // Gets/Sets the effective DPI
+    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI));
+    virtual psVeciu GetDPI();
 
     inline long GetLastError() const { return _lasterr; }
 
@@ -203,6 +206,7 @@ namespace planeshader {
     unsigned int _lockedrectuv;
     FLAG_TYPE _lockedflag;
     psVec _extent;
+    psVeciu _dpi;
     bool _zerocamrot;
     bool _vsync;
     bss_util::cStack<psRectl> _scissorstack;

@@ -86,18 +86,3 @@ psSolid& psSolid::operator =(psSolid&& right)
   _realdim=right._realdim;
   return *this;
 }
-
-void BSS_FASTCALL psSolid::TypeIDRegFunc(bss_util::AniAttribute*)
-{ 
-  /*switch(p->typeID)
-  {
-  case SCALE_ANI_TYPEID:
-    p->Attach(&AttrDefSmooth<POSITION_ANI_TYPEID>(&_scale, delegate<void, const cVec&>::From<cSolid, &cSolid::SetScale>(this)));
-    break;
-  case ZORDER_ANI_TYPEID:
-    p->Attach(&AttrDefSmooth<POSITION_ANI_TYPEID>(&_zorder, delegate<void, int>::From<cRenderable, &cRenderable::SetZOrder>(this)));
-    break;
-  default:
-    psInheritable::TypeIDRegFunc(p);
-  }*/
-}

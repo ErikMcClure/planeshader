@@ -21,7 +21,7 @@ namespace planeshader {
     const psRectRotate BSS_FASTCALL GetScreenRect(FLAG_TYPE flags=0) const;
     // Gets or sets the viewport of the camera
     const psRect& GetViewPort() const { return _viewport; }
-    void BSS_FASTCALL SetViewPort(const psRectiu& vp);
+    void BSS_FASTCALL SetViewPort(const psRect& vp); // The viewport must be in pixels, but fractional values are technically valid here if rendering at a strange DPI
 
     inline psCamera& operator =(const psCamera& copy) { psLocatable::operator =(copy); return *this; }
 
@@ -29,7 +29,7 @@ namespace planeshader {
     static const psCamera default_camera;
 
   protected:
-    psRect _viewport;
+    psRect _viewport; // This is NOT an actual rectangle, it stores left/top/width/height
   };
 
   /*class PS_DLLEXPORT psCamera3D : public psCamera

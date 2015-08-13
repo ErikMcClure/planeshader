@@ -35,8 +35,9 @@ psFont::psFont(const char* file, int psize, float lineheight, FONT_ANTIALIAS ant
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
-  _textures.Insert(new psTex(psVeciu(psize*8, psize*8), FMT_A8R8G8B8, USAGE_AUTOGENMIPMAP|USAGE_DEFAULT|USAGE_RENDERTARGET, 0), 0);
-  _staging.Insert(new psTex(psVeciu(psize*8, psize*8), FMT_A8R8G8B8, USAGE_STAGING, 1), 0);
+  psVeci scale(bss_util::fFastRound(_driver->GetDPI().x / (float)psDriver::BASE_DPI), bss_util::fFastRound(_driver->GetDPI().y / (float)psDriver::BASE_DPI));
+  _textures.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_A8R8G8B8, USAGE_AUTOGENMIPMAP|USAGE_DEFAULT|USAGE_RENDERTARGET, 0, 0, _driver->GetDPI()), 0);
+  _staging.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_A8R8G8B8, USAGE_STAGING, 1, 0, _driver->GetDPI()), 0);
 
   if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
@@ -186,7 +187,7 @@ void psFont::_loadfont()
   }
 
   FT_Pos psize=FT_F26Dot6(_pointsize*64);
-  if(FT_Set_Char_Size(_ft2face, psize, psize, 96, 96)!=0) //windows has auto-DPI scaling so we ignore it
+  if(FT_Set_Char_Size(_ft2face, psize, psize, _driver->GetDPI().x, _driver->GetDPI().y)!=0)
   { //certain fonts can only be rendered at specific sizes, so we iterate through them until we hit the closest one and try to use that
     int bestdif=0x7FFFFFFF;
     int cur=0;
@@ -218,7 +219,7 @@ void psFont::_loadfont()
     //_height = _ft2face->size->metrics.height * FT_COEF;
   }
 
-  if(_lineheight==0) _lineheight = _ft2face->size->metrics.height * FT_COEF;
+  if(_lineheight==0) _lineheight = _ft2face->size->metrics.height * FT_COEF * _driver->GetInvDPIScale().y;
 }
 
 psGlyph* psFont::_loadglyph(unsigned int codepoint)
@@ -227,7 +228,7 @@ psGlyph* psFont::_loadglyph(unsigned int codepoint)
   if(retval != 0)
     return retval;
 
-  psGlyph g ={ RECT_ZERO, 0, 0, 0, -1 };
+  psGlyph g ={ RECT_ZERO, 0, 0, 0, (unsigned char)-1 };
   _glyphs.Insert(codepoint, g);
   return _renderglyph(codepoint);
 }
@@ -248,14 +249,14 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
   const float FT_COEF = (1.0f/64.0f);
   unsigned int width = (gbmp.pixel_mode==FT_PIXEL_MODE_LCD)?(gbmp.width/3):gbmp.width;
   unsigned int height=gbmp.rows;
-  if(_curpos.x+width+1>_staging[_curtex]->GetDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
+  if(_curpos.x+width+1>_staging[_curtex]->GetRawDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
   {
     _curpos.x=1;
     _curpos.y=_nexty;
   }
-  if(_curpos.y+height+1>_staging[_curtex]->GetDim().y) //if true we ran off the bottom of the texture, so we attempt a resize
+  if(_curpos.y+height+1>_staging[_curtex]->GetRawDim().y) //if true we ran off the bottom of the texture, so we attempt a resize
   {
-    psVeciu ndim = _staging[_curtex]->GetDim()*2u;
+    psVeciu ndim = _staging[_curtex]->GetRawDim()*2u;
     if(!_textures[_curtex]->Resize(ndim, psTex::RESIZE_CLIP) ||
       !_staging[_curtex]->Resize(ndim, psTex::RESIZE_CLIP)) //if this fails we make a new texture
     {
@@ -287,11 +288,12 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
 
   if(!lockbytes) return retval;
 
-  psVec dim=_staging[_curtex]->GetDim();
+  psVec dpiscale = _driver->GetInvDPIScale();
+  psVec dim=_staging[_curtex]->GetRawDim();
   retval->uv=psRect(_curpos.x/dim.x, _curpos.y/dim.y, (_curpos.x+width)/dim.x, (_curpos.y+height)/dim.y);
-  retval->width=(_ft2face->glyph->metrics.horiAdvance * FT_COEF);
-  retval->ascender=(-_ft2face->glyph->metrics.horiBearingY * FT_COEF);
-  retval->advance=(_ft2face->glyph->metrics.horiBearingX * FT_COEF);
+  retval->width=(_ft2face->glyph->metrics.horiAdvance * FT_COEF * dpiscale.x);
+  retval->ascender=(-_ft2face->glyph->metrics.horiBearingY * FT_COEF * dpiscale.y);
+  retval->advance=(_ft2face->glyph->metrics.horiBearingX * FT_COEF * dpiscale.x);
 
   _curpos.x+=width+1; //one pixel buffer
   if(_nexty<_curpos.y+height) _nexty = _curpos.y+height+1; //one pixel buffer
