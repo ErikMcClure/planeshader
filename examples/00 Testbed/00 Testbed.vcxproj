@@ -103,6 +103,9 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -146,6 +149,9 @@
       </AdditionalLibraryDirectories>
       <StackReserveSize>10000000</StackReserveSize>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

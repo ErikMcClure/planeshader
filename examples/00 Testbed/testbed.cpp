@@ -286,17 +286,17 @@ TESTDEF::RETPAIR test_psDirectX10()
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
   auto timer = psEngine::OpenProfiler();
   int fps=0;
-  psTex* pslogo = psTex::Create("../media/pslogo.png");
+  psTex* pslogo = psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, FILTER_NONE, psVeciu(192));
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
 
   psVec imgpos[NUMBATCH];
-  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->screendim.x), RANDINTGEN(0, driver->screendim.y));
+  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y));
 
   while(engine->Begin() && !gotonext)
   {
     driver->Clear(0);
-    driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 0.5f, psRectiu(VEC_ZERO, driver->screendim));
+    driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 0.5f, psRectiu(VEC_ZERO, driver->rawscreendim));
     driver->library.IMAGE->Activate();
     driver->DrawRect(psRectRotateZ(100, 100, 100+pslogo->GetDim().x, 100+pslogo->GetDim().y, 0.5f, psVec(50, 50)), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
     driver->library.CIRCLE->Activate();
@@ -361,7 +361,7 @@ TESTDEF::RETPAIR test_psFont()
 {
   BEGINTEST;
 
-  psFont* font = psFont::Create("arial.ttf", 14);
+  psFont* font = psFont::Create("arial.ttf", 14, 0, psFont::FAA_LCD);
 
   int fps=0;
   auto timer = psEngine::OpenProfiler();
@@ -374,7 +374,7 @@ TESTDEF::RETPAIR test_psFont()
     driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF000000, 0, 0, PSFLAG_FIXED);
     driver->library.IMAGE->Activate();
     //font->DrawText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla maximus sem at ante porttitor vehicula. Nulla a lorem imperdiet, consectetur metus id, congue enim. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse potenti. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin placerat a ipsum ac sodales. Curabitur vel neque scelerisque elit mollis convallis. Proin porta augue metus, sed pulvinar nisl mollis ut. Proin at aliquam erat. Quisque at diam tellus. Aenean facilisis justo ut mauris egestas dignissim. Maecenas scelerisque, ante ac blandit consectetur, magna sem pharetra massa, eu luctus orci ligula luctus augue. Integer at metus eros. Donec sed eros molestie, posuere nunc id, porta sem. \nMauris fermentum mauris ac eleifend ultrices.Fusce nec sollicitudin turpis, a ultricies metus.Nulla suscipit cursus orci, ac fringilla massa volutpat et.Nullam vestibulum dolor at tortor bibendum condimentum.Donec vitae faucibus risus, ut placerat mauris.Curabitur quis purus at urna pharetra lobortis.Pellentesque turpis velit, molestie aliquet elit sed, vestibulum rutrum nibh. \nSuspendisse ultricies leo nec ante accumsan ullamcorper.Suspendisse scelerisque molestie enim sit amet lacinia.Proin at lorem justo.Curabitur lectus ipsum, accumsan at quam eu, iaculis pellentesque felis.Fusce blandit feugiat dui, id placerat justo sollicitudin sed.Cras auctor lorem hendrerit leo facilisis porttitor.Sed vitae pulvinar purus, sed ornare ligula.\nPhasellus blandit, magna quis bibendum mattis, neque quam gravida quam, at tempus sem sapien eu mi.Phasellus ornare laoreet neque at blandit.Suspendisse vulputate fringilla fermentum.Fusce ante eros, laoreet ultricies eros sit amet, lobortis viverra elit.Curabitur consequat erat neque, in fringilla eros elementum eu.Quisque aliquam laoreet metus, volutpat vulputate tortor vehicula ut.Fusce sodales commodo justo, in condimentum ipsum aliquam at.Phasellus eget tellus ac arcu ultrices vehicula.Integer sagittis metus nibh, in varius mi scelerisque quis.Etiam ullamcorper gravida urna, et vestibulum velit posuere id.Aenean fermentum nibh ac dui rhoncus volutpat.Cras quis felis eget tortor vehicula interdum.In efficitur nulla quam, non condimentum ipsum pulvinar non.\nCras ultricies mi sed lacinia consequat.Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Suspendisse potenti.Nam consectetur eleifend libero sed pharetra.Suspendisse in dolor dui.Sed imperdiet pellentesque fermentum.Vivamus ac tortor felis.Aliquam id turpis euismod, tincidunt sapien ac, varius sapien.Vivamus id nulla mauris.");
-    font->DrawText("the dog jumped over \nthe lazy fox", psRect(0,0,100,0), TDT_WORDBREAK);
+    font->DrawText("the dog jumped \nover the lazy fox", psRect(0,0,100,0), TDT_WORDBREAK);
     const psTex* t = font->GetTex();
     driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, &t, 1, PSFLAG_FIXED);
     engine->End();

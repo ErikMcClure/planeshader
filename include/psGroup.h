@@ -6,6 +6,7 @@
 
 #include "psInheritable.h"
 #include "bss-util/cHash.h"
+#include <vector>
 
 namespace planeshader {
   struct DEF_GROUP;

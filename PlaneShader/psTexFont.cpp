@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, DELEGATE d)
+psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d)
 {
   float linewidth;
   float curwidth = 0.0f;
@@ -28,7 +28,7 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
     dim = VEC_ZERO;
     while(*peek)
     {
-      linewidth = _getlinewidth(peek, maxdim.x, drawflags, curwidth);
+      linewidth = _getlinewidth(peek, maxdim.x, drawflags, letterspacing, curwidth);
       if(linewidth > dim.x) dim.x = linewidth;
       dim.y += _lineheight;
     }
@@ -40,7 +40,7 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
 
   if(drawflags&TDT_CLIP) //this applies a scissor rect to clip the text (text renders so fast anything more complicated would be too expensive to be worth it)
   {
-    psRectl transfer;
+    psRect transfer;
     transfer.topleft = _driver->TransformPoint(psVec3D(area.top, area.left, 0), flags).xy;
     transfer.bottomright = _driver->TransformPoint(psVec3D(area.bottom, area.right, 0), flags).xy;
     _driver->PushScissorRect(transfer);
@@ -67,7 +67,7 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
     while(*pos)
     {
       begin = pos;
-      linewidth = _getlinewidth(peek, maxdim.x, drawflags, curwidth) + area.left;
+      linewidth = _getlinewidth(peek, maxdim.x, drawflags, letterspacing, curwidth) + area.left;
 
       if(drawflags&TDT_RIGHT)
         cur.x = area.right - linewidth;
@@ -77,12 +77,15 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
         cur.x = area.left;
       linestart = cur.x;
 
-      while(*pos && (cur.x <= linewidth || begin == pos)) // Force each line to have at least one character
+      while(*pos)
       {
-        c = *(pos++);
+        size_t ipos = pos - text;
+        c = *pos;
         g = _glyphs[c];
-        if(!g) continue; // note: we don't bother attempting to load glyphs here because they should've already been loaded by _getlinewidth
-        if(g->texnum != i) { cur.x += g->width; continue; }
+        if(!g) { ++pos; continue; } // note: we don't bother attempting to load glyphs here because they should've already been loaded by _getlinewidth
+        if(begin != pos && (cur.x + g->width + letterspacing) > linewidth) break; // Force all lines to have at least one character
+        ++pos;
+        if(g->texnum != i) { cur.x += g->width + letterspacing; continue; }
 
         rect.left = cur.x + g->advance;
         rect.top= cur.y + g->ascender + _lineheight;
@@ -100,10 +103,10 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
         rect.right = rect.left + (g->uv.right-g->uv.left)*texdim.x;
         rect.bottom = rect.top + (g->uv.bottom-g->uv.top)*texdim.y;
 
-        if(!d.IsEmpty()) d(rect, color);
+        if(!d.IsEmpty()) d(ipos, rect, color);
         _driver->DrawRectBatch(rect, &g->uv, color);
 
-        cur.x += g->width;
+        cur.x += g->width + letterspacing;
       }
       cur.y += _lineheight;
     }
@@ -116,26 +119,26 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
   return dim;
 }
 
-psVec psTexFont::DrawText(const char* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, DELEGATE d)
+psVec psTexFont::DrawText(const char* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d)
 {
   size_t len = strlen(text)+1;
   if(len < 1000000)
   {
     DYNARRAY(int, txt, len);
     UTF8toUTF32(text, txt, len);
-    return DrawText(txt, area, drawflags, Z, color, flags, dim);
+    return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d);
   }
   cStrT<int> txt(text);
-  return DrawText(txt, area, drawflags, Z, color, flags, dim, d);
+  return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d);
 }
 bool psTexFont::_isspace(int c) // We have to make our own isspace implementation because the standard isspace() explodes if you feed it unicode characters.
 {
   return c == ' ' || c == '\t' ||c == '\n' ||c == '\r' ||c == '\v' ||c == '\f';
 }
-float psTexFont::_getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float& cur)
+float psTexFont::_getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float letterspacing, float& cur)
 {
   bool dobreak = maxwidth != 0.0f && (drawflags&TDT_CHARBREAK || drawflags&TDT_WORDBREAK);
-  float width = 0.0f;
+  float width = cur;
   int c;
   const psGlyph* g;
   while(*text)
@@ -147,15 +150,17 @@ float psTexFont::_getlinewidth(const int*& text, float maxwidth, unsigned short 
       g = _loadglyph(c);
       if(!g) continue; // Note: Bad glyphs usually just have 0 width, so we don't have to check for them.
     }
-    if(c == '\n' || (dobreak && (cur + g->width)>maxwidth))
+    if(c == '\n' || (dobreak && (cur + g->width + letterspacing) > maxwidth)) // We use >= here instead of > due to nasty precision issues at high DPI levels
     {
       cur -= width;
+      if(c != '\n')
+        cur += g->width + letterspacing;
       ++text;
-      return width;
+      return width + 0.01f;
     }
-    if(!(drawflags&TDT_WORDBREAK)) width = _isspace(c)?cur:(cur + g->width);
-    else if(_isspace(c)) width = cur;
-    cur += g->width;
+    if(!(drawflags&TDT_WORDBREAK) || _isspace(c))
+      width = cur + g->width + letterspacing;
+    cur += g->width + letterspacing;
 
     ++text;
   }
@@ -166,7 +171,7 @@ psGlyph* psTexFont::_loadglyph(unsigned int codepoint)
   return 0;
 }
 
-void psTexFont::CalcTextDim(const int* text, psVec& dest, unsigned short drawflags)
+void psTexFont::CalcTextDim(const int* text, psVec& dest, unsigned short drawflags, float letterspacing)
 {
   float cur = 0.0f;
   float height = (!text || !text[0])?0.0f:_lineheight;
@@ -177,7 +182,7 @@ void psTexFont::CalcTextDim(const int* text, psVec& dest, unsigned short drawfla
   float w;
   while(*text)
   {
-    w = _getlinewidth(text, maxdim.x, drawflags, cur);
+    w = _getlinewidth(text, maxdim.x, drawflags, letterspacing, cur);
     if(w > width) width = w;
     height += _lineheight;
   }

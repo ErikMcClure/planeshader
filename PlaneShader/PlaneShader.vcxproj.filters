@@ -42,9 +42,6 @@
     <ClInclude Include="..\include\psVec.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ps_ani.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="psDirectX10.h">
       <Filter>Header Files</Filter>
     </ClInclude>

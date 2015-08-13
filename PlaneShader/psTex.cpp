@@ -7,14 +7,14 @@
 using namespace planeshader;
 
 psTex::psTex(psTex&& mov) : _res(mov._res), _view(mov._view), _dim(mov._dim), _format(mov._format), _usage(mov._usage),
-  _miplevels(mov._miplevels), _texblock(mov._texblock)
+  _miplevels(mov._miplevels), _texblock(mov._texblock), _dpi(mov._dpi)
 {
   mov._res=0;
   mov._view=0;
   mov._texblock=0;
 }
 
-psTex::psTex(const psTex& copy) : _texblock(copy._texblock)
+psTex::psTex(const psTex& copy) : _texblock(copy._texblock), _dpi(copy._dpi)
 {
   if(_texblock) _texblock->Grab();
   _res = _driver->CreateTexture(copy._dim, copy._format, copy._usage, copy._miplevels, 0, &_view, _texblock);
@@ -23,7 +23,7 @@ psTex::psTex(const psTex& copy) : _texblock(copy._texblock)
   Grab();
 }
 
-psTex::psTex(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock) : _texblock(texblock)
+psTex::psTex(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock, psVeciu dpi) : _texblock(texblock), _dpi(dpi)
 {
   if(_texblock) _texblock->Grab();
   if(!(usage&USAGE_STAGING)) usage |= USAGE_SHADER_RESOURCE;
@@ -32,8 +32,8 @@ psTex::psTex(psVeciu dim, FORMATS format, unsigned int usage, unsigned char mipl
   Grab();
 }
 
-psTex::psTex(void* res, void* view, psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock) :
-  _res(res), _view(view), _dim(dim), _format(format), _usage(usage), _miplevels(miplevels), _texblock(texblock)
+psTex::psTex(void* res, void* view, psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock, psVeciu dpi) :
+  _res(res), _view(view), _dim(dim), _format(format), _usage(usage), _miplevels(miplevels), _texblock(texblock), _dpi(dpi)
 {
   if(_texblock) _texblock->Grab();
   Grab();
@@ -55,31 +55,31 @@ void BSS_FASTCALL psTex::_applydesc(TEXTURE_DESC& desc)
   _miplevels = desc.miplevels;
 }
 
-psTex* BSS_FASTCALL psTex::Create(const char* file, unsigned int usage, FILTERS mipfilter, FILTERS loadfilter)
+psTex* BSS_FASTCALL psTex::Create(const char* file, unsigned int usage, FILTERS mipfilter, FILTERS loadfilter, psVeciu dpi)
 {
   void* view = 0;
   void* res = _driver->LoadTexture(file, usage, FMT_UNKNOWN, &view, 0, mipfilter, loadfilter);
-  return _create(res, view);
+  return _create(res, view, dpi);
 }
 
-psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsigned int usage, FILTERS mipfilter, FILTERS loadfilter)
+psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsigned int usage, FILTERS mipfilter, FILTERS loadfilter, psVeciu dpi)
 {
   if(!datasize)
     return Create((const char*)data, usage);
   void* view = 0;
   void* res = _driver->LoadTextureInMemory(data, datasize, usage, FMT_UNKNOWN, &view, 0, mipfilter, loadfilter);
-  return _create(res, view);
+  return _create(res, view, dpi);
 }
 static psTex* BSS_FASTCALL Create(const psTex& copy)
 {
   return new psTex(copy);
 }
 
-psTex* BSS_FASTCALL psTex::_create(void* res, void* view)
+psTex* BSS_FASTCALL psTex::_create(void* res, void* view, psVeciu dpi)
 {
   if(!res) return 0;
   TEXTURE_DESC desc = _driver->GetTextureDesc(res);
-  return new psTex(res, view, desc.dim.xy, desc.format, desc.usage, desc.miplevels);
+  return new psTex(res, view, desc.dim.xy, desc.format, desc.usage, desc.miplevels, 0, dpi);
 }
 
 inline void* psTex::Lock(unsigned int& rowpitch, psVeciu offset, unsigned char lockflags, unsigned char miplevel)

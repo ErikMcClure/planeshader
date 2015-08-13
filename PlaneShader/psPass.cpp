@@ -47,7 +47,7 @@ void psPass::Begin()
   PROFILE_FUNC();
   CurPass = this;
   auto& vp = _cam->GetViewPort();
-  psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->screendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->screendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->screendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->screendim.y) };
+  psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
   _driver->ApplyCamera(_cam->GetPosition(), _cam->GetPivot(), _cam->GetRotation(), realvp);
   _driver->SetDefaultRenderTarget(_defaultrt);
 

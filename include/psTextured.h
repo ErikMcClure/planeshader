@@ -4,15 +4,15 @@
 #ifndef __TEXTURED_H__PS__
 #define __TEXTURED_H__PS__
 
-#include "ps_ani.h"
 #include "psTex.h"
 #include "bss-util/cArray.h"
+#include <vector>
 
 namespace planeshader {
   struct DEF_TEXTURED;
 
   // Represents any object that can be textured
-  class PS_DLLEXPORT psTextured : public AbstractAni
+  class PS_DLLEXPORT psTextured
   {
   public:
     psTextured(const psTextured& copy);
@@ -36,8 +36,6 @@ namespace planeshader {
     psTextured& operator=(psTextured&& right);
 
   protected:
-    virtual void BSS_FASTCALL TypeIDRegFunc(bss_util::AniAttribute*);
-
     bss_util::cArray<psTex*, unsigned char> _tex;
     bss_util::cArray<psTex*, unsigned char> _rts;
   };

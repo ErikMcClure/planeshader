@@ -511,10 +511,22 @@ void psGUIManager::FlushMessages()
 
   _joyupdateall();
 }
+
 void psGUIManager::SetWindowTitle(const char* caption)
 {
   PROFILE_FUNC();
   SetWindowText(_window, caption);
+}
+
+psVeciu psGUIManager::GetMonitorDPI(int num)
+{
+  UINT xdpi;
+  UINT ydpi;
+  HDC hdc = GetDC(0); // Before windows 8.1, windows returns the same DPI for all monitors, so the DC here is irrelevent.
+  xdpi = (UINT)GetDeviceCaps(hdc, LOGPIXELSX);
+  ydpi = (UINT)GetDeviceCaps(hdc, LOGPIXELSY);
+  //GetDpiForMonitor(0, MDT_Effective_DPI, &xdpi, &ydpi);
+  return psVeciu(xdpi, ydpi);
 }
 
 void psGUIManager::_joyupdateall()

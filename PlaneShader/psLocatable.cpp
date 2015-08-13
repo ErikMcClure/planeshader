@@ -13,19 +13,3 @@ psLocatable::~psLocatable() {}
 void BSS_FASTCALL psLocatable::SetRotation(FNUM rotation) { _rotation=rotation; }
 void BSS_FASTCALL psLocatable::SetPivot(const psVec& pivot) { _pivot=pivot; }
 void BSS_FASTCALL psLocatable::SetPosition(FNUM X, FNUM Y, FNUM Z) { _relpos.x=X; _relpos.y=Y; _relpos.z=Z; }
-
-void psLocatable::TypeIDRegFunc(bss_util::AniAttribute* p)
-{
-  /*switch(p->typeID)
-  {
-  case POSITION_ANI_TYPEID:
-    p->Attach(&bss_util::AttrDefSmooth<POSITION_ANI_TYPEID>(&_relpos, bss_util::delegate<void, const psVec&>::From<psLocatable, &psLocatable::SetPosition>(this)));
-    break;
-  case ROTATION_ANI_TYPEID:
-    p->Attach(&bss_util::AttrDefSmooth<ROTATION_ANI_TYPEID>(&_rotation, bss_util::delegate<void, FNUM>::From<psLocatable, &psLocatable::SetRotation>(this)));
-    break;
-  case PIVOT_ANI_TYPEID:
-    p->Attach(&bss_util::AttrDefSmooth<PIVOT_ANI_TYPEID>(&_pivot, bss_util::delegate<void, const psVec&>::From<psLocatable, &psLocatable::SetPivot>(this)));
-    break;
-  }*/
-}

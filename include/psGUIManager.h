@@ -75,6 +75,8 @@ namespace planeshader {
     // Set window title
     void SetWindowTitle(const char* caption);
 
+    static psVeciu GetMonitorDPI(int num = -1);
+
     static const unsigned short NUMKEYS=256; //256 possible keyboard IDs
     static const unsigned short NUMMOUSE=GUI_NUM_BUTTONS; //5 mouse buttons
     static const unsigned char NUMJOY=16; //Windows supports a max of 15 joysticks but the drivers claim they can support 16.

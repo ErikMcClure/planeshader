@@ -25,7 +25,6 @@ using namespace bss_util;
 
 psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
-psAnimation* psAnimation::aniroot=0;
 const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
@@ -61,7 +60,7 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 
   psStateblock::DEFAULT = psStateblock::Create(0, 0);
   _driver->SetStateblock(psStateblock::DEFAULT->GetSB());
-  _resizewindow(_driver->screendim.x, _driver->screendim.y, init.fullscreen);
+  _resizewindow(_driver->rawscreendim.x, _driver->rawscreendim.y, init.fullscreen);
   _driver->SetExtent(init.nearextent, init.farextent);
   _mainpass = new psPass();
   _passes[0] = _mainpass;
@@ -84,8 +83,8 @@ bool psEngine::Begin()
   PROFILE_FUNC();
   if(GetQuit())
     return false;
-  if(_flags&PSENGINE_AUTOANI)
-    psAnimation::AniInterpolate(delta);
+  //if(_flags&PSENGINE_AUTOANI)
+  //  psAnimation::AniInterpolate(delta);
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
   _curpass=0;

@@ -5,13 +5,12 @@
 #define __LOCATABLE_H__PS__
 
 #include "psVec.h"
-#include "ps_ani.h"
 
 namespace planeshader {
   struct DEF_LOCATABLE;
 
   // This holds position information. 
-  class PS_DLLEXPORT psLocatable : public AbstractAni
+  class PS_DLLEXPORT psLocatable
   {
   public:
     psLocatable(const psLocatable& copy);
@@ -40,8 +39,6 @@ namespace planeshader {
     inline psLocatable& operator=(const psLocatable& right) { _relpos=right._relpos; _rotation=right._rotation; _pivot=right._pivot; return *this; }
 
   protected:
-    virtual void BSS_FASTCALL TypeIDRegFunc(bss_util::AniAttribute*);
-
     psVec3D _relpos;
     psVec _pivot; // Rotational center in absolute coordinates relative from its location
     FNUM _rotation; //Rotation of the object

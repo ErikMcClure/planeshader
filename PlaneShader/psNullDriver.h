@@ -58,7 +58,7 @@ namespace planeshader {
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0) { return 0; }
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
     // Pushes or pops a scissor rect on to the stack
-    virtual void BSS_FASTCALL PushScissorRect(const psRectl& rect) { }
+    virtual void BSS_FASTCALL PushScissorRect(const psRect& rect) { }
     virtual void PopScissorRect() { }
     // Sets the current rendertargets, setting all the rest to null.
     virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0) { }
@@ -86,6 +86,9 @@ namespace planeshader {
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver() { RealDriver r; r.nul=this; r.type=RealDriver::DRIVERTYPE_NULL; return r; }
     virtual unsigned short GetBytesPerPixel(FORMATS format) { return 0; }
+    // Gets/Sets the effective DPI
+    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI)) { }
+    virtual psVeciu GetDPI() { return psVeciu(0, 0); }
 
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="") { return 0; }
