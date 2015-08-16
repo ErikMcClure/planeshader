@@ -120,6 +120,12 @@
     <ClInclude Include="..\include\psRenderGeometry.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psText.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psTileset.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -182,6 +188,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psRenderGeometry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psText.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psTileset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

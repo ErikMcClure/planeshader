@@ -4,10 +4,11 @@
 #ifndef __RENDERABLE_H__PS__
 #define __RENDERABLE_H__PS__
 
-#include "ps_dec.h"
+#include "psStateBlock.h"
 #include "bss-util/cBitField.h"
 #include "bss-util/LLBase.h"
 #include "bss-util/cTRBtree.h"
+#include "bss-util/cSmartPtr.h"
 
 namespace planeshader {
   struct DEF_RENDERABLE;
@@ -36,7 +37,7 @@ namespace planeshader {
     virtual FLAG_TYPE GetAllFlags() const;
     inline psShader* GetShader() const { return _shader; }
     inline void BSS_FASTCALL SetShader(psShader* shader) { _shader=shader; _invalidate(); }
-    inline psStateblock* GetStateblock() const { return _stateblock; }
+    inline const psStateblock* GetStateblock() const { return _stateblock; }
     void BSS_FASTCALL SetStateblock(psStateblock* stateblock);
     virtual psTex* const* GetTextures() const;
     virtual unsigned char NumTextures() const;
@@ -46,12 +47,14 @@ namespace planeshader {
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);
 
+    virtual void _renderbatch();
+
   protected:
     void _destroy();
     void _invalidate();
     BSS_FORCEINLINE unsigned char _internaltype() { return _internalflags&INTERNALFLAG_MASK; }
-    virtual void _render()=0;
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+    virtual void _render() = 0;
+    virtual void BSS_FASTCALL _renderbatchlist(psRenderable** rlist, unsigned int count);
     //virtual char BSS_FASTCALL _sort(psRenderable* r) const;
     virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
 
@@ -59,7 +62,7 @@ namespace planeshader {
     psPass* _pass; // Stores what pass we are in
     unsigned char _internalflags;
     int _zorder;
-    psStateblock* _stateblock;
+    bss_util::cAutoRef<psStateblock> _stateblock;
     psShader* _shader; // any shader left in here when cRenderable is destroyed will be deleted, but changing it out won't delete the shader (so you can do batch render tricks)
     bss_util::LLBase<psRenderable> _llist;
     bss_util::TRB_Node<psRenderable*>* _psort;
@@ -70,7 +73,10 @@ namespace planeshader {
       INTERNALTYPE_IMAGE,
       INTERNALTYPE_LINE,
       INTERNALTYPE_POINT,
+      INTERNALTYPE_ELLIPSE,
+      INTERNALTYPE_POLYGON,
       INTERNALTYPE_TILESET,
+      INTERNALTYPE_TEXT,
     };
 
     enum INTERNALFLAGS : unsigned char

@@ -7,7 +7,7 @@ using namespace planeshader;
 
 psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColored(copy), _uvs(copy._uvs) {}
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
-psImage::psImage(const DEF_IMAGE& def) : psSolid(def, INTERNALTYPE_IMAGE), psTextured(def), psColored(def), _uvs(def.sources.size()) { for(unsigned char i = 0; i < _uvs.Size(); ++i) _uvs[i] = def.sources[i]; }
+psImage::psImage(const DEF_IMAGE& def) : psSolid(def, INTERNALTYPE_IMAGE), psTextured(def), psColored(def), _uvs((unsigned char)def.sources.size()) { for(unsigned char i = 0; i < _uvs.Size(); ++i) _uvs[i] = def.sources[i]; }
 psImage::~psImage() {}
 psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) : 
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, INTERNALTYPE_IMAGE), psTextured(tex), psColored(color)
@@ -39,7 +39,7 @@ psImage& psImage::operator =(psImage&& right)
   return *this;
 }
 
-void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.Size()); }
+void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.Size()); if(_uvs.Size()==1) _recalcdim(); }
 void psImage::ClearSources() { _uvs.SetSizeDiscard(0); }
 
 void psImage::_setuvs(unsigned int size)
@@ -55,14 +55,17 @@ void psImage::_render()
 {
   _driver->DrawRect(GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetTextures(), NumTextures(), GetAllFlags());
 }
-
-void BSS_FASTCALL psImage::_renderbatch(psRenderable** rlist, unsigned int count)
+void psImage::_renderbatch()
 {
-  psImage** list = (psImage**)rlist;
+  _driver->DrawRectBatch(GetCollisionRect(), _uvs, GetColor().color);
+}
+
+void BSS_FASTCALL psImage::_renderbatchlist(psRenderable** rlist, unsigned int count)
+{
   _driver->DrawRectBatchBegin(GetTextures(), NumTextures(), NumSources(), GetAllFlags());
 
   for(unsigned int i = 0; i < count; ++i)
-    _driver->DrawRectBatch(list[i]->GetCollisionRect(), list[i]->_uvs, list[i]->GetColor().color);
+    rlist[i]->_renderbatch();
 
   _driver->DrawRectBatchEnd();
 }
@@ -70,7 +73,7 @@ void BSS_FASTCALL psImage::_renderbatch(psRenderable** rlist, unsigned int count
 bool BSS_FASTCALL psImage::_batch(psRenderable* r) const
 {
   unsigned char c = NumTextures();
-  if(c != r->NumTextures() || GetAllFlags() != r->GetAllFlags() || NumSources() != static_cast<psImage*>(r)->NumSources())
+  if(c != r->NumTextures() || (GetAllFlags()&PSFLAG_BATCHFLAGS) != (r->GetAllFlags()&PSFLAG_BATCHFLAGS) || NumSources() != static_cast<psImage*>(r)->NumSources())
     return false;
 
   psTex* const* t = GetTextures();
@@ -81,4 +84,27 @@ bool BSS_FASTCALL psImage::_batch(psRenderable* r) const
       return false;
   }
   return true;
+}
+
+void BSS_FASTCALL psImage::SetTexture(psTex* tex, unsigned int index)
+{
+  psTextured::SetTexture(tex, index);
+  if(!index) _recalcdim();
+}
+
+void psImage::_recalcdim()
+{
+  if(_tex.Size() > 0)
+    SetDim((_uvs.Size()>0)?(_tex[0]->GetDim()*_uvs[0].GetDimensions()):_tex[0]->GetDim());
+}
+
+void psImage::ApplyEdgeBuffer()
+{
+  if(_tex.Size() > 0)
+  {
+    SetSource(psRect(VEC_ZERO, _tex[0]->GetDim()).Inflate(1.0f));
+    // This adjusts the pivot by shrinking our new pivot (which is now incorrect) by 1 pixel on each side. This maps (0,0) to (1,1) and (corner,corner) to (corner-1, corner-1), but if the pivot is in the exact center, doesn't change it.
+    psVec halfdim = GetDim() / 2.0f;
+    SetPivot(((GetPivot() - halfdim) * ((halfdim - VEC_ONE) / halfdim)) + halfdim);
+  }
 }

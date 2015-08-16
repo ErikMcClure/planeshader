@@ -1,12 +1,12 @@
 // Copyright ©2015 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
-#include "bss-util/profiler.h"
 #include "psPass.h"
 #include "psSolid.h"
 #include "psCullGroup.h"
 #include "psStateblock.h"
 #include "psShader.h"
+#include "bss-util/profiler.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -101,13 +101,13 @@ void psPass::Begin()
   auto node = _renderlist.Front(); 
   auto next = node;
   while(node) {
-    if(!(node->value->_internalflags&1)) {
+    if(!(node->value->_internalflags&psRenderable::INTERNALFLAG_ACTIVE)) {
       next = node->next;
       _renderlist.Remove(node);
       node = next;
     } else {
       _queue(node->value);
-      node->value->_internalflags = (~1)&node->value->_internalflags;
+      node->value->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
       node = node->next;
     }
   }
@@ -115,14 +115,15 @@ void psPass::Begin()
 
 void psPass::End()
 {
-  CurPass = 0;
   FlushQueue();
+  CurPass = 0;
   PROFILE_FUNC();
 }
 
 void psPass::Insert(psRenderable* r)
 {
   PROFILE_FUNC();
+  r->_pass = this;
   AltLLAdd<psRenderable, &psPass::GetRenderableAlt>(r, (r->_internalflags&psRenderable::INTERNALFLAG_SOLID)?_solids:_renderables);
 }
 
@@ -132,6 +133,7 @@ void psPass::Remove(psRenderable* r)
   AltLLRemove<psRenderable, &psPass::GetRenderableAlt>(r, (r->_internalflags&psRenderable::INTERNALFLAG_SOLID)?_solids:_renderables);
   if(r->_psort != 0) _renderlist.Remove(r->_psort);
   r->_psort = 0;
+  r->_pass = 0;
 }
 
 void psPass::FlushQueue()
@@ -139,24 +141,25 @@ void psPass::FlushQueue()
   if(_renderqueue.Length() > 0) // Don't render an empty render queue, which can happen if you call this manually or at the end of a pass that has nothing in it.
   {
     _renderqueue[0]->GetShader()->Activate();
-    _driver->SetStateblock(_renderqueue[0]->GetStateblock()->GetSB());
+    _driver->SetStateblock(!_renderqueue[0]->GetStateblock()?0:_renderqueue[0]->GetStateblock()->GetSB());
 
     if(_renderqueue.Length() == 1)
       _renderqueue[0]->_render();
     else
     {
-      _renderqueue[0]->_renderbatch(_renderqueue, _renderqueue.Length());
+      _renderqueue[0]->_renderbatchlist(_renderqueue, _renderqueue.Length());
     }
+    _renderqueue.SetLength(0);
   }
 }
 
 void psPass::_queue(psRenderable* r)
 {
   if(_renderqueue.Length() > 0 &&
-    _renderqueue[0]->_internaltype() == r->_internaltype() &&
-    _renderqueue[0]->GetShader() == r->GetShader() &&
-    _renderqueue[0]->GetStateblock() == r->GetStateblock() &&
-    !_renderqueue[0]->_batch(r))
+    (_renderqueue[0]->_internaltype() != r->_internaltype() ||
+    _renderqueue[0]->GetShader() != r->GetShader() ||
+    _renderqueue[0]->GetStateblock() != r->GetStateblock() ||
+    !_renderqueue[0]->_batch(r)))
     FlushQueue();
   _renderqueue.Add(r);
 }

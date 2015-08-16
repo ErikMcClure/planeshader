@@ -78,6 +78,20 @@ psEngine::~psEngine()
 
   _instance=0;
 }
+bool psEngine::Begin(unsigned int clearcolor)
+{
+  PROFILE_FUNC();
+  if(GetQuit())
+    return false;
+  //if(_flags&PSENGINE_AUTOANI)
+  //  psAnimation::AniInterpolate(delta);
+  if(!_driver->Begin()) //lost device (DX9 only)
+    return false;
+  _curpass = 0;
+  _driver->Clear(clearcolor);
+  _passes[0]->Begin();
+  return true;
+}
 bool psEngine::Begin()
 {
   PROFILE_FUNC();

@@ -26,22 +26,26 @@ namespace planeshader {
     inline psRect GetSource(unsigned int index=0) const { if(index>=_uvs.Size() || index >= _tex.Size()) return RECT_ZERO; return _uvs[index]*_tex[index]->GetDim(); }
     inline const psRect& GetRelativeSource(unsigned int index=0) const { return _uvs[index]; }
     inline const psRect* GetRelativeSources() const { return _uvs; }
-    inline void SetRelativeSource(const psRect& uv, unsigned int index=0) { if(index<_rts.Size()) _uvs[index] = uv; }
-    inline void SetSource(const psRect& uv, unsigned int index=0) { if(index<_uvs.Size() && index<_tex.Size()) _uvs[index] = uv/_tex[index]->GetDim(); }
+    inline void SetRelativeSource(const psRect& uv, unsigned int index = 0) { _setuvs(index+1); _uvs[index] = uv; if(!index) _recalcdim(); }
+    inline void SetSource(const psRect& uv, unsigned int index=0) { _setuvs(index+1); _uvs[index] = uv/_tex[index]->GetDim(); if(!index) _recalcdim(); }
     unsigned char NumSources() const { return _uvs.Size(); }
+    virtual void BSS_FASTCALL SetTexture(psTex* tex, unsigned int index = 0);
     virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
     virtual psTex* const* GetRenderTargets() const { return psTextured::GetRenderTargets(); }
     virtual unsigned char NumRT() const { return psTextured::NumRT(); }
+    void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
 
     psImage& operator =(const psImage& right);
     psImage& operator =(psImage&& right);
 
   protected:
     virtual void _render();
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+    virtual void _renderbatch();
+    virtual void BSS_FASTCALL _renderbatchlist(psRenderable** rlist, unsigned int count);
     virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
     void _setuvs(unsigned int size);
+    void _recalcdim();
 
     bss_util::cArray<psRect, unsigned char> _uvs;
   };

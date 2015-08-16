@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d)
+psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   float linewidth;
   float curwidth = 0.0f;
@@ -104,13 +104,13 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
         rect.bottom = rect.top + (g->uv.bottom-g->uv.top)*texdim.y;
 
         if(!d.IsEmpty()) d(ipos, rect, color);
-        _driver->DrawRectBatch(rect, &g->uv, color);
+        _driver->DrawRectBatch(rect, &g->uv, color, transform);
 
         cur.x += g->width + letterspacing;
       }
       cur.y += _lineheight;
     }
-    _driver->DrawRectBatchEnd();
+    _driver->DrawRectBatchEnd(transform);
   }
 
   if(drawflags&TDT_CLIP)
@@ -119,17 +119,17 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
   return dim;
 }
 
-psVec psTexFont::DrawText(const char* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d)
+psVec psTexFont::DrawText(const char* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   size_t len = strlen(text)+1;
   if(len < 1000000)
   {
     DYNARRAY(int, txt, len);
     UTF8toUTF32(text, txt, len);
-    return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d);
+    return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
   }
   cStrT<int> txt(text);
-  return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d);
+  return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
 }
 bool psTexFont::_isspace(int c) // We have to make our own isspace implementation because the standard isspace() explodes if you feed it unicode characters.
 {

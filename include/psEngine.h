@@ -31,6 +31,7 @@ namespace planeshader {
     ~psEngine();
     // Begins a frame. Returns false if rendering should stop.
     bool Begin();
+    bool Begin(unsigned int clearcolor);
     // Ends a frame
     void End();
     void End(double delta);

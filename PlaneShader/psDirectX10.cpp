@@ -454,24 +454,24 @@ void psDirectX10::DrawRectBatchEnd(const float(&xform)[4][4])
   _rectobjbuf.nvert = _lockedcount;
   Draw(&_rectobjbuf, _lockedflag, xform);
 }
-void BSS_FASTCALL psDirectX10::DrawPolygon(const psVec* verts, int num, FNUM Z, unsigned long vertexcolor, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, FLAG_TYPE flags, const float(&transform)[4][4])
 { 
   DX10_simplevert* buf = (DX10_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
   if(num > BATCHSIZE) return;
   for(int i = 0; i < num; ++i)
   {
-    buf[i].x = verts[i].x;
-    buf[i].y = verts[i].y;
-    buf[i].z = Z;
+    buf[i].x = verts[i].x + offset.x;
+    buf[i].y = verts[i].y + offset.y;
+    buf[i].z = offset.z;
     buf[i].w = 1;
     buf[i].color = vertexcolor;
   }
   UnlockBuffer(_batchobjbuf.verts);
   _batchobjbuf.nvert = num;
   _batchobjbuf.nindice = (num-2)*3;
-  Draw(&_batchobjbuf, flags);
+  Draw(&_batchobjbuf, flags, transform);
 }
-void BSS_FASTCALL psDirectX10::DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags)
+void BSS_FASTCALL psDirectX10::DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags, const float(&transform)[4][4])
 {
   static_assert(sizeof(psVertex) == sizeof(DX10_simplevert), "Error, psVertex is not equal to DX10_simplevert");
   DX10_simplevert* buf = (DX10_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
@@ -480,7 +480,7 @@ void BSS_FASTCALL psDirectX10::DrawPolygon(const psVertex* verts, int num, FLAG_
   UnlockBuffer(_batchobjbuf.verts);
   _batchobjbuf.nvert = num;
   _batchobjbuf.nindice = (num-2)*3;
-  Draw(&_batchobjbuf, flags);
+  Draw(&_batchobjbuf, flags, transform);
 }
 void BSS_FASTCALL psDirectX10::DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags)
 {

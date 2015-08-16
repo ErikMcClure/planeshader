@@ -75,8 +75,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect* uv, unsigned int color, const float(&xform)[4][4]=identity);
     virtual void DrawRectBatchEnd(const float(&xform)[4][4]=identity);
     // Draws a polygon
-    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, FNUM Z, unsigned long vertexcolor, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags);
+    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, FLAG_TYPE flags, const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags, const float(&transform)[4][4] = identity);
     // Draws points (which are always batch rendered)
     virtual void BSS_FASTCALL DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags);
     virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num);

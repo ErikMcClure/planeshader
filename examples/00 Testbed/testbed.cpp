@@ -11,6 +11,10 @@
 #include "psColor.h"
 #include "psTex.h"
 #include "psFont.h"
+#include "psImage.h"
+#include "psTileset.h"
+#include "psPass.h"
+#include "psRenderGeometry.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
 #include "bss-util/cStr.h"
@@ -278,6 +282,19 @@ TESTDEF::RETPAIR test_psCamera()
   ENDTEST;
 }
 
+void updatefpscount(unsigned __int64& timer, int& fps)
+{
+  if(psEngine::CloseProfiler(timer)>1000000000)
+  {
+    timer = psEngine::OpenProfiler();
+    char text[10] = { 0,0,0,0,0,0,0,0,0,0 };
+    _itoa_r(fps, text, 10);
+    engine->SetWindowTitle(text);
+    fps = 0;
+  }
+  ++fps;
+}
+
 TESTDEF::RETPAIR test_psDirectX10()
 {
   BEGINTEST;
@@ -293,7 +310,7 @@ TESTDEF::RETPAIR test_psDirectX10()
   psVec imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y));
 
-  while(engine->Begin() && !gotonext)
+  while(!gotonext && engine->Begin())
   {
     driver->Clear(0);
     driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 0.5f, psRectiu(VEC_ZERO, driver->rawscreendim));
@@ -314,18 +331,10 @@ TESTDEF::RETPAIR test_psDirectX10()
 
     driver->library.POLYGON->Activate();
     psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
-    driver->DrawPolygon(polygon, 5, 0, 0xFFFFFFFF, PSFLAG_FIXED);
+    driver->DrawPolygon(polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
 
-    if(psEngine::CloseProfiler(timer)>1000000000)
-    {
-      timer = psEngine::OpenProfiler();
-      char text[10]={ 0,0,0,0,0,0,0,0,0,0 };
-      _itoa_r(fps, text, 10);
-      engine->SetWindowTitle(text);
-      fps=0;
-    }
-    ++fps;
+    updatefpscount(timer, fps);
   }
 
   ENDTEST;
@@ -354,6 +363,20 @@ TESTDEF::RETPAIR test_psRenderable()
 TESTDEF::RETPAIR test_psPass()
 {
   BEGINTEST;
+
+  int fps = 0;
+  auto timer = psEngine::OpenProfiler();
+
+  psImage image(psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, FILTER_NONE, psVeciu(192)));
+  psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
+  engine->GetPass(0)->Insert(&image);
+  engine->GetPass(0)->Insert(&line);
+
+  while(!gotonext && engine->Begin(0))
+  {
+    engine->End();
+    updatefpscount(timer, fps);
+  }
   ENDTEST;
 }
 
@@ -367,7 +390,7 @@ TESTDEF::RETPAIR test_psFont()
   auto timer = psEngine::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  while(engine->Begin() && !gotonext)
+  while(!gotonext && engine->Begin())
   {
     driver->Clear(0xFF999999);
     driver->library.IMAGE0->Activate();
@@ -379,15 +402,7 @@ TESTDEF::RETPAIR test_psFont()
     driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, &t, 1, PSFLAG_FIXED);
     engine->End();
 
-    if(psEngine::CloseProfiler(timer)>1000000000)
-    {
-      timer = psEngine::OpenProfiler();
-      char text[10]={ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-      _itoa_r(fps, text, 10);
-      engine->SetWindowTitle(text);
-      fps=0;
-    }
-    ++fps;
+    updatefpscount(timer, fps);
   }
   ENDTEST;
 }
