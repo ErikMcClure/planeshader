@@ -27,7 +27,6 @@ namespace planeshader {
     inline void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
-    void ClearRenderBuffer();
     void FlushQueue();
 
     static BSS_FORCEINLINE bss_util::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }

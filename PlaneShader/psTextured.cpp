@@ -23,7 +23,7 @@ void BSS_FASTCALL psTextured::SetTexture(psTex* tex, unsigned int index)
   unsigned int oldsize = _tex.Size();
   if(index>=oldsize)
     _tex.SetSize(index+1);
-  for(unsigned int i = oldsize; i < index; ++i)
+  for(unsigned int i = oldsize; i <= index; ++i) // use <= here on purpose
     _tex[i]=0;
   if(_tex[index]) _tex[index]->Drop();
   _tex[index] = tex;

@@ -70,17 +70,21 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
     if(sz[index]>0) sc[index] = _driver->CreateBuffer(sz[index], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, infos[i].init);
   }
   assert(minindex<num);
-  return new psShader((!layout || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
+  psShader* s = new psShader((!layout || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
+  s->Grab();
+  return s;
 }
 psShader* psShader::CreateShader(psShader* copy)
 {
   PROFILE_FUNC();
+  if(!copy) return CreateShader(_driver->library.IMAGE);
+
   unsigned char i;
   for(i = 0; i < 6; ++i)
-    if(copy->_sc[i]!=0)
+    if(copy->_sc[i] != 0)
       break;
 
-  psShader* r = (i==6)?copy:new psShader(*copy); // If i is 6, all _sc values in copy are NULL, and therefore it is stateless.
+  psShader* r = (i == 6) ? copy : new psShader(*copy); // If i is 6, all _sc values in copy are NULL, and therefore it is stateless.
   r->Grab();
   return r;
 }

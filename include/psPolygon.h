@@ -11,6 +11,7 @@ namespace planeshader {
   template<class T>
   class BSS_COMPILER_DLLEXPORT psPolygonT
   {
+  public:
     typedef bss_util::Vector<T, 2> VEC;
 
     inline psPolygonT(const psPolygonT<T>& copy) : _verts(copy._verts) {}
@@ -82,6 +83,8 @@ namespace planeshader {
     template <unsigned int num>
     inline void SetVertices(const VEC(&vertices)[num]) { SetVertices(vertices, num); }
 
+    inline psPolygonT<T>& operator =(const psPolygonT<T>& right) { _verts = right._verts; return *this; }
+    inline psPolygonT<T>& operator =(psPolygonT<T>&& right) { _verts = std::move(right._verts); return *this; }
     template<class U>
     inline psPolygonT<T>& operator =(const psPolygonT<U>& right)
     {

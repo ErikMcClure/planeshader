@@ -37,7 +37,8 @@ namespace planeshader {
   const FLAG_TYPE PSFLAG_USER = (1 << 4); //This is where you should start your own flag settings
 
 #ifdef  __cplusplus
-  const FLAG_TYPE PSFLAG_INHERITABLE=PSFLAG_NOTVISIBLE|PSFLAG_FIXED;
+  const FLAG_TYPE PSFLAG_INHERITABLE = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;
+  const FLAG_TYPE PSFLAG_BATCHFLAGS = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;
 }
 #else
   const FLAG_TYPE PSFLAG_INHERITABLE=0x03;
