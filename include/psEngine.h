@@ -8,6 +8,7 @@
 #include "bss-util/cBitField.h"
 #include "bss-util/cHighPrecisionTimer.h"
 #include "bss-util/bss_log.h"
+#include "bss-util/cStr.h"
 #include "psGUIManager.h"
 #include "psDriver.h"
 
@@ -58,6 +59,7 @@ namespace planeshader {
     // Get/set the timewarp factor
     inline void SetTimeWarp(double timewarp) { _timewarp = timewarp; }
     inline double GetTimeWarp() const { return _timewarp; }
+    inline const char* GetMediaPath() const { return _mediapath.c_str(); }
 
     psPass& operator [](unsigned short index) { assert(index<_passes.Size()); return *_passes[index]; }
     const psPass& operator [](unsigned short index) const { assert(index<_passes.Size()); return *_passes[index]; }
@@ -74,6 +76,7 @@ namespace planeshader {
     double _timewarp;
     unsigned short _curpass;
     psPass* _mainpass;
+    cStr _mediapath;
 
     static psEngine* _instance;
   };
@@ -81,7 +84,7 @@ namespace planeshader {
   struct PSINIT
   {
     inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX9), fullscreen(false), vsync(false),
-      destalpha(true), composite(PS_COMP_NONE), antialias(0), farextent(50000.0f), nearextent(1.0f), errout(0) {}
+      destalpha(true), composite(PS_COMP_NONE), antialias(0), farextent(50000.0f), nearextent(1.0f), errout(0), mediapath("") {}
 
     int width;
     int height;
@@ -104,6 +107,7 @@ namespace planeshader {
     float farextent;
     float nearextent;
     std::ostream* errout;
+    const char* mediapath;
   };
 }
 

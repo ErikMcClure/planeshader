@@ -442,6 +442,7 @@ int main(int argc, char** argv)
   init.driver=RealDriver::DRIVERTYPE_DX10;
   init.width=640;
   init.height=480;
+  init.mediapath = "../media";
   //init.iconresource=101;
   //init.filter=5;
   {

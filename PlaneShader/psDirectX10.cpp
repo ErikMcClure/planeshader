@@ -171,7 +171,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
   };
 
   {
-    auto a = fnload("../media/fsimage.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl");
 
     ELEMENT_DESC desc[4] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
@@ -187,7 +187,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
   }
 
   {
-    auto a = fnload("../media/fsimage0.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl");
 
     ELEMENT_DESC desc[3] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
@@ -202,7 +202,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
   }
 
   {
-    auto a = fnload("../media/fsimage2.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl");
 
     ELEMENT_DESC desc[5] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
@@ -219,7 +219,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
   }
 
   {
-    auto a = fnload("../media/fsimage3.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl");
 
     ELEMENT_DESC desc[6] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
@@ -237,14 +237,14 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
   }
 
   {
-    auto a = fnload("../media/fscircle.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl");
 
     library.CIRCLE = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }
 
   {
-    auto a = fnload("../media/fsline.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl");
 
     ELEMENT_DESC desc[2] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
@@ -258,7 +258,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI)
   }
 
   {
-    auto a = fnload("../media/fspoint.hlsl");
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl");
 
     ELEMENT_DESC desc[4] ={
       { ELEMENT_POSITION, 0, FMT_A32B32G32R32F, 0, (uint)-1 },
