@@ -3,6 +3,8 @@
 
 #include "psEngine.h"
 #include "psPass.h"
+#include "psTex.h"
+#include "psDirectX11.h"
 #include "psDirectX10.h"
 #include "psNullDriver.h"
 #include "psStateblock.h"
@@ -47,9 +49,16 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 
   switch(init.driver)
   {
+  case RealDriver::DRIVERTYPE_NULL:
+    new psNullDriver();
+    break;
   case RealDriver::DRIVERTYPE_DX10:
-    new psDirectX10(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, init.destalpha, _window);
+    new psDirectX10(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, _window);
     if(((psDirectX10*)_driver)->GetLastError()!=0) { delete _driver; _driver=0; }
+    break;
+  case RealDriver::DRIVERTYPE_DX11:
+    new psDirectX11(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, _window);
+    if(((psDirectX11*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   }
   if(!_driver)
@@ -61,8 +70,8 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 
   psStateblock::DEFAULT = psStateblock::Create(0, 0);
   _driver->SetStateblock(psStateblock::DEFAULT->GetSB());
-  _resizewindow(_driver->rawscreendim.x, _driver->rawscreendim.y, init.fullscreen);
-  _driver->SetExtent(init.nearextent, init.farextent);
+  //_resizewindow(_driver->rawscreendim.x, _driver->rawscreendim.y, init.fullscreen, init.composite);
+  _driver->SetExtent(init.extent.x, init.extent.y);
   _mainpass = new psPass();
   _passes[0] = _mainpass;
 }
@@ -136,9 +145,9 @@ void psEngine::End(double delta)
 bool psEngine::NextPass()
 {
   PROFILE_FUNC();
-  if(_curpass >= _passes.Size()) return false;
+  if(_curpass >= _passes.Capacity()) return false;
   _passes[_curpass]->End();
-  if(++_curpass >= _passes.Size()) return false;
+  if(++_curpass >= _passes.Capacity()) return false;
   _passes[_curpass]->Begin();
   return true;
 }
@@ -148,14 +157,19 @@ psEngine* psEngine::Instance()
 }
 bool psEngine::InsertPass(psPass& pass, unsigned short index)
 {
-  if(index>_passes.Size())
+  if(index>_passes.Capacity())
     return false;
   _passes.Insert(&pass, index);
   return true;
 }
 bool psEngine::RemovePass(unsigned short index)
 {
-  if(!index || index>=_passes.Size()) return false;
+  if(!index || index>=_passes.Capacity()) return false;
   _passes.Remove(index);
   return true;
+}
+void psEngine::_onresize(unsigned int width, unsigned int height)
+{
+  if(_driver && _driver->GetBackBuffer())
+    _driver->Resize(psVeciu(width, height), _driver->GetBackBuffer()->GetFormat(), true);
 }

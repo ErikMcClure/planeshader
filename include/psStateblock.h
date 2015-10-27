@@ -12,13 +12,14 @@
 namespace planeshader {
   enum STATETYPE : unsigned char {
     TYPE_BLEND_ALPHATOCOVERAGEENABLE=0,
+    TYPE_BLEND_INDEPENDENTBLENDENABLE,
     TYPE_BLEND_BLENDENABLE, // index 0-7
-    TYPE_BLEND_SRCBLEND,
-    TYPE_BLEND_DESTBLEND,
-    TYPE_BLEND_BLENDOP,
-    TYPE_BLEND_SRCBLENDALPHA,
-    TYPE_BLEND_DESTBLENDALPHA,
-    TYPE_BLEND_BLENDOPALPHA,
+    TYPE_BLEND_SRCBLEND, // index 0-7 if INDEPENDENTBLENDENABLE is supported and enabled
+    TYPE_BLEND_DESTBLEND, // see above
+    TYPE_BLEND_BLENDOP, // see above
+    TYPE_BLEND_SRCBLENDALPHA, // see above
+    TYPE_BLEND_DESTBLENDALPHA, // see above
+    TYPE_BLEND_BLENDOPALPHA, // see above
     TYPE_BLEND_RENDERTARGETWRITEMASK, // index 0-7
     TYPE_BLEND_BLENDFACTOR, // index 0-3
     TYPE_BLEND_SAMPLEMASK,
@@ -91,7 +92,7 @@ namespace planeshader {
 
     inline static bool SILESS(const planeshader::STATEINFO& l, const planeshader::STATEINFO& r) { return l.type<=r.type && (l.type<r.type || l.index<r.index); }
     inline static khint_t SIHASHFUNC(STATEINFOS* sb) {
-      unsigned short sz=sb->Size();
+      unsigned short sz=sb->Capacity();
       khint32_t r=0;
       for(unsigned short i = 0; i < sz; ++i)
         r=bss_util::KH_INT64_HASHFUNC((((__int64)bss_util::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
@@ -99,8 +100,8 @@ namespace planeshader {
     }
     inline static bool SIEQUALITY(STATEINFOS* left, STATEINFOS* right)
     {
-      unsigned short sl=left->Size();
-      unsigned short sr=right->Size();
+      unsigned short sl=left->Capacity();
+      unsigned short sr=right->Capacity();
       if(sl!=sr) return false;
       for(unsigned short i = 0; i < sl; ++i)
         if((*left)[i].__vali64 != (*right)[i].__vali64)

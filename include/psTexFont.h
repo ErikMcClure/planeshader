@@ -44,7 +44,7 @@ namespace planeshader {
     // Given the drawing flags and text, this calculates what size would be required to display all the text. If dest has nonzero width or height, that dimension is kept constant while calculating the other. If both are nonzero, it is treated as though both were zero in case you forgot to zero-initialize. 
     void CalcTextDim(const int* text, psVec& dest, unsigned short drawflags=0, float letterspacing = 0.0f);
     // Lets you access the underlying textures
-    inline const psTex* GetTex(unsigned short index=0) const { assert(index<_textures.Size()); return _textures[index]; }
+    inline const psTex* GetTex(unsigned short index=0) const { assert(index<_textures.Capacity()); return _textures[index]; }
     // Adds a glyph definition
     void AddGlyph(int character, const psGlyph& glyph);
     // Adds a texture

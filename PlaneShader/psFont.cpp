@@ -36,8 +36,8 @@ psFont::psFont(const char* file, int psize, float lineheight, FONT_ANTIALIAS ant
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
   psVeci scale(bss_util::fFastRound(_driver->GetDPI().x / (float)psDriver::BASE_DPI), bss_util::fFastRound(_driver->GetDPI().y / (float)psDriver::BASE_DPI));
-  _textures.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_A8R8G8B8, USAGE_AUTOGENMIPMAP|USAGE_DEFAULT|USAGE_RENDERTARGET, 0, 0, _driver->GetDPI()), 0);
-  _staging.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_A8R8G8B8, USAGE_STAGING, 1, 0, _driver->GetDPI()), 0);
+  _textures.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_AUTOGENMIPMAP|USAGE_RENDERTARGET, 0, 0, _driver->GetDPI()), 0);
+  _staging.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _driver->GetDPI()), 0);
 
   if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
@@ -93,6 +93,7 @@ unsigned short psFont::PreloadGlyphs(const int* glyphs)
 
 psFont* psFont::Create(const char* file, int psize, float lineheight, FONT_ANTIALIAS antialias)
 {
+  if(!_driver) return 0;
   cStr str(cStrF("%s|%i|%i|%i", file, psize, lineheight, antialias));
   psFont* r = _Fonts[str];
   if(r!=0) return r;
@@ -150,7 +151,7 @@ void psFont::_cleanupfont()
 
 void psFont::_stage()
 {
-  for(unsigned char i = 0; i < _staging.Size(); ++i)
+  for(unsigned char i = 0; i < _staging.Capacity(); ++i)
     _driver->CopyTextureRect(0, psVeciu(0, 0), _staging[i]->GetRes(), _textures[i]->GetRes());
 }
 

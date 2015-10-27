@@ -22,7 +22,7 @@ namespace bss_util {
     inline void SetLoop(double loop = 0.0) { _loop = loop; }
     inline double GetLoop() const { return _loop; }
     inline size_t SizeOf() const { return _typesize; }
-    virtual unsigned int GetSize() const = 0;
+    virtual unsigned int GetCapacity() const = 0;
     virtual const void* GetArray() const = 0;
     virtual void* GetFunc() const = 0;
 
@@ -57,10 +57,10 @@ namespace bss_util {
     inline void Set(const PAIR* src, unsigned int len) { _pairs.SetArray(src, len); _calc = _pairs.Back().first; }
     inline const PAIR& Get(unsigned int index) const { return _pairs[index]; }
     inline bool Remove(unsigned int index) { return _pairs.Remove(index); }
-    virtual unsigned int GetSize() const { return _pairs.Length(); }
+    virtual unsigned int GetCapacity() const { return _pairs.Length(); }
     virtual const void* GetArray() const { return _pairs.begin(); }
     void SetFunc(FUNC f) { _f = f; }
-    virtual void* GetFunc() const { return _f; }
+    virtual void* GetFunc() const { return (void*)_f; }
 
     cAnimation& operator=(cAnimation&& mov)
     {
@@ -78,17 +78,19 @@ namespace bss_util {
   template<typename T, double(*TODURATION)(const T&), ARRAY_TYPE ArrayType = CARRAY_SAFE, typename Alloc = StaticAllocPolicy<T>>
   class BSS_COMPILER_DLLEXPORT cAnimationInterval : public cAnimation<T>
   {
+    using cAnimation<T>::_calc;
+    using cAnimation<T>::_pairs;
   public:
-    explicit cAnimationInterval(cAnimation<T>::FUNC f = 0) : cAnimation(f) { }
-    cAnimationInterval(cAnimationInterval&& mov) : cAnimation(std::move(mov)) {}
-    cAnimationInterval(const cAnimation<T>::PAIR* src, unsigned int len, cAnimation<T>::FUNC f = 0) : cAnimation(src, len, f) { _recalclength(); }
+    explicit cAnimationInterval(typename cAnimation<T>::FUNC f = 0) : cAnimation<T>(f) { }
+    cAnimationInterval(cAnimationInterval&& mov) : cAnimation<T>(std::move(mov)) {}
+    cAnimationInterval(const typename cAnimation<T>::PAIR* src, unsigned int len, typename cAnimation<T>::FUNC f = 0) : cAnimation<T>(src, len, f) { _recalclength(); }
     virtual ~cAnimationInterval() {}
     inline unsigned int Add(double time, const T& data) { unsigned int r = cAnimation<T>::Add(time, data); _checkindex(r); return r; }
-    inline void Set(const cAnimation<T>::PAIR* src, unsigned int len) { cAnimation<T>::Set(src, len); _recalclength(); }
+    inline void Set(const typename cAnimation<T>::PAIR* src, unsigned int len) { cAnimation<T>::Set(src, len); _recalclength(); }
     inline bool Remove(unsigned int index) { bool r = cAnimation<T>::Remove(index); if(r) _recalclength(); return r; }
     BSS_FORCEINLINE static double ToDuration(const T& item) { return TODURATION(item); }
 
-    cAnimationInterval& operator=(cAnimationInterval&& mov) { cAnimated<T>::operator=(std::move(mov)); return *this; }
+    cAnimationInterval& operator=(cAnimationInterval&& mov) { cAnimation<T>::operator=(std::move(mov)); return *this; }
 
   protected:
     void _recalclength()
@@ -150,6 +152,9 @@ namespace bss_util {
   template<typename T, typename REF = T, typename AUX = void>
   struct BSS_COMPILER_DLLEXPORT cAniStateDiscrete : public cAniState
   {
+    using cAniState::_ani;
+    using cAniState::_cur;
+    using cAniState::_time;
     cAniStateDiscrete(const cAniStateDiscrete& copy) : cAniState(copy), _set(copy._set) { }
     cAniStateDiscrete(cAniStateDiscrete&& mov) : cAniState(std::move(mov)), _set(std::move(mov._set)) { }
     cAniStateDiscrete(cAniBase* p, delegate<AUX, REF> d) : cAniState(p), _set(d) { assert(_ani->SizeOf() == sizeof(T)); }
@@ -163,7 +168,7 @@ namespace bss_util {
     virtual bool Interpolate(double delta)
     {
       _time += delta;
-      auto svar = _ani->GetSize();
+      auto svar = _ani->GetCapacity();
       auto v = (typename cAnimation<T>::PAIR*)_ani->GetArray();
       double loop = _ani->GetLoop();
       double length = _ani->GetLength();
@@ -186,6 +191,9 @@ namespace bss_util {
   struct BSS_COMPILER_DLLEXPORT cAniStateSmooth : public cAniStateDiscrete<T, REF, AUX>
   {
     typedef cAniStateDiscrete<T, REF, AUX> BASE;
+    using BASE::_ani;
+    using BASE::_cur;
+    using BASE::_time;
     cAniStateSmooth(const cAniStateSmooth& copy) : BASE(copy), _init(copy._init) { }
     cAniStateSmooth(cAniStateSmooth&& mov) : BASE(std::move(mov)), _init(std::move(mov._init)) { }
     cAniStateSmooth(cAniBase* p, delegate<AUX, REF> d, T init = T()) : BASE(p, d), _init(init) { assert(_ani->GetFunc() != 0); }
@@ -199,7 +207,7 @@ namespace bss_util {
     virtual bool Interpolate(double delta)
     {
       _time += delta;
-      auto svar = _ani->GetSize();
+      auto svar = _ani->GetCapacity();
       auto v = (typename cAnimation<T>::PAIR*)_ani->GetArray();
       auto f = (typename cAnimation<T>::FUNC)_ani->GetFunc();
       double loop = _ani->GetLoop();
@@ -214,12 +222,12 @@ namespace bss_util {
       if(_cur >= svar)
       { //Resolve the animation, but only if there was more than 1 keyframe, otherwise we'll break it.
         if(svar>1)
-          _set(f(v, svar, svar - 1, 1.0, _init));
+          BASE::_set(f(v, svar, svar - 1, 1.0, _init));
       }
       else
       {
         double hold = !_cur?0.0:v[_cur - 1].first;
-        _set(f(v, svar, _cur, (_time - hold) / (v[_cur].first - hold), _init));
+        BASE::_set(f(v, svar, _cur, (_time - hold) / (v[_cur].first - hold), _init));
       }
       return _time < length;
     }
@@ -228,7 +236,7 @@ namespace bss_util {
     static inline T BSS_FASTCALL NoInterpolateRel(const typename cAnimation<T>::PAIR* v, unsigned int s, unsigned int cur, double t, const T& init) { assert(cur > 0); return init + v[cur - (t != 1.0)].value; }
     static inline T BSS_FASTCALL LerpInterpolate(const typename cAnimation<T>::PAIR* v, unsigned int s, unsigned int cur, double t, const T& init) { return lerp<T>(!cur ? init : v[cur - 1].second, v[cur].second, t); }
     static inline T BSS_FASTCALL LerpInterpolateRel(const typename cAnimation<T>::PAIR* v, unsigned int s, unsigned int cur, double t, const T& init) { assert(cur > 0); return init + lerp<T>(v[cur - 1].second, v[cur].second, t); }
-    static inline T BSS_FASTCALL CubicInterpolateRel(const typename cAnimation<T>::PAIR* v, unsigned int s, unsigned int cur, double t, const T& init) { assert(cur > 0); return init + CubicBSpline<T>(t, v[cur - 1 - (cur != 1)].second, v[cur - 1].second, v[cur].second, v[cur + ((cur + 1) != v.Size())].second); }
+    static inline T BSS_FASTCALL CubicInterpolateRel(const typename cAnimation<T>::PAIR* v, unsigned int s, unsigned int cur, double t, const T& init) { assert(cur > 0); return init + CubicBSpline<T>(t, v[cur - 1 - (cur != 1)].second, v[cur - 1].second, v[cur].second, v[cur + ((cur + 1) != v.Capacity())].second); }
     //static inline T BSS_FASTCALL QuadInterpolate(const PAIR* v, unsigned int s, unsigned int cur, double t, const T& init) {}
     //typedef T(BSS_FASTCALL *TIME_FNTYPE)(const TVT_ARRAY_T& a, IDTYPE i, double t); // VC++ 2010 can't handle this being in the template itself
     //template<TIME_FNTYPE FN, double(*TIME)(DATA&)>
@@ -242,6 +250,9 @@ namespace bss_util {
   struct BSS_COMPILER_DLLEXPORT cAniStateInterval : public cAniStateDiscrete<T, REF, AUX>
   {
     typedef cAniStateDiscrete<T, REF, AUX> BASE;
+    using BASE::_ani;
+    using BASE::_cur;
+    using BASE::_time;
     cAniStateInterval(cAniBase* p, delegate<AUX, REF> d, delegate<void, AUX> rm) : BASE(p, d), _remove(rm) { assert(_ani->SizeOf() == sizeof(T)); }
     template<ARRAY_TYPE ArrayType, typename Alloc>
     cAniStateInterval(cAnimationInterval<T, TODURATION, ArrayType, Alloc>* p, delegate<AUX, REF> d, delegate<void, AUX> rm) : BASE(p, d), _remove(rm) {}
@@ -250,7 +261,7 @@ namespace bss_util {
     virtual bool Interpolate(double delta)
     {
       _time += delta;
-      auto svar = _ani->GetSize();
+      auto svar = _ani->GetCapacity();
       auto v = (typename cAnimation<T>::PAIR*)_ani->GetArray();
       double loop = _ani->GetLoop();
       double length = _ani->GetLength();
@@ -282,78 +293,3 @@ namespace bss_util {
 }
 
 #endif
-
-/*
-// Discrete animation with an interval. After the interval has passed, the object is removed using a second delegate function.
-template<typename Alloc, typename T, typename AUX, unsigned char TypeID, double(*TODURATION)(const T&), typename RMDEL = delegate<void, AUX>, typename DEL = delegate<AUX, T>, ARRAY_TYPE ARRAY = CARRAY_SIMPLE>
-struct BSS_COMPILER_DLLEXPORT AniAttributeInterval : AniAttributeDiscrete<Alloc, T, TypeID, DEL, ARRAY>
-{
-typedef AttrDefInterval<DEL, RMDEL> ATTRDEF;
-typedef AniAttributeBase<Alloc, T, TypeID, ARRAY> ROOT;
-typedef AniAttributeDiscrete<Alloc, T, TypeID, DEL, ARRAY> BASE;
-typedef typename ROOT::IDTYPE IDTYPE;
-typedef std::pair<double, AUX> QUEUEPAIR; // VS2010 can't handle this being inside the rebind for some reason
-typedef typename Alloc::template rebind<QUEUEPAIR>::other QUEUEALLOC;
-typedef T DATA;
-using ROOT::_timevalues;
-using ROOT::_curpair;
-
-inline AniAttributeInterval(const AniAttributeInterval& copy) : BASE(copy), _rmdel(copy._rmdel) {}
-inline AniAttributeInterval() : BASE(), _rmdel(0, 0), _length(0) {}
-inline ~AniAttributeInterval() {
-while(!_queue.Empty()) // Correctly remove everything currently on the queue
-_rmdel(_queue.Pop().second);
-}
-virtual bool Interpolate(double timepassed)
-{
-IDTYPE svar=_timevalues.Size();
-while(_curpair<svar && _timevalues[_curpair].time <= timepassed)
-_addtoqueue(_timevalues[_curpair++].value); // We call all the discrete values because many discrete values are interdependent on each other.
-
-while(!_queue.Empty() && _queue.Peek().first <= timepassed)
-_rmdel(_queue.Pop().second);
-return _curpair<svar && _queue.Empty();
-}
-inline virtual double Length() { return _length; }
-virtual double SetKeyFrames(const KeyFrame<TypeID>* frames, IDTYPE num) { BASE::SetKeyFrames(frames, num); _recalclength(); return _length; }
-virtual IDTYPE AddKeyFrame(const KeyFrame<TypeID>& frame) //time is given in milliseconds
-{
-IDTYPE r = BASE::AddKeyFrame(frame);
-double t = frame.time+TODURATION(frame.value);
-if(t>_length) _length=t;
-return r;
-}
-virtual bool RemoveKeyFrame(IDTYPE ID)
-{
-if(ID<_timevalues.Size() && _length==_timevalues[ID].time+TODURATION(_timevalues[ID].value)) _recalclength();
-return BASE::RemoveKeyFrame(ID);
-}
-inline virtual void Start()
-{
-while(!_queue.Empty()) // Correctly remove everything currently on the queue
-_rmdel(_queue.Pop().second);
-if(!BASE::_attached()) return;
-_curpair=1;
-if(ROOT::_initzero())
-_addtoqueue(_timevalues[0].value);
-}
-inline virtual AniAttribute* BSS_FASTCALL Clone() const { return new(Alloc::template rebind<AniAttributeInterval>::other::allocate(1)) AniAttributeInterval(*this); }
-inline virtual void BSS_FASTCALL CopyAnimation(AniAttribute* ptr) { operator=(*static_cast<AniAttributeInterval*>(ptr)); }
-virtual void BSS_FASTCALL Attach(AttrDef* def) { _rmdel = static_cast<ATTRDEF*>(def)->rmdel; BASE::Attach(def); }
-inline AniAttributeInterval& operator=(const AniAttributeInterval& right) { BASE::operator=(right); _length=right._length; return *this; }
-
-protected:
-inline void _recalclength()
-{
-_length=0;
-double t;
-for(IDTYPE i = 0; i < _timevalues.Size(); ++i)
-if((t = _timevalues[i].time+TODURATION(_timevalues[i].value))>_length)
-_length=t;
-}
-inline void _addtoqueue(const T& v) { _queue.Push(TODURATION(v), BASE::_del(v)); }
-
-RMDEL _rmdel; //delegate for removal
-cPriorityQueue<double, AUX, CompT<double>, unsigned int, CARRAY_SIMPLE, QUEUEALLOC> _queue;
-double _length;
-};*/

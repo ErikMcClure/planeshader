@@ -229,6 +229,8 @@
     <ClInclude Include="..\include\ps_interface.h" />
     <ClInclude Include="psDirectX10.h" />
     <ClInclude Include="psDirectX10_fsquadVS.h" />
+    <ClInclude Include="psDirectX11.h" />
+    <ClInclude Include="psDXGI.h" />
     <ClInclude Include="psNullDriver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -236,9 +238,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="psCamera.cpp" />
+    <ClCompile Include="psColor.cpp" />
     <ClCompile Include="psColored.cpp" />
     <ClCompile Include="psCullGroup.cpp" />
     <ClCompile Include="psDirectX10.cpp" />
+    <ClCompile Include="psDirectX11.cpp" />
+    <ClCompile Include="psDXGI.cpp" />
     <ClCompile Include="psEngine.cpp" />
     <ClCompile Include="psFont.cpp" />
     <ClCompile Include="psGroup.cpp" />

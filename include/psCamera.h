@@ -13,15 +13,16 @@ namespace planeshader {
   public:
     // Constructors
     psCamera(const psCamera& copy);
-    explicit psCamera(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO);
+    explicit psCamera(const psVec3D& position = psVec3D(0, 0, -1.0f), FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO);
     ~psCamera();
     // Gets the absolute mouse coordinates with respect to this camera.
-    const psVec& GetMouseAbsolute() const;
+    psVec GetMouseAbsolute() const;
     // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
     const psRectRotate BSS_FASTCALL GetScreenRect(FLAG_TYPE flags=0) const;
     // Gets or sets the viewport of the camera
     const psRect& GetViewPort() const { return _viewport; }
     void BSS_FASTCALL SetViewPort(const psRect& vp); // The viewport must be in pixels, but fractional values are technically valid here if rendering at a strange DPI
+    void BSS_FASTCALL SetPivotAbs(const psVec& pivot);
 
     inline psCamera& operator =(const psCamera& copy) { psLocatable::operator =(copy); return *this; }
 

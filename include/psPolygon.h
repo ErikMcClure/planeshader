@@ -27,16 +27,16 @@ namespace planeshader {
     inline psPolygonT(const bss_util::Vector<U, 2>(&vertices)[num]) : _verts(num) { for(unsigned short i=0; i < _numverts; ++i) _verts[i]=vertices[i]; }
     inline const VEC* GetVertices() const { return _verts; }
     inline unsigned short GetNumVerts() const { return _size; }
-    inline T Area() const { return PolyArea(_verts, _verts.Size()); }
+    inline T Area() const { return PolyArea(_verts, _verts.Capacity()); }
 
     inline VEC GetCentroid() const
     {
       T A=Area()*((T)6);
-      return (PartialCentroid(_verts, _verts.Size())/=A);
+      return (PartialCentroid(_verts, _verts.Capacity())/=A);
     }
     inline psRectT<T> GetAABB() const
     {
-      return PolyAABB(_verts, _verts.Size());
+      return PolyAABB(_verts, _verts.Capacity());
     }
     // Centers the polygon on the centroid 
     inline void Center()
@@ -64,19 +64,19 @@ namespace planeshader {
     // Works with any simple polygon using the pnpoly test: http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html 
     inline bool PointIntersection(const VEC& p) const
     {
-      return PolyIntersectPoint(_verts, _verts.Size(), p)!=0;
+      return PolyIntersectPoint(_verts, _verts.Capacity(), p)!=0;
     }
     // Returns true if this polygon is convex 
     inline bool IsConvex() const
     {
-      return PolyIsConvex(_verts, _verts.Size());
+      return PolyIsConvex(_verts, _verts.Capacity());
     }
 
     inline void SetVertices(const VEC* vertices, unsigned short num)
     {
       if(_verts==vertices)
         return;
-      _verts.SetSizeDiscard(num);
+      _verts.SetCapacityDiscard(num);
       if((const VEC*)_verts)
         memcpy(_verts, vertices, _size*sizeof(VEC));
     }
@@ -88,7 +88,7 @@ namespace planeshader {
     template<class U>
     inline psPolygonT<T>& operator =(const psPolygonT<U>& right)
     {
-      _verts.SetSizeDiscard(right._verts.Size());
+      _verts.SetCapacityDiscard(right._verts.Capacity());
       for(unsigned short i=0; i < _size; ++i) _verts[i]=right._verts[i];
       return *this;
     }

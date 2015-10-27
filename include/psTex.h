@@ -5,11 +5,11 @@
 #define __TEX_H__PS__
 
 #include "psDriver.h"
+#include "psStateblock.h"
 #include "bss-util/cRefCounter.h"
+#include "bss-util/cSmartPtr.h"
 
 namespace planeshader {
-  class psTexblock;
-
   // Encapsulates an arbitrary texture not necessarily linked to an actual image
   class PS_DLLEXPORT psTex : public bss_util::cRefCounter, psDriverHold // The reference counter is optional
   {
@@ -25,6 +25,7 @@ namespace planeshader {
     inline const psVeciu& GetRawDim() const { return _dim; }
     inline unsigned char GetMipLevels() const { return _miplevels; }
     inline const psTexblock* GetTexblock() const { return _texblock; }
+    inline void SetTexblock(psTexblock* texblock) { _texblock = texblock; }
     inline unsigned int GetUsage() const { return _usage; }
     inline FORMATS GetFormat() const { return _format; }
     inline void* Lock(unsigned int& rowpitch, psVeciu offset, unsigned char lockflags = LOCK_WRITE_DISCARD, unsigned char miplevel=0);
@@ -35,9 +36,9 @@ namespace planeshader {
     inline bool Resize(psVeciu dim, RESIZE resize = RESIZE_DISCARD);
 
     // Returns an existing texture object if it has the same path or creates a new one if necessary 
-    static psTex* BSS_FASTCALL Create(const char* file, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
+    static psTex* BSS_FASTCALL Create(const char* file, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_TRIANGLE, unsigned char miplevels = 0, FILTERS loadfilter = FILTER_NONE, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
     // if datasize is 0, data is assumed to be a path. If datasize is nonzero, data is assumed to be a pointer to memory where the texture is stored
-    static psTex* BSS_FASTCALL Create(const void* data, unsigned int datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
+    static psTex* BSS_FASTCALL Create(const void* data, unsigned int datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_TRIANGLE, unsigned char miplevels = 0, FILTERS loadfilter = FILTER_NONE, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
     static psTex* BSS_FASTCALL Create(const psTex& copy);
 
     psTex& operator=(const psTex& right);
@@ -55,7 +56,7 @@ namespace planeshader {
     unsigned char _miplevels;
     unsigned int _usage;
     FORMATS _format;
-    psTexblock* _texblock;
+    bss_util::cAutoRef<psTexblock> _texblock;
     psVeciu _dpi; // Actual DPI of this texture. The returned dimensions are scaled by this.
   };
 }

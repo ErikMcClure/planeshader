@@ -47,6 +47,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
 psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, const SHADER_INFO* infos)
 {
   PROFILE_FUNC();
+  if(!_driver) return 0;
   void* ss[6]={ 0 };
   void* sc[6]={ 0 };
   size_t sz[6]={ 0 };
@@ -69,7 +70,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
     sz[index] = infos[i].ty_sz;
     if(sz[index]>0) sc[index] = _driver->CreateBuffer(sz[index], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, infos[i].init);
   }
-  assert(minindex<num);
+  assert(!num || (minindex<num));
   psShader* s = new psShader((!layout || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
   s->Grab();
   return s;
@@ -77,6 +78,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
 psShader* psShader::CreateShader(psShader* copy)
 {
   PROFILE_FUNC();
+  if(!_driver) return 0;
   if(!copy) return CreateShader(_driver->library.IMAGE);
 
   unsigned char i;

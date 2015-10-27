@@ -24,8 +24,6 @@ namespace planeshader {
 
     inline psColored& operator=(const psColored& right) { _color = right._color; return *this; }
     inline virtual psColored* BSS_FASTCALL Clone() const { return new psColored(*this); } // Clone function
-    void* operator new(std::size_t sz);
-    void operator delete(void* ptr, std::size_t sz);
 
     // Interpolation functions for animation
     //template<unsigned char TypeID>

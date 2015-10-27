@@ -4,13 +4,10 @@
 #ifndef __COLOR_H__PS__
 #define __COLOR_H__PS__
 
-#include "ps_dec.h"
-#include "bss-util/bss_util.h"
-#include "bss-util/bss_sse.h"
-#include "psVec.h"
+#include "psDriver.h"
 
 namespace planeshader {
-  BSS_ALIGNED_STRUCT(16) BSS_COMPILER_DLLEXPORT psColor : bss_util::Vector<float, 4>
+  BSS_ALIGNED_STRUCT(16) PS_DLLEXPORT psColor : bss_util::Vector<float, 4>
   {
     typedef bss_util::Vector<float, 4> BASE;
     using BASE::a;
@@ -28,6 +25,8 @@ namespace planeshader {
     inline psColor(double r_, double g_, double b_, double a_=1.0f) : BASE((float)r_,(float)g_,(float)b_,(float)a_) { }
     explicit inline psColor(psVec3D rgb, float alpha=1.0f) : BASE(rgb.x,rgb.y,rgb.z,alpha) { }
     explicit inline psColor(float rgb=0.0f, float alpha=1.0f) : BASE(rgb,rgb,rgb,alpha) { }
+    unsigned short BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
+
     inline const psColor ToHSVA() const
     {
       float l = bssmin(r, bssmin(g, b));
@@ -137,26 +136,30 @@ namespace planeshader {
       c[3]=b;
       return ret;
     }
+    
+    static unsigned short BSS_FASTCALL BitsPerPixel(FORMATS format);
   };
 
   // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
-  BSS_ALIGNED_STRUCT(16) BSS_COMPILER_DLLEXPORT psColor32
+  struct PS_DLLEXPORT psColor32
   {
     psColor32() {}
     psColor32(unsigned char A, unsigned char R, unsigned char G, unsigned char B) : a(A), r(R), g(G), b(B) {}
     explicit psColor32(unsigned char(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
     psColor32(unsigned __int32 c) : color(c) {}
-    psColor32& operator=(unsigned __int32 c) { color=c; return *this; }
-    operator unsigned __int32() const { return color; }
+    inline psColor32& operator=(unsigned __int32 c) { color=c; return *this; }
+    inline operator unsigned __int32() const { return color; }
+    unsigned short BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
+
     union
     {
       unsigned __int32 color;
       unsigned char colors[4];
       struct {
-        unsigned char a;
         unsigned char r;
         unsigned char g;
         unsigned char b;
+        unsigned char a;
       };
     };
   };

@@ -40,6 +40,7 @@ namespace planeshader {
     inline const psVec& GetScale() const { return _scale; }
     // Sets scale 
     virtual void BSS_FASTCALL SetScale(const psVec& scale);
+    void BSS_FASTCALL SetScaleDim(const psVec& dim);
     // Sets z-depth while maintaining invariant size 
     inline void BSS_FASTCALL SetPositionZInvariant(FNUM Z) { SetScale(_scale*((Z+1.0f)/(_relpos.z+1.0f))); SetPositionZ(Z); }
     // Sets the center position using coordinates relative to the dimensions

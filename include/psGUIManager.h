@@ -14,6 +14,13 @@ struct HINSTANCE__;
 struct HICON__;
 struct tagPOINTS;
 
+
+#if defined(_WIN64)
+typedef __int64 longptr_t;
+#else
+typedef __w64 long longptr_t;
+#endif
+
 namespace planeshader {
   struct BSS_COMPILER_DLLEXPORT cMouseData
   {
@@ -93,10 +100,11 @@ namespace planeshader {
     // Translates joystick axis value to a [-1.0,1.0] range 
     float _translatejoyaxis(unsigned short axis) const;
     void _exactmousecalc();
-    void _resizewindow(unsigned int width, unsigned int height, bool fullscreen);
+    void _resizewindow(unsigned int width, unsigned int height, bool fullscreen, char composite);
+    virtual void _onresize(unsigned int width, unsigned int height)=0;
 
     static HWND__* WndCreate(HINSTANCE__* instance, long width, long height, bool windowed, const wchar_t* icon, HICON__* iconrc, char& composite);
-    static long __w64 __stdcall WndProc(HWND__* hWnd, unsigned int message, unsigned int __w64 wParam, long __w64 lParam);
+    static longptr_t __stdcall WndProc(HWND__* hWnd, unsigned int message, size_t wParam, longptr_t lParam);
     static void _lockcursor(HWND__* hWnd, bool lock);
     static tagPOINTS* __stdcall _STCpoints(HWND__* hWnd, tagPOINTS* target);
     

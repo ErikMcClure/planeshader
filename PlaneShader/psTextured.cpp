@@ -7,9 +7,9 @@ using namespace planeshader;
 
 psTextured::psTextured(const psTextured& copy) : _rts(copy._rts),  _tex(copy._tex)
 {
-  for(unsigned int i = 0; i < _rts.Size(); ++i)
+  for(unsigned int i = 0; i < _rts.Capacity(); ++i)
     _rts[i]->Grab();
-  for(unsigned int i = 0; i < _tex.Size(); ++i)
+  for(unsigned int i = 0; i < _tex.Capacity(); ++i)
     _tex[i]->Grab();
 }
 psTextured::psTextured(psTextured&& mov) : _tex(std::move(mov._tex)), _rts(std::move(mov._rts)) { }
@@ -20,21 +20,22 @@ psTextured::~psTextured() {}
 
 void BSS_FASTCALL psTextured::SetTexture(psTex* tex, unsigned int index)
 {
-  unsigned int oldsize = _tex.Size();
+  unsigned int oldsize = _tex.Capacity();
   if(index>=oldsize)
-    _tex.SetSize(index+1);
+    _tex.SetCapacity(index+1);
   for(unsigned int i = oldsize; i <= index; ++i) // use <= here on purpose
     _tex[i]=0;
+
   if(_tex[index]) _tex[index]->Drop();
   _tex[index] = tex;
   if(_tex[index]) _tex[index]->Grab();
 }
-void BSS_FASTCALL psTextured::ClearTextures() { _tex.SetSizeDiscard(0); _rts.SetSizeDiscard(0); }
+void BSS_FASTCALL psTextured::ClearTextures() { _tex.SetCapacityDiscard(0); _rts.SetCapacityDiscard(0); }
 void BSS_FASTCALL psTextured::SetRT(psTex* rt, unsigned int index)
 {
-  unsigned int oldsize = _rts.Size();
+  unsigned int oldsize = _rts.Capacity();
   if(index>=oldsize)
-    _rts.SetSize(index+1);
+    _rts.SetCapacity(index+1);
   for(unsigned int i = oldsize; i < index; ++i)
     _rts[i]=0;
   if(_rts[index]) _rts[index]->Drop();
@@ -47,9 +48,9 @@ psTextured& psTextured::operator=(const psTextured& right)
   _rts = right._rts;
   _tex = right._tex;
 
-  for(unsigned int i = 0; i < _rts.Size(); ++i)
+  for(unsigned int i = 0; i < _rts.Capacity(); ++i)
     _rts[i]->Grab();
-  for(unsigned int i = 0; i < _tex.Size(); ++i)
+  for(unsigned int i = 0; i < _tex.Capacity(); ++i)
     _tex[i]->Grab();
 
   return *this;
