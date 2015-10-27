@@ -64,48 +64,97 @@ namespace planeshader {
 
   enum FORMATS : unsigned char {
     FMT_UNKNOWN,
-    FMT_A8R8G8B8,
-    FMT_X8R8G8B8,
-    FMT_R5G6B5,
-    FMT_A1R5G5B5,
-    FMT_A4R4G4B4,
-    FMT_A8,
-    FMT_A2B10G10R10,
-    FMT_A8B8G8R8,
-    FMT_G16R16,
-    FMT_A16B16G16R16,
-    FMT_V8U8,
-    FMT_Q8W8V8U8,
-    FMT_V16U16,
+    FMT_R32G32B32A32X,
+    FMT_R32G32B32A32F,
+    FMT_R32G32B32A32U,
+    FMT_R32G32B32A32S,
+    FMT_R32G32B32X,
+    FMT_R32G32B32F,
+    FMT_R32G32B32U,
+    FMT_R32G32B32S,
+    FMT_R16G16B16A16X,
+    FMT_R16G16B16A16F,
+    FMT_R16G16B16A16,
+    FMT_R16G16B16A16U,
+    FMT_U16V16W16Q16,
+    FMT_R16G16B16A16S,
+    FMT_R32G32X,
+    FMT_R32G32F,
+    FMT_R32G32U,
+    FMT_R32G32S,
+    FMT_R32G8X24X,
+    FMT_D32S8X24,
+    FMT_R32X8X24,
+    FMT_X32G8X24,
+    FMT_R10G10B10A2X,
+    FMT_R10G10B10A2,
+    FMT_R10G10B10A2U,
+    FMT_R11G11B10F,
+    FMT_R8G8B8A8X,
+    FMT_R8G8B8A8,
+    FMT_R8G8B8A8U,
+    FMT_U8V8W8Q8,
+    FMT_R8G8B8A8S,
+    FMT_R16G16X,
+    FMT_R16G16F,
+    FMT_R16G16,
+    FMT_R16G16U,
+    FMT_U16V16,
+    FMT_R16G16S,
+    FMT_R32X,
+    FMT_D32F,
+    FMT_R32F,
+    FMT_R32S,
+    FMT_R24G8X,
+    FMT_D24S8,
+    FMT_R24X8,
+    FMT_X24G8,
     FMT_R8G8_B8G8,
     FMT_G8R8_G8B8,
-    FMT_DXT1,
-    FMT_DXT2,
-    FMT_DXT3,
-    FMT_DXT4,
-    FMT_DXT5,
+    FMT_B8G8R8A8,
+    FMT_B8G8R8X8,
+    FMT_B8G8R8A8X,
+    FMT_B8G8R8X8X,
+    FMT_R8G8X,
+    FMT_R8G8,
+    FMT_R8G8U,
+    FMT_U8V8,
+    FMT_R8G8S,
+    FMT_R16X,
+    FMT_R16F,
     FMT_D16,
-    FMT_D32F,
-    FMT_S8D24,
+    FMT_R16,
+    FMT_U16,
+    FMT_R16S,
+    FMT_B5G6R5,
+    FMT_B5G5R5A1,
+    FMT_B4G4R4A4,
+    FMT_R8X,
+    FMT_R8,
+    FMT_R8U,
+    FMT_U8,
+    FMT_R8S,
+    FMT_A8,
+    FMT_R1,
+    FMT_BC1X,
+    FMT_BC1,
+    FMT_BC4X,
+    FMT_BC4,
+    FMT_WC4,
+    FMT_BC2X,
+    FMT_BC2,
+    FMT_BC3X,
+    FMT_BC3,
+    FMT_BC5X,
+    FMT_BC5,
+    FMT_WC5,
+    FMT_BC6HX,
+    FMT_BC6H_UF16,
+    FMT_BC6H_SF16,
+    FMT_BC7X,
+    FMT_BC7,
     FMT_INDEX16,
     FMT_INDEX32,
-    FMT_Q16W16V16U16,
-    FMT_R16F,
-    FMT_G16R16F,
-    FMT_A16B16G16R16F,
-    FMT_R32F,
-    FMT_G32R32F,
-    FMT_A32B32G32R32F,
-    FMT_R8G8B8A8_UINT,
-    FMT_R16G16_SINT,
-    FMT_FORMAT_R16G16B16A16_SINT,
-    FMT_R8G8B8A8_UNORM,
-    FMT_R16G16_SNORM,
-    FMT_R16G16B16A16_SNORM,
-    FMT_R16G16_UNORM,
-    FMT_R16G16B16A16_UNORM,
-    FMT_R16G16_FLOAT,
-    FMT_R16G16B16A16_FLOAT
   };
 
   struct psVertObj
@@ -215,8 +264,12 @@ namespace planeshader {
     FILTER_NEAREST,
     FILTER_LINEAR,
     FILTER_BOX,
-    FILTER_PRECOMPUTEALPHA,
+    FILTER_TRIANGLE,
+    FILTER_PREMULTIPLY,
     FILTER_ALPHABOX,
+    FILTER_BICUBIC,
+    FILTER_BICUBIC_PREMULTIPLY,
+    FILTER_MIPMAP_DEBUG,
     NUM_FILTERS
   };
   class PS_DLLEXPORT psDriver
@@ -246,8 +299,8 @@ namespace planeshader {
     virtual void DrawPointsEnd()=0;
     // Draws lines (which are also always batch rendered)
     virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags)=0;
-    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor)=0;
-    virtual void DrawLinesEnd()=0;
+    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, const float(&transform)[4][4] = identity)=0;
+    virtual void DrawLinesEnd(const float(&transform)[4][4] = identity)=0;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)=0;
     virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
@@ -260,7 +313,7 @@ namespace planeshader {
     virtual const psVec& GetExtent() const=0;
     virtual void BSS_FASTCALL SetExtent(float znear, float zfar)=0;
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(unsigned short bytes, unsigned int usage, const void* initdata=0)=0;
+    virtual void* BSS_FASTCALL CreateBuffer(size_t bytes, unsigned int usage, const void* initdata=0)=0;
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags)=0;
     virtual void BSS_FASTCALL UnlockBuffer(void* target)=0;
     virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0)=0;
@@ -303,8 +356,6 @@ namespace planeshader {
     virtual RealDriver GetRealDriver()=0;
     // Sets default rendertarget
     virtual void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = !rt?GetBackBuffer():rt; }
-    // Gets number of bytes per pixel of a given format
-    virtual unsigned short GetBytesPerPixel(FORMATS format)=0;
     // Gets/Sets the effective DPI
     virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI))=0;
     virtual psVeciu GetDPI() = 0;

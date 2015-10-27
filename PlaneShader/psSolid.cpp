@@ -62,6 +62,7 @@ void BSS_FASTCALL psSolid::SetPass(psPass* pass)
 
 void BSS_FASTCALL psSolid::SetDim(const psVec& dim) { _realdim = dim; _setdim(_scale*_realdim); }
 void BSS_FASTCALL psSolid::SetScale(const psVec& scale) { _scale = scale; _setdim(_scale*_realdim); }
+void BSS_FASTCALL psSolid::SetScaleDim(const psVec& dim) { SetScale(dim/_realdim); }
 
 void BSS_FASTCALL psSolid::_setdim(const psVec& dim)
 {

@@ -110,5 +110,5 @@ void psRenderPolygon::_render()
   GetTotalPosition(pos);
   bss_util::Matrix<float, 4, 4> m;
   bss_util::Matrix<float, 4, 4>::AffineTransform_T(pos.x, pos.y, pos.z, GetTotalRotation(), GetPivot().x, GetPivot().y, m);
-  _driver->DrawPolygon(_verts, _verts.Size(), VEC3D_ZERO, GetColor().color, GetAllFlags());
+  _driver->DrawPolygon(_verts, _verts.Capacity(), VEC3D_ZERO, GetColor().color, GetAllFlags());
 }

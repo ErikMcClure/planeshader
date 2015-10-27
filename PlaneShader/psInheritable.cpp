@@ -39,6 +39,7 @@ psInheritable::~psInheritable()
 }
 void psInheritable::Render()
 {
+  psRenderable::Render();
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->Render();
 }

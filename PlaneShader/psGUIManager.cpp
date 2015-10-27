@@ -14,7 +14,7 @@ using namespace bss_util;
 #define MAKELPPOINTS(l)       ((POINTS FAR *)&(l))
 #pragma comment(lib, "Winmm.lib")
 
-void psGUIManager::_lockcursor(HWND__* hWnd, bool lock)
+void psGUIManager::_lockcursor(HWND hWnd, bool lock)
 {
   if(!lock || GetActiveWindow()!=hWnd)
     ClipCursor(0);
@@ -33,7 +33,7 @@ void psGUIManager::_lockcursor(HWND__* hWnd, bool lock)
   }
 }
 
-tagPOINTS* __stdcall psGUIManager::_STCpoints(HWND__* hWnd, tagPOINTS* target)
+POINTS* __stdcall psGUIManager::_STCpoints(HWND hWnd, POINTS* target)
 {
   POINT pp={ target->x, target->y };
   ScreenToClient(hWnd, &pp);
@@ -42,7 +42,7 @@ tagPOINTS* __stdcall psGUIManager::_STCpoints(HWND__* hWnd, tagPOINTS* target)
   return target;
 }
 
-long __w64 __stdcall psGUIManager::WndProc(HWND__* hWnd, unsigned int message, unsigned int __w64 wParam, long __w64 lParam)
+LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   PROFILE_FUNC();
   static tagTRACKMOUSEEVENT _trackingstruct ={ sizeof(tagTRACKMOUSEEVENT), TME_LEAVE, 0, 0 };
@@ -50,7 +50,7 @@ long __w64 __stdcall psGUIManager::WndProc(HWND__* hWnd, unsigned int message, u
   psGUIManager* self = psEngine::Instance();
   if(!self)
     return DefWindowProcW(hWnd, message, wParam, lParam);
-
+  
   switch(message)
   {
     //case WM_PAINT:
@@ -223,6 +223,9 @@ long __w64 __stdcall psGUIManager::WndProc(HWND__* hWnd, unsigned int message, u
     //  OutputDebugString(cStr("\n%i",message));
     //  message=message;
     //  break;
+  case WM_SIZE:
+    self->_onresize(LOWORD(lParam), HIWORD(lParam));
+    break;
   }
 
   return DefWindowProcW(hWnd, message, wParam, lParam);
@@ -232,7 +235,7 @@ typedef HRESULT(STDAPICALLTYPE *DWMCOMPENABLE)(BOOL*);
 typedef HRESULT(STDAPICALLTYPE *DWMEXTENDFRAME)(HWND, const MARGINS*);
 DWMEXTENDFRAME dwmextend=0;
 
-HWND__* psGUIManager::WndCreate(HINSTANCE__* instance, long width, long height, bool windowed, const wchar_t* icon, HICON__* iconrc, char& composite)
+HWND psGUIManager::WndCreate(HINSTANCE instance, long width, long height, bool windowed, const wchar_t* icon, HICON iconrc, char& composite)
 {
   PROFILE_FUNC();
   HINSTANCE hInstance = GetModuleHandleW(0);
@@ -268,40 +271,13 @@ HWND__* psGUIManager::WndCreate(HINSTANCE__* instance, long width, long height, 
 
   unsigned long style = WS_POPUP;
 
-  if(windowed)
+  if(windowed && !composite)
     style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
   else
     composite=0; //Um no
-
-  if(composite<0) 
-    ((psGUIManager*)psEngine::Instance())->_flags+=PSGUIMANAGER_HOOKNC;
-
-  switch(composite)
-  {
-  default:
-  case PSINIT::PS_COMP_NONE:
-    break;
-  case PSINIT::PS_COMP_NOFRAME:
-    ((psGUIManager*)psEngine::Instance())->_flags+=PSGUIMANAGER_OVERRIDEHITTEST;
-  case PSINIT::PS_COMP_NOFRAME_NOMOVE:
-  case PSINIT::PS_COMP_NOFRAME_OPAQUE_CLICK:
-  case PSINIT::PS_COMP_NOFRAME_CLICKTHROUGH:
-    style=WS_POPUP;
-    break;
-  case PSINIT::PS_COMP_FRAME:
-    style=WS_SIZEBOX | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-    ((psGUIManager*)psEngine::Instance())->_flags+=PSGUIMANAGER_OVERRIDEHITTEST;
-    break;
-  case PSINIT::PS_COMP_FRAME_TITLE:
-    style= WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-    break;
-  case PSINIT::PS_COMP_FRAME_TITLE_CLOSEBUTTON:
-    style= WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
-    break;
-  case PSINIT::PS_COMP_FRAME_SIZEABLE:
-    style=WS_SIZEBOX | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-    break;
-  }
+  
+  if(composite == PSINIT::PS_COMP_NOFRAME)
+    ((psGUIManager*)psEngine::Instance())->_flags += PSGUIMANAGER_OVERRIDEHITTEST;
 
   AdjustWindowRect(&rsize, style, FALSE);
   int rwidth = rsize.right - rsize.left;
@@ -312,15 +288,15 @@ HWND__* psGUIManager::WndCreate(HINSTANCE__* instance, long width, long height, 
   wtop=100;
 
   HWND hWnd;
-  if(composite!=0)
-    hWnd = CreateWindowExW((composite==2||composite==4)?WS_EX_TRANSPARENT|WS_EX_COMPOSITED|WS_EX_LAYERED:WS_EX_COMPOSITED,
-    L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
+  if(composite != 0)
+    hWnd = CreateWindowExW((composite==2||composite==4)?WS_EX_TRANSPARENT|WS_EX_COMPOSITED|WS_EX_LAYERED: WS_EX_COMPOSITED,
+      L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
   else
     hWnd = CreateWindowW(L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
 
-  if(composite!=0)
+  if(composite != 0)
   {
-    MARGINS margins ={ -1, -1, -1, -1 };
+    MARGINS margins = { -1,-1,-1,-1 };
     (*dwmextend)(hWnd, &margins); //extends glass effect
   }
 
@@ -366,6 +342,7 @@ void psGUIManager::SetKey(unsigned char keycode, bool down, bool held, DWORD tim
   evt.time=time;
   evt.keycode = keycode;
   evt.keydown = down;
+  evt.sigkeys = 0;
   if(GetKey(KEY_SHIFT)) evt.sigkeys = evt.sigkeys|1; //VK_SHIFT
   if(GetKey(KEY_CONTROL)) evt.sigkeys = evt.sigkeys|2; //VK_CONTROL
   if(GetKey(KEY_MENU)) evt.sigkeys = evt.sigkeys|4; //VK_MENU
@@ -384,6 +361,7 @@ void psGUIManager::SetChar(int key, DWORD time)
   evt.type = GUI_KEYCHAR;
   evt.time=time;
   evt.keychar = key;
+  evt.sigkeys = 0;
 
   if(GetKey(KEY_SHIFT)) evt.sigkeys = evt.sigkeys|1; //VK_SHIFT
   if(GetKey(KEY_CONTROL)) evt.sigkeys = evt.sigkeys|2; //VK_CONTROL
@@ -396,13 +374,13 @@ void psGUIManager::SetChar(int key, DWORD time)
     _receiver(evt);
 }
 
-void psGUIManager::SetMouse(tagPOINTS* points, unsigned char click, size_t wparam, DWORD time)
+void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, DWORD time)
 {
   PROFILE_FUNC();
   psGUIEvent evt;
   evt.time=time;
   evt.type = (GUI_EVENT)(click&15);
-  evt.button = (GUI_EVENT)(click&240);
+  evt.button = (GUI_EVENT)(click>>4);
   evt.x = _mousedata.relcoord.x;
   evt.y = _mousedata.relcoord.y;
 
@@ -600,7 +578,7 @@ float psGUIManager::_translatejoyaxis(unsigned short axis) const
   return (((long)_alljoyaxis[ID][a])-_joydevs[ID].offset[a])/_joydevs[ID].range[a];
 }
 
-void psGUIManager::_create(psVeciu dim, bool fullscreen, char composite, HWND__* window)
+void psGUIManager::_create(psVeciu dim, bool fullscreen, char composite, HWND window)
 {
   PROFILE_FUNC();
   // Check for desktop composition
@@ -644,7 +622,7 @@ void psGUIManager::_exactmousecalc()
   //_driver->TransformPoint(_mousedata.abscoord,false,false,false);
 }
 
-void psGUIManager::_resizewindow(unsigned int width, unsigned int height, bool fullscreen)
+void psGUIManager::_resizewindow(unsigned int width, unsigned int height, bool fullscreen, char composite)
 {
   PROFILE_FUNC();
   RECT rsize;
@@ -653,8 +631,8 @@ void psGUIManager::_resizewindow(unsigned int width, unsigned int height, bool f
   rsize.right = width;
   rsize.bottom = height;
 
-  unsigned long style = WS_OVERLAPPED;
-  if(!fullscreen)
+  unsigned long style = WS_POPUP;
+  if(!fullscreen && !composite)
     style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
   AdjustWindowRect(&rsize, style, FALSE);
@@ -662,12 +640,12 @@ void psGUIManager::_resizewindow(unsigned int width, unsigned int height, bool f
   int rheight = rsize.bottom - rsize.top;
 
   SetWindowLong(_window, GWL_STYLE, style); //if we don't have the right style, we'll either get a borderless window or a fullscreen app with screwed up coordinates
-  SetWindowPos(_window, HWND_TOP, 0, 0, INT(rwidth), INT(rheight), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOMOVE|SWP_NOACTIVATE);
+  SetWindowPos(_window, HWND_TOP, 0, 0, INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
 
   if(!fullscreen) //if its windowed, the screen resolution has now been reset so we move the window back
   {
     int wleft = (GetSystemMetrics(SM_CXSCREEN) - rwidth) / 2;
     int wtop = (GetSystemMetrics(SM_CYSCREEN) - rheight) / 2;
-    SetWindowPos(_window, HWND_TOP, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), SWP_NOZORDER|SWP_SHOWWINDOW|SWP_NOCOPYBITS|SWP_NOSIZE);
+    SetWindowPos(_window, HWND_TOP, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS | SWP_NOSIZE);
   }
 }

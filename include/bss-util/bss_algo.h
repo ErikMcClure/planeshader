@@ -10,7 +10,6 @@
 #include "bss_vector.h"
 #include "cDynArray.h"
 #include "cDisjointSet.h"
-#include "bss_graph.h"
 #include <algorithm>
 #include <random>
 #include <array>
@@ -20,12 +19,12 @@
 
 namespace bss_util {
   // Performs a binary search on "arr" between first and last. if CEQ=NEQ and char CVAL=-1, uses an upper bound, otherwise uses lower bound.
-  template<typename T, typename D, typename ST_, char(*CFunc)(const D&, const T&), char(*CEQ)(const char&, const char&), char CVAL>
-  inline static ST_ BSS_FASTCALL binsearch_near(const T* arr, const D& data, ST_ first, ST_ last)
+  template<typename T, typename D, typename CT_, char(*CFunc)(const D&, const T&), char(*CEQ)(const char&, const char&), char CVAL>
+  inline static CT_ BSS_FASTCALL binsearch_near(const T* arr, const D& data, CT_ first, CT_ last)
   {
-    typename std::make_signed<ST_>::type c = last-first; // Must be a signed version of whatever ST_ is
-    ST_ c2; //No possible operation can make this negative so we leave it as possibly unsigned.
-    ST_ m;
+    typename std::make_signed<CT_>::type c = last-first; // Must be a signed version of whatever CT_ is
+    CT_ c2; //No possible operation can make this negative so we leave it as possibly unsigned.
+    CT_ m;
     while(c>0)
     {
       c2 = (c>>1);
@@ -42,31 +41,31 @@ namespace bss_util {
     return first;
   }
   // Either gets the element that matches the value in question or one immediately before the closest match. Could return an invalid -1 value.
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&)>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_before(const T* arr, const T& data, ST_ first, ST_ last) { return binsearch_near<T, T, ST_, CFunc, CompT_NEQ<char>, -1>(arr, data, first, last)-1; }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&)>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_before(const T* arr, const T& data, CT_ first, CT_ last) { return binsearch_near<T, T, CT_, CFunc, CompT_NEQ<char>, -1>(arr, data, first, last)-1; }
 
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&)>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_before(const T* arr, ST_ length, const T& data) { return binsearch_near<T, T, ST_, CFunc, CompT_NEQ<char>, -1>(arr, data, 0, length)-1; }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&)>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_before(const T* arr, CT_ length, const T& data) { return binsearch_near<T, T, CT_, CFunc, CompT_NEQ<char>, -1>(arr, data, 0, length)-1; }
 
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&), ST_ I>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_before(const T(&arr)[I], const T& data) { return binsearch_before<T, ST_, CFunc>(arr, I, data); }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&), CT_ I>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_before(const T(&arr)[I], const T& data) { return binsearch_before<T, CT_, CFunc>(arr, I, data); }
 
   // Either gets the element that matches the value in question or one immediately after the closest match.
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&)>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_after(const T* arr, const T& data, ST_ first, ST_ last) { return binsearch_near<T, T, ST_, CFunc, CompT_EQ<char>, 1>(arr, data, first, last); }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&)>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_after(const T* arr, const T& data, CT_ first, CT_ last) { return binsearch_near<T, T, CT_, CFunc, CompT_EQ<char>, 1>(arr, data, first, last); }
 
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&)>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_after(const T* arr, ST_ length, const T& data) { return binsearch_near<T, T, ST_, CFunc, CompT_EQ<char>, 1>(arr, data, 0, length); }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&)>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_after(const T* arr, CT_ length, const T& data) { return binsearch_near<T, T, CT_, CFunc, CompT_EQ<char>, 1>(arr, data, 0, length); }
 
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&), ST_ I>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_after(const T(&arr)[I], const T& data) { return binsearch_after<T, ST_, CFunc>(arr, I, data); }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&), CT_ I>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_after(const T(&arr)[I], const T& data) { return binsearch_after<T, CT_, CFunc>(arr, I, data); }
 
   // Returns index of the item, if it exists, or -1
-  template<typename T, typename D, typename ST_, char(*CFunc)(const T&, const D&)>
-  inline static ST_ BSS_FASTCALL binsearch_exact(const T* arr, const D& data, typename std::make_signed<ST_>::type f, typename std::make_signed<ST_>::type l)
+  template<typename T, typename D, typename CT_, char(*CFunc)(const T&, const D&)>
+  inline static CT_ BSS_FASTCALL binsearch_exact(const T* arr, const D& data, typename std::make_signed<CT_>::type f, typename std::make_signed<CT_>::type l)
   {
     --l; // Done so l can be an exclusive size parameter even though the algorithm is inclusive.
-    ST_ m; // While f and l must be signed ints or the algorithm breaks, m does not.
+    CT_ m; // While f and l must be signed ints or the algorithm breaks, m does not.
     char r;
     while(l>=f) // This only works when l is an inclusive max indice
     {
@@ -79,11 +78,11 @@ namespace bss_util {
       else
         return m;
     }
-    return (ST_)-1;
+    return (CT_)-1;
   }
 
-  template<typename T, typename ST_, char(*CFunc)(const T&, const T&), ST_ I>
-  BSS_FORCEINLINE static ST_ BSS_FASTCALL binsearch_exact(const T(&arr)[I], const T& data) { return binsearch_exact<T, T, ST_, CFunc>(arr, data, 0, I); }
+  template<typename T, typename CT_, char(*CFunc)(const T&, const T&), CT_ I>
+  BSS_FORCEINLINE static CT_ BSS_FASTCALL binsearch_exact(const T(&arr)[I], const T& data) { return binsearch_exact<T, T, CT_, CFunc>(arr, data, 0, I); }
 
   // Implementation of an xorshift64star generator. x serves as the generator state, which should initially be set to the RNG seed.
   unsigned __int64 static xorshift64star(unsigned __int64& x)
@@ -225,14 +224,14 @@ namespace bss_util {
   inline static void bssrandseed(unsigned __int64 s) { bss_getdefaultengine().seed(s); }
 
   // Shuffler using Fisher-Yates/Knuth Shuffle algorithm based on Durstenfeld's implementation.
-  template<typename T, typename ST, typename ENGINE>
-  inline static void BSS_FASTCALL shuffle(T* p, ST size, ENGINE& e)
+  template<typename T, typename CT, typename ENGINE>
+  inline static void BSS_FASTCALL shuffle(T* p, CT size, ENGINE& e)
   {
-    for(ST i=size; i>0; --i)
-      rswap<T>(p[i-1], p[bssrand<ST,ENGINE>(0, i, e)]);
+    for(CT i=size; i>0; --i)
+      rswap<T>(p[i-1], p[bssrand<CT,ENGINE>(0, i, e)]);
   }
-  template<typename T, typename ST, typename ENGINE, ST size>
-  inline static void BSS_FASTCALL shuffle(T(&p)[size], ENGINE& e) { shuffle<T, ST, ENGINE>(p, size, e); }
+  template<typename T, typename CT, typename ENGINE, CT size>
+  inline static void BSS_FASTCALL shuffle(T(&p)[size], ENGINE& e) { shuffle<T, CT, ENGINE>(p, size, e); }
 
   /* Shuffler using default random number generator.*/
   template<typename T>
@@ -252,27 +251,27 @@ namespace bss_util {
   BSS_FORCEINLINE static void for_each(T(&t)[SIZE], F func) { std::for_each(std::begin(t), std::end(t), func); }
 
   // Random queue that pops a random item instead of the last item.
-  template<typename T, typename SizeType = unsigned int, typename ENGINE = xorshift_engine<unsigned __int64>, ARRAY_TYPE ArrayType = CARRAY_SIMPLE, typename Alloc = StaticAllocPolicy<T>>
-  class BSS_COMPILER_DLLEXPORT cRandomQueue : protected cDynArray<T, SizeType, ArrayType, Alloc>
+  template<typename T, typename CType = unsigned int, typename ENGINE = xorshift_engine<unsigned __int64>, ARRAY_TYPE ArrayType = CARRAY_SIMPLE, typename Alloc = StaticAllocPolicy<T>>
+  class BSS_COMPILER_DLLEXPORT cRandomQueue : protected cDynArray<T, CType, ArrayType, Alloc>
   {
   protected:
-    typedef SizeType ST_;
-    typedef cDynArray<T, SizeType, ArrayType, Alloc> AT_;
+    typedef CType CT_;
+    typedef cDynArray<T, CType, ArrayType, Alloc> AT_;
     using AT_::_array;
     using AT_::_length;
 
   public:
     cRandomQueue(const cRandomQueue& copy) : AT_(copy) {}
     cRandomQueue(cRandomQueue&& mov) : AT_(std::move(mov)) {}
-    explicit cRandomQueue(ST_ size = 0, ENGINE& e = bss_getdefaultengine()) : AT_(size), _e(e) {}
+    explicit cRandomQueue(CT_ size = 0, ENGINE& e = bss_getdefaultengine()) : AT_(size), _e(e) {}
     inline void Push(const T& t) { AT_::Add(t); }
     inline void Push(T&& t) { AT_::Add(std::move(t)); }
-    inline T Pop() { ST_ i=bssrand<ST_, ENGINE>(0, _length, _e); T r = std::move(_array[i]); Remove(i); return r; }
-    inline void Remove(ST_ index) { _array[index]=std::move(_array[--_length]); }
+    inline T Pop() { CT_ i=bssrand<CT_, ENGINE>(0, _length, _e); T r = std::move(_array[i]); Remove(i); return r; }
+    inline void Remove(CT_ index) { _array[index]=std::move(_array[--_length]); }
     inline bool Empty() const { return !_length; }
     inline void Clear() { _length=0; }
-    inline void SetLength(ST_ length) { AT_::SetLength(length); }
-    inline ST_ Length() const { return _length; }
+    inline void SetLength(CT_ length) { AT_::SetLength(length); }
+    inline CT_ Length() const { return _length; }
     inline const T* begin() const { return _array; }
     inline const T* end() const { return _array+_length; }
     inline T* begin() { return _array; }
@@ -452,15 +451,15 @@ namespace bss_util {
 
   // Implementation of a uniform quadratic B-spline interpolation
   template<typename T, typename D>
-  inline static T BSS_FASTCALL UniformQuadraticBSpline(D t, const T& prev, const T& cur, const T& next)
+  inline static T BSS_FASTCALL UniformQuadraticBSpline(D t, const T& p1, const T& p2, const T& p3)
   {
     D t2=t*t;
-    return (prev*(1 - 2*t + t2) + cur*(1 + 2*t - 2*t2) + next*t2)/((D)2.0);
+    return (p1*(1 - 2*t + t2) + p2*(1 + 2*t - 2*t2) + p3*t2)/((D)2.0);
   }
 
   // Implementation of a uniform cubic B-spline interpolation. A uniform cubic B-spline matrix is:
   //                / -1  3 -3  1 \         / p1 \
-    // [t^3,t²,t,1] * |  3 -6  3  0 | * 1/6 * | p2 |
+  // [t^3,t²,t,1] * |  3 -6  3  0 | * 1/6 * | p2 |
   //                | -3  0  3  0 |         | p3 |
   //                \  1  4  1  0 /         \ p4 /
   template<typename T, typename D>
@@ -473,7 +472,7 @@ namespace bss_util {
 
   // Implementation of a basic cubic interpolation. The B-spline matrix for this is
   //                / -1  3 -3  1 \       / p1 \
-    // [t^3,t²,t,1] * |  2 -5  4 -1 | * ½ * | p2 |
+  // [t^3,t²,t,1] * |  2 -5  4 -1 | * ½ * | p2 |
   //                | -1  0  1  0 |       | p3 |
   //                \  0  2  0  0 /       \ p4 /
   template<typename T, typename D>
@@ -517,11 +516,7 @@ namespace bss_util {
   template<typename T, typename D>
   inline static T BSS_FASTCALL BezierCurve(D t, const T& p1, const T& p2, const T& p3, const T& p4)
   {
-#ifdef BSS_COMPILER_GCC
-    constexpr float m[4][4] ={-1, 3, -3, 1, 3, -6, 3, 0, -3, 3, 0, 0, 1, 0, 0, 0};
-#else
-    static const float m[4][4] ={ -1, 3, -3, 1, 3, -6, 3, 0, -3, 3, 0, 0, 1, 0, 0, 0 };
-#endif
+    static constexpr float m[4][4] ={-1.0f, 3.0f, -3.0f, 1.0f, 3.0f, -6.0f, 3.0f, 0, -3.0f, 3, 0, 0, 1.0f, 0, 0, 0};
     const float p[4] ={ p1, p2, p3, p4 };
     return StaticGenericSpline<T, D, m>(t, p);
   }
@@ -543,42 +538,119 @@ namespace bss_util {
       l=(l+(size_t)(queue[l]!=0))%n;
     }
   }
-  // Breadth-first search for any directed graph. If FACTION returns true, terminates.
-  template<typename G, bool(*FACTION)(typename G::ST_)>
-  inline static void BSS_FASTCALL BreadthFirstGraph(G& graph, typename G::ST_ root)
+
+  // Find a quadratic curve (A,B,C) that passes through 3 points
+  template<typename T>
+  inline T QuadraticFit(T t, T x1, T y1, T x2, T y2, T x3, T y3)
   {
-    DYNARRAY(typename G::ST_, queue, graph.NumNodes());
-    BreadthFirstGraph<G, FACTION>(graph, root, queue);
+    T x1_2 = x1*x1;
+    T x2_2 = x2*x2;
+    T x3_2 = x3*x3;
+    T A = ((y2 - y1)(x1 - x3) + (y3 - y1)(x2 - x1)) / ((x1 - x3)(x2_2 - x1_2) + (x2 - x1)(x3_2 - x1_2));
+    T B = ((y2 - y1) - A(x2_2 - x1_2)) / (x2 - x1);
+    T C = y1 - A*x1_2 - B*x1;
+    return A*t*t + B*t + C;
   }
 
-  // Breadth-first search for any directed graph. If FACTION returns true, terminates. queue must point to an array at least GetNodes() long.
-  template<typename G, bool(*FACTION)(typename G::ST_)>
-  static void BSS_FASTCALL BreadthFirstGraph(G& graph, typename G::ST_ root, typename G::ST_* queue)
+  // Find a quadratic curve (A,B,C) that passes through the points (x1, 0), (x2, 0.5), (x3, 1)
+  template<typename T>
+  inline T QuadraticCanonicalFit(T t, T x1, T x2, T x3)
   {
-    typedef typename G::ST_ ST;
-    typedef typename std::make_signed<ST>::type SST;
-    typedef bss_util::Edge<typename G::E_, ST> E;
-    auto& n = graph.GetNodes();
-    if((*FACTION)(root)) return;
-    DYNARRAY(ST, aset, graph.Capacity());
-    cDisjointSet<ST, StaticNullPolicy<SST>> set((SST*)aset, graph.Capacity());
+    t = (t - x1) / (x3 - x1); // We transform all points with (x - x1) / x3, which yields:
+    // x1 = (x1 - x1) / (x3 - x1) = 0
+    T x = (x2 - x1) / (x3 - x1);
+    // x3 = (x3 - x1) / (x3 - x1) = 1
+    //T x1_2 = 0;
+    //T x2_2 = x2*x2;
+    //T x3_2 = 1;
+    T H = ((T)1 / (T)2);
+    //T A = ((H - 0)(0 - 1) + (1 - 0)(x2 - 0)) / ((0 - 1)(x2_2 - 0) + (x2 - 0)(1 - 0));
+    T A = (x - H) / (x - (x*x));
+    //T B = ((H - 0) - A(x2_2 - 0)) / (x2 - 0);
+    T B = (H / x) - (A * x);
+    //T C = 0 - A*0 - B*0;
 
-    // Queue up everything next to the root, checking only for edges that connect the root to itself
-    size_t l=0;
-    for(E* edge=n[root].to; edge!=0; edge=edge->next) {
-      if(edge->to!=root)
-        queue[l++]=edge->to;
-    }
+    return (A*t*t + B*t)*(x3 - x1) + x1; // reverse our transformation
+  }
 
-    for(size_t i=0; i!=l; ++i) // Go through the queue
+  inline static size_t BSS_FASTCALL Base64Encode(const unsigned char* src, size_t cnt, char* out)
+  {
+    size_t cn = ((cnt / 3) << 2) + (cnt % 3) + (cnt % 3 != 0);
+    if(!out) return cn;
+
+    /*const unsigned int* ints = (const unsigned int*)src;
+    size_t s = (cnt - (cnt % 12))/4;
+    size_t c = 0;
+    size_t i;
+    for(i = 0; i < s; i += 3)
     {
-      if(FACTION(queue[i])) return;
-      set.Union(root, queue[i]);
-      for(E* edge=n[queue[i]].to; edge!=0; edge=edge->next) {
-        if(set.Find(edge->to)!=root) //Enqueue the children if they aren't already in the set.
-          queue[l++]=edge->to; // Doesn't need to be circular because we can only enqueue n-1 anyway.
+      sseVeci x(ints[i], ints[i], ints[i + 1], ints[i + 2]);
+      sseVeci y(ints[i], ints[i + 1], ints[i + 2], ints[i + 2]);
+      sseVeci a(0b00111111001111110011111100111111, 0b11000000110000001100000011000000, 0b11110000111100001111000011110000, 0b11111100111111001111110011111100);
+      sseVeci b(0b00000000000000000000000000000000, 0b00001111000011110000111100001111, 0b00000011000000110000001100000011, 0b00000000000000000000000000000000);
+      sseVeci n(0, 6, 4, 2);
+      sseVeci m(0, 2, 4, 0);
+
+      sseVeci res = (sseVeci(BSS_SSE_SR_EPI32((x&a), n)) | ((y&b) << m));
+      res += sseVeci('A')&(res < sseVeci(26));
+      res += sseVeci('a' - 26)&(res < sseVeci(52));
+      res += sseVeci('0' - 52)&(res < sseVeci(62)); // this works because up until this point, all previous blocks were moved past the 62 mark
+      res += sseVeci('-' - 62)&(res == sseVeci(62));
+      res += sseVeci('_' - 63)&(res == sseVeci(63));
+
+      BSS_SSE_STORE_USI128((BSS_SSE_M128i16*)(out + c), res);
+      c += 16;
+    }*/
+
+    static const char* code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    size_t c = 0;
+    size_t s = cnt - (cnt % 3);
+    size_t i;
+    for(i = 0; i < s; i+=3)
+    {
+      out[c++] = code[((src[i + 0] & 0b11111100) >> 2)];
+      out[c++] = code[((src[i + 0] & 0b00000011) << 4) | ((src[i + 1] & 0b11110000) >> 4)];
+      out[c++] = code[((src[i + 1] & 0b00001111) << 2) | ((src[i + 2] & 0b11000000) >> 6)];
+      out[c++] = code[((src[i + 2] & 0b00111111))];
+      //out[c++] = code[src[i] & 0b00111111];
+      //out[c++] = code[((src[i] & 0b11000000) >> 6) | ((src[i + 1] & 0b00001111) << 2)];
+      //out[c++] = code[((src[i + 1] & 0b11110000) >> 4) | ((src[i + 2] & 0b00000011) << 4)];
+      //out[c++] = code[((src[i + 2] & 0b11111100) >> 2)];
+    }
+    if(i < cnt)
+    {
+      out[c++] = code[((src[i] & 0b11111100) >> 2)];
+      if((i + 1) >= cnt) out[c++] = code[((src[i + 0] & 0b00000011) << 4)];
+      else
+      {
+        out[c++] = code[((src[i + 0] & 0b00000011) << 4) | ((src[i + 1] & 0b11110000) >> 4)];
+        out[c++] = code[((src[i + 1] & 0b00001111) << 2)];
       }
     }
+    return c;
+  }
+
+  inline static size_t BSS_FASTCALL Base64Decode(const char* src, size_t cnt, unsigned char* out)
+  {
+    if((cnt & 0b11) == 1) return 0; // You cannot have a legal base64 encode of this length.
+    size_t cn = ((cnt >> 2) * 3) + (cnt & 0b11) - ((cnt & 0b11) != 0);
+    if(!out) return cn;
+
+    size_t i = 0;
+    size_t c = 0;
+    unsigned char map[78] = { 62,0,0,52,53,54,55,56,57,58,59,60,61,0,0,0,0,0,0,0,
+    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,0,0,0,63,0,
+    26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51 };
+    size_t s = cnt & (~0b11);
+    for(; i < s; i += 4)
+    {
+      out[c++] = (map[src[i + 0] - '-'] << 2) | (map[src[i + 1] - '-'] >> 4);
+      out[c++] = (map[src[i + 1] - '-'] << 4) | (map[src[i + 2] - '-'] >> 2);
+      out[c++] = (map[src[i + 2] - '-'] << 6) | (map[src[i + 3] - '-']);
+    }
+    if(++i < cnt) out[c++] = (map[src[i - 1] - '-'] << 2) | (map[src[i] - '-'] >> 4); // we do ++i here even though i was already valid because the first character requires TWO source characters, not 1.
+    if(++i < cnt) out[c++] = (map[src[i - 1] - '-'] << 4) | (map[src[i] - '-'] >> 2);
+    return c;
   }
 }
 

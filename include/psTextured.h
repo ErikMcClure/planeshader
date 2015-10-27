@@ -24,11 +24,11 @@ namespace planeshader {
 
     virtual void BSS_FASTCALL SetTexture(psTex* tex, unsigned int index = 0);
     void BSS_FASTCALL ClearTextures();
-    inline const psTex* GetTexture(unsigned int index = 0) const { if(index>=_tex.Size()) return 0; return _tex[index]; }
+    inline const psTex* GetTexture(unsigned int index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
     virtual inline psTex* const* GetTextures() const { return _tex; }
-    virtual inline unsigned char NumTextures() const { return _tex.Size(); }
+    virtual inline unsigned char NumTextures() const { return _tex.Capacity(); }
     virtual inline psTex* const* GetRenderTargets() const { return _rts; }
-    virtual inline unsigned char NumRT() const { return _rts.Size(); }
+    virtual inline unsigned char NumRT() const { return _rts.Capacity(); }
     void BSS_FASTCALL SetRT(psTex* rt, unsigned int index = 0);
     inline virtual psTextured* BSS_FASTCALL Clone() const { return new psTextured(*this); } //Clone function
 

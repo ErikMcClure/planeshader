@@ -19,7 +19,7 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
   const int* peek = text;
   psVec maxdim = area.GetDimensions();
   psVec texdim;
-  unsigned char svar=_textures.Size();
+  unsigned char svar=_textures.Capacity();
   psRectRotateZ rect(0, 0, 0, 0, 0, VEC_ZERO, Z);
 
   if((dim.y == 0.0f && (drawflags&TDT_BOTTOM || drawflags&TDT_VCENTER || drawflags&TDT_CLIP)) ||
@@ -196,7 +196,7 @@ void psTexFont::AddGlyph(int character, const psGlyph& glyph)
   _glyphs.Insert(character, glyph);
 }
 
-unsigned char psTexFont::AddTexture(psTex* tex){ tex->Grab(); _textures.Insert(tex, _textures.Size()); return _textures.Size()-1; }
+unsigned char psTexFont::AddTexture(psTex* tex){ tex->Grab(); _textures.Insert(tex, _textures.Capacity()); return _textures.Capacity()-1; }
 void psTexFont::DestroyThis(){ delete this; }
 
 psTexFont* psTexFont::CreateTexFont(psTex* tex, float lineheight)
@@ -206,13 +206,13 @@ psTexFont* psTexFont::CreateTexFont(psTex* tex, float lineheight)
 
 psTexFont::psTexFont(const psTexFont& copy) : _lineheight(copy._lineheight), _glyphs(copy._glyphs)
 {
-  for(int i = 0; i < copy._textures.Size(); ++i)
+  for(int i = 0; i < copy._textures.Capacity(); ++i)
   {
     copy._textures[i]->Grab();
-    _textures.Insert(copy._textures[i], _textures.Size());
+    _textures.Insert(copy._textures[i], _textures.Capacity());
   }
 }
 psTexFont::psTexFont(psTexFont&& mov) : _lineheight(mov._lineheight), _textures(std::move(mov._textures)), _glyphs(std::move(mov._glyphs)) {}
 psTexFont::psTexFont(psTex* tex, float lineheight) : _lineheight(lineheight), _textures(1) { _textures[0] = tex; if(_textures[0]) _textures[0]->Grab(); Grab(); }
 psTexFont::psTexFont(float lineheight) : _lineheight(lineheight) { Grab(); }
-psTexFont::~psTexFont() { for(unsigned int i = 0; i < _textures.Size(); ++i) _textures[i]->Drop(); }
+psTexFont::~psTexFont() { for(unsigned int i = 0; i < _textures.Capacity(); ++i) _textures[i]->Drop(); }

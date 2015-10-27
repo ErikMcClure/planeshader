@@ -14,6 +14,7 @@
 #include "directx/D3D10.h"
 #endif
 #include "directx/D3DX10.h"
+#include "psDXGI.h"
 
 namespace planeshader {
   // Vertex input to geometry shader for rect rendering (UV coordinates are added in batches of 4 floats after the end)
@@ -57,11 +58,11 @@ namespace planeshader {
     ULONG _ref;
   };
 
-  class psDirectX10 : public psDriver, public psDriverHold
+  class psDirectX10 : public psDriver, public psDriverHold, public psDXGI
   {
   public:
     // Constructors
-    psDirectX10(const psVeciu& dim, unsigned antialias, bool vsync, bool fullscreen, bool destalpha, HWND hwnd);
+    psDirectX10(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, HWND hwnd);
     ~psDirectX10();
     // Begins a scene
     virtual bool Begin();
@@ -83,8 +84,8 @@ namespace planeshader {
     virtual void DrawPointsEnd();
     // Draws lines (which are also always batch rendered)
     virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor);
-    virtual void DrawLinesEnd();
+    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, const float(&transform)[4][4] = identity);
+    virtual void DrawLinesEnd(const float(&transform)[4][4] = identity);
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport);
     virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport);
@@ -97,7 +98,7 @@ namespace planeshader {
     inline virtual const psVec& GetExtent() const { return _extent; }
     virtual void BSS_FASTCALL SetExtent(float znear, float zfar);
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(unsigned short bytes, unsigned int usage, const void* initdata=0);
+    virtual void* BSS_FASTCALL CreateBuffer(size_t bytes, unsigned int usage, const void* initdata=0);
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags);
     virtual void BSS_FASTCALL UnlockBuffer(void* target);
     virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0);
@@ -145,8 +146,6 @@ namespace planeshader {
     virtual char BSS_FASTCALL SetShader(void* shader, SHADER_VER profile);
     // Returns true if shader version is supported
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile);
-    // Gets number of bytes per pixel of a given format
-    virtual unsigned short GetBytesPerPixel(FORMATS format);
     // Gets/Sets the effective DPI
     virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI));
     virtual psVeciu GetDPI();
@@ -166,22 +165,20 @@ namespace planeshader {
     static inline unsigned int BSS_FASTCALL _usagetobind(unsigned int types);
     static inline unsigned int BSS_FASTCALL _filtertodx10(FILTERS filter);
     static inline unsigned int BSS_FASTCALL _reverseusage(unsigned int usage, unsigned int misc, unsigned int bind); //reassembles DX10 flags into a generic usage flag
-    static inline unsigned int BSS_FASTCALL _fmttodx10(FORMATS format);
     static inline const char* BSS_FASTCALL _geterror(HRESULT err);
-    static inline FORMATS BSS_FASTCALL _reversefmt(unsigned int format);
-    static inline unsigned int BSS_FASTCALL _getbitsperpixel(FORMATS format);
     static inline D3D10_PRIMITIVE_TOPOLOGY BSS_FASTCALL _getdx10topology(PRIMITIVETYPE type);
     static void BSS_FASTCALL _loadtexture(D3DX10_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim);
     static ID3D10Texture2D* _textotex2D(void* t);
-    void _setcambuf(ID3D10Buffer* buf, const float* cam, const float(&world)[4][4]);
+    void _setcambuf(ID3D10Buffer* buf, const float(&cam)[4][4], const float(&world)[4][4]);
     ID3D10View* _createshaderview(ID3D10Resource* src);
     ID3D10View* _creatertview(ID3D10Resource* src);
     ID3D10View* _createdepthview(ID3D10Resource* src);
     long _lasterr;
     void _processdebugqueue();
+    void _getbackbufferref();
+    void _resetscreendim();
     void BSS_FASTCALL _processdebugmessage(UINT64 index, SIZE_T len);
 
-    IDXGIFactory* _factory;
 #ifdef USE_DX10_1
     ID3D10Device1* _device;
 #else
@@ -189,9 +186,9 @@ namespace planeshader {
 #endif
     IDXGISwapChain* _swapchain;
     psTex* _backbuffer;
-    BSS_ALIGN(16) D3DXMATRIX matProj;
-    BSS_ALIGN(16) D3DXMATRIX matView;
-    BSS_ALIGN(16) D3DXMATRIX matViewProj;
+    bss_util::Matrix<float, 4, 4> matProj;
+    bss_util::Matrix<float, 4, 4> matView;
+    bss_util::Matrix<float, 4, 4> matViewProj;
     void* _rectvertbuf;
     void* _batchvertbuf;
     void* _batchindexbuf;

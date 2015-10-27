@@ -126,6 +126,12 @@
     <ClInclude Include="..\include\psTileset.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="psDirectX11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="psDXGI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -197,6 +203,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psTileset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psColor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psDirectX11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psDXGI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

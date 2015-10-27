@@ -34,7 +34,7 @@ void psText::_render()
     psVec3D pos;
     GetTotalPosition(pos);
     bss_util::Matrix<float, 4, 4> m;
-    bss_util::Matrix<float, 4, 4>::AffineTransform_T(pos.x, pos.y, pos.z, GetTotalRotation(), GetPivot().x, GetPivot().y, m);
+    bss_util::Matrix<float, 4, 4>::AffineTransform_T(pos.x - GetPivot().x, pos.y - GetPivot().y, pos.z, GetTotalRotation(), GetPivot().x, GetPivot().y, m);
     // This mimics assembling a scaling matrix and multiplying it with m, assuming we are using transposed matrices.
     sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
     sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];

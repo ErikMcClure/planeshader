@@ -31,6 +31,9 @@ using namespace bss_util;
 
 cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
 psEngine* engine=0;
+psCamera globalcam;
+bool dirkeys[8] = { false }; // left right up down in out counterclockwise clockwise
+float dirspeeds[4] = { 300.0f, 300.0f, 2.0f, 1.0f };
 bool gotonext = false;
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
@@ -100,7 +103,25 @@ cStr ReadFile(const char* path)
   fread(buf.UnsafeString(), 1, ln, f);
   return std::move(buf);
 }
-
+void processGUI()
+{
+  if(dirkeys[0])
+    globalcam.SetPositionX(globalcam.GetPosition().x + dirspeeds[0] * engine->secdelta);
+  if(dirkeys[1])
+    globalcam.SetPositionX(globalcam.GetPosition().x - dirspeeds[0] * engine->secdelta);
+  if(dirkeys[2])
+    globalcam.SetPositionY(globalcam.GetPosition().y + dirspeeds[1] * engine->secdelta);
+  if(dirkeys[3])
+    globalcam.SetPositionY(globalcam.GetPosition().y - dirspeeds[1] * engine->secdelta);
+  if(dirkeys[4])
+    globalcam.SetPositionZ(globalcam.GetPosition().z + dirspeeds[2] * engine->secdelta);
+  if(dirkeys[5])
+    globalcam.SetPositionZ(globalcam.GetPosition().z - dirspeeds[2] * engine->secdelta);
+  if(dirkeys[6])
+    globalcam.SetRotation(globalcam.GetRotation() + dirspeeds[3] * engine->secdelta);
+  if(dirkeys[7])
+    globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * engine->secdelta);
+}
 TESTDEF::RETPAIR test_psVec()
 {
   BEGINTEST;
@@ -303,19 +324,22 @@ TESTDEF::RETPAIR test_psDirectX10()
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
   auto timer = psEngine::OpenProfiler();
   int fps=0;
-  psTex* pslogo = psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, FILTER_NONE, psVeciu(192));
+  //psTex* pslogo = psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
+  psTex* pslogo = psTex::Create("../media/pslogo.png");
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
+  globalcam.SetPosition(500, 500);
 
   psVec imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y));
 
   while(!gotonext && engine->Begin())
   {
-    driver->Clear(0);
-    driver->ApplyCamera(psVec3D(100,100,0), psVec(50,50), 0.5f, psRectiu(VEC_ZERO, driver->rawscreendim));
+    processGUI();
+    driver->Clear(0x11111111);
+    driver->ApplyCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
     driver->library.IMAGE->Activate();
-    driver->DrawRect(psRectRotateZ(100, 100, 100+pslogo->GetDim().x, 100+pslogo->GetDim().y, 0.5f, psVec(50, 50)), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
+    driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
     driver->library.CIRCLE->Activate();
     driver->DrawRectBatchBegin(&pslogo, 1, 1, 0);
     for(int i = 0; i < NUMBATCH; ++i) {
@@ -367,13 +391,14 @@ TESTDEF::RETPAIR test_psPass()
   int fps = 0;
   auto timer = psEngine::OpenProfiler();
 
-  psImage image(psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, FILTER_NONE, psVeciu(192)));
+  psImage image(psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, 0, FILTER_NONE, psVeciu(192)));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
   engine->GetPass(0)->Insert(&image);
   engine->GetPass(0)->Insert(&line);
 
   while(!gotonext && engine->Begin(0))
   {
+    processGUI();
     engine->End();
     updatefpscount(timer, fps);
   }
@@ -392,6 +417,7 @@ TESTDEF::RETPAIR test_psFont()
 
   while(!gotonext && engine->Begin())
   {
+    processGUI();
     driver->Clear(0xFF999999);
     driver->library.IMAGE0->Activate();
     driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF000000, 0, 0, PSFLAG_FIXED);
@@ -439,9 +465,13 @@ int main(int argc, char** argv)
 
   std::vector<uint> failures;
   PSINIT init;
-  init.driver=RealDriver::DRIVERTYPE_DX10;
+  init.driver=RealDriver::DRIVERTYPE_DX11;
   init.width=640;
   init.height=480;
+  init.composite = PSINIT::PS_COMP_NOFRAME;
+  init.extent.x = 0.2;
+  init.extent.y = 100;
+  //init.antialias = 8;
   init.mediapath = "../media";
   //init.iconresource=101;
   //init.filter=5;
@@ -450,10 +480,29 @@ int main(int argc, char** argv)
     if(ps.GetQuit()) return 0;
     std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool
     { 
-      if(evt.type == GUI_KEYDOWN && evt.keycode == KEY_ESCAPE)
-        ps.Quit();
-      if(evt.type == GUI_KEYDOWN && evt.keycode == KEY_RETURN)
-        gotonext = true;
+      if(evt.type == GUI_KEYDOWN || evt.type == GUI_KEYUP)
+      {
+        bool isdown = evt.type == GUI_KEYDOWN;
+        switch(evt.keycode)
+        {
+        case KEY_A: dirkeys[0] = isdown; break;
+        case KEY_D: dirkeys[1] = isdown; break;
+        case KEY_W: dirkeys[2] = isdown; break;
+        case KEY_S: dirkeys[3] = isdown; break;
+        case KEY_X:
+        case KEY_OEM_PLUS: dirkeys[4] = isdown; break;
+        case KEY_Z:
+        case KEY_OEM_MINUS: dirkeys[5] = isdown; break;
+        case KEY_Q: dirkeys[6] = isdown; break;
+        case KEY_E: dirkeys[7] = isdown; break;
+        case KEY_ESCAPE:
+          if(isdown) ps.Quit();
+          break;
+        case KEY_RETURN:
+          if(isdown && !evt.IsAltDown()) gotonext = true;
+          break;
+        }
+      }
       return false;
     };
     ps.SetInputReceiver(guicallback);
@@ -464,6 +513,8 @@ int main(int argc, char** argv)
     for(uint i = 0; i < NUMTESTS; ++i)
     {
       gotonext = false;
+      globalcam.SetPosition(psVec3D(0, 0, -1));
+      globalcam.SetRotation(0);
       numpassed=tests[i].FUNC(); //First is total, second is succeeded
       if(numpassed.first!=numpassed.second) failures.push_back(i);
 
