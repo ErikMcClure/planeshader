@@ -43,8 +43,10 @@ psRenderable::psRenderable(FLAG_TYPE flags, int zorder, psStateblock* stateblock
 psRenderable::~psRenderable() { _destroy(); }
 void psRenderable::Render()
 {
-  assert(psPass::CurPass!=0); // This is only called manually, when you want to render from outside a pass, usually because you don't belong to a pass.
-  psPass::CurPass->_queue(this); // Get the current pass, and add this to it's render queue.
+  if(psPass::CurPass != 0)
+    psPass::CurPass->_queue(this); // Get the current pass, and add this to it's render queue.
+  else
+    _render(); // Otherwise, render this immediately
 }
 
 void BSS_FASTCALL psRenderable::SetPass()
@@ -132,3 +134,16 @@ psRenderable& psRenderable::operator =(psRenderable&& right)
   return *this;
 }
 
+char BSS_FASTCALL psRenderable::_sort(psRenderable* r) const
+{
+  psRenderable* root = r;
+  while(r = r->_getparent()) root = r;
+
+  char c = SGNCOMPARE(_zorder, root->_zorder);
+  if(!c) c = SGNCOMPARE(_internaltype(), root->_internaltype());
+  if(!c) c = SGNCOMPARE(this, root);
+  return c; 
+}
+
+psRenderable* BSS_FASTCALL psRenderable::_getparent() const { return 0; }
+void BSS_FASTCALL psRenderable::SetRenderTarget(psTex* rt, unsigned int index) {}

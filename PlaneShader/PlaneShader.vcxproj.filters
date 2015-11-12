@@ -42,9 +42,6 @@
     <ClInclude Include="..\include\psVec.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="psDirectX10.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\psPass.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -132,6 +129,9 @@
     <ClInclude Include="psDXGI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psEffect.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -143,9 +143,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psLocatable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="psDirectX10.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psCamera.cpp">
@@ -212,6 +209,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psDXGI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psEffect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

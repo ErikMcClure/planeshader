@@ -122,161 +122,25 @@ void processGUI()
   if(dirkeys[7])
     globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * engine->secdelta);
 }
-TESTDEF::RETPAIR test_psVec()
-{
-  BEGINTEST;
 
-  psVeci a(3);
-  TESTVEC(a, 3, 3);
-  psVeci b(2, 3);
-  TESTVEC(b, 2, 3);
-  psVec c(4.0f);
-  TESTVEC(c, 4.0f, 4.0f)
-    psVec d(b);
-  TESTVEC(d, 2.0f, 3.0f);
-  float ee[2] ={ -1.0f, 1.0f };
-  psVec e(ee);
-  TESTVEC(e, -1.0f, 1.0f);
-  /*
-  TEST(psVeci(2, 2).IntersectCircle(psVeci(1, 2), 1));
-  TEST(!psVeci(2, 2).IntersectCircle(psVeci(1, 1), 1));
-  TEST(psVec(2, 2).IntersectCircle(psVec(1.5f, 1.5f), 2));
-  TEST(!psVec(2, 2).IntersectCircle(psVec(1.5f, 1.5f), 0.1f));
-  float rct[4] ={ -1.0f, 0.0f, 1.0f, 2.0f };
-  TEST(!psVec(2, 2).IntersectRect(rct));
-  TEST(psVec(2, 2).IntersectRect(rct)==psVec(2, 2).IntersectRect(-1.0f, 0.0f, 1.0f, 2.0f));
-  TEST(!psVec(1, 2).IntersectRect(rct)); // Test to make sure our rectangle intersection is inclusive-exclusive.
-  TEST(psVec(1, 2).IntersectRect(rct)==psVec(1, 2).IntersectRect(-1.0f, 0.0f, 1.0f, 2.0f));
-  TEST(psVec(-1, 0).IntersectRect(rct));
-  TEST(psVec(-1, 0).IntersectRect(rct)==psVec(-1, 0).IntersectRect(-1.0f, 0.0f, 1.0f, 2.0f));
-  TEST(psVec(0, 1).IntersectRect(rct));
-  TEST(psVec(0, 1).IntersectRect(rct)==psVec(0, 1).IntersectRect(-1.0f, 0.0f, 1.0f, 2.0f));
-  TEST(psVec(2, 2).IntersectEllipse(psVec(1.5f, 1.5f), 2, 4));
-  TEST(!psVec(2, 2).IntersectEllipse(psVec(1.5f, 1.5f), 0.1f, 0.2f));
-  TEST(psVec(2, 2).IntersectEllipse(1.5f, 1.5f, 2, 4));
-  TEST(!psVec(2, 2).IntersectEllipse(1.5f, 1.5f, 0.1f, 0.2f));
-  TEST(psVec(2, 2).DistanceSquared(0, 0)==8.0f);
-  TEST(psVec(2, 2).DistanceSquared(psVec(1, 1))==2.0f);
-  TEST(psVec(-2, -2).DistanceSquared(1, 1)==18.0f);
-  TEST(psVec(-2, -1).DistanceSquared(psVec(1, 0))==10.0f);
-  TEST(fcompare(psVec(2, 2).Distance(psVec(0, 0)), 2.82843f ,100));
-  TEST(fcompare(psVec(2, 2).Distance(1, 1), 1.4142136f, 100));
-  TEST(fcompare(psVec(-2, -2).Distance(psVec(1, 1)), 4.24264f, 100));
-  TEST(fcompare(psVec(-2, -1).Distance(1, 0), 3.16228f, 100));
-  TEST(psVec(2, 2).DotProduct(3, 3)==12.0f);
-  TEST(psVec(2, 2).DotProduct(psVec(3, 3))==12.0f);
-  TEST(psVec(2, 2).DotProduct(0, 0)==0.0f);
-  TEST(psVec(0, 0).DotProduct(psVec(3, 3))==0.0f);
-  TEST(psVec(1, 2).CrossProduct(3, 4)==-2.0f);
-  TEST(psVec(3, 4).CrossProduct(psVec(1, 2))==2.0f);
-  TEST(psVec(0, 0).Length()==0.0f);
-  TEST(fcompare(psVec(1, 1).Length(), 1.41421f, 100));
-  TEST(fcompare(psVec(2, 4).Length(), 4.47214f, 100));
-  TEST(psVec(1, 1)==psVec(1, 1));
-  TEST(!(psVec(1, 1)==psVec(2, 1)));
-  TEST(!(psVec(2, 2)==psVec(1, 1)));
-  TEST(!(psVec(1, 1)!=psVec(1, 1)));
-  TEST(psVec(1, 1)!=psVec(2, 1));
-  TEST(psVec(2, 2)!=psVec(1, 1));
-  TEST(psVec(1, 1)==1.0f);
-  TEST(psVec(1, 1)!=2.0f);
-  TEST(psVec(2, 1)!=2.0f);
-  TEST(!(psVec(1, 1)==2.0f));
-  TEST(!(psVec(2, 1)==1.0f));
-  TEST(psVec(2, 2)==2.0f);
-  //TESTERROR(psVec(0,0).Normalize(),...);
-  psVec na(1, 1);
-  psVec nb(2, 2);
-  na=na.Normalize();
-  nb=nb.Normalize();
-  TEST(na==nb);
-  TEST(fcompare(na.x, 0.707107f, 100) && fcompare(na.y, 0.707107f, 100));
-  psVec nc(1, 4);
-  nc=nc.Normalize();
-  TEST(fcompare(nc.x, 0.242536f, 100) && fcompare(nc.y, 0.970143f, 100));
-  TEST(comparevec(psVec(0, 4).Normalize(), psVec(0,1), 100));
-  TEST(psVec(-2, -2).Abs()==psVec(2, 2));
-  TEST(psVec(2, -2).Abs()==psVec(2, 2));
-  TEST(psVec(2, 2).Abs()==psVec(2, 2));
-  TEST(comparevec(psVec(2, 3).Rotate(0, 0, 0),psVec(2, 3),100));
-  TEST(comparevec(psVec(2, 3).Rotate(PI_DOUBLEf, psVec(1, 1)), psVec(2, 3), 100));
-  TEST(comparevec(psVec(2, 3).Rotate(PIf, 0, 0), psVec(-2, -3), 100));
-  TEST(comparevec(psVec(2, 3).Rotate(PIf, psVec(1, 1)), psVec(-1, -1), 100));
-  float mm[4] ={ cos(PIf), sin(PIf), -sin(PIf), cos(PIf) };
-  TEST(comparevec(psVec(2, 3).MatrixMultiply(mm), psVec(-2, -3), 100));
-  TEST(comparevec((psVec(1, 1)+psVec(2, 2)-(psVec(3, 1)*((-psVec(-2, 2))/psVec(-1, 2)))), psVec(9, 4), 100));
-  TEST(comparevec(((((psVec(1, 1)+5.0f)+psVec(0, 0)-3.0f+psVec(0, 0))/5.0f)*2.0f), psVec(24.0f/20.0f), 100));
-  TEST((psVec(1, 1)+=psVec(1, 1))==psVec(2, 2));
-  TEST((psVec(1, 1)-=psVec(-1, 1))==psVec(2, 0));
-  TEST((psVec(1, 1)*=psVec(-1, 2))==psVec(-1, 2));
-  TEST((psVec(1, 4)/=psVec(-1, 2))==psVec(-1, 2));
-  TEST((psVec(1, 1)+=1.0f)==psVec(2, 2));
-  TEST((psVec(1, 1)-=1.0f)==psVec(0, 0));
-  TEST((psVec(1, 2)*=-2.0f)==psVec(-2, -4));
-  TEST((psVec(4, 2)/=2.0f)==psVec(2, 1));
-  TEST(psVec(2, 2)<psVec(3, 3));
-  TEST(psVec(2, 3)<psVec(3, 3));
-  TEST(!(psVec(3, 3)<psVec(3, 3)));
-  TEST(psVec(3, 3)>=psVec(3, 3));
-  TEST(psVec(3, 4)>=psVec(3, 3));
-  TEST(psVec(3, 3)>psVec(2, 3));
-  TEST(psVec(3, 3)>psVec(2, 2));
-  TEST(!(psVec(3, 3)>psVec(3, 3)));
-  TEST(psVec(3, 3)<=psVec(3, 3));
-  TEST(psVec(3, 3)<=psVec(3, 4));
-  TEST(psVec(3, 3)<=3);
-  TEST(!(psVec(4, 3)>3));
-  TEST(psVec(4, 4)>3);
-  TEST(psVec(2, 2)<3);
-  TEST(!(psVec(2, 2)>=3));
-  TEST(psVec(2, 2)>=2);
-  TEST(psVec(2, 2)>=1);
-  psVec f(3, 3);
-  f=psVeci(2, 2);
-  TEST(f==psVec(2, 2));
-  f=psVec(2.5f, 2.5f);
-  TEST(f==psVec(2.5f, 2.5f));
-  psVeci g(2, 2);
-  g=f;
-  TEST(g==psVeci(2, 2));
-  psVec ln(2, 4);
-  ln=ln.Normalize();
-  psVec la(1, 3);
-  psVec lp(2, -3);
-  psVec dd = (la - lp) - (ln*((la-lp).DotProduct(ln)));
-  TEST(lp.LineInfDistanceSqr(1, 3, 1+ln.x, 3+ln.y)==dd.DotProduct(dd));
-  TEST(fcompare(lp.LineInfDistance(1, 3, 1+ln.x, 3+ln.y),dd.Length(),100));
-  TEST(lp.LineDistanceSqr(1, 3, 1+ln.x, 3+ln.y)==bss_util::distsqr(1, 3, 2, -3));
-  TEST(fcompare(lp.LineDistance(1, 3, 1+ln.x, 3+ln.y),bss_util::dist<float>(1, 3, 2, -3),100));
-
-  TEST(comparevec(psVec::ToPolar(psVec(3, 4)), psVec(5, 0.9273f), 1000));
-  TEST(comparevec(psVec::ToPolar(psVec(0, 4)), psVec(4, PI_HALFf), 1000));
-  TEST(comparevec(psVec::ToPolar(psVec(3, 0)), psVec(3, 0), 1000));
-  TEST(comparevec(psVec::ToPolar(-3, 0), psVec(3, PIf), 1000));
-  TEST(comparevec(psVec::ToPolar(0, -4), psVec(4, -PI_HALFf), 1000));
-  TEST(comparevec(psVec::FromPolar(5, 0.9273f), psVec(3, 4), 1000));
-  TEST(comparevec(psVec::FromPolar(4, -PI_HALFf), psVec(0, -4), 1000));
-  TEST(comparevec(psVec::FromPolar(psVec(3, 0)), psVec(3, 0), 1000));
-  TEST(comparevec(psVec::FromPolar(psVec(3, PIf)), psVec(-3, 0), 1000));
-  TEST(comparevec(psVec::FromPolar(psVec(4, PIf+PI_HALFf)), psVec(0, -4), 1000));
-
-  /*
-  static BSS_FORCEINLINE bool BSS_FASTCALL IntersectEllipse(T X, T Y, T A, T B, T x, T y) { T tx=X-x; T ty=Y-y; return ((tx*tx)/(A*A)) + ((ty*ty)/(B*B)) <= 1; }
-  static inline void BSS_FASTCALL EllipseNearestPoint(T A, T B, T cx, T cy, T& outX, T& outY)*/
-
-  ENDTEST;
-}
 TESTDEF::RETPAIR test_psCircle()
 {
   BEGINTEST;
-
+  TEST(psCirclei(1, 2, 1).IntersectPoint(2, 2));
+  TEST(!psCirclei(1, 1, 1).IntersectPoint(2, 2));
+  TEST(psCircle(1.5f, 1.5f, 2).IntersectPoint(2, 2));
+  TEST(!psCircle(1.5f, 1.5f, 0.1f).IntersectPoint(2, 2));
   ENDTEST;
 }
 
 TESTDEF::RETPAIR test_psRect()
 {
   BEGINTEST;
-
+  psRect rct(-1.0f, 0.0f, 1.0f, 2.0f);
+  TEST(!rct.IntersectPoint(2, 2));
+  TEST(!rct.IntersectPoint(1, 2));
+  TEST(rct.IntersectPoint(-1, 0));
+  TEST(rct.IntersectPoint(0, 1));
   ENDTEST;
 }
 
@@ -296,13 +160,6 @@ TESTDEF::RETPAIR test_psColor()
   ENDTEST;
 }
 
-TESTDEF::RETPAIR test_psCamera()
-{
-  BEGINTEST;
-
-  ENDTEST;
-}
-
 void updatefpscount(unsigned __int64& timer, int& fps)
 {
   if(psEngine::CloseProfiler(timer)>1000000000)
@@ -316,7 +173,7 @@ void updatefpscount(unsigned __int64& timer, int& fps)
   ++fps;
 }
 
-TESTDEF::RETPAIR test_psDirectX10()
+TESTDEF::RETPAIR test_psDirectX11()
 {
   BEGINTEST;
   cStr shfile = ReadFile("../media/testbed.hlsl");
@@ -324,7 +181,7 @@ TESTDEF::RETPAIR test_psDirectX10()
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
   auto timer = psEngine::OpenProfiler();
   int fps=0;
-  //psTex* pslogo = psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
+  //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
   psTex* pslogo = psTex::Create("../media/pslogo.png");
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
@@ -336,7 +193,7 @@ TESTDEF::RETPAIR test_psDirectX10()
   while(!gotonext && engine->Begin())
   {
     processGUI();
-    driver->Clear(0x11111111);
+    driver->Clear(0);
     driver->ApplyCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
     driver->library.IMAGE->Activate();
     driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
@@ -364,16 +221,9 @@ TESTDEF::RETPAIR test_psDirectX10()
   ENDTEST;
 }
 
-TESTDEF::RETPAIR test_psDirectX9()
+TESTDEF::RETPAIR test_psOpenGL4()
 {
   BEGINTEST;
-  ENDTEST;
-}
-
-TESTDEF::RETPAIR test_psDirectX11()
-{
-  BEGINTEST;
-
   ENDTEST;
 }
 
@@ -384,17 +234,57 @@ TESTDEF::RETPAIR test_psRenderable()
   ENDTEST;
 }
 
+TESTDEF::RETPAIR test_psParticles()
+{
+  BEGINTEST;
+  auto timer = psEngine::OpenProfiler();
+  int fps = 0;
+
+  psTex* particle = psTex::Create("../media/particle.png");
+  psVertex verts[5000];
+  psDriver* driver = engine->GetDriver();
+
+  for(int i = 0; i < 5000; ++i)
+  {
+    verts[i].x = bssrandreal(0, driver->screendim.x);
+    verts[i].y = bssrandreal(0, driver->screendim.y);
+    verts[i].z = 0;
+    verts[i].w = 0;
+    verts[i].color = 0x88FFFFFF;
+  }
+
+  while(!gotonext && engine->Begin())
+  {
+    processGUI();
+    driver->Clear(0);
+    driver->ApplyCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
+    driver->library.PARTICLE->Activate();
+    driver->SetStateblock(STATEBLOCK_LIBRARY::GLOW->GetSB());
+    driver->DrawPointsBegin(&particle, 1, 16, 0);
+    driver->DrawPoints(verts, 5000);
+    driver->DrawPointsEnd();
+    engine->End();
+    updatefpscount(timer, fps);
+  }
+
+  ENDTEST;
+}
+
 TESTDEF::RETPAIR test_psPass()
 {
   BEGINTEST;
 
   int fps = 0;
   auto timer = psEngine::OpenProfiler();
+  psDriver* driver = engine->GetDriver();
 
-  psImage image(psTex::Create("../media/pslogo192.png", 128, FILTER_BOX, 0, FILTER_NONE, psVeciu(192)));
+  psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192)));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
   engine->GetPass(0)->Insert(&image);
   engine->GetPass(0)->Insert(&line);
+  engine->GetPass(0)->SetClearColor(0xFF666666);
+
+  image.SetShader(psShader::MergeShaders(2, driver->library.IMAGE, driver->library.DEBUG));
 
   while(!gotonext && engine->Begin(0))
   {
@@ -415,18 +305,26 @@ TESTDEF::RETPAIR test_psFont()
   auto timer = psEngine::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
+  psStateblock* block = STATEBLOCK_LIBRARY::SUBPIXELBLEND->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 1, 0.0f));
+  block = block->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 0, 0.0f));
+  block = block->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 2, 0.0f));
   while(!gotonext && engine->Begin())
   {
     processGUI();
     driver->Clear(0xFF999999);
     driver->library.IMAGE0->Activate();
-    driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF000000, 0, 0, PSFLAG_FIXED);
-    driver->library.IMAGE->Activate();
+    driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF999900, 0, 0, PSFLAG_FIXED);
+    //driver->library.IMAGE->Activate();
+    //driver->SetStateblock(block->GetSB());
+    driver->library.TEXT1->Activate();
+    driver->SetStateblock(STATEBLOCK_LIBRARY::SUBPIXELBLEND1->GetSB());
     //font->DrawText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla maximus sem at ante porttitor vehicula. Nulla a lorem imperdiet, consectetur metus id, congue enim. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse potenti. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin placerat a ipsum ac sodales. Curabitur vel neque scelerisque elit mollis convallis. Proin porta augue metus, sed pulvinar nisl mollis ut. Proin at aliquam erat. Quisque at diam tellus. Aenean facilisis justo ut mauris egestas dignissim. Maecenas scelerisque, ante ac blandit consectetur, magna sem pharetra massa, eu luctus orci ligula luctus augue. Integer at metus eros. Donec sed eros molestie, posuere nunc id, porta sem. \nMauris fermentum mauris ac eleifend ultrices.Fusce nec sollicitudin turpis, a ultricies metus.Nulla suscipit cursus orci, ac fringilla massa volutpat et.Nullam vestibulum dolor at tortor bibendum condimentum.Donec vitae faucibus risus, ut placerat mauris.Curabitur quis purus at urna pharetra lobortis.Pellentesque turpis velit, molestie aliquet elit sed, vestibulum rutrum nibh. \nSuspendisse ultricies leo nec ante accumsan ullamcorper.Suspendisse scelerisque molestie enim sit amet lacinia.Proin at lorem justo.Curabitur lectus ipsum, accumsan at quam eu, iaculis pellentesque felis.Fusce blandit feugiat dui, id placerat justo sollicitudin sed.Cras auctor lorem hendrerit leo facilisis porttitor.Sed vitae pulvinar purus, sed ornare ligula.\nPhasellus blandit, magna quis bibendum mattis, neque quam gravida quam, at tempus sem sapien eu mi.Phasellus ornare laoreet neque at blandit.Suspendisse vulputate fringilla fermentum.Fusce ante eros, laoreet ultricies eros sit amet, lobortis viverra elit.Curabitur consequat erat neque, in fringilla eros elementum eu.Quisque aliquam laoreet metus, volutpat vulputate tortor vehicula ut.Fusce sodales commodo justo, in condimentum ipsum aliquam at.Phasellus eget tellus ac arcu ultrices vehicula.Integer sagittis metus nibh, in varius mi scelerisque quis.Etiam ullamcorper gravida urna, et vestibulum velit posuere id.Aenean fermentum nibh ac dui rhoncus volutpat.Cras quis felis eget tortor vehicula interdum.In efficitur nulla quam, non condimentum ipsum pulvinar non.\nCras ultricies mi sed lacinia consequat.Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Suspendisse potenti.Nam consectetur eleifend libero sed pharetra.Suspendisse in dolor dui.Sed imperdiet pellentesque fermentum.Vivamus ac tortor felis.Aliquam id turpis euismod, tincidunt sapien ac, varius sapien.Vivamus id nulla mauris.");
-    font->DrawText("the dog jumped \nover the lazy fox", psRect(0,0,100,0), TDT_WORDBREAK);
+    font->DrawText("the dog jumped \nover the lazy fox", psRect(0, 0, 100, 0), TDT_WORDBREAK, 0, 0xCCFFAAFF);
+
     const psTex* t = font->GetTex();
     driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, &t, 1, PSFLAG_FIXED);
     engine->End();
+    driver->SetStateblock(psStateblock::DEFAULT->GetSB());
 
     updatefpscount(timer, fps);
   }
@@ -446,13 +344,13 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] ={
-    { "psVec", &test_psVec },
     { "psCircle", &test_psCircle },
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
-    { "psDirectX10", &test_psDirectX10 },
+    { "psDirectX11", &test_psDirectX11 },
     { "psPass", &test_psPass },
     { "psFont", &test_psFont },
+    { "psParticles", &test_psParticles },
   };
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
@@ -468,10 +366,10 @@ int main(int argc, char** argv)
   init.driver=RealDriver::DRIVERTYPE_DX11;
   init.width=640;
   init.height=480;
-  init.composite = PSINIT::PS_COMP_NOFRAME;
+  //init.mode = PSINIT::MODE_FULLSCREEN;
   init.extent.x = 0.2;
   init.extent.y = 100;
-  //init.antialias = 8;
+  init.antialias = 8;
   init.mediapath = "../media";
   //init.iconresource=101;
   //init.filter=5;

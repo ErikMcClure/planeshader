@@ -21,7 +21,9 @@
 #define PS_DLLEXPORT
 #endif
 
+#ifdef BSS_DEBUG
 #define BSS_ENABLE_PROFILER
+#endif
 
 #ifdef  __cplusplus
 namespace planeshader {

@@ -31,7 +31,7 @@ void BSS_FASTCALL psTextured::SetTexture(psTex* tex, unsigned int index)
   if(_tex[index]) _tex[index]->Grab();
 }
 void BSS_FASTCALL psTextured::ClearTextures() { _tex.SetCapacityDiscard(0); _rts.SetCapacityDiscard(0); }
-void BSS_FASTCALL psTextured::SetRT(psTex* rt, unsigned int index)
+void BSS_FASTCALL psTextured::SetRenderTarget(psTex* rt, unsigned int index)
 {
   unsigned int oldsize = _rts.Capacity();
   if(index>=oldsize)

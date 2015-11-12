@@ -76,6 +76,8 @@ namespace planeshader {
 
   struct STATEINFO
   {
+    STATEINFO(STATETYPE t, unsigned int v, unsigned short i = 0) : value(v), type(t), index(i) {}
+    STATEINFO(STATETYPE t, unsigned short i, float f) : valuef(f), type(t), index(i) {}
     union {
       struct {
         union {
@@ -117,6 +119,8 @@ namespace planeshader {
   {
   public:
     inline void* GetSB() const { return _sb; }
+    psStateblock* Combine(psStateblock* other) const;
+    psStateblock* Append(STATEINFO state) const;
 
     static psStateblock* BSS_FASTCALL Create(unsigned int numstates, ...);
     static psStateblock* BSS_FASTCALL Create(const STATEINFO* infos, unsigned int numstates);
@@ -127,7 +131,7 @@ namespace planeshader {
     psStateblock(const STATEINFO* infos, unsigned int numstates);
     ~psStateblock();
     virtual void DestroyThis();
-    
+
     void* _sb;
   };
 
@@ -136,6 +140,9 @@ namespace planeshader {
   {
   public:
     inline void* GetSB() const { return _tb; }
+    psTexblock* Combine(psTexblock* other) const;
+    psTexblock* Append(STATEINFO state) const;
+
     static psTexblock* BSS_FASTCALL Create(unsigned int numstates, ...);
     static psTexblock* BSS_FASTCALL Create(const STATEINFO* infos, unsigned int numstates);
 
@@ -146,26 +153,59 @@ namespace planeshader {
     ~psTexblock();
     virtual void DestroyThis();
 
-    void* _tb; // In DX10, this is the sampler state, but in openGL, it's actually NULL, because openGL binds the sampler states to the texture at texture creation time using the STATEINFOs contained in this object.
+    void* _tb; // In DX11, this is the sampler state, but in openGL, it's actually NULL, because openGL binds the sampler states to the texture at texture creation time using the STATEINFOs contained in this object.
   };
 
   struct PS_DLLEXPORT STATEBLOCK_LIBRARY
   {
     static void INITLIBRARY();
     static psStateblock* GLOW; //Basic glow
-    static psStateblock* PARTICLE; //turns off alpha test for particles
-    static psStateblock* PARTICLE_GLOW; //Both GLOW and PARTICLE
-    static psStateblock* MASK[8]; //Used for masking
-    static psStateblock* INVMASK[8];
     static psTexblock* UVBORDER; // Sets UV coordinates to use a border of color 0 (you can easily override that)
     static psTexblock* UVMIRROR; // Sets UV coordinates to Mirror
     static psTexblock* UVMIRRORONCE; // Sets UV coordinates to MirrorOnce
     static psTexblock* UVWRAP; // Sets UV coordinates to Wrap (There is no CLAMP as that is the default)
-    static psStateblock* GAMMAREAD; // linearize on read (only the 0th sampler, which is usually the diffuse map, since all other maps are already linear) 
-    static psStateblock* GAMMAWRITE; // un-linearize on write
-    static psStateblock* GAMMACORRECT; // Standard gamma correction
-    static psStateblock* SUBTRACTIVE; // Subtracts the image from whatever its being rendered on top of. Used for black LCD text.
+    static psStateblock* SUBPIXELBLEND; // Treats each color channel as an alpha channel. Used for subpixel hinted text.
+    static psStateblock* SUBPIXELBLEND1; // Same as above, but uses SRC1_COLOR, which requires a pixel shader that outputs to both SV_TARGET0 and SV_TARGET1
     static psStateblock* PREMULTIPLIED; // Blending state for premultiplied textures
+  };
+
+  enum STATEBLEND
+  {
+    STATEBLEND_ZERO = 1,
+    STATEBLEND_ONE = 2,
+    STATEBLEND_SRC_COLOR = 3,
+    STATEBLEND_INV_SRC_COLOR = 4,
+    STATEBLEND_SRC_ALPHA = 5,
+    STATEBLEND_INV_SRC_ALPHA = 6,
+    STATEBLEND_DEST_ALPHA = 7,
+    STATEBLEND_INV_DEST_ALPHA = 8,
+    STATEBLEND_DEST_COLOR = 9,
+    STATEBLEND_INV_DEST_COLOR = 10,
+    STATEBLEND_SRC_ALPHA_SAT = 11,
+    STATEBLEND_BLEND_FACTOR = 14,
+    STATEBLEND_INV_BLEND_FACTOR = 15,
+    STATEBLEND_SRC1_COLOR = 16,
+    STATEBLEND_INV_SRC1_COLOR = 17,
+    STATEBLEND_SRC1_ALPHA = 18,
+    STATEBLEND_INV_SRC1_ALPHA = 19
+  };
+
+  enum STATEBLENDOP
+  {
+    STATEBLENDOP_ADD = 1,
+    STATEBLENDOP_SUBTRACT = 2,
+    STATEBLENDOP_REV_SUBTRACT = 3,
+    STATEBLENDOP_MIN = 4,
+    STATEBLENDOP_MAX = 5
+  };
+
+  enum STATETEXTUREADDRESS
+  {
+    STATETEXTUREADDRESS_WRAP = 1,
+    STATETEXTUREADDRESS_MIRROR = 2,
+    STATETEXTUREADDRESS_CLAMP = 3,
+    STATETEXTUREADDRESS_BORDER = 4,
+    STATETEXTUREADDRESS_MIRROR_ONCE = 5
   };
 }
 

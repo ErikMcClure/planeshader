@@ -55,7 +55,7 @@ namespace planeshader {
   struct BSS_COMPILER_DLLEXPORT DEF_TEXT : DEF_SOLID, DEF_COLORED
   {
     inline DEF_TEXT() : font(0), textdim(VEC_ZERO), letterspacing(0), drawflags(0), func(0,0) {}
-    inline virtual psText* BSS_FASTCALL Spawn() const { return new psText(*this); } //LINKER ERRORS IF THIS DOESNT EXIST! - This should never be called (since the class itself is abstract), but we have to have it here to support inherited classes
+    inline virtual psText* BSS_FASTCALL Spawn() const { return new psText(*this); }
     inline virtual DEF_TEXT* BSS_FASTCALL Clone() const { return new DEF_TEXT(*this); }
 
     cStr text;

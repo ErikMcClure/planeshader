@@ -32,11 +32,11 @@ namespace planeshader {
   {
   public:
     void Activate();
-    template<typename T, int I>
+    template<typename T, SHADER_VER I>
     inline bool BSS_FASTCALL SetConstants(const T& src)
-    { 
-      static_assert(I>=0 && I < 6, "I must be less than 6");
-      return SetConstants(&src, sizeof(T), I);
+    {
+      unsigned char index = (I >= PIXEL_SHADER_1_1) + (I >= GEOMETRY_SHADER_4_0) + (I >= COMPUTE_SHADER_4_0) + (I >= DOMAIN_SHADER_5_0) + (I >= HULL_SHADER_5_0);
+      return SetConstants(&src, sizeof(T), index);
     }
     bool BSS_FASTCALL SetConstants(const void* data, size_t sz, unsigned char I);
 
@@ -89,8 +89,8 @@ namespace planeshader {
     template<typename T> // Automatically picks the correct shader to apply the constants to by match T to that shader's constant declaration.
     inline bool BSS_FASTCALL SetConstants(const T& src)
     {
-      static_assert((std::is_same<T, VS>::value+std::is_same<T, PS>::value+std::is_same<T, HS>::value+std::is_same<T, CS>::value+std::is_same<T, DS>::value+std::is_same<T, HS>::value) == 1);
-      return SetConstants<T, (std::is_same<T, PS>::value*1)|(std::is_same<T, PS>::value*2)|(std::is_same<T, PS>::value*3)|(std::is_same<T, PS>::value*4)|(std::is_same<T, PS>::value*5)>(src);
+      static_assert((std::is_same<T, VS>::value+std::is_same<T, PS>::value+std::is_same<T, GS>::value+std::is_same<T, CS>::value+std::is_same<T, DS>::value+std::is_same<T, HS>::value) == 1);
+      return SetConstants(&src, sizeof(T), (std::is_same<T, PS>::value*1)|(std::is_same<T, GS>::value*2)|(std::is_same<T, CS>::value*3)|(std::is_same<T, DS>::value*4)|(std::is_same<T, HS>::value*5));
     }
 
     template<unsigned char I>

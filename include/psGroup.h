@@ -22,7 +22,7 @@ namespace planeshader {
     virtual ~psGroup();
     // Clone function 
     inline virtual psGroup* BSS_FASTCALL Clone() const { return new psGroup(*this); }
-    // Adds an inheritable by cloning and returns a pointer to the internally owned 
+    // Adds an inheritable by cloning and returns a pointer to the internally owned pointer
     psInheritable* BSS_FASTCALL AddClone(psInheritable* inheritable);
     psInheritable* BSS_FASTCALL AddDef(const DEF_INHERITABLE& inheritable);
     // Adds an inheritable as a child but does not retain ownership of it, so the inheritable won't be deleted if the group is deleted.
