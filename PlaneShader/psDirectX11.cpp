@@ -76,8 +76,22 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
   IDXGIOutput* output;
   IDXGIAdapter* adapter = _createfactory(hwnd, _dpi, output);
 
+  PSLOG(4) << "DEVICEFLAGS: " << DEVICEFLAGS << std::endl;
+
   LOGFAILURE(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, NULL, DEVICEFLAGS, NULL, 0, D3D11_SDK_VERSION, &_device, &_featurelevel, &_context), "D3D11CreateDevice failed with error: ", _lasterr);
- 
+  const char* strfeature = "Unknown feature level";
+  switch(_featurelevel)
+  {
+  case D3D_FEATURE_LEVEL_9_1: strfeature = "DirectX 9.1"; break;
+  case D3D_FEATURE_LEVEL_9_2: strfeature = "DirectX 9.2"; break;
+  case D3D_FEATURE_LEVEL_9_3: strfeature = "DirectX 9.3"; break;
+  case D3D_FEATURE_LEVEL_10_0: strfeature = "DirectX 10.0"; break;
+  case D3D_FEATURE_LEVEL_10_1: strfeature = "DirectX 10.1"; break;
+  case D3D_FEATURE_LEVEL_11_0: strfeature = "DirectX 11.0"; break;
+  }
+
+  PSLOG(3) << "DX11 Feature Level: " << strfeature << std::endl;
+
 #ifdef BSS_DEBUG
   _device->QueryInterface(__uuidof(ID3D11InfoQueue), (void **)&_infoqueue);
 #endif
@@ -126,13 +140,31 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
     0
   };
 
+  PSLOG(4) << cStrF("Creating swap chain with: { { %i, %i, { %i, %i }, %i, %i, %i }, { %i, %i }, %i, %i, %p, %s, %i, %i }",
+    swapdesc.BufferDesc.Width,
+    swapdesc.BufferDesc.Height,
+    swapdesc.BufferDesc.RefreshRate,
+    swapdesc.BufferDesc.Format,
+    swapdesc.BufferDesc.ScanlineOrdering,
+    swapdesc.BufferDesc.Scaling,
+    swapdesc.SampleDesc.Count,
+    swapdesc.SampleDesc.Quality,
+    swapdesc.BufferUsage,
+    swapdesc.BufferCount,
+    swapdesc.OutputWindow,
+    swapdesc.Windowed?"true":"false",
+    swapdesc.SwapEffect,
+    swapdesc.Flags).c_str() << std::endl;
+
+  LOGFAILURE(_factory->CreateSwapChain(_device, &swapdesc, &_swapchain), "CreateSwapChain failed with error: ", _geterror(_lasterr));
+  _factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
+
   _cam_def = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
   _cam_usr = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
   _proj_def = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
   _proj_usr = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
   _scissorstack.Push(RECT_ZERO); //push the initial scissor rect (it'll get set in ApplyCamera)
 
-  LOGFAILURE(_factory->CreateSwapChain(_device, &swapdesc, &_swapchain), "CreateSwapChain failed with error: ", _geterror(_lasterr));
   _getbackbufferref();
   _resetscreendim();
 
@@ -164,8 +196,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
 
     library.IMAGE = psShader::CreateShader(desc, 3,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -179,8 +211,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
 
     library.IMAGE0 = psShader::CreateShader(desc, 3,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -196,8 +228,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
 
     library.IMAGE2 = psShader::CreateShader(desc, 3,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -214,8 +246,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
 
     library.IMAGE3 = psShader::CreateShader(desc, 3,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -223,6 +255,20 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
 
     library.CIRCLE = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+  }
+
+  {
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fstext.hlsl");
+
+    library.TEXT1 = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+  }
+
+  {
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl");
+
+    library.DEBUG = psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
@@ -242,17 +288,15 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
   {
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl");
 
-    ELEMENT_DESC desc[4] = {
+    ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint)-1 }
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 }
     };
 
     library.PARTICLE = psShader::CreateShader(desc, 3,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<float>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
   _rectvertbuf = CreateBuffer(RECTBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0);
@@ -296,8 +340,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
   _lineobjbuf.nvert = BATCHSIZE;
 
   // Create default stateblock and sampler state, then activate the default stateblock.
-  _defaultSB = (DX11_SB*)CreateStateblock(0);
-  _defaultSS = (ID3D11SamplerState*)CreateTexblock(0);
+  _defaultSB = (DX11_SB*)CreateStateblock(0, 0);
+  _defaultSS = (ID3D11SamplerState*)CreateTexblock(0, 0);
   SetStateblock(NULL);
   Clear(0x00000000);
   _swapchain->Present(0, 0);
@@ -461,7 +505,7 @@ void BSS_FASTCALL psDirectX11::DrawPointsBegin(const psTex* const* texes, unsign
   _lockedptbuf = (DX11_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
   _lockedcount = 0;
   _lockedflag = flags;
-  library.PARTICLE->SetConstants<float, 2>(size);
+  library.PARTICLE->SetConstants<float, SHADER_VER::GEOMETRY_SHADER_4_0>(size);
   SetTextures(texes, numtex, PIXEL_SHADER_1_1);
 }
 void BSS_FASTCALL psDirectX11::DrawPoints(psVertex* particles, unsigned int num)
@@ -471,7 +515,7 @@ void BSS_FASTCALL psDirectX11::DrawPoints(psVertex* particles, unsigned int num)
   for(unsigned int i = num + _lockedcount; i > BATCHSIZE; i -= BATCHSIZE)
   {
     memcpy(_lockedptbuf + _lockedcount, particles, (BATCHSIZE - _lockedcount)*sizeof(DX11_simplevert));
-    UnlockBuffer(_lockedptbuf);
+    UnlockBuffer(_ptobjbuf.verts);
     _ptobjbuf.nvert = BATCHSIZE;
     Draw(&_ptobjbuf, _lockedflag);
     _lockedptbuf = (DX11_simplevert*)LockBuffer(_ptobjbuf.verts, LOCK_WRITE_DISCARD);
@@ -485,7 +529,7 @@ void BSS_FASTCALL psDirectX11::DrawPoints(psVertex* particles, unsigned int num)
 void psDirectX11::DrawPointsEnd()
 {
   PROFILE_FUNC();
-  UnlockBuffer(_lockedptbuf);
+  UnlockBuffer(_ptobjbuf.verts);
   _ptobjbuf.nvert = _lockedcount;
   Draw(&_ptobjbuf, _lockedflag);
 }
@@ -609,12 +653,13 @@ void BSS_FASTCALL psDirectX11::SetExtent(float znear, float zfar) { _extent.x = 
 void* BSS_FASTCALL psDirectX11::CreateBuffer(size_t bytes, unsigned int usage, const void* initdata)
 {
   PROFILE_FUNC();
+  bytes = T_NEXTMULTIPLE(bytes, 15);
   D3D11_BUFFER_DESC desc = {
     bytes,
     (D3D11_USAGE)_usagetodxtype(usage),
     _usagetobind(usage),
     _usagetocpuflag(usage),
-    _usagetomisc(usage),
+    _usagetomisc(usage, _samples.Count > 1 && !(usage & USAGE_STAGING) && (usage & USAGE_MULTISAMPLE)),
   };
 
   D3D11_SUBRESOURCE_DATA subdata = { initdata, 0, 0 };
@@ -679,8 +724,10 @@ void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsig
 {
   PROFILE_FUNC();
   ID3D11Texture2D* tex = 0;
-  if(_samples.Count > 1) usage &= ~USAGE_AUTOGENMIPMAP;
-  D3D11_TEXTURE2D_DESC desc = { dim.x, dim.y, (_samples.Count>1) ? 1 : miplevels, 1, (DXGI_FORMAT)FMTtoDXGI(format), (usage & USAGE_STAGING) ? DEFAULT_SAMPLE_DESC : _samples, (D3D11_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage) };
+
+  bool multisample = (_samples.Count > 1) && !(usage & USAGE_STAGING) && (usage & USAGE_MULTISAMPLE);
+  if(multisample) { miplevels = 1; initdata = 0; }
+  D3D11_TEXTURE2D_DESC desc = { dim.x, dim.y, miplevels, 1, (DXGI_FORMAT)FMTtoDXGI(format), multisample ? _samples : DEFAULT_SAMPLE_DESC, (D3D11_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage, multisample) };
   D3D11_SUBRESOURCE_DATA subdata = { initdata, (((psColor::BitsPerPixel(format)*dim.x) + 7) >> 3), 0 }; // The +7 here is to force the per-line bits to correctly round up the number of bytes.
 
   LOGFAILURERETNULL(_device->CreateTexture2D(&desc, !initdata ? 0 : &subdata, &tex), "CreateTexture failed, error: ", _geterror(_lasterr))
@@ -693,7 +740,7 @@ void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsig
 
 void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim)
 {
-  memset(info, -1, sizeof(D3DX11_IMAGE_LOAD_INFO));
+  memset(info, D3DX11_DEFAULT, sizeof(D3DX11_IMAGE_LOAD_INFO));
   info->MipLevels = miplevels;
   info->FirstMipLevel = 0;
   info->Filter = _filtertodx11(loadfilter);
@@ -703,7 +750,7 @@ void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsign
   info->Usage = (D3D11_USAGE)_usagetodxtype(usage);
   info->BindFlags = _usagetobind(usage);
   info->CpuAccessFlags = _usagetocpuflag(usage);
-  info->MiscFlags = _usagetomisc(usage);
+  info->MiscFlags = _usagetomisc(usage, false);
   info->pSrcInfo = 0;
   if(format != FMT_UNKNOWN) info->Format = (DXGI_FORMAT)FMTtoDXGI(format);
 }
@@ -712,8 +759,7 @@ void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, unsigned int usage
 {
   PROFILE_FUNC();
   D3DX11_IMAGE_LOAD_INFO info;
-  if(_samples.Count > 1) usage &= ~USAGE_AUTOGENMIPMAP;
-  _loadtexture(&info, usage, format, (_samples.Count>1) ? 1 : miplevels, mipfilter, loadfilter, dim);
+  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim);
 
   ID3D11Resource* tex = 0;
   LOGFAILURERETNULL(D3DX11CreateTextureFromFileW(_device, cStrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path);
@@ -732,8 +778,7 @@ void* BSS_FASTCALL psDirectX11::LoadTextureInMemory(const void* data, size_t dat
 {
   PROFILE_FUNC();
   D3DX11_IMAGE_LOAD_INFO info;
-  if(_samples.Count > 1) usage &= ~USAGE_AUTOGENMIPMAP;
-  _loadtexture(&info, usage, format, (_samples.Count>1) ? 1 : miplevels, mipfilter, loadfilter, dim);
+  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim);
 
   ID3D11Resource* tex = 0;
   LOGFAILURERETNULL(D3DX11CreateTextureFromMemory(_device, data, datasize, &info, 0, &tex, 0), "LoadTexture failed for ", data);
@@ -829,7 +874,7 @@ void BSS_FASTCALL psDirectX11::SetTextures(const psTex* const* texes, unsigned c
   }
 }
 // Builds a stateblock from the given set of state changes
-void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states)
+void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states, unsigned int count)
 {
   PROFILE_FUNC();
   // Build each type of stateblock and independently check for duplicates.
@@ -841,45 +886,46 @@ void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states)
   D3D11_RASTERIZER_DESC rs = { D3D11_FILL_SOLID, D3D11_CULL_NONE, 0, 0, 0.0f, 0.0f, 1, 1, 0, 1 };
   
   const STATEINFO* cur = states;
-  if(cur != 0 && cur->type == TYPE_BLEND_ALPHATOCOVERAGEENABLE) bs.AlphaToCoverageEnable = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_BLEND_INDEPENDENTBLENDENABLE) bs.IndependentBlendEnable = (cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_BLENDENABLE && cur->index <= 7) bs.RenderTarget[cur->index].BlendEnable = (cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_SRCBLEND && cur->index <= 7) bs.RenderTarget[cur->index].SrcBlend = (D3D11_BLEND)(cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_DESTBLEND && cur->index <= 7) bs.RenderTarget[cur->index].DestBlend = (D3D11_BLEND)(cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_BLENDOP && cur->index <= 7) bs.RenderTarget[cur->index].BlendOp = (D3D11_BLEND_OP)(cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_SRCBLENDALPHA && cur->index <= 7) bs.RenderTarget[cur->index].SrcBlendAlpha = (D3D11_BLEND)(cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_DESTBLENDALPHA && cur->index <= 7) bs.RenderTarget[cur->index].DestBlendAlpha = (D3D11_BLEND)(cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_BLENDOPALPHA && cur->index <= 7) bs.RenderTarget[cur->index].BlendOpAlpha = (D3D11_BLEND_OP)(cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_RENDERTARGETWRITEMASK && cur->index <= 7) bs.RenderTarget[cur->index].RenderTargetWriteMask = (cur++)->value;
-  while(cur != 0 && cur->type == TYPE_BLEND_BLENDFACTOR && cur->index <= 3) sb->blendfactor[cur->index] = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_BLEND_SAMPLEMASK) sb->sampleMask = (cur++)->value;
+  const STATEINFO* end = states + count;
+  if(cur != end && cur->type == TYPE_BLEND_ALPHATOCOVERAGEENABLE) bs.AlphaToCoverageEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_BLEND_INDEPENDENTBLENDENABLE) bs.IndependentBlendEnable = (cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_BLENDENABLE && cur->index <= 7) bs.RenderTarget[cur->index].BlendEnable = (cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_SRCBLEND && cur->index <= 7) bs.RenderTarget[cur->index].SrcBlend = (D3D11_BLEND)(cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_DESTBLEND && cur->index <= 7) bs.RenderTarget[cur->index].DestBlend = (D3D11_BLEND)(cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_BLENDOP && cur->index <= 7) bs.RenderTarget[cur->index].BlendOp = (D3D11_BLEND_OP)(cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_SRCBLENDALPHA && cur->index <= 7) bs.RenderTarget[cur->index].SrcBlendAlpha = (D3D11_BLEND)(cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_DESTBLENDALPHA && cur->index <= 7) bs.RenderTarget[cur->index].DestBlendAlpha = (D3D11_BLEND)(cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_BLENDOPALPHA && cur->index <= 7) bs.RenderTarget[cur->index].BlendOpAlpha = (D3D11_BLEND_OP)(cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_RENDERTARGETWRITEMASK && cur->index <= 7) bs.RenderTarget[cur->index].RenderTargetWriteMask = (cur++)->value;
+  while(cur != end && cur->type == TYPE_BLEND_BLENDFACTOR && cur->index <= 3) sb->blendfactor[cur->index] = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_BLEND_SAMPLEMASK) sb->sampleMask = (cur++)->value;
 
-  if(cur != 0 && cur->type == TYPE_DEPTH_DEPTHENABLE) ds.DepthEnable = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_DEPTHWRITEMASK) ds.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_DEPTHFUNC) ds.DepthFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_STENCILENABLE) ds.StencilEnable = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_STENCILREADMASK) ds.StencilReadMask = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_STENCILWRITEMASK) ds.StencilWriteMask = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_FRONT_STENCILFAILOP) ds.FrontFace.StencilFailOp = (D3D11_STENCIL_OP)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_FRONT_STENCILDEPTHFAILOP) ds.FrontFace.StencilDepthFailOp = (D3D11_STENCIL_OP)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_FRONT_STENCILPASSOP) ds.FrontFace.StencilPassOp = (D3D11_STENCIL_OP)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_FRONT_STENCILFUNC) ds.FrontFace.StencilFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_BACK_STENCILFAILOP) ds.BackFace.StencilFailOp = (D3D11_STENCIL_OP)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_BACK_STENCILDEPTHFAILOP) ds.BackFace.StencilDepthFailOp = (D3D11_STENCIL_OP)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_BACK_STENCILPASSOP) ds.BackFace.StencilPassOp = (D3D11_STENCIL_OP)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_BACK_STENCILFUNC) ds.BackFace.StencilFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_DEPTH_STENCILVALUE) sb->stencilref = (cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_DEPTHENABLE) ds.DepthEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_DEPTHWRITEMASK) ds.DepthWriteMask = (D3D11_DEPTH_WRITE_MASK)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_DEPTHFUNC) ds.DepthFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_STENCILENABLE) ds.StencilEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_STENCILREADMASK) ds.StencilReadMask = (cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_STENCILWRITEMASK) ds.StencilWriteMask = (cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_FRONT_STENCILFAILOP) ds.FrontFace.StencilFailOp = (D3D11_STENCIL_OP)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_FRONT_STENCILDEPTHFAILOP) ds.FrontFace.StencilDepthFailOp = (D3D11_STENCIL_OP)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_FRONT_STENCILPASSOP) ds.FrontFace.StencilPassOp = (D3D11_STENCIL_OP)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_FRONT_STENCILFUNC) ds.FrontFace.StencilFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_BACK_STENCILFAILOP) ds.BackFace.StencilFailOp = (D3D11_STENCIL_OP)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_BACK_STENCILDEPTHFAILOP) ds.BackFace.StencilDepthFailOp = (D3D11_STENCIL_OP)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_BACK_STENCILPASSOP) ds.BackFace.StencilPassOp = (D3D11_STENCIL_OP)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_BACK_STENCILFUNC) ds.BackFace.StencilFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
+  if(cur != end && cur->type == TYPE_DEPTH_STENCILVALUE) sb->stencilref = (cur++)->value;
 
-  if(cur != 0 && cur->type == TYPE_RASTER_FILLMODE) rs.FillMode = (D3D11_FILL_MODE)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_CULLMODE) rs.CullMode = (D3D11_CULL_MODE)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_FRONTCOUNTERCLOCKWISE) rs.FrontCounterClockwise = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_DEPTHBIAS) rs.DepthBias = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_DEPTHBIASCLAMP) rs.DepthBiasClamp = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_RASTER_SLOPESCALEDDEPTHBIAS) rs.SlopeScaledDepthBias = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_RASTER_DEPTHCLIPENABLE) rs.DepthClipEnable = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_SCISSORENABLE) rs.ScissorEnable = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_MULTISAMPLEENABLE) rs.MultisampleEnable = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_RASTER_ANTIALIASEDLINEENABLE) rs.AntialiasedLineEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_FILLMODE) rs.FillMode = (D3D11_FILL_MODE)(cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_CULLMODE) rs.CullMode = (D3D11_CULL_MODE)(cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_FRONTCOUNTERCLOCKWISE) rs.FrontCounterClockwise = (cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_DEPTHBIAS) rs.DepthBias = (cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_DEPTHBIASCLAMP) rs.DepthBiasClamp = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_RASTER_SLOPESCALEDDEPTHBIAS) rs.SlopeScaledDepthBias = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_RASTER_DEPTHCLIPENABLE) rs.DepthClipEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_SCISSORENABLE) rs.ScissorEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_MULTISAMPLEENABLE) rs.MultisampleEnable = (cur++)->value;
+  if(cur != end && cur->type == TYPE_RASTER_ANTIALIASEDLINEENABLE) rs.AntialiasedLineEnable = (cur++)->value;
 
   LOGFAILURERETNULL(_device->CreateBlendState(&bs, &sb->bs), "CreateBlendState failed")
     LOGFAILURERETNULL(_device->CreateDepthStencilState(&ds, &sb->ds), "CreateDepthStencilState failed")
@@ -888,25 +934,26 @@ void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states)
     return sb;
 }
 
-void* BSS_FASTCALL psDirectX11::CreateTexblock(const STATEINFO* states)
+void* BSS_FASTCALL psDirectX11::CreateTexblock(const STATEINFO* states, unsigned int count)
 {
   D3D11_SAMPLER_DESC ss = { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_TEXTURE_ADDRESS_CLAMP, 0.0f, 16, D3D11_COMPARISON_NEVER, { 0.0f, 0.0f, 0.0f, 0.0f }, 0.0f, FLT_MAX };
 
   ID3D11SamplerState* ret;
   const STATEINFO* cur = states;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_FILTER) ss.Filter = (D3D11_FILTER)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_ADDRESSU) ss.AddressU = (D3D11_TEXTURE_ADDRESS_MODE)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_ADDRESSV) ss.AddressV = (D3D11_TEXTURE_ADDRESS_MODE)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_ADDRESSW) ss.AddressW = (D3D11_TEXTURE_ADDRESS_MODE)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_MIPLODBIAS) ss.MipLODBias = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_MAXANISOTROPY) ss.MaxAnisotropy = (cur++)->value;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_COMPARISONFUNC) ss.ComparisonFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_BORDERCOLOR1) ss.BorderColor[0] = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_BORDERCOLOR2) ss.BorderColor[1] = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_BORDERCOLOR3) ss.BorderColor[2] = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_BORDERCOLOR4) ss.BorderColor[3] = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_MINLOD) ss.MinLOD = (cur++)->valuef;
-  if(cur != 0 && cur->type == TYPE_SAMPLER_MAXLOD) ss.MaxLOD = (cur++)->valuef;
+  const STATEINFO* end = states + count;
+  if(cur != end && cur->type == TYPE_SAMPLER_FILTER) ss.Filter = (D3D11_FILTER)(cur++)->value;
+  if(cur != end && cur->type == TYPE_SAMPLER_ADDRESSU) ss.AddressU = (D3D11_TEXTURE_ADDRESS_MODE)(cur++)->value;
+  if(cur != end && cur->type == TYPE_SAMPLER_ADDRESSV) ss.AddressV = (D3D11_TEXTURE_ADDRESS_MODE)(cur++)->value;
+  if(cur != end && cur->type == TYPE_SAMPLER_ADDRESSW) ss.AddressW = (D3D11_TEXTURE_ADDRESS_MODE)(cur++)->value;
+  if(cur != end && cur->type == TYPE_SAMPLER_MIPLODBIAS) ss.MipLODBias = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_SAMPLER_MAXANISOTROPY) ss.MaxAnisotropy = (cur++)->value;
+  if(cur != end && cur->type == TYPE_SAMPLER_COMPARISONFUNC) ss.ComparisonFunc = (D3D11_COMPARISON_FUNC)(cur++)->value;
+  if(cur != end && cur->type == TYPE_SAMPLER_BORDERCOLOR1) ss.BorderColor[0] = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_SAMPLER_BORDERCOLOR2) ss.BorderColor[1] = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_SAMPLER_BORDERCOLOR3) ss.BorderColor[2] = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_SAMPLER_BORDERCOLOR4) ss.BorderColor[3] = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_SAMPLER_MINLOD) ss.MinLOD = (cur++)->valuef;
+  if(cur != end && cur->type == TYPE_SAMPLER_MAXLOD) ss.MaxLOD = (cur++)->valuef;
   LOGFAILURERETNULL(_device->CreateSamplerState(&ss, &ret));
   return ret;
 }
@@ -986,7 +1033,7 @@ TEXTURE_DESC BSS_FASTCALL psDirectX11::GetTextureDesc(void* t)
     ret.dim.z = 1;
     ret.format = DXGItoFMT(desc.Format);
     ret.miplevels = desc.MipLevels;
-    ret.usage = (USAGETYPES)_reverseusage(desc.Usage, desc.MiscFlags, desc.BindFlags);
+    ret.usage = (USAGETYPES)_reverseusage(desc.Usage, desc.MiscFlags, desc.BindFlags, false);
   }
   break;
   case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
@@ -999,7 +1046,7 @@ TEXTURE_DESC BSS_FASTCALL psDirectX11::GetTextureDesc(void* t)
     ret.dim.z = 1;
     ret.format = DXGItoFMT(desc.Format);
     ret.miplevels = desc.MipLevels;
-    ret.usage = (USAGETYPES)_reverseusage(desc.Usage, desc.MiscFlags, desc.BindFlags);
+    ret.usage = (USAGETYPES)_reverseusage(desc.Usage, desc.MiscFlags, desc.BindFlags, desc.SampleDesc.Count > 1);
   }
   break;
   case D3D11_RESOURCE_DIMENSION_TEXTURE3D:
@@ -1012,7 +1059,7 @@ TEXTURE_DESC BSS_FASTCALL psDirectX11::GetTextureDesc(void* t)
     ret.dim.z = desc.Depth;
     ret.format = DXGItoFMT(desc.Format);
     ret.miplevels = desc.MipLevels;
-    ret.usage = (USAGETYPES)_reverseusage(desc.Usage, desc.MiscFlags, desc.BindFlags);
+    ret.usage = (USAGETYPES)_reverseusage(desc.Usage, desc.MiscFlags, desc.BindFlags, false);
   }
   break;
   }
@@ -1128,16 +1175,22 @@ void BSS_FASTCALL psDirectX11::CopyResource(void* dest, void* src, RESOURCE_TYPE
   _context->CopyResource(rdest, rsrc);
 }
 
-void BSS_FASTCALL psDirectX11::Resize(psVeciu dim, FORMATS format, bool fullscreen)
+void BSS_FASTCALL psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
 {
   PROFILE_FUNC();
-  if(_backbuffer)
-    _backbuffer->~psTex();
-  _context->OMSetRenderTargets(0, 0, 0);
-  _context->ClearState();
-  LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, (DXGI_FORMAT)FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
-  _getbackbufferref();
-  _resetscreendim();
+  if(rawscreendim != dim || _backbuffer->GetFormat() != format)
+  {
+    if(_backbuffer)
+      _backbuffer->~psTex();
+    _context->OMSetRenderTargets(0, 0, 0);
+    _context->ClearState();
+    LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, (DXGI_FORMAT)FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
+    _getbackbufferref();
+    _resetscreendim();
+  }
+
+  if(fullscreen >= 0)
+    LOGFAILURE(_swapchain->SetFullscreenState(fullscreen > 0, 0));
 }
 void psDirectX11::_getbackbufferref()
 {
@@ -1151,14 +1204,14 @@ void psDirectX11::_getbackbufferref()
       _creatertview(backbuffer),
       psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
       DXGItoFMT(backbuffer_desc.Format),
-      (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags),
+      (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags, backbuffer_desc.SampleDesc.Count == 1),
       backbuffer_desc.MipLevels);
   else
     new(_backbuffer) psTex(0,
       _creatertview(backbuffer),
       psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
       DXGItoFMT(backbuffer_desc.Format),
-      (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags),
+      (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags,backbuffer_desc.SampleDesc.Count == 1),
       backbuffer_desc.MipLevels);
 
   backbuffer->Release();
@@ -1341,10 +1394,10 @@ unsigned int BSS_FASTCALL psDirectX11::_usagetocpuflag(unsigned int types)
   }
   return 0;
 }
-unsigned int BSS_FASTCALL psDirectX11::_usagetomisc(unsigned int types)
+unsigned int BSS_FASTCALL psDirectX11::_usagetomisc(unsigned int types, bool multisampled)
 {
   unsigned int r = 0;
-  if(types&USAGE_AUTOGENMIPMAP) r |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+  if((types&USAGE_RENDERTARGET) && (types&USAGE_SHADER_RESOURCE) && !multisampled) r |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
   if(types&USAGE_TEXTURECUBE) r |= D3D11_RESOURCE_MISC_TEXTURECUBE;
   return r;
 }
@@ -1362,7 +1415,7 @@ unsigned int BSS_FASTCALL psDirectX11::_usagetobind(unsigned int types)
   if(types&USAGE_DEPTH_STENCIL) r |= D3D11_BIND_DEPTH_STENCIL;
   return r;
 }
-unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigned int misc, unsigned int bind)
+unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigned int misc, unsigned int bind, bool multisample)
 {
   unsigned int r = 0;
   switch(usage)
@@ -1372,7 +1425,6 @@ unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigne
   case D3D11_USAGE_DYNAMIC: r = USAGE_DYNAMIC;
   case D3D11_USAGE_STAGING: r = USAGE_STAGING;
   }
-  if(misc&D3D11_RESOURCE_MISC_GENERATE_MIPS) r |= USAGE_AUTOGENMIPMAP;
   if(misc&D3D11_RESOURCE_MISC_TEXTURECUBE) r |= USAGE_TEXTURECUBE;
   switch(bind)
   {
@@ -1383,6 +1435,7 @@ unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigne
   if(bind&D3D11_BIND_RENDER_TARGET) r |= USAGE_RENDERTARGET;
   if(bind&D3D11_BIND_SHADER_RESOURCE) r |= USAGE_SHADER_RESOURCE;
   if(bind&D3D11_BIND_DEPTH_STENCIL) r |= USAGE_DEPTH_STENCIL;
+  if(multisample) r |= USAGE_MULTISAMPLE;
   return r;
 }
 inline unsigned int BSS_FASTCALL psDirectX11::_filtertodx11(FILTERS filter)

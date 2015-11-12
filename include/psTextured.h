@@ -29,7 +29,7 @@ namespace planeshader {
     virtual inline unsigned char NumTextures() const { return _tex.Capacity(); }
     virtual inline psTex* const* GetRenderTargets() const { return _rts; }
     virtual inline unsigned char NumRT() const { return _rts.Capacity(); }
-    void BSS_FASTCALL SetRT(psTex* rt, unsigned int index = 0);
+    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0);
     inline virtual psTextured* BSS_FASTCALL Clone() const { return new psTextured(*this); } //Clone function
 
     psTextured& operator=(const psTextured& right);

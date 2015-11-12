@@ -108,3 +108,8 @@ void psImage::ApplyEdgeBuffer()
     SetPivot(((GetPivot() - halfdim) * ((halfdim - VEC_ONE) / halfdim)) + halfdim);
   }
 }
+
+void BSS_FASTCALL psImage::SetRenderTarget(psTex* rt, unsigned int index)
+{
+  psTextured::SetRenderTarget(rt, index);
+}

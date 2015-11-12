@@ -9,7 +9,6 @@
 namespace planeshader {
   class psTex;
   class psDirectX9;
-  class psDirectX10;
   class psDirectX11;
   class psOpenGL1;
   class psNullDriver;
@@ -21,7 +20,6 @@ namespace planeshader {
   {
     union {
       psDirectX9* dx9;
-      psDirectX10* dx10;
       psDirectX11* dx11;
       psOpenGL1* ogl1;
       psNullDriver* nul;
@@ -92,6 +90,7 @@ namespace planeshader {
     FMT_R11G11B10F,
     FMT_R8G8B8A8X,
     FMT_R8G8B8A8,
+    FMT_R8G8B8A8_SRGB,
     FMT_R8G8B8A8U,
     FMT_U8V8W8Q8,
     FMT_R8G8B8A8S,
@@ -112,7 +111,9 @@ namespace planeshader {
     FMT_R8G8_B8G8,
     FMT_G8R8_G8B8,
     FMT_B8G8R8A8,
+    FMT_B8G8R8A8_SRGB,
     FMT_B8G8R8X8,
+    FMT_B8G8R8X8_SRGB,
     FMT_B8G8R8A8X,
     FMT_B8G8R8X8X,
     FMT_R8G8X,
@@ -138,13 +139,16 @@ namespace planeshader {
     FMT_R1,
     FMT_BC1X,
     FMT_BC1,
+    FMT_BC1_SRGB,
+    FMT_BC2X,
+    FMT_BC2,
+    FMT_BC2_SRGB,
+    FMT_BC3X,
+    FMT_BC3,
+    FMT_BC3_SRGB,
     FMT_BC4X,
     FMT_BC4,
     FMT_WC4,
-    FMT_BC2X,
-    FMT_BC2,
-    FMT_BC3X,
-    FMT_BC3,
     FMT_BC5X,
     FMT_BC5,
     FMT_WC5,
@@ -153,6 +157,7 @@ namespace planeshader {
     FMT_BC6H_SF16,
     FMT_BC7X,
     FMT_BC7,
+    FMT_BC7_SRGB,
     FMT_INDEX16,
     FMT_INDEX32,
   };
@@ -169,20 +174,20 @@ namespace planeshader {
   };
 
   enum USAGETYPES : unsigned int {
-    USAGE_DEFAULT=0,
-    USAGE_IMMUTABLE=1,
-    USAGE_DYNAMIC=2,
-    USAGE_STAGING=3,
-    USAGE_VERTEX=4,
-    USAGE_INDEX=8,
-    USAGE_CONSTANT_BUFFER=12,
-    USAGE_AUTOGENMIPMAP=(1<<4),
-    USAGE_TEXTURECUBE=(1<<5),
-    USAGE_RENDERTARGET=(1<<6),
-    USAGE_SHADER_RESOURCE=(1<<7),
-    USAGE_DEPTH_STENCIL=(1<<8),
-    USAGE_USAGEMASK=3,
-    USAGE_BINDMASK=12
+    USAGE_DEFAULT = 0,
+    USAGE_IMMUTABLE = 1,
+    USAGE_DYNAMIC = 2,
+    USAGE_STAGING = 3,
+    USAGE_VERTEX = 4,
+    USAGE_INDEX = 8,
+    USAGE_CONSTANT_BUFFER = 12,
+    USAGE_TEXTURECUBE = (1 << 4),
+    USAGE_RENDERTARGET = (1 << 5),
+    USAGE_SHADER_RESOURCE = (1 << 6),
+    USAGE_DEPTH_STENCIL = (1 << 7),
+    USAGE_MULTISAMPLE = (1 << 8),
+    USAGE_USAGEMASK = 3,
+    USAGE_BINDMASK = 12
   };
 
   enum ELEMENT_SEMANTICS : unsigned char {
@@ -265,11 +270,9 @@ namespace planeshader {
     FILTER_LINEAR,
     FILTER_BOX,
     FILTER_TRIANGLE,
-    FILTER_PREMULTIPLY,
-    FILTER_ALPHABOX,
-    FILTER_BICUBIC,
-    FILTER_BICUBIC_PREMULTIPLY,
-    FILTER_MIPMAP_DEBUG,
+    FILTER_PREMULTIPLY, // Premultiplies the texture on load
+    FILTER_ALPHABOX, // Uses an alpha-corrected 2x2 box filter for mipmap generation
+    FILTER_DEBUG, // Creates a black and white checkerboard pattern for debugging
     NUM_FILTERS
   };
   class PS_DLLEXPORT psDriver
@@ -333,9 +336,9 @@ namespace planeshader {
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
     virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1)=0;
     // Builds a stateblock from the given set of state changes
-    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states)=0;
+    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, unsigned int count)=0;
     // Builds a texblock from the given set of sampler states
-    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states)=0;
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, unsigned int count)=0;
     // Sets a given stateblock
     virtual void BSS_FASTCALL SetStateblock(void* stateblock)=0;
     // Create a vertex layout from several element descriptions
@@ -347,7 +350,7 @@ namespace planeshader {
     virtual void BSS_FASTCALL FreeResource(void* p, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL GrabResource(void* p, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL CopyResource(void* dest, void* src, RESOURCE_TYPE t)=0;
-    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, bool fullscreen)=0;
+    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, char fullscreen)=0;
     // Clears everything to a specified color
     virtual void BSS_FASTCALL Clear(unsigned int color)=0;
     // Gets the backbuffer texture
@@ -400,6 +403,8 @@ namespace planeshader {
       psShader* POLYGON;
       psShader* LINE;
       psShader* PARTICLE;
+      psShader* TEXT1;
+      psShader* DEBUG;
     } library;
 
     psVec screendim; // DPI scaled screen dimensions, which can theoretically be fractional due to 1.5x DPI scaling

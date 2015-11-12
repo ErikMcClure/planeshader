@@ -21,21 +21,23 @@ namespace planeshader {
 
   struct PSINIT
   {
-    inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX11), fullscreen(false), vsync(false),
-      composite(PS_COMP_NONE), antialias(0), extent(1.0f, 50000.0f), errout(0), mediapath("") {}
+    inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX11), mode(MODE_WINDOWED), vsync(false),
+      antialias(0), extent(1.0f, 50000.0f), errout(0), mediapath("") {}
 
     int width;
     int height;
     RealDriver::DRIVERTYPE driver;
-    bool fullscreen;
+    enum MODE : char {
+      MODE_WINDOWED = 0,
+      MODE_FULLSCREEN,
+      MODE_BORDERLESS_TOPMOST,
+      MODE_BORDERLESS,
+      MODE_COMPOSITE,
+      MODE_COMPOSITE_CLICKTHROUGH,
+      MODE_COMPOSITE_NOMOVE,
+      MODE_COMPOSITE_OPAQUE_CLICK,
+    } mode;
     bool vsync;
-    enum PS_COMP : char {
-      PS_COMP_NONE = 0,
-      PS_COMP_NOFRAME = 1,
-      PS_COMP_NOFRAME_CLICKTHROUGH = 2,
-      PS_COMP_NOFRAME_NOMOVE = 3,
-      PS_COMP_NOFRAME_OPAQUE_CLICK = 4,
-    } composite;
     unsigned char antialias;
     psVec extent;
     std::ostream* errout;
@@ -46,7 +48,6 @@ namespace planeshader {
   class PS_DLLEXPORT psEngine : public psGUIManager, public bss_util::cHighPrecisionTimer, public bss_util::cLog, public psDriverHold
   {
     static const unsigned char PSENGINE_QUIT = (1<<0);
-    static const unsigned char PSENGINE_AUTOANI = (1<<1);
 
   public:
     // Constructor
@@ -76,12 +77,12 @@ namespace planeshader {
     // Get/Sets the quit value
     inline void Quit() { _flags+=PSENGINE_QUIT; }
     inline bool GetQuit() const { return _flags[PSENGINE_QUIT]; }
-    // Sets whether the animations should auto-update
-    inline void SetAutoUpdateAni(bool ani) { _flags[PSENGINE_AUTOANI]=ani; }
     // Get/set the timewarp factor
     inline void SetTimeWarp(double timewarp) { _timewarp = timewarp; }
     inline double GetTimeWarp() const { return _timewarp; }
     inline const char* GetMediaPath() const { return _mediapath.c_str(); }
+    inline PSINIT::MODE GetMode() const { return _mode; }
+    void Resize(psVeciu dim, PSINIT::MODE mode);
 
     psPass& operator [](unsigned short index) { assert(index<_passes.Capacity()); return *_passes[index]; }
     const psPass& operator [](unsigned short index) const { assert(index<_passes.Capacity()); return *_passes[index]; }
@@ -101,6 +102,7 @@ namespace planeshader {
     unsigned short _curpass;
     psPass* _mainpass;
     cStr _mediapath;
+    PSINIT::MODE _mode;
 
     static psEngine* _instance;
   };

@@ -5,7 +5,6 @@
 #include "psPass.h"
 #include "psTex.h"
 #include "psDirectX11.h"
-#include "psDirectX10.h"
 #include "psNullDriver.h"
 #include "psStateblock.h"
 #include "bss-util/profiler.h"
@@ -45,19 +44,22 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   srand(GetTickCount());
   rand();
 
-  _create(psVeciu(init.width, init.height), init.fullscreen, init.composite, 0);
+  psVeciu dim = _create(psVeciu(init.width, init.height), init.mode, 0);
 
   switch(init.driver)
   {
   case RealDriver::DRIVERTYPE_NULL:
+    PSLOG(4) << "Initializing Null Driver" << std::endl;
     new psNullDriver();
     break;
   case RealDriver::DRIVERTYPE_DX10:
-    new psDirectX10(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, _window);
-    if(((psDirectX10*)_driver)->GetLastError()!=0) { delete _driver; _driver=0; }
-    break;
+    //PSLOG(4) << "Initializing DirectX10 Driver" << std::endl;
+    //new psDirectX10(dim, init.antialias, init.vsync, init.mode == PSINIT::MODE_FULLSCREEN, _window);
+    //if(((psDirectX10*)_driver)->GetLastError()!=0) { delete _driver; _driver=0; }
+    //break;
   case RealDriver::DRIVERTYPE_DX11:
-    new psDirectX11(psVeciu(init.width, init.height), init.antialias, init.vsync, init.fullscreen, _window);
+    PSLOG(4) << "Initializing DirectX11 Driver" << std::endl;
+    new psDirectX11(dim, init.antialias, init.vsync, init.mode == PSINIT::MODE_FULLSCREEN, _window);
     if(((psDirectX11*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   }
@@ -68,10 +70,13 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
     return;
   }
 
+  STATEBLOCK_LIBRARY::INITLIBRARY();
   psStateblock::DEFAULT = psStateblock::Create(0, 0);
   _driver->SetStateblock(psStateblock::DEFAULT->GetSB());
-  //_resizewindow(_driver->rawscreendim.x, _driver->rawscreendim.y, init.fullscreen, init.composite);
   _driver->SetExtent(init.extent.x, init.extent.y);
+  
+  if(_guiflags&PSGUIMANAGER_LOCKCURSOR) // Ensure the mouse cursor is actually locked
+    _dolockcursor(_window);
   _mainpass = new psPass();
   _passes[0] = _mainpass;
 }
@@ -93,8 +98,6 @@ bool psEngine::Begin(unsigned int clearcolor)
   PROFILE_FUNC();
   if(GetQuit())
     return false;
-  //if(_flags&PSENGINE_AUTOANI)
-  //  psAnimation::AniInterpolate(delta);
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
   _curpass = 0;
@@ -107,8 +110,6 @@ bool psEngine::Begin()
   PROFILE_FUNC();
   if(GetQuit())
     return false;
-  //if(_flags&PSENGINE_AUTOANI)
-  //  psAnimation::AniInterpolate(delta);
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
   _curpass=0;
@@ -171,5 +172,11 @@ bool psEngine::RemovePass(unsigned short index)
 void psEngine::_onresize(unsigned int width, unsigned int height)
 {
   if(_driver && _driver->GetBackBuffer())
-    _driver->Resize(psVeciu(width, height), _driver->GetBackBuffer()->GetFormat(), true);
+    _driver->Resize(psVeciu(width, height), _driver->GetBackBuffer()->GetFormat(), -1);
+}
+void psEngine::Resize(psVeciu dim, PSINIT::MODE mode)
+{
+  _mode = mode;
+  dim = _resizewindow(dim, _mode);
+  _driver->Resize(dim, _driver->GetBackBuffer()->GetFormat(), _mode == PSINIT::MODE_FULLSCREEN);
 }

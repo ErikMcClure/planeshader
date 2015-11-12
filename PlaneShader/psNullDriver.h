@@ -87,9 +87,9 @@ namespace planeshader {
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
     virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1) { }
     // Builds a stateblock from the given set of state changes
-    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states) { return 0; }
+    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, unsigned int count) { return 0; }
     // Builds a texblock from the given set of sampler states
-    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states) { return 0; }
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, unsigned int count) { return 0; }
     // Sets a given stateblock
     virtual void BSS_FASTCALL SetStateblock(void* stateblock) { }
     // Create a vertex layout from several element descriptions
@@ -102,7 +102,7 @@ namespace planeshader {
     virtual void BSS_FASTCALL FreeResource(void* p, psDriver::RESOURCE_TYPE t) { }
     virtual void BSS_FASTCALL GrabResource(void* p, psDriver::RESOURCE_TYPE t) { }
     virtual void BSS_FASTCALL CopyResource(void* dest, void* src, psDriver::RESOURCE_TYPE t) { }
-    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, bool fullscreen) { }
+    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, char fullscreen) { }
     virtual psTex* GetBackBuffer() { return 0; }
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver() { RealDriver r; r.nul=this; r.type=RealDriver::DRIVERTYPE_NULL; return r; }

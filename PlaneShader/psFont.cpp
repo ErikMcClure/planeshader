@@ -3,6 +3,7 @@
 
 #include "psFont.h"
 #include "psTex.h"
+#include "psColor.h"
 #include "psEngine.h"
 #include "bss-util/cStr.h"
 #include "bss-util/os.h"
@@ -36,7 +37,7 @@ psFont::psFont(const char* file, int psize, float lineheight, FONT_ANTIALIAS ant
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
   psVeci scale(bss_util::fFastRound(_driver->GetDPI().x / (float)psDriver::BASE_DPI), bss_util::fFastRound(_driver->GetDPI().y / (float)psDriver::BASE_DPI));
-  _textures.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_AUTOGENMIPMAP|USAGE_RENDERTARGET, 0, 0, _driver->GetDPI()), 0);
+  _textures.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _driver->GetDPI()), 0);
   _staging.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _driver->GetDPI()), 0);
 
   if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
@@ -308,12 +309,10 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
       unsigned char *dst = reinterpret_cast<unsigned char*>(lockbytes);
       for(unsigned int j = 0; j < width; ++j) // RGBA
       {
-        *dst++ = *src++;
-        *dst++ = *src++;
-        *dst++ = *src++;
-        bss_util::rswap(dst[-1], dst[-3]);
-        *dst++ = 0xFF;
-        //*dst++ = src[-2]+src[-1]+src[0];
+        psColor32 c(0xFF, src[0], src[1], src[2]);
+        c.WriteFormat(_staging[_curtex]->GetFormat(), dst);
+        src += 3;
+        dst += 4;
       }
       *((unsigned char**)&lockbytes)+=lockpitch;
     }

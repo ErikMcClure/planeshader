@@ -67,93 +67,93 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     pointstemp.x = GET_WHEEL_DELTA_WPARAM(wpcopy);
     psEngine::Instance()->SetMouse(&pointstemp, GUI_MOUSESCROLL, wpcopy, GetMessageTime());
   }
-    break;
+  break;
   case WM_NCMOUSEMOVE:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam)); //This is a bit weird but it works because we get passed lParam by value, so this function actually ends up modifying lParam directly.
   case WM_MOUSEMOVE:
-    if(!(self->_flags&PSGUIMANAGER_ISINSIDE))
+    if(!(self->_guiflags&PSGUIMANAGER_ISINSIDE))
     {
-      _trackingstruct.hwndTrack=hWnd;
+      _trackingstruct.hwndTrack = hWnd;
       BOOL result = TrackMouseEvent(&_trackingstruct);
-      self->_flags+=PSGUIMANAGER_ISINSIDE;
+      self->_guiflags += PSGUIMANAGER_ISINSIDE;
     }
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEMOVE, wpcopy, GetMessageTime());
     break;
   case WM_NCLBUTTONDOWN:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONDOWN:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN|(GUI_L_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
     SetCapture(hWnd);
     break;
   case WM_NCLBUTTONUP:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP|(GUI_L_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
     ReleaseCapture();
     break;
   case WM_LBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK|(GUI_L_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
     break;
   case WM_NCRBUTTONDOWN:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONDOWN:
     SetCapture(hWnd);
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN|(GUI_R_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
     break;
   case WM_NCRBUTTONUP:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP|(GUI_R_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
     ReleaseCapture();
     break;
   case WM_RBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK|(GUI_R_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
     break;
   case WM_NCMBUTTONDOWN:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONDOWN:
     SetCapture(hWnd);
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN|(GUI_M_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
     break;
   case WM_NCMBUTTONUP:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP|(GUI_M_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
     ReleaseCapture();
     break;
   case WM_MBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK|(GUI_M_BUTTON<<4), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
     break;
   case WM_NCXBUTTONDOWN:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONDOWN:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN|(GET_XBUTTON_WPARAM(wpcopy)==XBUTTON1?(GUI_X_BUTTON1<<4):(GUI_X_BUTTON2<<4)), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
     break;
   case WM_NCXBUTTONUP:
-    if(!(self->_flags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy=(unsigned int)-1;
+    if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
+    wpcopy = (unsigned int)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP|(GET_XBUTTON_WPARAM(wpcopy)==XBUTTON1?(GUI_X_BUTTON1<<4):(GUI_X_BUTTON2<<4)), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
     break;
   case WM_XBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK|(GET_XBUTTON_WPARAM(wpcopy)==XBUTTON1?(GUI_X_BUTTON1<<4):(GUI_X_BUTTON2<<4)), wpcopy, GetMessageTime());
+    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
     break;
   case WM_SYSKEYUP:
   case WM_SYSKEYDOWN:
@@ -167,7 +167,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
   case WM_KEYUP:
   case WM_KEYDOWN:
   {
-    psEngine::Instance()->SetKey((unsigned char)wParam, message==WM_KEYDOWN||message==WM_SYSKEYDOWN, (lParam&0x40000000)!=0, GetMessageTime());
+    psEngine::Instance()->SetKey((unsigned char)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
     //  BYTE allKeys[256]; //Note that the virtual key codes do not exceed 256, so we can actually convert wParam to unsigned char without data loss
     //  WORD asciikey=0;
     //  wchar_t unicodekey[4];
@@ -181,17 +181,19 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     //    for(int i = 0; i < retval; ++i) //iterate through each key written and produce a seperate event for it
     //      (cEngine::Instance()->*winhook_setkey)((unsigned char)wParam,(char)asciikey, (wchar_t)unicodekey[i], message==WM_KEYDOWN||message==WM_SYSKEYDOWN, allKeys);
   }
-    return 0;
+  return 0;
   case WM_SYSCOMMAND:
     if((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
       return 0; //No screensavers!
     break;
   case WM_MOUSELEAVE:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSELEAVE, 0, GetMessageTime());
-    self->_flags-=PSGUIMANAGER_ISINSIDE;
+    self->_guiflags -= PSGUIMANAGER_ISINSIDE;
     break;
   case WM_ACTIVATE:
-    if(self->_flags&PSGUIMANAGER_LOCKCURSOR) {
+    if(self->_guiflags&PSGUIMANAGER_AUTOMINIMIZE && LOWORD(wParam) == WA_INACTIVE)
+      ShowWindow(hWnd, SW_SHOWMINIMIZED);
+    if(self->_guiflags&PSGUIMANAGER_LOCKCURSOR) {
       switch(LOWORD(wParam))
       {
       case WA_ACTIVE:
@@ -205,7 +207,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     }
     break;
   case WM_NCHITTEST:
-    if(self->_flags&PSGUIMANAGER_OVERRIDEHITTEST) return HTCAPTION;
+    if(self->_guiflags&PSGUIMANAGER_OVERRIDEHITTEST) return HTCAPTION;
     break;
   case WM_UNICHAR:
     if(wParam==UNICODE_NOCHAR) return TRUE;
@@ -224,7 +226,9 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     //  message=message;
     //  break;
   case WM_SIZE:
-    self->_onresize(LOWORD(lParam), HIWORD(lParam));
+    if(self->_guiflags&PSGUIMANAGER_LOCKCURSOR)
+      self->_dolockcursor(hWnd);
+    //self->_onresize(LOWORD(lParam), HIWORD(lParam));
     break;
   }
 
@@ -233,9 +237,15 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
 
 typedef HRESULT(STDAPICALLTYPE *DWMCOMPENABLE)(BOOL*);
 typedef HRESULT(STDAPICALLTYPE *DWMEXTENDFRAME)(HWND, const MARGINS*);
-DWMEXTENDFRAME dwmextend=0;
+typedef HRESULT(STDAPICALLTYPE *DWMBLURBEHIND)(HWND, const DWM_BLURBEHIND*);
+DWMEXTENDFRAME dwmextend = 0;
+DWMBLURBEHIND dwmblurbehind = 0;
 
-HWND psGUIManager::WndCreate(HINSTANCE instance, long width, long height, bool windowed, const wchar_t* icon, HICON iconrc, char& composite)
+//PS_COMP_NOFRAME_CLICKTHROUGH = 2,
+//PS_COMP_NOFRAME_NOMOVE = 3,
+//PS_COMP_NOFRAME_OPAQUE_CLICK = 4,
+
+HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const wchar_t* icon, HICON iconrc)
 {
   PROFILE_FUNC();
   HINSTANCE hInstance = GetModuleHandleW(0);
@@ -266,46 +276,56 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, long width, long height, bool w
   RECT rsize;
   rsize.top = 0;
   rsize.left = 0;
-  rsize.right = width;
-  rsize.bottom = height;
+  rsize.right = dim.x;
+  rsize.bottom = dim.y;
 
   unsigned long style = WS_POPUP;
 
-  if(windowed && !composite)
+  if(mode == PSINIT::MODE_WINDOWED)
     style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
-  else
-    composite=0; //Um no
+  if(mode >= PSINIT::MODE_BORDERLESS)
+    style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
   
-  if(composite == PSINIT::PS_COMP_NOFRAME)
-    ((psGUIManager*)psEngine::Instance())->_flags += PSGUIMANAGER_OVERRIDEHITTEST;
-
   AdjustWindowRect(&rsize, style, FALSE);
   int rwidth = rsize.right - rsize.left;
   int rheight = rsize.bottom - rsize.top;
   int wleft = (GetSystemMetrics(SM_CXSCREEN) - rwidth) / 2;
   int wtop = (GetSystemMetrics(SM_CYSCREEN) - rheight) / 2;
-  wleft=100;
-  wtop=100;
+  bool clickthrough = mode == PSINIT::MODE_COMPOSITE_CLICKTHROUGH;
+  bool nomove = mode == PSINIT::MODE_COMPOSITE_NOMOVE;
+  bool opaqueclick = mode == PSINIT::MODE_COMPOSITE_OPAQUE_CLICK;
 
   HWND hWnd;
-  if(composite != 0)
-    hWnd = CreateWindowExW((composite==2||composite==4)?WS_EX_TRANSPARENT|WS_EX_COMPOSITED|WS_EX_LAYERED: WS_EX_COMPOSITED,
+  if(mode >= PSINIT::MODE_COMPOSITE)
+    hWnd = CreateWindowExW((clickthrough || opaqueclick)?WS_EX_TRANSPARENT|WS_EX_COMPOSITED|WS_EX_LAYERED: WS_EX_COMPOSITED,
       L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
   else
     hWnd = CreateWindowW(L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
 
-  if(composite != 0)
+  if(mode >= PSINIT::MODE_COMPOSITE)
   {
-    MARGINS margins = { -1,-1,-1,-1 };
-    (*dwmextend)(hWnd, &margins); //extends glass effect
+    //MARGINS margins = { -1,-1,-1,-1 };
+    //(*dwmextend)(hWnd, &margins); //extends glass effect
+    HRGN region = CreateRectRgn(-1,-1,0,0);
+    DWM_BLURBEHIND blurbehind = { DWM_BB_ENABLE|DWM_BB_BLURREGION|DWM_BB_TRANSITIONONMAXIMIZED, TRUE, region, FALSE };
+    (*dwmblurbehind)(hWnd, &blurbehind);
   }
 
-  ShowWindow(hWnd, composite==2?SW_SHOWNOACTIVATE:SW_SHOW);
-  UpdateWindow(hWnd);
-  SetWindowPos(hWnd, composite==2||composite==3?HWND_TOPMOST:HWND_TOP, INT(wleft), INT(wtop), INT(rwidth), INT(rheight),
-    SWP_NOCOPYBITS|SWP_NOMOVE|SWP_NOACTIVATE);
+  HWND top = HWND_TOP;
+  switch(mode)
+  {
+  case PSINIT::MODE_BORDERLESS: top = HWND_NOTOPMOST; break;
+  case PSINIT::MODE_COMPOSITE_CLICKTHROUGH:
+  case PSINIT::MODE_COMPOSITE_NOMOVE:
+  case PSINIT::MODE_BORDERLESS_TOPMOST: top = HWND_TOPMOST; break;
+  case PSINIT::MODE_FULLSCREEN: top = HWND_TOP; break;
+  }
 
-  if(composite==2||composite==4) SetLayeredWindowAttributes(hWnd, 0, 0xFF, LWA_ALPHA);
+  ShowWindow(hWnd, clickthrough?SW_SHOWNOACTIVATE:SW_SHOW);
+  UpdateWindow(hWnd);
+  SetWindowPos(hWnd, top, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), SWP_NOCOPYBITS|SWP_NOMOVE|SWP_NOACTIVATE);
+
+  if(clickthrough || opaqueclick) SetLayeredWindowAttributes(hWnd, 0, 0xFF, LWA_ALPHA);
   else
   {
     SetActiveWindow(hWnd);
@@ -440,7 +460,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, 
 void psGUIManager::LockCursor(bool lock)
 {
   PROFILE_FUNC();
-  _flags[PSGUIMANAGER_LOCKCURSOR]=lock;
+  _guiflags[PSGUIMANAGER_LOCKCURSOR]=lock;
   _lockcursor(_window, lock);
 }
 // Shows/hides the hardware cursor
@@ -578,7 +598,7 @@ float psGUIManager::_translatejoyaxis(unsigned short axis) const
   return (((long)_alljoyaxis[ID][a])-_joydevs[ID].offset[a])/_joydevs[ID].range[a];
 }
 
-void psGUIManager::_create(psVeciu dim, bool fullscreen, char composite, HWND window)
+psVeciu psGUIManager::_create(psVeciu dim, char mode, HWND window)
 {
   PROFILE_FUNC();
   // Check for desktop composition
@@ -593,14 +613,26 @@ void psGUIManager::_create(psVeciu dim, bool fullscreen, char composite, HWND wi
       if(res==FALSE) { FreeLibrary(dwm); dwm=0; } //fail
     }
     dwmextend = (DWMEXTENDFRAME)GetProcAddress(dwm, "DwmExtendFrameIntoClientArea");
-    if(!dwmextend) { FreeLibrary(dwm); dwm=0; }
+    dwmblurbehind = (DWMBLURBEHIND)GetProcAddress(dwm, "DwmEnableBlurBehindWindow");
+
+    if(!dwmextend || !dwmblurbehind)
+    { 
+      FreeLibrary(dwm);
+      dwm = 0;
+      dwmextend = 0;
+      dwmblurbehind = 0;
+    }
   }
 
-  if(!dwm) composite=0; //can't do composite if its not supported
+  if(!dwm && mode >= PSINIT::MODE_COMPOSITE) mode = PSINIT::MODE_WINDOWED; //can't do composite if its not supported
+  _guiflags[PSGUIMANAGER_AUTOMINIMIZE] = mode == PSINIT::MODE_BORDERLESS_TOPMOST || mode == PSINIT::MODE_FULLSCREEN;
+  _guiflags[PSGUIMANAGER_LOCKCURSOR] = mode == PSINIT::MODE_BORDERLESS || mode == PSINIT::MODE_BORDERLESS_TOPMOST || mode == PSINIT::MODE_FULLSCREEN;
   _window=window;
-  unsigned int width = !dim.x?GetSystemMetrics(SM_CXSCREEN):dim.x;
-  unsigned int height = !dim.y?GetSystemMetrics(SM_CYSCREEN):dim.y;
-  if(!_window) _window = WndCreate(0, width, height, !fullscreen, 0, 0, composite);
+  psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+  dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
+  if(!_window) _window = WndCreate(0, mode == PSINIT::MODE_BORDERLESS ? screen : dim, mode, 0, 0);
+
+  return dim;
 }
 
 void psGUIManager::_exactmousecalc()
@@ -622,30 +654,57 @@ void psGUIManager::_exactmousecalc()
   //_driver->TransformPoint(_mousedata.abscoord,false,false,false);
 }
 
-void psGUIManager::_resizewindow(unsigned int width, unsigned int height, bool fullscreen, char composite)
+psVeciu psGUIManager::_resizewindow(psVeciu dim, char mode)
 {
   PROFILE_FUNC();
-  RECT rsize;
-  rsize.top = 0;
-  rsize.left = 0;
-  rsize.right = width;
-  rsize.bottom = height;
+  psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+  dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
+  RECT rect;
+  GetClientRect(_window, &rect);
+  rect.right = rect.left + ((mode == PSINIT::MODE_BORDERLESS) ? screen.x : dim.x);
+  rect.bottom = rect.top + ((mode == PSINIT::MODE_BORDERLESS) ? screen.y : dim.y);
 
   unsigned long style = WS_POPUP;
-  if(!fullscreen && !composite)
-    style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+  if(mode == PSINIT::MODE_WINDOWED)
+    style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
+  if(mode >= PSINIT::MODE_BORDERLESS)
+    style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
 
-  AdjustWindowRect(&rsize, style, FALSE);
-  int rwidth = rsize.right - rsize.left;
-  int rheight = rsize.bottom - rsize.top;
+  AdjustWindowRect(&rect, style, FALSE);
+  int rwidth = rect.right - rect.left;
+  int rheight = rect.bottom - rect.top;
 
+  _guiflags[PSGUIMANAGER_AUTOMINIMIZE] = mode == PSINIT::MODE_BORDERLESS_TOPMOST || PSINIT::MODE_FULLSCREEN;
+  _guiflags[PSGUIMANAGER_LOCKCURSOR] = mode == PSINIT::MODE_BORDERLESS || mode == PSINIT::MODE_BORDERLESS_TOPMOST || mode == PSINIT::MODE_FULLSCREEN;
   SetWindowLong(_window, GWL_STYLE, style); //if we don't have the right style, we'll either get a borderless window or a fullscreen app with screwed up coordinates
-  SetWindowPos(_window, HWND_TOP, 0, 0, INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
+  bool clickthrough = mode == PSINIT::MODE_COMPOSITE_CLICKTHROUGH;
+  bool nomove = mode == PSINIT::MODE_COMPOSITE_NOMOVE;
 
-  if(!fullscreen) //if its windowed, the screen resolution has now been reset so we move the window back
+  HWND top = HWND_TOP;
+  switch(mode)
   {
-    int wleft = (GetSystemMetrics(SM_CXSCREEN) - rwidth) / 2;
-    int wtop = (GetSystemMetrics(SM_CYSCREEN) - rheight) / 2;
-    SetWindowPos(_window, HWND_TOP, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS | SWP_NOSIZE);
+  case PSINIT::MODE_BORDERLESS: top = HWND_NOTOPMOST; break;
+  case PSINIT::MODE_COMPOSITE_CLICKTHROUGH:
+  case PSINIT::MODE_COMPOSITE_NOMOVE:
+  case PSINIT::MODE_BORDERLESS_TOPMOST: top = HWND_TOPMOST; break;
+  case PSINIT::MODE_FULLSCREEN: top = HWND_TOP; break;
   }
+
+  if(mode == PSINIT::MODE_BORDERLESS || mode == PSINIT::MODE_BORDERLESS_TOPMOST || mode == PSINIT::MODE_FULLSCREEN) //if its windowed, the screen resolution has now been reset so we move the window back
+    SetWindowPos(_window, top, INT(0), INT(0), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS);
+  else
+  {
+    rect.left = (GetSystemMetrics(SM_CXSCREEN) - rwidth) / 2;
+    rect.top = (GetSystemMetrics(SM_CYSCREEN) - rheight) / 2;
+
+    SetWindowPos(_window, top, INT(rect.left), INT(rect.top), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS);
+  }
+
+  _lockcursor(_window, (_guiflags&PSGUIMANAGER_LOCKCURSOR) != 0);
+  return dim;
+}
+
+void psGUIManager::_dolockcursor(HWND__* hWnd)
+{
+  _lockcursor(hWnd, GetActiveWindow() == hWnd);
 }

@@ -24,6 +24,8 @@ namespace planeshader {
     inline psInheritable* GetParent() const { return _parent; }
     // Gets all the children
     inline psInheritable* GetChildren() const { return _children; }
+    // Counts the number of children
+    unsigned int NumChildren() const;
     // Gets the rotation plus the rotation of our parents
     inline FNUM GetTotalRotation() const { return !_parent?_rotation:(_rotation+_parent->GetTotalRotation()); }
     // Gets the absolute position by adding up all the parent positions.
@@ -46,12 +48,18 @@ namespace planeshader {
         fn(cur);
     }
 
+    inline static bool INHERITABLECOMP(psInheritable* l, psInheritable* r) { return l->_zorder < r->_zorder; }
+
   protected:
     void _gettotalpos(psVec3D& pos) const;
+    void _sortchildren();
+    virtual char BSS_FASTCALL _sort(psRenderable* r) const;
+    virtual psRenderable* BSS_FASTCALL _getparent() const;
 
     bss_util::LLBase<psInheritable> _lchild;
     psInheritable* _parent;
     psInheritable* _children;
+    unsigned int _depth;
   };
 
   struct BSS_COMPILER_DLLEXPORT DEF_INHERITABLE : DEF_LOCATABLE, DEF_RENDERABLE

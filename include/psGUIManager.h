@@ -43,10 +43,12 @@ namespace planeshader {
   // Manages the GUI window the graphics engine lives in and tracking all of the related input
   class PS_DLLEXPORT psGUIManager
   {
+  protected:
     static const unsigned char PSGUIMANAGER_OVERRIDEHITTEST = (1<<0);
     static const unsigned char PSGUIMANAGER_HOOKNC = (1<<1);
     static const unsigned char PSGUIMANAGER_LOCKCURSOR = (1<<2);
     static const unsigned char PSGUIMANAGER_ISINSIDE = (1<<3);
+    static const unsigned char PSGUIMANAGER_AUTOMINIMIZE = (1 << 4);
 
   public:
     psGUIManager();
@@ -91,7 +93,7 @@ namespace planeshader {
 
   protected:
     // Creates the window and actually sets everything up (otherwise we get pointer problems)
-    void _create(psVeciu dim, bool fullscreen, char composite, HWND__* window);
+    psVeciu _create(psVeciu dim, char mode, HWND__* window);
     void SetKey(unsigned char keycode, bool down, bool held, unsigned long time);
     void SetChar(int key, unsigned long time);
     void SetMouse(tagPOINTS* points, unsigned char click, size_t wparam, unsigned long time);
@@ -100,12 +102,13 @@ namespace planeshader {
     // Translates joystick axis value to a [-1.0,1.0] range 
     float _translatejoyaxis(unsigned short axis) const;
     void _exactmousecalc();
-    void _resizewindow(unsigned int width, unsigned int height, bool fullscreen, char composite);
+    psVeciu _resizewindow(psVeciu dim, char mode);
     virtual void _onresize(unsigned int width, unsigned int height)=0;
 
-    static HWND__* WndCreate(HINSTANCE__* instance, long width, long height, bool windowed, const wchar_t* icon, HICON__* iconrc, char& composite);
+    static HWND__* WndCreate(HINSTANCE__* instance, psVeciu dim, char mode, const wchar_t* icon, HICON__* iconrc);
     static longptr_t __stdcall WndProc(HWND__* hWnd, unsigned int message, size_t wParam, longptr_t lParam);
     static void _lockcursor(HWND__* hWnd, bool lock);
+    static void _dolockcursor(HWND__* hWnd);
     static tagPOINTS* __stdcall _STCpoints(HWND__* hWnd, tagPOINTS* target);
     
     cMouseData _mousedata;
@@ -119,7 +122,7 @@ namespace planeshader {
     JOY_DEVCAPS _joydevs[NUMJOY];
     unsigned char _maxjoy; //Number of joysticks supported by the driver
     HWND__* _window;
-    bss_util::cBitField<unsigned char> _flags;
+    bss_util::cBitField<unsigned char> _guiflags;
   };
 }
 

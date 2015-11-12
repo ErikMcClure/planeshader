@@ -13,7 +13,7 @@ using namespace bss_util;
 
 psPass* psPass::CurPass = 0;
 
-psPass::psPass() : _cam(&psCamera::default_camera), _renderables(0), _defaultrt(0), _renderlist(&_renderalloc), _solids(0), _cullgroups(0)
+psPass::psPass() : _cam(&psCamera::default_camera), _renderables(0), _defaultrt(0), _renderlist(&_renderalloc), _solids(0), _cullgroups(0), _clear(false), _clearcolor(0)
 {
 
 }
@@ -50,6 +50,9 @@ void psPass::Begin()
   psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
   _driver->ApplyCamera(_cam->GetPosition(), _cam->GetPivot()*psVec(_driver->rawscreendim), _cam->GetRotation(), realvp);
   _driver->SetDefaultRenderTarget(_defaultrt);
+
+  if(_clear)
+    _driver->Clear(_clearcolor);
 
   // We go through all the renderables and solids when the pass begins because we've already applied
   // the camera, and this allows you to do proper post-processing with immediate render commands.

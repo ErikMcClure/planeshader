@@ -200,6 +200,7 @@
     <ClInclude Include="..\include\psColored.h" />
     <ClInclude Include="..\include\psCullGroup.h" />
     <ClInclude Include="..\include\psDriver.h" />
+    <ClInclude Include="..\include\psEffect.h" />
     <ClInclude Include="..\include\psEllipse.h" />
     <ClInclude Include="..\include\psEngine.h" />
     <ClInclude Include="..\include\psFont.h" />
@@ -227,7 +228,6 @@
     <ClInclude Include="..\include\psVec.h" />
     <ClInclude Include="..\include\ps_dec.h" />
     <ClInclude Include="..\include\ps_interface.h" />
-    <ClInclude Include="psDirectX10.h" />
     <ClInclude Include="psDirectX10_fsquadVS.h" />
     <ClInclude Include="psDirectX11.h" />
     <ClInclude Include="psDXGI.h" />
@@ -241,9 +241,9 @@
     <ClCompile Include="psColor.cpp" />
     <ClCompile Include="psColored.cpp" />
     <ClCompile Include="psCullGroup.cpp" />
-    <ClCompile Include="psDirectX10.cpp" />
     <ClCompile Include="psDirectX11.cpp" />
     <ClCompile Include="psDXGI.cpp" />
+    <ClCompile Include="psEffect.cpp" />
     <ClCompile Include="psEngine.cpp" />
     <ClCompile Include="psFont.cpp" />
     <ClCompile Include="psGroup.cpp" />

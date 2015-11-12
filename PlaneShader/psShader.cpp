@@ -27,10 +27,11 @@ void psShader::Activate()
 bool BSS_FASTCALL psShader::SetConstants(const void* data, size_t sz, unsigned char I)
 {
   PROFILE_FUNC();
+  if(!_sc[I] || sz != _sz[I]) return false;
   void* target=_driver->LockBuffer(_sc[I], LOCK_WRITE_DISCARD);
-  if(!target || sz!=_sz[I]) return false;
+  if(!target) return false;
   memcpy(target, data, sz);
-  _driver->UnlockBuffer(target);
+  _driver->UnlockBuffer(_sc[I]);
   return true;
 }
 

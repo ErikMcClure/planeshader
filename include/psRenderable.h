@@ -19,6 +19,7 @@ namespace planeshader {
   class PS_DLLEXPORT psRenderable
   {
     friend class psPass;
+    friend class psInheritable;
 
   public:
     psRenderable(const psRenderable& copy);
@@ -43,6 +44,7 @@ namespace planeshader {
     virtual unsigned char NumTextures() const;
     virtual psTex* const* GetRenderTargets() const;
     virtual unsigned char NumRT() const;
+    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0);
 
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);
@@ -52,10 +54,11 @@ namespace planeshader {
   protected:
     void _destroy();
     void _invalidate();
-    BSS_FORCEINLINE unsigned char _internaltype() { return _internalflags&INTERNALFLAG_MASK; }
+    BSS_FORCEINLINE unsigned char _internaltype() const { return _internalflags&INTERNALFLAG_MASK; }
     virtual void _render() = 0;
     virtual void BSS_FASTCALL _renderbatchlist(psRenderable** rlist, unsigned int count);
-    //virtual char BSS_FASTCALL _sort(psRenderable* r) const;
+    virtual char BSS_FASTCALL _sort(psRenderable* r) const;
+    virtual psRenderable* BSS_FASTCALL _getparent() const;
     virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
 
     bss_util::cBitField<FLAG_TYPE> _flags;
@@ -83,7 +86,8 @@ namespace planeshader {
     {
       INTERNALFLAG_ACTIVE = 0x80,
       INTERNALFLAG_SOLID = 0x40,
-      INTERNALFLAG_MASK = 0x3F,
+      INTERNALFLAG_SORTED = 0x20,
+      INTERNALFLAG_MASK = 0x1F,
     };
   };
 

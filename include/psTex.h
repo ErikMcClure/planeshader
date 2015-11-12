@@ -50,8 +50,8 @@ namespace planeshader {
     void BSS_FASTCALL _applydesc(TEXTURE_DESC& desc);
     virtual void DestroyThis();
 
-    void* _res; // In DX10/11 this is the shader resource view. In DX9 it's the texture pointer.
-    void* _view; // In DX10/11 this is the render target or depth stencil view. In DX9 it's the surface pointer.
+    void* _res; // In DX11 this is the shader resource view. In DX9 it's the texture pointer.
+    void* _view; // In DX11 this is the render target or depth stencil view. In DX9 it's the surface pointer.
     psVeciu _dim; // Raw dimensions of the texture, not scaled by DPI
     unsigned char _miplevels;
     unsigned int _usage;

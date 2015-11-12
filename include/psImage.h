@@ -33,6 +33,7 @@ namespace planeshader {
     virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
     virtual psTex* const* GetRenderTargets() const { return psTextured::GetRenderTargets(); }
+    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0);
     virtual unsigned char NumRT() const { return psTextured::NumRT(); }
     void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
 
