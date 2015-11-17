@@ -49,7 +49,7 @@ using namespace bss_util;
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
 
 // Constructors
-psDirectX11::psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
+psDirectX11::psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
 _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
 {
   PROFILE_FUNC();
@@ -100,7 +100,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
     dim.x,
     dim.y,
     { 0, 0 },
-    DXGI_FORMAT_R8G8B8A8_UNORM,
+    sRGB?DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:DXGI_FORMAT_R8G8B8A8_UNORM,
     DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
     DXGI_MODE_SCALING_UNSPECIFIED
   };
@@ -163,7 +163,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
   _cam_usr = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
   _proj_def = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
   _proj_usr = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
-  _scissorstack.Push(RECT_ZERO); //push the initial scissor rect (it'll get set in ApplyCamera)
+  _scissorstack.Push(RECT_ZERO); //push the initial scissor rect (it'll get set in PushCamera)
 
   _getbackbufferref();
   _resetscreendim();
@@ -268,6 +268,20 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl");
 
     library.DEBUG = psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsalphabox.hlsl");
+
+    _alphaboxfilter = psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fspremultiply.hlsl");
+
+    _premultiplyfilter = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
@@ -421,7 +435,7 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, FLAG_TYPE flags, const float
 
   ID3D11Buffer* cam = (flags&PSFLAG_FIXED) ? _proj_def : _cam_def;
   if(transform != identity)
-    _setcambuf(cam = ((flags&PSFLAG_FIXED) ? _proj_usr : _cam_usr), matView.v, transform);
+    _setcambuf(cam = ((flags&PSFLAG_FIXED) ? _proj_usr : _cam_usr), _camstack.Peek().viewproj.v, transform);
 
   _context->VSSetConstantBuffers(0, 1, (ID3D11Buffer**)&cam);
   _context->GSSetConstantBuffers(0, 1, (ID3D11Buffer**)&cam);
@@ -430,7 +444,7 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, FLAG_TYPE flags, const float
     _context->Draw(buf->nvert, 0);
   else
   {
-    _context->IASetIndexBuffer((ID3D11Buffer*)buf->indices, (DXGI_FORMAT)FMTtoDXGI(buf->ifmt), 0);
+    _context->IASetIndexBuffer((ID3D11Buffer*)buf->indices, FMTtoDXGI(buf->ifmt), 0);
     _context->DrawIndexed(buf->nindice, 0, 0);
   }
 }
@@ -559,18 +573,9 @@ void psDirectX11::DrawLinesEnd(const float(&transform)[4][4])
   _lineobjbuf.nvert = _lockedcount;
   Draw(&_lineobjbuf, _lockedflag, transform);
 }
-void BSS_FASTCALL psDirectX11::ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)
+void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)
 {
   PROFILE_FUNC();
-  D3D11_VIEWPORT vp = { (INT)viewport.left, (INT)viewport.top, viewport.right, viewport.bottom, 0.0f, 1.0f };
-  _context->RSSetViewports(1, &vp);
-  _scissorstack[0].left = viewport.left;
-  _scissorstack[0].top = viewport.top;
-  _scissorstack[0].right = viewport.right;
-  _scissorstack[0].bottom = viewport.bottom;
-
-  if(_scissorstack.Length() <= 1) // if we are currently using the default scissor rect, re-apply with new dimensions
-    PopScissorRect();
 
   // Build a custom projection matrix that discards the znear scaling. The formula is:
   // 2/w  0     0              0
@@ -579,17 +584,18 @@ void BSS_FASTCALL psDirectX11::ApplyCamera(const psVec3D& pos, const psVec& pivo
   // 0    0     zn*zf/(zn-zf)  0
   // We negate the y axis to get our right handed coordinate system, where +y points down, +x points
   // to the right, and +z points into the screen.
+  BSS_ALIGN(16) Matrix<float, 4, 4> matProj;
   memset((float*)matProj.v, 0, sizeof(Matrix<float, 4, 4>));
   float znear = _extent.x;
   float zfar = _extent.y;
-  matProj.v[0][0] = 2.0f / vp.Width;
-  matProj.v[1][1] = -2.0f / vp.Height;
+  matProj.v[0][0] = 2.0f / viewport.right;
+  matProj.v[1][1] = -2.0f / viewport.bottom;
   matProj.v[2][2] = zfar / (zfar - znear);
   matProj.v[3][2] = (znear*zfar) / (znear - zfar);
   matProj.v[2][3] = 1;
 
   // Cameras have an origin and rotational pivot in their center, so we have to adjust our effective pivot
-  psVec adjust = pivot - (psVec(vp.Width, vp.Height) * 0.5f);
+  psVec adjust = pivot - (psVec(viewport.right, viewport.bottom) * 0.5f);
 
   if(_dpi != psVeciu(BASE_DPI)) // Do we need to do DPI scaling?
   {
@@ -600,45 +606,61 @@ void BSS_FASTCALL psDirectX11::ApplyCamera(const psVec3D& pos, const psVec& pivo
 
   BSS_ALIGN(16) Matrix<float, 4, 4> cam;
   Matrix<float, 4, 4>::AffineTransform_T(pos.x - adjust.x, pos.y - adjust.y, pos.z, rotation, adjust.x, adjust.y, cam);
+  BSS_ALIGN(16) Matrix<float, 4, 4> matView;
   cam.Inverse(matView.v); // inverse cam and store the result in matView
 
-  Matrix<float, 4, 4> defaultCam;
-  Matrix<float, 4, 4>::Translation_T(vp.Width*-0.5f, vp.Height*-0.5f, 1, defaultCam);
+  BSS_ALIGN(16) Matrix<float, 4, 4> defaultCam;
+  Matrix<float, 4, 4>::Translation_T(viewport.right*-0.5f, viewport.bottom*-0.5f, 1, defaultCam);
 
-  matViewProj = matView * matProj;
-  _setcambuf(_cam_def, matViewProj.v, identity);
-  _setcambuf(_cam_usr, matViewProj.v, identity);
-  matProj = defaultCam*matProj;
-  _setcambuf(_proj_def, matProj.v, identity);
-  _setcambuf(_proj_usr, matProj.v, identity);
+  CamDef camdef = { matView * matProj, defaultCam*matProj, viewport };
+  _camstack.Push(camdef);
+  _applycamera();
 }
-void BSS_FASTCALL psDirectX11::ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport)
+void BSS_FASTCALL psDirectX11::PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)
 {
   PROFILE_FUNC();
+  CamDef camdef = { Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(m), viewport };
+  _camstack.Push(camdef);
+  _applycamera();
+}
+void psDirectX11::_applycamera()
+{
+  const psRectiu& viewport = _camstack.Peek().viewport; // We can't make this viewport dynamic because half the problem is the projection has the width/height embedded, and that has to be adjusted to the rendertarget as well.
   D3D11_VIEWPORT vp = { viewport.left, viewport.top, viewport.right, viewport.bottom, 0.0f, 1.0f };
   _context->RSSetViewports(1, &vp);
 
-  memcpy_s(&matProj, sizeof(float) * 16, m, sizeof(float) * 16);
-  memcpy_s(&matViewProj, sizeof(float) * 16, m, sizeof(float) * 16);
+  _scissorstack[0].left = viewport.left;
+  _scissorstack[0].top = viewport.top;
+  _scissorstack[0].right = viewport.right;
+  _scissorstack[0].bottom = viewport.bottom;
 
-  Matrix<float, 4, 4>::Identity(matView);
+  if(_scissorstack.Length() <= 1) // if we are currently using the default scissor rect, re-apply with new dimensions
+    PopScissorRect();
 
-  _setcambuf(_cam_def, matViewProj.v, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
-  _setcambuf(_cam_usr, matViewProj.v, identity);
-  _setcambuf(_proj_def, matProj.v, identity);
-  _setcambuf(_proj_usr, matProj.v, identity);
+  _setcambuf(_cam_def, _camstack.Peek().viewproj.v, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
+  _setcambuf(_cam_usr, _camstack.Peek().viewproj.v, identity);
+  _setcambuf(_proj_def, _camstack.Peek().proj.v, identity);
+  _setcambuf(_proj_usr, _camstack.Peek().proj.v, identity);
+}
+void BSS_FASTCALL psDirectX11::PopCamera()
+{
+  if(_camstack.Length() > 1)
+  {
+    _camstack.Discard();
+    _applycamera();
+  }
 }
 // Applies the camera transform (or it's inverse) according to the flags to a point.
 psVec3D BSS_FASTCALL psDirectX11::TransformPoint(const psVec3D& point, FLAG_TYPE flags) const
 {
   Vector<float, 4> v = { point.x, point.y, point.z, 1 };
-  Vector<float, 4> out = v * ((flags&PSFLAG_FIXED) ? matProj : matViewProj);
+  Vector<float, 4> out = v * ((flags&PSFLAG_FIXED) ? _camstack.Peek().proj : _camstack.Peek().viewproj);
   return out.xyz;
 }
 psVec3D BSS_FASTCALL psDirectX11::ReversePoint(const psVec3D& point, FLAG_TYPE flags) const
 {
   Vector<float, 4> v = { point.x, point.y, point.z, 1 };
-  Vector<float, 4> out = v * ((flags&PSFLAG_FIXED) ? matProj : matViewProj).Inverse();
+  Vector<float, 4> out = v * ((flags&PSFLAG_FIXED) ? _camstack.Peek().proj : _camstack.Peek().viewproj).Inverse();
   return out.xyz;
 }
 void psDirectX11::DrawFullScreenQuad()
@@ -727,7 +749,7 @@ void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsig
 
   bool multisample = (_samples.Count > 1) && !(usage & USAGE_STAGING) && (usage & USAGE_MULTISAMPLE);
   if(multisample) { miplevels = 1; initdata = 0; }
-  D3D11_TEXTURE2D_DESC desc = { dim.x, dim.y, miplevels, 1, (DXGI_FORMAT)FMTtoDXGI(format), multisample ? _samples : DEFAULT_SAMPLE_DESC, (D3D11_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage, multisample) };
+  D3D11_TEXTURE2D_DESC desc = { dim.x, dim.y, miplevels, 1, FMTtoDXGI(format), multisample ? _samples : DEFAULT_SAMPLE_DESC, (D3D11_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage, multisample) };
   D3D11_SUBRESOURCE_DATA subdata = { initdata, (((psColor::BitsPerPixel(format)*dim.x) + 7) >> 3), 0 }; // The +7 here is to force the per-line bits to correctly round up the number of bytes.
 
   LOGFAILURERETNULL(_device->CreateTexture2D(&desc, !initdata ? 0 : &subdata, &tex), "CreateTexture failed, error: ", _geterror(_lasterr))
@@ -738,12 +760,13 @@ void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsig
   return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
 }
 
-void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim)
+void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB)
 {
   memset(info, D3DX11_DEFAULT, sizeof(D3DX11_IMAGE_LOAD_INFO));
   info->MipLevels = miplevels;
   info->FirstMipLevel = 0;
   info->Filter = _filtertodx11(loadfilter);
+  if(sRGB) info->Filter |= D3DX11_FILTER_SRGB_IN;
   info->MipFilter = _filtertodx11(mipfilter);
   if(dim.x != 0) info->Width = dim.x;
   if(dim.y != 0) info->Height = dim.y;
@@ -752,17 +775,115 @@ void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsign
   info->CpuAccessFlags = _usagetocpuflag(usage);
   info->MiscFlags = _usagetomisc(usage, false);
   info->pSrcInfo = 0;
-  if(format != FMT_UNKNOWN) info->Format = (DXGI_FORMAT)FMTtoDXGI(format);
+  if(format != FMT_UNKNOWN) info->Format = FMTtoDXGI(format);
+  else if(sRGB) info->Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 }
 
-void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock)
+void BSS_FASTCALL psDirectX11::_applyloadshader(ID3D11Texture2D* tex, psShader* shader, bool sRGB)
+{
+  D3D11_TEXTURE2D_DESC desc;
+  tex->GetDesc(&desc);
+  ID3D11Texture2D* loadtex;
+  if(sRGB) desc.Format = FMTtoDXGI(psDriver::FromSRGBFormat(DXGItoFMT(desc.Format)));
+  desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
+  ID3D11Texture2D* casttex;
+  _device->CreateTexture2D(&desc, 0, &casttex);
+  _context->CopyResource(casttex, tex);
+
+  desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
+  desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
+  _device->CreateTexture2D(&desc, 0, &loadtex);
+
+  ID3D11ShaderResourceView* view = static_cast<ID3D11ShaderResourceView*>(_createshaderview(casttex));
+  _context->PSSetShaderResources(0, 1, &view);
+  ID3D11SamplerState* samp = (ID3D11SamplerState*)STATEBLOCK_LIBRARY::POINTSAMPLE->GetSB();
+  _context->PSSetSamplers(0, 1, &samp);
+  ID3D11RenderTargetView* rtview = static_cast<ID3D11RenderTargetView*>(_creatertview(loadtex));
+  _context->OMSetRenderTargets(1, &rtview, 0);
+  SetStateblock(STATEBLOCK_LIBRARY::REPLACE->GetSB());
+  shader->Activate();
+  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc.Width, desc.Height));
+  DrawFullScreenQuad();
+  PopCamera();
+  _applyrendertargets(); //re-apply whatever render target we had before
+  ID3D11ShaderResourceView* loadview = static_cast<ID3D11ShaderResourceView*>(_createshaderview(loadtex));
+  _context->GenerateMips(loadview);
+  _context->CopyResource(tex, loadtex);
+
+  loadview->Release();
+  rtview->Release();
+  view->Release();
+  loadtex->Release();
+  casttex->Release();
+}
+void BSS_FASTCALL psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* shader)
+{
+  D3D11_TEXTURE2D_DESC desc2d;
+  tex->GetDesc(&desc2d);
+  desc2d.BindFlags |= D3D11_BIND_RENDER_TARGET;
+
+  ID3D11Texture2D* buftex;
+  _device->CreateTexture2D(&desc2d, 0, &buftex);
+
+  D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+  desc.Format = desc2d.Format;
+  desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+  D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
+  rtDesc.Format = desc2d.Format;
+  rtDesc.ViewDimension = (desc2d.SampleDesc.Count > 1) ? D3D11_RTV_DIMENSION_TEXTURE2DMS : D3D11_RTV_DIMENSION_TEXTURE2D;
+
+  SetStateblock(STATEBLOCK_LIBRARY::REPLACE->GetSB());
+  shader->Activate();
+
+  ID3D11SamplerState* samp = (ID3D11SamplerState*)STATEBLOCK_LIBRARY::POINTSAMPLE->Combine(STATEBLOCK_LIBRARY::UVCLAMP)->GetSB();
+  // Go through each mipmap slice and render it using the slice above it, then copy it back to our source.
+  for(UINT i = 1; i < desc2d.MipLevels; ++i)
+  {
+    // Get view for previous level
+    desc.Texture2D.MipLevels = 1;
+    desc.Texture2D.MostDetailedMip = i - 1;
+    ID3D11ShaderResourceView* view = 0;
+    _device->CreateShaderResourceView(tex, &desc, &view);
+
+    // Get rendertarget for this level in our buffer texture
+    rtDesc.Texture2D.MipSlice = i;
+    ID3D11RenderTargetView* rtview = 0;
+    _device->CreateRenderTargetView(buftex, &rtDesc, &rtview);
+
+    // Set everything and render
+    _context->PSSetShaderResources(0, 1, &view);
+    _context->PSSetSamplers(0, 1, &samp);
+    _context->OMSetRenderTargets(1, &rtview, 0);
+    PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc2d.Width/(1<<i), desc2d.Height/(1<<i)));
+    DrawFullScreenQuad();
+    PopCamera();
+    _applyrendertargets();
+
+    // Copy the subresource back to our real texture and release views
+    _context->CopySubresourceRegion(tex, D3D11CalcSubresource(i, 0, desc2d.MipLevels), 0, 0, 0, buftex, D3D11CalcSubresource(i, 0, desc2d.MipLevels), 0);
+    view->Release();
+    rtview->Release();
+  }
+
+  buftex->Release();
+}
+
+void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
   PROFILE_FUNC();
   D3DX11_IMAGE_LOAD_INFO info;
-  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim);
+  if(_customfilter(mipfilter)) usage |= USAGE_SHADER_RESOURCE;
+  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
 
   ID3D11Resource* tex = 0;
   LOGFAILURERETNULL(D3DX11CreateTextureFromFileW(_device, cStrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path);
+
+  if(_customfilter(loadfilter))
+    _applyloadshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(loadfilter), loadfilter == FILTER_PREMULTIPLY_SRGB);
+
+  if(_customfilter(mipfilter))
+    _applymipshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(mipfilter));
 
 #ifdef BSS_DEBUG
   tex->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)strlen(path), path);
@@ -774,14 +895,22 @@ void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, unsigned int usage
   return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
 }
 
-void* BSS_FASTCALL psDirectX11::LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock)
+void* BSS_FASTCALL psDirectX11::LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
   PROFILE_FUNC();
   D3DX11_IMAGE_LOAD_INFO info;
-  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim);
+  if(_customfilter(mipfilter)) usage |= USAGE_SHADER_RESOURCE;
+  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
 
   ID3D11Resource* tex = 0;
   LOGFAILURERETNULL(D3DX11CreateTextureFromMemory(_device, data, datasize, &info, 0, &tex, 0), "LoadTexture failed for ", data);
+
+  if(_customfilter(loadfilter))
+    _applyloadshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(loadfilter), loadfilter == FILTER_PREMULTIPLY_SRGB);
+
+  if(_customfilter(mipfilter))
+    _applymipshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(mipfilter));
+
   if(usage&USAGE_RENDERTARGET)
     *additionalview = _creatertview(tex);
   else if(usage&USAGE_DEPTH_STENCIL)
@@ -827,11 +956,29 @@ void psDirectX11::PopScissorRect()
 void BSS_FASTCALL psDirectX11::SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil)
 {
   PROFILE_FUNC();
+  if(num == _lastrt.Length() && _lastdepth == depthstencil)
+  {
+    unsigned char i;
+    for(i = 0; i < num; ++i)
+      if(_lastrt[i] != texes[i])
+        break;
+    if(i == num) // If true everything matched
+      return;
+  }
+  _lastdepth = depthstencil;
+  _lastrt.SetLength(num);
+  memcpy(_lastrt.begin(), texes, num*sizeof(const psTex*));
+  _applyrendertargets();
+}
+
+void psDirectX11::_applyrendertargets()
+{
+  unsigned char num = _lastrt.Length();
   unsigned char realnum = (num<1) ? 1 : num;
   DYNARRAY(ID3D11RenderTargetView*, views, realnum);
-  for(unsigned char i = 0; i < num; ++i) views[i] = (ID3D11RenderTargetView*)texes[i]->GetView();
-  if(num<1 || !views[0]) views[0] = (ID3D11RenderTargetView*)_defaultrt->GetView();
-  _context->OMSetRenderTargets(realnum, views, (ID3D11DepthStencilView*)(!depthstencil ? 0 : depthstencil->GetView()));
+  for(unsigned char i = 0; i < num; ++i) views[i] = (ID3D11RenderTargetView*)_lastrt[i]->GetView();
+  if(num<1 || !views[0]) views[0] = (ID3D11RenderTargetView*)_backbuffer->GetView();
+  _context->OMSetRenderTargets(realnum, views, (ID3D11DepthStencilView*)(!_lastdepth ? 0 : _lastdepth->GetView()));
 }
 
 void BSS_FASTCALL psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER shader)
@@ -879,7 +1026,7 @@ void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states, unsign
   PROFILE_FUNC();
   // Build each type of stateblock and independently check for duplicates.
   DX11_SB* sb = new DX11_SB { 0, 0, 0, 0, { 1.0f, 1.0f, 1.0f, 1.0f }, 0xffffffff };
-  D3D11_BLEND_DESC bs = { 0, 0, { 1, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_ONE, D3D11_BLEND_OP_ADD, D3D11_COLOR_WRITE_ENABLE_ALL } };
+  D3D11_BLEND_DESC bs = { 0, 0, { 1, D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE, D3D11_BLEND_ONE, D3D11_BLEND_OP_ADD, D3D11_COLOR_WRITE_ENABLE_ALL } };
   D3D11_DEPTH_STENCIL_DESC ds = { 1, D3D11_DEPTH_WRITE_MASK_ALL, D3D11_COMPARISON_LESS, 0, D3D11_DEFAULT_STENCIL_READ_MASK, D3D11_DEFAULT_STENCIL_WRITE_MASK,
   { D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP, D3D11_COMPARISON_ALWAYS },
   { D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP, D3D11_STENCIL_OP_KEEP, D3D11_COMPARISON_ALWAYS } };
@@ -994,7 +1141,7 @@ void* BSS_FASTCALL psDirectX11::CreateLayout(void* shader, size_t sz, const ELEM
     case ELEMENT_TEXCOORD: descs[i].SemanticName = "TEXCOORD"; break;
     }
     descs[i].SemanticIndex = elements[i].semanticIndex;
-    descs[i].Format = (DXGI_FORMAT)FMTtoDXGI(elements[i].format);
+    descs[i].Format = FMTtoDXGI(elements[i].format);
     descs[i].AlignedByteOffset = elements[i].byteOffset;
     descs[i].InputSlot = elements[i].IAslot;
     descs[i].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
@@ -1184,7 +1331,7 @@ void BSS_FASTCALL psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscre
       _backbuffer->~psTex();
     _context->OMSetRenderTargets(0, 0, 0);
     _context->ClearState();
-    LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, (DXGI_FORMAT)FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
+    LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
     _getbackbufferref();
     _resetscreendim();
   }
@@ -1218,11 +1365,11 @@ void psDirectX11::_getbackbufferref()
 }
 void psDirectX11::_resetscreendim()
 {
-  SetDefaultRenderTarget();
-  SetRenderTargets(0, 0, 0);
+  _applyrendertargets();
   rawscreendim = _backbuffer->GetDim();
   screendim = ((_dpi == psVeciu(BASE_DPI)) ? psVec(rawscreendim) : (psVec(rawscreendim) * (psVec(BASE_DPI) / psVec(_dpi))));
-  ApplyCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y));
+  _camstack.Clear();
+  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y));
 }
 void BSS_FASTCALL psDirectX11::Clear(unsigned int color)
 {
@@ -1444,10 +1591,10 @@ inline unsigned int BSS_FASTCALL psDirectX11::_filtertodx11(FILTERS filter)
   {
   case FILTER_NEAREST:
     return D3DX11_FILTER_POINT;
-  case FILTER_LINEAR:
-    return D3DX11_FILTER_LINEAR;
   case FILTER_BOX:
     return D3DX11_FILTER_BOX;
+  case FILTER_LINEAR:
+    return D3DX11_FILTER_LINEAR;
   case FILTER_TRIANGLE:
     return D3DX11_FILTER_TRIANGLE;
   }
@@ -1491,8 +1638,8 @@ ID3D11View* psDirectX11::_createshaderview(ID3D11Resource* src)
 
     desc.Format = desc1d.Format;
     desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
-    desc.Texture1D.MipLevels = desc1d.MipLevels;
-    desc.Texture1D.MostDetailedMip = desc1d.MipLevels - 1;
+    desc.Texture1D.MostDetailedMip = 0;
+    desc.Texture1D.MipLevels = -1;
   }
   break;
   case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
@@ -1502,8 +1649,8 @@ ID3D11View* psDirectX11::_createshaderview(ID3D11Resource* src)
 
     desc.Format = desc2d.Format;
     desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    desc.Texture2D.MipLevels = desc2d.MipLevels;
-    desc.Texture2D.MostDetailedMip = desc2d.MipLevels - 1;
+    desc.Texture2D.MostDetailedMip = 0;
+    desc.Texture2D.MipLevels = -1;
   }
   break;
   case D3D11_RESOURCE_DIMENSION_TEXTURE3D:
@@ -1513,14 +1660,14 @@ ID3D11View* psDirectX11::_createshaderview(ID3D11Resource* src)
 
     desc.Format = desc3d.Format;
     desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
-    desc.Texture3D.MipLevels = desc3d.MipLevels;
-    desc.Texture3D.MostDetailedMip = desc3d.MipLevels - 1;
+    desc.Texture3D.MostDetailedMip = 0;
+    desc.Texture3D.MipLevels = -1;
   }
   break;
   }
 
   ID3D11ShaderResourceView* r = 0;
-  if(FAILED(_device->CreateShaderResourceView(src, 0, &r)))
+  if(FAILED(_device->CreateShaderResourceView(src, &desc, &r)))
   {
     PSLOG(1) << "_createshaderview failed" << std::endl;
     return 0;
@@ -1557,7 +1704,7 @@ ID3D11View* psDirectX11::_creatertview(ID3D11Resource* src)
   ID3D11RenderTargetView* r = 0;
   if(FAILED(_device->CreateRenderTargetView(src, &rtDesc, &r)))
   {
-    PSLOG(1) << "_createshaderview failed" << std::endl;
+    PSLOG(1) << "_creatertview failed" << std::endl;
     return 0;
   }
   return r;
@@ -1592,8 +1739,64 @@ ID3D11View* psDirectX11::_createdepthview(ID3D11Resource* src)
   ID3D11DepthStencilView* r = 0;
   if(FAILED(_device->CreateDepthStencilView(src, &dDesc, &r)))
   {
-    PSLOG(1) << "_createshaderview failed" << std::endl;
+    PSLOG(1) << "_createdepthview failed" << std::endl;
     return 0;
   }
   return r;
+}
+bool psDirectX11::_customfilter(FILTERS filter)
+{
+  switch(filter)
+  {
+  case FILTER_PREMULTIPLY_SRGB:
+  case FILTER_PREMULTIPLY:
+  case FILTER_ALPHABOX:
+  case FILTER_DEBUG:
+    return true;
+  }
+  return false;
+}
+
+psShader* psDirectX11::_getfiltershader(FILTERS filter)
+{
+  switch(filter)
+  {
+  case FILTER_PREMULTIPLY_SRGB:
+  case FILTER_PREMULTIPLY: return _premultiplyfilter;
+  case FILTER_ALPHABOX: return _alphaboxfilter;
+  case FILTER_DEBUG: return library.DEBUG;
+  }
+  return 0;
+}
+
+psVeciu _getrendertargetsize(ID3D11RenderTargetView* view)
+{
+  D3D11_RENDER_TARGET_VIEW_DESC desc;
+  ID3D11Resource* res;
+  D3D11_RESOURCE_DIMENSION dim;
+  view->GetResource(&res);
+  view->GetDesc(&desc);
+  res->GetType(&dim);
+  switch(dim)
+  {
+  case D3D11_RESOURCE_DIMENSION_TEXTURE1D:
+  {
+    D3D11_TEXTURE1D_DESC desc;
+    ((ID3D11Texture1D*)res)->GetDesc(&desc);
+    return psVeciu(desc.Width, 1);
+  }
+  case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
+  {
+    D3D11_TEXTURE2D_DESC desc;
+    ((ID3D11Texture2D*)res)->GetDesc(&desc);
+    return psVeciu(desc.Width, desc.Height);
+  }
+  case D3D11_RESOURCE_DIMENSION_TEXTURE3D:
+  {
+    D3D11_TEXTURE3D_DESC desc;
+    ((ID3D11Texture3D*)res)->GetDesc(&desc);
+    return psVeciu(desc.Width, desc.Height);
+  }
+  }
+  return psVeciu(0);
 }

@@ -163,7 +163,10 @@ namespace planeshader {
     static psTexblock* UVBORDER; // Sets UV coordinates to use a border of color 0 (you can easily override that)
     static psTexblock* UVMIRROR; // Sets UV coordinates to Mirror
     static psTexblock* UVMIRRORONCE; // Sets UV coordinates to MirrorOnce
-    static psTexblock* UVWRAP; // Sets UV coordinates to Wrap (There is no CLAMP as that is the default)
+    static psTexblock* UVWRAP; // Sets UV coordinates to Wrap
+    static psTexblock* UVCLAMP; // Sets UV coordinates to Clamp
+    static psTexblock* POINTSAMPLE; // uses point sampling instead of linear sampling. Used for shaders that require precise pixel sampling.
+    static psStateblock* REPLACE; // discards the destination pixels entirely.
     static psStateblock* SUBPIXELBLEND; // Treats each color channel as an alpha channel. Used for subpixel hinted text.
     static psStateblock* SUBPIXELBLEND1; // Same as above, but uses SRC1_COLOR, which requires a pixel shader that outputs to both SV_TARGET0 and SV_TARGET1
     static psStateblock* PREMULTIPLIED; // Blending state for premultiplied textures

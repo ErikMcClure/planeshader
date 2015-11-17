@@ -58,7 +58,7 @@ namespace planeshader {
   {
   public:
     // Constructors
-    psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, HWND hwnd);
+    psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd);
     ~psDirectX11();
     // Begins a scene
     virtual bool Begin();
@@ -83,8 +83,9 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, const float(&transform)[4][4] = identity);
     virtual void DrawLinesEnd(const float(&transform)[4][4] = identity);
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport);
-    virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport);
+    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport);
+    virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport);
+    virtual void BSS_FASTCALL PopCamera();
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, FLAG_TYPE flags) const;
     psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, FLAG_TYPE flags) const;
@@ -101,8 +102,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0);
     // Creates a texture
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage = USAGE_SHADER_RESOURCE, unsigned char miplevels = 0, const void* initdata = 0, void** additionalview = 0, psTexblock* texblock = 0);
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0);
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0);
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false);
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false);
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0);
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRect& rect);
@@ -154,6 +155,8 @@ namespace planeshader {
     static void* operator new(std::size_t sz);
     static void operator delete(void* ptr, std::size_t sz);
 
+    struct CamDef { bss_util::Matrix<float, 4, 4> viewproj; bss_util::Matrix<float, 4, 4> proj; psRectiu viewport; };
+
   protected:
     static inline unsigned int BSS_FASTCALL _usagetodxtype(unsigned int types);
     static inline unsigned int BSS_FASTCALL _usagetocpuflag(unsigned int types);
@@ -163,8 +166,10 @@ namespace planeshader {
     static inline unsigned int BSS_FASTCALL _reverseusage(unsigned int usage, unsigned int misc, unsigned int bind, bool multisample); //reassembles DX11 flags into a generic usage flag
     static inline const char* BSS_FASTCALL _geterror(HRESULT err);
     static inline D3D11_PRIMITIVE_TOPOLOGY BSS_FASTCALL _getdx11topology(PRIMITIVETYPE type);
-    static void BSS_FASTCALL _loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim);
+    static void BSS_FASTCALL _loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB);
     static ID3D11Resource* _textotex2D(void* t);
+    static bool _customfilter(FILTERS filter);
+    psShader* _getfiltershader(FILTERS filter);
     void _setcambuf(ID3D11Buffer* buf, const float(&cam)[4][4], const float(&world)[4][4]);
     ID3D11View* _createshaderview(ID3D11Resource* src);
     ID3D11View* _creatertview(ID3D11Resource* src);
@@ -173,16 +178,18 @@ namespace planeshader {
     void _processdebugqueue();
     void _getbackbufferref();
     void _resetscreendim();
+    void _applycamera();
+    void _applyrendertargets();
+    void BSS_FASTCALL _applyloadshader(ID3D11Texture2D* tex, psShader* shader, bool sRGB);
+    void BSS_FASTCALL _applymipshader(ID3D11Texture2D* tex, psShader* shader);
     void BSS_FASTCALL _processdebugmessage(UINT64 index, SIZE_T len);
+    psVeciu _getrendertargetsize(ID3D11RenderTargetView* view);
 
     ID3D11Device* _device;
     ID3D11DeviceContext* _context;
     IDXGISwapChain* _swapchain;
     D3D_FEATURE_LEVEL _featurelevel;
     psTex* _backbuffer;
-    bss_util::Matrix<float, 4, 4> matProj;
-    bss_util::Matrix<float, 4, 4> matView;
-    bss_util::Matrix<float, 4, 4> matViewProj;
     void* _rectvertbuf;
     void* _batchvertbuf;
     void* _batchindexbuf;
@@ -201,6 +208,9 @@ namespace planeshader {
     bool _zerocamrot;
     bool _vsync;
     bss_util::cStack<psRectl> _scissorstack;
+    bss_util::cStack<CamDef> _camstack;
+    bss_util::cDynArray<const psTex*> _lastrt;
+    const psTex* _lastdepth;
     ID3D11VertexShader* _fsquadVS;
     ID3D11VertexShader* _defaultVS;
     ID3D11VertexShader* _lastVS;
@@ -214,6 +224,8 @@ namespace planeshader {
     ID3D11Buffer* _proj_def; //proj matrix and identity world matrix
     ID3D11Buffer* _proj_usr; //proj matrix and custom world matrix
     ID3D11InfoQueue * _infoqueue;
+    psShader* _alphaboxfilter;
+    psShader* _premultiplyfilter;
   };
 }
 

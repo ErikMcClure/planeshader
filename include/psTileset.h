@@ -10,8 +10,6 @@
 #include "bss-util\cDynArray.h"
 
 namespace planeshader {
-  struct DEF_TILESET;
-
   struct psTile
   {
     size_t index;
@@ -30,7 +28,6 @@ namespace planeshader {
   public:
     psTileset(const psTileset& copy);
     psTileset(psTileset&& mov);
-    psTileset(const DEF_TILESET& def);
     explicit psTileset(const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, FLAG_TYPE flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, psInheritable* parent = 0, const psVec& scale = VEC_ONE);
     ~psTileset();
     inline psVeci GetTileDim() const { return _tiledim; }
@@ -44,9 +41,6 @@ namespace planeshader {
 
     virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
-    virtual psTex* const* GetRenderTargets() const { return psTextured::GetRenderTargets(); }
-    virtual unsigned char NumRT() const { return psTextured::NumRT(); }
-    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0) { psTextured::SetRenderTarget(rt, index); }
 
   protected:
     virtual void _render();
@@ -55,15 +49,6 @@ namespace planeshader {
     psVeci _tiledim; // Size of the actual tile for figuring out where to put each tile.
     bss_util::cDynArray<psTileDef> _defs; // For each tile indice, stores what the actual UV coordinates of that tile are and what the offset is
     bss_util::cDynArray<psTile> _tiles;
-  };
-
-
-  struct BSS_COMPILER_DLLEXPORT DEF_TILESET : DEF_SOLID, DEF_TEXTURED
-  {
-    inline DEF_TILESET() {}
-    inline virtual psTileset* BSS_FASTCALL Spawn() const { return new psTileset(*this); } 
-    inline virtual DEF_TILESET* BSS_FASTCALL Clone() const { return new DEF_TILESET(*this); }
-
   };
 }
 #endif

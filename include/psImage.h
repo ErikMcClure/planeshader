@@ -9,15 +9,12 @@
 #include "psSolid.h"
 
 namespace planeshader {
-  struct DEF_IMAGE;
-
   // Represents a renderable image with UV source coordinates
   class PS_DLLEXPORT psImage : public psSolid, public psTextured, public psColored, public psDriverHold
   {
   public:
     psImage(const psImage& copy);
     psImage(psImage&& mov);
-    psImage(const DEF_IMAGE& def);
     virtual ~psImage();
     explicit psImage(psTex* tex = 0, const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned int color=0xFFFFFFFF);
     explicit psImage(const char* file, const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned int color=0xFFFFFFFF);
@@ -32,9 +29,6 @@ namespace planeshader {
     virtual void BSS_FASTCALL SetTexture(psTex* tex, unsigned int index = 0);
     virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
-    virtual psTex* const* GetRenderTargets() const { return psTextured::GetRenderTargets(); }
-    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0);
-    virtual unsigned char NumRT() const { return psTextured::NumRT(); }
     void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
 
     psImage& operator =(const psImage& right);
@@ -49,14 +43,6 @@ namespace planeshader {
     void _recalcdim();
 
     bss_util::cArray<psRect, unsigned char> _uvs;
-  };
-
-  struct BSS_COMPILER_DLLEXPORT DEF_IMAGE : DEF_SOLID, DEF_TEXTURED, DEF_COLORED
-  {
-    inline virtual psImage* BSS_FASTCALL Spawn() const { return new psImage(*this); } //This creates a new instance of whatever class this definition defines
-    inline virtual DEF_IMAGE* BSS_FASTCALL Clone() const { return new DEF_IMAGE(*this); }
-
-    std::vector<psRect> sources;
   };
 }
 

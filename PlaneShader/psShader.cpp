@@ -6,7 +6,7 @@
 
 using namespace planeshader;
 
-void psShader::Activate()
+void psShader::Activate() const
 {
   PROFILE_FUNC();
   _driver->SetShader(_ss[0], VERTEX_SHADER_1_1);
@@ -76,7 +76,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
   s->Grab();
   return s;
 }
-psShader* psShader::CreateShader(psShader* copy)
+psShader* psShader::CreateShader(const psShader* copy)
 {
   PROFILE_FUNC();
   if(!_driver) return 0;
@@ -87,7 +87,7 @@ psShader* psShader::CreateShader(psShader* copy)
     if(copy->_sc[i] != 0)
       break;
 
-  psShader* r = (i == 6) ? copy : new psShader(*copy); // If i is 6, all _sc values in copy are NULL, and therefore it is stateless.
+  psShader* r = (i == 6) ? const_cast<psShader*>(copy) : new psShader(*copy); // If i is 6, all _sc values in copy are NULL, and therefore it is stateless.
   r->Grab();
   return r;
 }

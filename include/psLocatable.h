@@ -7,14 +7,11 @@
 #include "psVec.h"
 
 namespace planeshader {
-  struct DEF_LOCATABLE;
-
   // This holds position information. 
   class PS_DLLEXPORT psLocatable
   {
   public:
     psLocatable(const psLocatable& copy);
-    psLocatable(const DEF_LOCATABLE& def);
     explicit psLocatable(const psVec3D& position, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO);
     virtual ~psLocatable();
     // Gets the rotation 
@@ -42,17 +39,6 @@ namespace planeshader {
     psVec3D _relpos;
     psVec _pivot; // Rotational center in absolute coordinates relative from its location
     FNUM _rotation; //Rotation of the object
-  };
-
-  struct BSS_COMPILER_DLLEXPORT DEF_LOCATABLE
-  {
-    inline DEF_LOCATABLE() : pos(0,0,0), pivot(0,0), rotation(0) {}
-    inline virtual psLocatable* BSS_FASTCALL Spawn() const { return new psLocatable(*this); } //This creates a new instance of whatever class this definition defines
-    inline virtual DEF_LOCATABLE* BSS_FASTCALL Clone() const { return new DEF_LOCATABLE(*this); }
-
-    psVec3D pos;
-    psVec pivot;
-    FNUM rotation;
   };
 }
 

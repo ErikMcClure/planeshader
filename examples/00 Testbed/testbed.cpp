@@ -32,7 +32,7 @@ using namespace bss_util;
 cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
 psEngine* engine=0;
 psCamera globalcam;
-bool dirkeys[8] = { false }; // left right up down in out counterclockwise clockwise
+bool dirkeys[9] = { false }; // left right up down in out counterclockwise clockwise shift
 float dirspeeds[4] = { 300.0f, 300.0f, 2.0f, 1.0f };
 bool gotonext = false;
 
@@ -105,22 +105,23 @@ cStr ReadFile(const char* path)
 }
 void processGUI()
 {
+  float scale = dirkeys[8] ? 0.01f : 1.0f;
   if(dirkeys[0])
-    globalcam.SetPositionX(globalcam.GetPosition().x + dirspeeds[0] * engine->secdelta);
+    globalcam.SetPositionX(globalcam.GetPosition().x + dirspeeds[0] * engine->secdelta * scale);
   if(dirkeys[1])
-    globalcam.SetPositionX(globalcam.GetPosition().x - dirspeeds[0] * engine->secdelta);
+    globalcam.SetPositionX(globalcam.GetPosition().x - dirspeeds[0] * engine->secdelta * scale);
   if(dirkeys[2])
-    globalcam.SetPositionY(globalcam.GetPosition().y + dirspeeds[1] * engine->secdelta);
+    globalcam.SetPositionY(globalcam.GetPosition().y + dirspeeds[1] * engine->secdelta * scale);
   if(dirkeys[3])
-    globalcam.SetPositionY(globalcam.GetPosition().y - dirspeeds[1] * engine->secdelta);
+    globalcam.SetPositionY(globalcam.GetPosition().y - dirspeeds[1] * engine->secdelta * scale);
   if(dirkeys[4])
-    globalcam.SetPositionZ(globalcam.GetPosition().z + dirspeeds[2] * engine->secdelta);
+    globalcam.SetPositionZ(globalcam.GetPosition().z + dirspeeds[2] * engine->secdelta * scale);
   if(dirkeys[5])
-    globalcam.SetPositionZ(globalcam.GetPosition().z - dirspeeds[2] * engine->secdelta);
+    globalcam.SetPositionZ(globalcam.GetPosition().z - dirspeeds[2] * engine->secdelta * scale);
   if(dirkeys[6])
-    globalcam.SetRotation(globalcam.GetRotation() + dirspeeds[3] * engine->secdelta);
+    globalcam.SetRotation(globalcam.GetRotation() + dirspeeds[3] * engine->secdelta * scale);
   if(dirkeys[7])
-    globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * engine->secdelta);
+    globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * engine->secdelta * scale);
 }
 
 TESTDEF::RETPAIR test_psCircle()
@@ -182,7 +183,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   auto timer = psEngine::OpenProfiler();
   int fps=0;
   //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
-  psTex* pslogo = psTex::Create("../media/pslogo.png");
+  psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, psVeciu(psDriver::BASE_DPI), false);
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
   globalcam.SetPosition(500, 500);
@@ -194,7 +195,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   {
     processGUI();
     driver->Clear(0);
-    driver->ApplyCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
+    driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
     driver->library.IMAGE->Activate();
     driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
     driver->library.CIRCLE->Activate();
@@ -227,9 +228,14 @@ TESTDEF::RETPAIR test_psOpenGL4()
   ENDTEST;
 }
 
-TESTDEF::RETPAIR test_psRenderable()
+TESTDEF::RETPAIR test_psInheritable()
 {
   BEGINTEST;
+
+  // use a worst case inheritance pattern here and then copy to another psInheritable
+  // Verify that the copy clones things correctly, renders things correctly, and gets culled properly
+  // do this both inside and outside the automatic pass management
+  // then verify it gets destroyed properly.
 
   ENDTEST;
 }
@@ -257,7 +263,7 @@ TESTDEF::RETPAIR test_psParticles()
   {
     processGUI();
     driver->Clear(0);
-    driver->ApplyCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
+    driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
     driver->library.PARTICLE->Activate();
     driver->SetStateblock(STATEBLOCK_LIBRARY::GLOW->GetSB());
     driver->DrawPointsBegin(&particle, 1, 16, 0);
@@ -278,13 +284,18 @@ TESTDEF::RETPAIR test_psPass()
   auto timer = psEngine::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192)));
+  psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_PREMULTIPLY_SRGB, psVeciu(psDriver::BASE_DPI), false));
+  psImage image2(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_ALPHABOX, 0, FILTER_NONE, psVeciu(psDriver::BASE_DPI), false));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
+  //engine->GetPass(0)->Insert(&image2);
   engine->GetPass(0)->Insert(&image);
-  engine->GetPass(0)->Insert(&line);
-  engine->GetPass(0)->SetClearColor(0xFF666666);
+  //engine->GetPass(0)->Insert(&line);
+  engine->GetPass(0)->SetClearColor(0xFF000000);
+  engine->GetPass(0)->SetCamera(&globalcam);
+  //globalcam.SetPositionZ(-4.0);
 
-  image.SetShader(psShader::MergeShaders(2, driver->library.IMAGE, driver->library.DEBUG));
+  image.SetStateblock(STATEBLOCK_LIBRARY::PREMULTIPLIED);
+  //image2.ApplyEdgeBuffer();
 
   while(!gotonext && engine->Begin(0))
   {
@@ -292,6 +303,22 @@ TESTDEF::RETPAIR test_psPass()
     engine->End();
     updatefpscount(timer, fps);
   }
+  ENDTEST;
+}
+
+TESTDEF::RETPAIR test_psEffect()
+{
+  BEGINTEST;
+
+  // Draw everything normally on the gamma buffer
+  // Calculate each light and it's shadows on one buffer
+  // Then add this to the light accumulation buffer
+  // All of the above can be done with one psEffect with the lights tied to the accumulation buffers, it will sort everything out properly.
+
+  // Then draw this light accumulation buffer on to the gamma buffer and multiply everything
+  // Copy the gamma buffer to the backbuffer
+  // Draw sRGB GUI elements blended in sRGB space.
+
   ENDTEST;
 }
 
@@ -351,6 +378,8 @@ int main(int argc, char** argv)
     { "psPass", &test_psPass },
     { "psFont", &test_psFont },
     { "psParticles", &test_psParticles },
+    { "psEffect", &test_psEffect },
+    { "psInheritable", &test_psInheritable },
   };
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
@@ -366,10 +395,11 @@ int main(int argc, char** argv)
   init.driver=RealDriver::DRIVERTYPE_DX11;
   init.width=640;
   init.height=480;
-  //init.mode = PSINIT::MODE_FULLSCREEN;
+  //init.mode = PSINIT::MODE_BORDERLESS;
   init.extent.x = 0.2;
   init.extent.y = 100;
   init.antialias = 8;
+  //init.sRGB = true;
   init.mediapath = "../media";
   //init.iconresource=101;
   //init.filter=5;
@@ -381,6 +411,7 @@ int main(int argc, char** argv)
       if(evt.type == GUI_KEYDOWN || evt.type == GUI_KEYUP)
       {
         bool isdown = evt.type == GUI_KEYDOWN;
+        dirkeys[8] = evt.IsShiftDown();
         switch(evt.keycode)
         {
         case KEY_A: dirkeys[0] = isdown; break;

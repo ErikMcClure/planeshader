@@ -11,14 +11,11 @@
 #include "bss-util\cArraySort.h"
 
 namespace planeshader {
-  struct DEF_TEXT;
-
   class PS_DLLEXPORT psText : public psSolid, public psColored
   {
   public:
     psText(const psText& copy);
     psText(psText&& mov);
-    psText(const DEF_TEXT& def);
     explicit psText(psTexFont* font=0, const char* text = 0, const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, FLAG_TYPE flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, psInheritable* parent = 0, const psVec& scale = VEC_ONE);
     ~psText();
     // Get/Set the text to be rendered
@@ -50,20 +47,6 @@ namespace planeshader {
     float _letterspacing;
     unsigned short _drawflags;
     psTexFont::DELEGATE _func;
-  };
-
-  struct BSS_COMPILER_DLLEXPORT DEF_TEXT : DEF_SOLID, DEF_COLORED
-  {
-    inline DEF_TEXT() : font(0), textdim(VEC_ZERO), letterspacing(0), drawflags(0), func(0,0) {}
-    inline virtual psText* BSS_FASTCALL Spawn() const { return new psText(*this); }
-    inline virtual DEF_TEXT* BSS_FASTCALL Clone() const { return new DEF_TEXT(*this); }
-
-    cStr text;
-    psTexFont* font;
-    psVec textdim;
-    float letterspacing;
-    unsigned short drawflags;
-    psTexFont::DELEGATE func;
   };
 }
 #endif

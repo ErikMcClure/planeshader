@@ -59,7 +59,7 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
     //break;
   case RealDriver::DRIVERTYPE_DX11:
     PSLOG(4) << "Initializing DirectX11 Driver" << std::endl;
-    new psDirectX11(dim, init.antialias, init.vsync, init.mode == PSINIT::MODE_FULLSCREEN, _window);
+    new psDirectX11(dim, init.antialias, init.vsync, init.mode == PSINIT::MODE_FULLSCREEN, init.sRGB, _window);
     if(((psDirectX11*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   }

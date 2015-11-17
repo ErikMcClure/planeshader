@@ -13,10 +13,6 @@ psText::psText(psText&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)
 _letterspacing(mov._letterspacing), _drawflags(mov._drawflags), _func(mov._func)
 {
 }
-psText::psText(const DEF_TEXT& def) : psSolid(def, psRenderable::INTERNALTYPE_TEXT), psColored(def), _text(def.text), _font(def.font), _textdim(def.textdim),
-_letterspacing(def.letterspacing), _drawflags(def.drawflags), _func(def.func)
-{
-}
 psText::psText(psTexFont* font, const char* text, const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, psRenderable::INTERNALTYPE_TEXT), psColored(0xFFFFFFFF), _text(text), _font(font), _textdim(VEC_ZERO),
   _letterspacing(0), _drawflags(0), _func(0, 0)

@@ -23,8 +23,8 @@ namespace planeshader {
     void End();
     inline void BSS_FASTCALL SetCamera(const psCamera* camera) { _cam=!camera?&psCamera::default_camera:camera; }
     inline const psCamera* GetCamera() const { return _cam; }
-    inline const psTex* GetDefaultRenderTarget() const { return _defaultrt; }
-    inline void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = rt; }
+    inline psTex* const* GetRenderTarget() const { return &_defaultrt; }
+    inline void SetRenderTarget(psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
     void FlushQueue();
@@ -47,6 +47,7 @@ namespace planeshader {
 
   protected:
     void _queue(psRenderable* r);
+    void _cullqueue(psRenderable* r);
     void _sort(psRenderable* r);
     void _addcullgroup(psCullGroup* g);
     void _removecullgroup(psCullGroup* g);
@@ -55,7 +56,7 @@ namespace planeshader {
     psRenderable* _renderables;
     psRenderable* _solids;
     psCullGroup* _cullgroups;
-    const psTex* _defaultrt;
+    psTex* _defaultrt;
     ALLOC _renderalloc;
     unsigned int _clearcolor;
     bool _clear;

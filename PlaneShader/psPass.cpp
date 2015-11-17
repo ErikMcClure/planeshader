@@ -48,8 +48,7 @@ void psPass::Begin()
   CurPass = this;
   auto& vp = _cam->GetViewPort();
   psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
-  _driver->ApplyCamera(_cam->GetPosition(), _cam->GetPivot()*psVec(_driver->rawscreendim), _cam->GetRotation(), realvp);
-  _driver->SetDefaultRenderTarget(_defaultrt);
+  _driver->PushCamera(_cam->GetPosition(), _cam->GetPivot()*psVec(_driver->rawscreendim), _cam->GetRotation(), realvp);
 
   if(_clear)
     _driver->Clear(_clearcolor);
@@ -83,16 +82,19 @@ void psPass::Begin()
     if((flags&PSFLAG_DONOTCULL)!=0) { _sort(solid); continue; } // Don't cull if it has a DONOTCULL flag
 
     const psRect& rect = solid->GetBoundingRect(); // Recalculates the bounding rect
-    adjust=1.0f+r_gettotalz(solid);
+    adjust=r_gettotalz(solid);
 
     if(flags&PSFLAG_FIXED) // This is the fixed case
     {
+      adjust += 1.0f;
       r_adjust(SSEfixed, SSEfixed_hold, SSEfixed_center, lastfixed, adjust);
-      if(rect.IntersectRect(winfixed)) _sort(solid);
+      BSS_ALIGN(16) psRect rfixed(SSEfixed);
+      if(rect.IntersectRect(rfixed)) _sort(solid);
     } else { // This is the default case
-      adjust+=p.z;
+      adjust -= p.z;
       r_adjust(SSEwindow, SSEwindow_hold, SSEwindow_center, last, adjust);
-      if(rect.IntersectRect(winfixed)) _sort(solid);
+      BSS_ALIGN(16) psRect rfixed(SSEwindow);
+      if(rect.IntersectRect(rfixed)) _sort(solid);
     }
   }
 
@@ -106,6 +108,7 @@ void psPass::Begin()
   while(node) {
     if(!(node->value->_internalflags&psRenderable::INTERNALFLAG_ACTIVE)) {
       next = node->next;
+      node->value->_psort = 0;
       _renderlist.Remove(node);
       node = next;
     } else {
@@ -120,6 +123,7 @@ void psPass::End()
 {
   FlushQueue();
   CurPass = 0;
+  _driver->PopCamera();
   PROFILE_FUNC();
 }
 
@@ -145,6 +149,7 @@ void psPass::FlushQueue()
   {
     _renderqueue[0]->GetShader()->Activate();
     _driver->SetStateblock(!_renderqueue[0]->GetStateblock()?0:_renderqueue[0]->GetStateblock()->GetSB());
+    _driver->SetRenderTargets(_renderqueue[0]->GetRenderTargets(), _renderqueue[0]->NumRT(), 0);
 
     if(_renderqueue.Length() == 1)
       _renderqueue[0]->_render();
@@ -165,6 +170,15 @@ void psPass::_queue(psRenderable* r)
     !_renderqueue[0]->_batch(r)))
     FlushQueue();
   _renderqueue.Add(r);
+}
+
+void psPass::_cullqueue(psRenderable* r)
+{
+  if(r->_internalflags&psRenderable::INTERNALFLAG_SOLID)
+  {
+    // TODO: implement culling
+  }
+  _queue(r);
 }
 
 void psPass::_sort(psRenderable* r)

@@ -83,7 +83,7 @@ const char* BSS_FASTCALL psDXGI::GetDXGIError(HRESULT err)
   return buf;
 }
 
-unsigned int BSS_FASTCALL psDXGI::FMTtoDXGI(FORMATS format)
+DXGI_FORMAT BSS_FASTCALL psDXGI::FMTtoDXGI(FORMATS format)
 {
   switch(format)
   {
@@ -186,10 +186,10 @@ unsigned int BSS_FASTCALL psDXGI::FMTtoDXGI(FORMATS format)
   case FMT_BC7: return DXGI_FORMAT_BC7_UNORM;
   case FMT_BC7_SRGB: return DXGI_FORMAT_BC7_UNORM_SRGB;
   }
-  return -1;
+  return DXGI_FORMAT_UNKNOWN;
 }
 
-FORMATS BSS_FASTCALL psDXGI::DXGItoFMT(unsigned int format)
+FORMATS BSS_FASTCALL psDXGI::DXGItoFMT(DXGI_FORMAT format)
 {
   switch(format)
   {

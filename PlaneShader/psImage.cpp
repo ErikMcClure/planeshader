@@ -7,7 +7,6 @@ using namespace planeshader;
 
 psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColored(copy), _uvs(copy._uvs) {}
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
-psImage::psImage(const DEF_IMAGE& def) : psSolid(def, INTERNALTYPE_IMAGE), psTextured(def), psColored(def), _uvs((unsigned char)def.sources.size()) { for(unsigned char i = 0; i < _uvs.Capacity(); ++i) _uvs[i] = def.sources[i]; }
 psImage::~psImage() {}
 psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) : 
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, INTERNALTYPE_IMAGE), psTextured(tex), psColored(color)
@@ -73,7 +72,10 @@ void BSS_FASTCALL psImage::_renderbatchlist(psRenderable** rlist, unsigned int c
 bool BSS_FASTCALL psImage::_batch(psRenderable* r) const
 {
   unsigned char c = NumTextures();
-  if(c != r->NumTextures() || (GetAllFlags()&PSFLAG_BATCHFLAGS) != (r->GetAllFlags()&PSFLAG_BATCHFLAGS) || NumSources() != static_cast<psImage*>(r)->NumSources())
+  unsigned char rtc = NumRT();
+  if(c != r->NumTextures() || (GetAllFlags()&PSFLAG_BATCHFLAGS) != (r->GetAllFlags()&PSFLAG_BATCHFLAGS)
+    || rtc != r->NumRT()
+    || NumSources() != static_cast<psImage*>(r)->NumSources())
     return false;
 
   psTex* const* t = GetTextures();
@@ -83,6 +85,15 @@ bool BSS_FASTCALL psImage::_batch(psRenderable* r) const
     if(t[i] != o[i])
       return false;
   }
+
+  t = GetRenderTargets();
+  o = r->GetRenderTargets();
+  for(unsigned char i = 0; i < rtc; ++i)
+  {
+    if(t[i] != o[i])
+      return false;
+  }
+
   return true;
 }
 
@@ -102,14 +113,10 @@ void psImage::ApplyEdgeBuffer()
 {
   if(_tex.Capacity() > 0 && _tex[0])
   {
-    SetSource(psRect(VEC_ZERO, _tex[0]->GetDim()).Inflate(1.0f));
+    if(!NumSources()) AddSource();
+    SetSource(GetSource(0).Inflate(1.0f));
     // This adjusts the pivot by shrinking our new pivot (which is now incorrect) by 1 pixel on each side. This maps (0,0) to (1,1) and (corner,corner) to (corner-1, corner-1), but if the pivot is in the exact center, doesn't change it.
     psVec halfdim = GetDim() / 2.0f;
     SetPivot(((GetPivot() - halfdim) * ((halfdim - VEC_ONE) / halfdim)) + halfdim);
   }
-}
-
-void BSS_FASTCALL psImage::SetRenderTarget(psTex* rt, unsigned int index)
-{
-  psTextured::SetRenderTarget(rt, index);
 }

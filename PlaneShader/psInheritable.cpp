@@ -3,6 +3,7 @@
 
 #include "psInheritable.h"
 #include "bss-util/profiler.h"
+#include "psPass.h"
 #include <algorithm>
 
 using namespace planeshader;
@@ -11,21 +12,18 @@ psInheritable::psInheritable(const psInheritable& copy) : psRenderable(copy), ps
 {
   _lchild.next=_lchild.prev=0;
   SetParent(copy._parent);
+  for(psInheritable* cur = _children; cur != 0; cur = cur->_lchild.next)
+    cur->Clone()->SetParent(this, true);
 }
 psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov)), psLocatable(std::move(mov)), _parent(0), _children(mov._children), _depth(0)
 {
   _lchild.next=_lchild.prev=0;
-  SetParent(mov._parent);
+  SetParent(mov._parent, mov._internalflags&INTERNALFLAG_OWNED);
   mov._children=0;
-  mov.SetParent(0);
+  mov.SetParent(0); // prevents parent from deleting this if it was owned
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
-    _children->_parent=this;
+    cur->_parent=this;
   SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor
-}
-psInheritable::psInheritable(const DEF_INHERITABLE& def, unsigned char internaltype) : psRenderable(def, internaltype), psLocatable(def), _parent(0), _children(0), _depth(0)
-{
-  _lchild.next=_lchild.prev=0;
-  SetParent(def.parent);
 }
 psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, unsigned char internaltype) :
   psRenderable(flags, zorder, stateblock, shader, pass, internaltype), psLocatable(position, rotation, pivot), _parent(0), _children(0), _depth(0)
@@ -35,7 +33,14 @@ psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec
 }
 psInheritable::~psInheritable()
 {
-  while(_children!=0) _children->SetParent(0);
+  while(_children != 0)
+  {
+    if(_children->_internalflags&INTERNALFLAG_OWNED)
+      delete _children;
+    else
+      _children->SetParent(0);
+  }
+
   SetParent(0);
 }
 void psInheritable::Render()
@@ -50,7 +55,7 @@ void psInheritable::Render()
   for(; cur != 0; cur = cur->_lchild.next)
     cur->Render();
 }
-void psInheritable::SetParent(psInheritable* parent)
+void psInheritable::SetParent(psInheritable* parent, bool ownership)
 {
   PROFILE_FUNC();
   if(parent==_parent) return;
@@ -58,19 +63,27 @@ void psInheritable::SetParent(psInheritable* parent)
     bss_util::AltLLRemove<psInheritable,&GetLLBase>(this, _parent->_children);
 
   _lchild.next=_lchild.prev=0;
-  //if(_pinfo) _pinfo->p=0;
-  //_pinfo=0; // Changing the parent forces an insertion
   _parent=parent;
   if(_parent==this) // No circular reference insanity allowed!
     _parent=0;
 
+  _internalflags &= (~INTERNALFLAG_OWNED);
   if(_parent!=0)
   {
     SetPass(_parent->_pass);
     bss_util::AltLLAdd<psInheritable, &GetLLBase>(this, _parent->_children);
     _parent->_internalflags &= ~INTERNALFLAG_SORTED; // No longer sorted
     _depth = _parent->_depth + 1;
+    if(ownership) _internalflags |= INTERNALFLAG_OWNED;
   }
+  _invalidate();
+}
+
+psInheritable* BSS_FASTCALL psInheritable::AddClone(const psInheritable* inheritable)
+{
+  psInheritable* child = inheritable->Clone();
+  child->SetParent(this, true);
+  return child;
 }
 
 void BSS_FASTCALL psInheritable::SetPass(psPass* pass)
@@ -80,6 +93,15 @@ void BSS_FASTCALL psInheritable::SetPass(psPass* pass)
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->SetPass(pass);
 }
+void BSS_FASTCALL psInheritable::SetZOrder(int zorder)
+{
+  psRenderable::SetZOrder(zorder);
+  for(psInheritable* cur = _children; cur != 0; cur = cur->_lchild.next)
+    cur->_invalidate();
+}
+
+void psInheritable::_render() {}
+
 void psInheritable::_gettotalpos(psVec3D& pos) const
 {
   PROFILE_FUNC();
@@ -107,7 +129,7 @@ psInheritable& psInheritable::operator=(psInheritable&& mov)
   mov._children=0;
   mov.SetParent(0);
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
-    _children->_parent=this;
+    cur->_parent=this;
   psRenderable::operator=(std::move(mov));
   psLocatable::operator=(std::move(mov));
   return *this;
@@ -179,3 +201,20 @@ unsigned int psInheritable::NumChildren() const
     ++count;
   return count;
 }
+inline psTex* const* psInheritable::GetRenderTargets() const
+{
+  if(_rts.Capacity())
+    return _rts;
+  if(_parent != 0)
+    return _parent->GetRenderTargets();
+  return !_pass ? 0 : _pass->GetRenderTarget();
+}
+inline unsigned char psInheritable::NumRT() const
+{
+  if(_rts.Capacity())
+    return _rts.Capacity();
+  if(_parent != 0)
+    return _parent->NumRT();
+  return (_pass != 0 && _pass->GetRenderTarget()[0] != 0);
+}
+//psCamera* psInheritable::GetCamera() const { return !_parent?0:_parent->GetCamera(); }
