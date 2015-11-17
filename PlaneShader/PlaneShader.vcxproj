@@ -204,7 +204,6 @@
     <ClInclude Include="..\include\psEllipse.h" />
     <ClInclude Include="..\include\psEngine.h" />
     <ClInclude Include="..\include\psFont.h" />
-    <ClInclude Include="..\include\psGroup.h" />
     <ClInclude Include="..\include\psGUIEvent.h" />
     <ClInclude Include="..\include\psGUIManager.h" />
     <ClInclude Include="..\include\psImage.h" />
@@ -246,7 +245,6 @@
     <ClCompile Include="psEffect.cpp" />
     <ClCompile Include="psEngine.cpp" />
     <ClCompile Include="psFont.cpp" />
-    <ClCompile Include="psGroup.cpp" />
     <ClCompile Include="psGUIManager.cpp" />
     <ClCompile Include="psImage.cpp" />
     <ClCompile Include="psInheritable.cpp" />

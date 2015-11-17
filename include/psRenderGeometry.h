@@ -10,6 +10,7 @@
 #include "psEllipse.h"
 #include "psColored.h"
 #include "psDriver.h"
+#include "psTextured.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psRenderEllipse : public psSolid, public psColored, public psDriverHold
@@ -78,6 +79,18 @@ namespace planeshader {
 
     static void DrawPolygon(const psVec* p, size_t num, unsigned int color, const psVec3D& offset = VEC3D_ZERO);
     static void DrawPolygon(const psVertex* p, size_t num, const float(&transform)[4][4] = psDriver::identity);
+
+  protected:
+    virtual void _render();
+  };
+
+  class PS_DLLEXPORT psFullScreenQuad : public psInheritable, public psTextured, public psColored, public psDriverHold
+  {
+    psFullScreenQuad(const psFullScreenQuad& copy);
+    psFullScreenQuad(psFullScreenQuad&& mov);
+    psFullScreenQuad();
+    virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
+    virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
 
   protected:
     virtual void _render();

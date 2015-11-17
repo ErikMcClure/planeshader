@@ -21,7 +21,7 @@ namespace planeshader {
 
   struct PSINIT
   {
-    inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX11), mode(MODE_WINDOWED), vsync(false),
+    inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX11), mode(MODE_WINDOWED), vsync(false), sRGB(false),
       antialias(0), extent(1.0f, 50000.0f), errout(0), mediapath("") {}
 
     int width;
@@ -38,6 +38,7 @@ namespace planeshader {
       MODE_COMPOSITE_OPAQUE_CLICK,
     } mode;
     bool vsync;
+    bool sRGB;
     unsigned char antialias;
     psVec extent;
     std::ostream* errout;

@@ -10,15 +10,12 @@
 namespace bss_util { template<typename T> struct KDNode; }
 
 namespace planeshader {
-  struct DEF_SOLID;
-
   // A solid is an inheritable with dimensions. Only objects inheriting from psSolid can be culled.
   class PS_DLLEXPORT psSolid : public psInheritable
   {
   public:
     psSolid(const psSolid& copy);
     psSolid(psSolid&& mov);
-    psSolid(const DEF_SOLID& def, unsigned char internaltype=0);
     explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned char internaltype=0);
     virtual ~psSolid();
     // Recalculates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 
@@ -65,15 +62,6 @@ namespace planeshader {
     psRectRotateZ _collisionrect;
     psRect _boundingrect;
     bss_util::KDNode<psSolid>* _kdnode;
-  };
-
-  struct BSS_COMPILER_DLLEXPORT DEF_SOLID : DEF_INHERITABLE
-  {
-    inline DEF_SOLID() : scale(1.0f) {}
-    inline virtual psSolid* BSS_FASTCALL Spawn() const { return 0; } //LINKER ERRORS IF THIS DOESNT EXIST! - This should never be called (since the class itself is abstract), but we have to have it here to support inherited classes
-    inline virtual DEF_SOLID* BSS_FASTCALL Clone() const { return new DEF_SOLID(*this); }
-
-    psVec scale;
   };
 }
 

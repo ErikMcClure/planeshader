@@ -8,14 +8,11 @@
 #include "psColor.h"
 
 namespace planeshader {
-  struct DEF_COLORED;
-
   // Represents something that has color.
   class PS_DLLEXPORT psColored
   {
   public:
     psColored(const psColored& copy);
-    psColored(const DEF_COLORED& def);
     explicit psColored(unsigned int color=0xFFFFFFFF);
     virtual ~psColored();
     inline const psColor32& GetColor() const { return _color; }
@@ -35,16 +32,6 @@ namespace planeshader {
     void BSS_FASTCALL _setcolor(unsigned int color) { SetColor(color); }
 
     psColor32 _color;
-  };
-
-  struct BSS_COMPILER_DLLEXPORT DEF_COLORED
-  {
-    inline DEF_COLORED() : color(-1) {}
-    inline virtual psColored* BSS_FASTCALL Spawn() const { return new psColored(*this); } //This creates a new instance of whatever class this definition defines
-    inline virtual DEF_COLORED* BSS_FASTCALL Clone() const { return new DEF_COLORED(*this); }
-
-    DEF_COLORED& operator =(const DEF_COLORED& copy) { color=copy.color; return *this; }
-    unsigned int color;
   };
 }
 

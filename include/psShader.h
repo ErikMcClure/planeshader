@@ -31,7 +31,7 @@ namespace planeshader {
   class PS_DLLEXPORT psShader : protected psDriverHold, public bss_util::cRefCounter
   {
   public:
-    void Activate();
+    void Activate() const;
     template<typename T, SHADER_VER I>
     inline bool BSS_FASTCALL SetConstants(const T& src)
     {
@@ -56,7 +56,7 @@ namespace planeshader {
     inline static psShader* BSS_FASTCALL CreateShader(const ELEMENT_DESC(&layout)[I], unsigned char num, const SHADER_INFO* infos) { return CreateShader(I, layout, num, infos); }
     static psShader* BSS_FASTCALL CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, const SHADER_INFO* infos);
     // Copies a single shader
-    static psShader* BSS_FASTCALL CreateShader(psShader* copy); 
+    static psShader* BSS_FASTCALL CreateShader(const psShader* copy);
     // merges num shaders into a new shader in left to right order (so the first will be overwritten by the rest). num cannot be 0.
     static psShader* BSS_FASTCALL MergeShaders(unsigned int num, const psShader* first, ...); 
 

@@ -112,3 +112,16 @@ void psRenderPolygon::_render()
   bss_util::Matrix<float, 4, 4>::AffineTransform_T(pos.x, pos.y, pos.z, GetTotalRotation(), GetPivot().x, GetPivot().y, m);
   _driver->DrawPolygon(_verts, _verts.Capacity(), VEC3D_ZERO, GetColor().color, GetAllFlags());
 }
+
+
+psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy){}
+psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov){}
+psFullScreenQuad::psFullScreenQuad(){}
+void psFullScreenQuad::_render()
+{
+  psVec dim = !NumRT() ? _driver->screendim : GetRenderTargets()[0]->GetDim();
+  _driver->PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, dim.x, dim.y));
+  _driver->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
+  _driver->DrawFullScreenQuad();
+  _driver->PopCamera();
+}

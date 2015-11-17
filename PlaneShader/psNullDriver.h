@@ -54,8 +54,9 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, const float(&transform)[4][4] = identity) { }
     virtual void DrawLinesEnd(const float(&transform)[4][4] = identity) { }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) { }
-    virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport) { }
+    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) { }
+    virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport) { }
+    virtual void BSS_FASTCALL PopCamera() {}
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, FLAG_TYPE flags) const { return VEC3D_ZERO; }
     psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, FLAG_TYPE flags) const { return VEC3D_ZERO; }
@@ -72,16 +73,14 @@ namespace planeshader {
     virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0) {}
     // Creates a texture
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0) { return (void*)0xFFFFFFFF; }
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0) { return (void*)0xFFFFFFFF; }
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0) { return (void*)0xFFFFFFFF; }
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false) { return (void*)0xFFFFFFFF; }
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false) { return (void*)0xFFFFFFFF; }
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0) { }
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRect& rect) { }
     virtual void PopScissorRect() { }
     // Sets the current rendertargets, setting all the rest to null.
     virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0) { }
-    // Sets default rendertarget
-    virtual void SetDefaultRenderTarget(const psTex* rendertarget) { }
     // Sets shader constants
     virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader) { }
     // Sets textures for a given type of shader (in DX9 this is completely ignored)

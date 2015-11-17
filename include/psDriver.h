@@ -271,10 +271,12 @@ namespace planeshader {
     FILTER_BOX,
     FILTER_TRIANGLE,
     FILTER_PREMULTIPLY, // Premultiplies the texture on load
-    FILTER_ALPHABOX, // Uses an alpha-corrected 2x2 box filter for mipmap generation
+    FILTER_PREMULTIPLY_SRGB, // Forces the premultiplication to happen in SRGB space even if using gamma correct textures.
+    FILTER_ALPHABOX,
     FILTER_DEBUG, // Creates a black and white checkerboard pattern for debugging
     NUM_FILTERS
   };
+
   class PS_DLLEXPORT psDriver
   {
   protected:
@@ -305,8 +307,9 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, const float(&transform)[4][4] = identity)=0;
     virtual void DrawLinesEnd(const float(&transform)[4][4] = identity)=0;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void BSS_FASTCALL ApplyCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)=0;
-    virtual void BSS_FASTCALL ApplyCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
+    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)=0;
+    virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
+    virtual void BSS_FASTCALL PopCamera() = 0;
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, FLAG_TYPE flags) const=0;
     virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, FLAG_TYPE flags) const=0;
@@ -323,8 +326,8 @@ namespace planeshader {
     virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0)=0;
     // Creates a texture
     virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0)=0;
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0)=0;
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false)=0;
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false)=0;
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
     // Pushes or pops a scissor rect on to the stack
     virtual void BSS_FASTCALL PushScissorRect(const psRect& rect)=0;
@@ -357,8 +360,6 @@ namespace planeshader {
     virtual psTex* GetBackBuffer()=0;
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver()=0;
-    // Sets default rendertarget
-    virtual void SetDefaultRenderTarget(const psTex* rt=0) { _defaultrt = !rt?GetBackBuffer():rt; }
     // Gets/Sets the effective DPI
     virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI))=0;
     virtual psVeciu GetDPI() = 0;
@@ -382,6 +383,34 @@ namespace planeshader {
     // Returns true if shader version is supported
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile)=0;
 
+    BSS_FORCEINLINE static FORMATS ToSRGBFormat(FORMATS format)
+    {
+      switch(format)
+      {
+      case FMT_R8G8B8A8: return FMT_R8G8B8A8_SRGB;
+      case FMT_B8G8R8A8: return FMT_B8G8R8A8_SRGB;
+      case FMT_B8G8R8X8: return FMT_B8G8R8X8_SRGB;
+      case FMT_BC1: return FMT_BC1_SRGB;
+      case FMT_BC2: return FMT_BC2_SRGB;
+      case FMT_BC3: return FMT_BC3_SRGB;
+      case FMT_BC7: return FMT_BC7_SRGB;
+      }
+      return format;
+    }
+    BSS_FORCEINLINE static FORMATS FromSRGBFormat(FORMATS format)
+    {
+      switch(format)
+      {
+      case FMT_R8G8B8A8_SRGB: return FMT_R8G8B8A8;
+      case FMT_B8G8R8A8_SRGB: return FMT_B8G8R8A8;
+      case FMT_B8G8R8X8_SRGB: return FMT_B8G8R8X8;
+      case FMT_BC1_SRGB: return FMT_BC1;
+      case FMT_BC2_SRGB: return FMT_BC2;
+      case FMT_BC3_SRGB: return FMT_BC3;
+      case FMT_BC7_SRGB: return FMT_BC7;
+      }
+      return format;
+    }
     BSS_FORCEINLINE static void _MatrixTranslate(float(&out)[4][4], float x, float y, float z) { out[3][0]=x; out[3][1]=y; out[3][2]=z; } //This is the transpose of what is NORMALLY done, presumably due to the order of multiplication
     BSS_FORCEINLINE static void _MatrixScale(float(&out)[4][4], float x, float y, float z) { out[0][0]=x; out[1][1]=y; out[2][2]=z; }
     BSS_FORCEINLINE static void _MatrixRotateZ(float(&out)[4][4], float angle) { float ca=cos(angle); float sa=sin(angle); out[0][0]=ca; out[1][0]=-sa; out[0][1]=sa; out[1][1]=ca; } //Again, we need the transpose
@@ -409,9 +438,6 @@ namespace planeshader {
 
     psVec screendim; // DPI scaled screen dimensions, which can theoretically be fractional due to 1.5x DPI scaling
     psVeciu rawscreendim;
-
-  protected:
-    const psTex* _defaultrt;
   };
 
   struct PS_DLLEXPORT psDriverHold
