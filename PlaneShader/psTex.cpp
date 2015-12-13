@@ -51,14 +51,14 @@ void BSS_FASTCALL psTex::_applydesc(TEXTURE_DESC& desc)
   _miplevels = desc.miplevels;
 }
 
-psTex* BSS_FASTCALL psTex::Create(const char* file, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, psVeciu dpi, bool sRGB)
+psTex* BSS_FASTCALL psTex::Create(const char* file, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, bool sRGB, psVeciu dpi)
 {
   void* view = 0;
   void* res = _driver->LoadTexture(file, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, 0, sRGB);
   return _create(res, view, dpi);
 }
 
-psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, psVeciu dpi, bool sRGB)
+psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, bool sRGB, psVeciu dpi)
 {
   if(!datasize)
     return Create((const char*)data, usage);
@@ -66,9 +66,13 @@ psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsig
   void* res = _driver->LoadTextureInMemory(data, datasize, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, 0, sRGB);
   return _create(res, view, dpi);
 }
-static psTex* BSS_FASTCALL Create(const psTex& copy)
+psTex* BSS_FASTCALL psTex::Create(const psTex& copy)
 {
   return new psTex(copy);
+}
+psTex* BSS_FASTCALL psTex::Create(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock, psVeciu dpi)
+{
+  return new psTex(dim, format, usage, miplevels, texblock, dpi);
 }
 
 psTex* BSS_FASTCALL psTex::_create(void* res, void* view, psVeciu dpi)

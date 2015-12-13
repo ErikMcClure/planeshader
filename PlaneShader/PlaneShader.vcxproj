@@ -226,6 +226,7 @@
     <ClInclude Include="..\include\psTriangle.h" />
     <ClInclude Include="..\include\psVec.h" />
     <ClInclude Include="..\include\ps_dec.h" />
+    <ClInclude Include="..\include\ps_feather.h" />
     <ClInclude Include="..\include\ps_interface.h" />
     <ClInclude Include="psDirectX10_fsquadVS.h" />
     <ClInclude Include="psDirectX11.h" />
@@ -260,6 +261,7 @@
     <ClCompile Include="psText.cpp" />
     <ClCompile Include="psTextured.cpp" />
     <ClCompile Include="psTileset.cpp" />
+    <ClCompile Include="ps_feather.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="fsquadVS.hlsl">

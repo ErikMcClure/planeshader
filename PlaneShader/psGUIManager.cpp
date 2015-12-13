@@ -255,7 +255,7 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
 
   //Register class
   WNDCLASSEXW wcex    ={ sizeof(WNDCLASSEXW),              // cbSize
-    CS_HREDRAW | CS_VREDRAW,                            // style
+    CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,                            // style
     (WNDPROC)WndProc,                      // lpfnWndProc
     NULL,                            // cbClsExtra
     NULL,                            // cbWndExtra
@@ -401,7 +401,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, 
   evt.time=time;
   evt.type = (GUI_EVENT)(click&15);
   evt.button = (GUI_EVENT)(click>>4);
-  evt.x = _mousedata.relcoord.x;
+  evt.x = _mousedata.relcoord.x; // Set these up here for any mouse events that don't contain coordinates.
   evt.y = _mousedata.relcoord.y;
 
   if(click==GUI_MOUSELEAVE)
@@ -427,13 +427,14 @@ void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, 
     _allkeys[KEY_XBUTTON1]=_mousedata.button[GUI_X_BUTTON1]*0x80;
     _allkeys[KEY_XBUTTON2]=_mousedata.button[GUI_X_BUTTON2]*0x80;
   }
+
   if(click != GUI_MOUSESCROLL) //The WM_MOUSEWHEEL event does not send mousecoord data
   {
     evt.x=points->x;
     evt.y=points->y;
     evt.allbtn=_mousedata.button;
-    //_mousedata.relcoord.x = points->x;
-    //_mousedata.relcoord.y = points->y;
+    _mousedata.relcoord.x = points->x;
+    _mousedata.relcoord.y = points->y;
   }
 
   switch(click)
@@ -446,10 +447,6 @@ void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, 
     break;
   case GUI_MOUSEUP: //L up
     evt.allbtn &= ~evt.button;
-    break;
-  case GUI_MOUSEDBLCLICK: //L down
-    evt.allbtn |= evt.button; //The double click event is sent in place of a DOWN event, so at this point in time, the button is still pressed.
-    evt.type = GUI_MOUSEDOWN;
     break;
   }
 
@@ -490,8 +487,6 @@ char psGUIManager::CaptureAllJoy(HWND__* hwnd)
 void psGUIManager::FlushMessages()
 {
   PROFILE_FUNC();
-  _exactmousecalc();
-  //windows stuff
   MSG msg;
 
   while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
@@ -508,6 +503,7 @@ void psGUIManager::FlushMessages()
   }
 
   _joyupdateall();
+  _exactmousecalc(); // Recalculate mouse AFTER the messages, so that all events get mouse coordinates based on where the mouse was when they happened, but we end up with accurate coordinates.
 }
 
 void psGUIManager::SetWindowTitle(const char* caption)

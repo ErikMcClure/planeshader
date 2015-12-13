@@ -2,6 +2,7 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psImage.h"
+#include "psPass.h"
 
 using namespace planeshader;
 
@@ -74,21 +75,12 @@ bool BSS_FASTCALL psImage::_batch(psRenderable* r) const
   unsigned char c = NumTextures();
   unsigned char rtc = NumRT();
   if(c != r->NumTextures() || (GetAllFlags()&PSFLAG_BATCHFLAGS) != (r->GetAllFlags()&PSFLAG_BATCHFLAGS)
-    || rtc != r->NumRT()
     || NumSources() != static_cast<psImage*>(r)->NumSources())
     return false;
 
   psTex* const* t = GetTextures();
   psTex* const* o = r->GetTextures();
   for(unsigned char i = 0; i < c; ++i)
-  {
-    if(t[i] != o[i])
-      return false;
-  }
-
-  t = GetRenderTargets();
-  o = r->GetRenderTargets();
-  for(unsigned char i = 0; i < rtc; ++i)
   {
     if(t[i] != o[i])
       return false;

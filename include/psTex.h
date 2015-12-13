@@ -36,10 +36,11 @@ namespace planeshader {
     inline bool Resize(psVeciu dim, RESIZE resize = RESIZE_DISCARD);
 
     // Returns an existing texture object if it has the same path or creates a new one if necessary 
-    static psTex* BSS_FASTCALL Create(const char* file, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_TRIANGLE, unsigned char miplevels = 0, FILTERS loadfilter = FILTER_NONE, psVeciu dpi = psVeciu(psDriver::BASE_DPI), bool sRGB = false);
+    static psTex* BSS_FASTCALL Create(const char* file, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_TRIANGLE, unsigned char miplevels = 0, FILTERS loadfilter = FILTER_NONE, bool sRGB = false, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
     // if datasize is 0, data is assumed to be a path. If datasize is nonzero, data is assumed to be a pointer to memory where the texture is stored
-    static psTex* BSS_FASTCALL Create(const void* data, unsigned int datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_TRIANGLE, unsigned char miplevels = 0, FILTERS loadfilter = FILTER_NONE, psVeciu dpi = psVeciu(psDriver::BASE_DPI), bool sRGB = false);
+    static psTex* BSS_FASTCALL Create(const void* data, unsigned int datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FILTERS mipfilter = FILTER_TRIANGLE, unsigned char miplevels = 0, FILTERS loadfilter = FILTER_NONE, bool sRGB = false, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
     static psTex* BSS_FASTCALL Create(const psTex& copy);
+    static psTex* BSS_FASTCALL Create(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels = 0, psTexblock* texblock = 0, psVeciu dpi = psVeciu(psDriver::BASE_DPI));
 
     psTex& operator=(const psTex& right);
     psTex& operator=(psTex&& right);

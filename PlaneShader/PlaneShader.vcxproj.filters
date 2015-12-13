@@ -129,6 +129,9 @@
     <ClInclude Include="..\include\psEffect.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\ps_feather.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -206,6 +209,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ps_feather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
