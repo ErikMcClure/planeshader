@@ -228,8 +228,6 @@ namespace planeshader {
     GUI_MOUSEDOWN,
     GUI_MOUSEDBLCLICK,
     GUI_MOUSEUP,
-    GUI_MOUSEON,
-    GUI_MOUSEOFF,
     GUI_MOUSEMOVE,
     GUI_MOUSESCROLL,
     GUI_MOUSELEAVE, //mouse has left the window
@@ -250,7 +248,7 @@ namespace planeshader {
         int keychar; //Only used by KEYCHAR, represents a utf32 character
         unsigned char keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
         char keydown;
-        char sigkeys;
+        char sigkeys; // 1: shift, 2: ctrl, 4: alt, 8: held
       };
       struct { float joyvalue; short joyaxis; }; // JOYAXIS
       struct { char joydown; short joybutton; }; // JOYBUTTON

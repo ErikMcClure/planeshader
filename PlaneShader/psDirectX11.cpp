@@ -50,7 +50,7 @@ using namespace bss_util;
 
 // Constructors
 psDirectX11::psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
-_backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
+_backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
 {
   PROFILE_FUNC();
   memset(&library, 0, sizeof(SHADER_LIBRARY));
@@ -140,7 +140,7 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
     0
   };
 
-  PSLOG(4) << cStrF("Creating swap chain with: { { %i, %i, { %i, %i }, %i, %i, %i }, { %i, %i }, %i, %i, %p, %s, %i, %i }",
+  PSLOG(4) << cStrF("Creating swap chain with: { { %i, %i, { %i, %i }, %i, %i, %i }, { %i, %i }, %i, %i, %p, ",
     swapdesc.BufferDesc.Width,
     swapdesc.BufferDesc.Height,
     swapdesc.BufferDesc.RefreshRate,
@@ -151,8 +151,10 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0)
     swapdesc.SampleDesc.Quality,
     swapdesc.BufferUsage,
     swapdesc.BufferCount,
-    swapdesc.OutputWindow,
-    swapdesc.Windowed?"true":"false",
+    swapdesc.OutputWindow).c_str()
+    << (swapdesc.Windowed ? "true" : "false")
+
+    << cStrF(", %i, %i }",
     swapdesc.SwapEffect,
     swapdesc.Flags).c_str() << std::endl;
 

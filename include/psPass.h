@@ -51,6 +51,7 @@ namespace planeshader {
     void _sort(psRenderable* r);
     void _addcullgroup(psCullGroup* g);
     void _removecullgroup(psCullGroup* g);
+    static bool _checkrt(psRenderable* l, psRenderable* r);
 
     const psCamera* _cam;
     psRenderable* _renderables;

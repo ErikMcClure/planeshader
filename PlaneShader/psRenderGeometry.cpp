@@ -113,7 +113,6 @@ void psRenderPolygon::_render()
   _driver->DrawPolygon(_verts, _verts.Capacity(), VEC3D_ZERO, GetColor().color, GetAllFlags());
 }
 
-
 psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy){}
 psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov){}
 psFullScreenQuad::psFullScreenQuad(){}

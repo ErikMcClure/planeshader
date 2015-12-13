@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   float linewidth;
   float curwidth = 0.0f;
@@ -17,6 +17,7 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
   const psGlyph* g;
   const int* pos;
   const int* peek = text;
+  psRect area(prearea);
   psVec maxdim = area.GetDimensions();
   psVec texdim;
   unsigned char svar=_textures.Capacity();
@@ -119,7 +120,7 @@ psVec psTexFont::DrawText(const int* text, psRect area, unsigned short drawflags
   return dim;
 }
 
-psVec psTexFont::DrawText(const char* text, psRect area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(const char* text, const psRect& area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   size_t len = strlen(text)+1;
   if(len < 1000000)
@@ -137,7 +138,7 @@ bool psTexFont::_isspace(int c) // We have to make our own isspace implementatio
 }
 float psTexFont::_getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float letterspacing, float& cur)
 {
-  bool dobreak = maxwidth != 0.0f && (drawflags&TDT_CHARBREAK || drawflags&TDT_WORDBREAK);
+  bool dobreak = maxwidth < 0 && (drawflags&TDT_CHARBREAK || drawflags&TDT_WORDBREAK);
   float width = cur;
   int c;
   const psGlyph* g;
@@ -174,9 +175,8 @@ psGlyph* psTexFont::_loadglyph(unsigned int codepoint)
 void psTexFont::CalcTextDim(const int* text, psVec& dest, unsigned short drawflags, float letterspacing)
 {
   float cur = 0.0f;
-  float height = (!text || !text[0])?0.0f:_lineheight;
+  float height = (!text || !text[0])?_lineheight:0.0f;
   psVec maxdim = dest;
-  if(maxdim.x != 0.0f && maxdim.y != 0.0f) maxdim = VEC_ZERO;
   float width = 0.0f;
 
   float w;
@@ -187,8 +187,8 @@ void psTexFont::CalcTextDim(const int* text, psVec& dest, unsigned short drawfla
     height += _lineheight;
   }
 
-  if(maxdim.x == 0.0f) dest.x = width;
-  if(maxdim.y == 0.0f) dest.y = height;
+  if(maxdim.x < 0.0f) dest.x = width;
+  if(maxdim.y < 0.0f) dest.y = height;
 }
 
 void psTexFont::AddGlyph(int character, const psGlyph& glyph)

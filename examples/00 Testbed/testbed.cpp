@@ -15,6 +15,11 @@
 #include "psTileset.h"
 #include "psPass.h"
 #include "psRenderGeometry.h"
+#include "ps_feather.h"
+#include "feathergui/fgButton.h"
+#include "feathergui/fgResource.h"
+#include "feathergui/fgTopWindow.h"
+#include "feathergui/fgSkin.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
 #include "bss-util/cStr.h"
@@ -183,7 +188,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   auto timer = psEngine::OpenProfiler();
   int fps=0;
   //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
-  psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, psVeciu(psDriver::BASE_DPI), false);
+  psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, false);
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
   globalcam.SetPosition(500, 500);
@@ -284,8 +289,11 @@ TESTDEF::RETPAIR test_psPass()
   auto timer = psEngine::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_PREMULTIPLY_SRGB, psVeciu(psDriver::BASE_DPI), false));
-  psImage image2(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_ALPHABOX, 0, FILTER_NONE, psVeciu(psDriver::BASE_DPI), false));
+  cStr shfile = ReadFile("../media/motionblur.hlsl");
+  auto shader = psShader::MergeShaders(2, driver->library.IMAGE, psShader::CreateShader(0, 0, 1, &SHADER_INFO(shfile.c_str(), "mainPS", PIXEL_SHADER_4_0)));
+
+  psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_PREMULTIPLY_SRGB, false));
+  psImage image2(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_ALPHABOX, 0, FILTER_NONE, false));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
   //engine->GetPass(0)->Insert(&image2);
   engine->GetPass(0)->Insert(&image);
@@ -295,6 +303,7 @@ TESTDEF::RETPAIR test_psPass()
   //globalcam.SetPositionZ(-4.0);
 
   image.SetStateblock(STATEBLOCK_LIBRARY::PREMULTIPLIED);
+  image2.SetShader(shader);
   //image2.ApplyEdgeBuffer();
 
   while(!gotonext && engine->Begin(0))
@@ -309,15 +318,95 @@ TESTDEF::RETPAIR test_psPass()
 TESTDEF::RETPAIR test_psEffect()
 {
   BEGINTEST;
+  int fps = 0;
+  auto timer = psEngine::OpenProfiler();
+  psDriver* driver = engine->GetDriver();
 
-  // Draw everything normally on the gamma buffer
-  // Calculate each light and it's shadows on one buffer
-  // Then add this to the light accumulation buffer
-  // All of the above can be done with one psEffect with the lights tied to the accumulation buffers, it will sort everything out properly.
+  psTex* gamma = psTex::Create(driver->screendim, FMT_R8G8B8A8_SRGB, USAGE_RENDERTARGET | USAGE_SHADER_RESOURCE, 1);
+  engine->GetPass(0)->SetRenderTarget(gamma);
 
-  // Then draw this light accumulation buffer on to the gamma buffer and multiply everything
-  // Copy the gamma buffer to the backbuffer
-  // Draw sRGB GUI elements blended in sRGB space.
+  while(!gotonext && engine->Begin(0))
+  {
+    // TODO: Draw everything normally on the gamma buffer
+    // Calculate each light and it's shadows on one buffer
+    // Then add this to the light accumulation buffer
+    // All of the above can be done with one psEffect with the lights tied to the accumulation buffers, it will sort everything out properly.
+
+    // Then draw this light accumulation buffer on to the gamma buffer and multiply everything
+    // Copy the gamma buffer to the backbuffer
+    // Draw sRGB GUI elements blended in sRGB space.
+
+    processGUI();
+    engine->End();
+    updatefpscount(timer, fps);
+  }
+
+  ENDTEST;
+}
+
+TESTDEF::RETPAIR test_feather()
+{
+  BEGINTEST;
+  int fps = 0;
+  auto timer = psEngine::OpenProfiler();
+
+  fgSkin skin;
+  fgSkin_Init(&skin);
+  fgSkin* fgButtonSkin = fgSkin_AddSkin(&skin, "fgButton");
+  fgSkin* fgResourceSkin = fgSkin_AddSkin(fgButtonSkin, "fgResource");
+
+  FG_UINT nuetral = fgSkin_AddStyle(fgResourceSkin);
+  FG_UINT active = fgSkin_AddStyle(fgResourceSkin);
+  FG_UINT hover = fgSkin_AddStyle(fgResourceSkin);
+  FG_Msg msg = { 0 };
+  msg.type = FG_SETCOLOR;
+  msg.otherint = 0xFFFF00FF;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, nuetral), &msg, 0, 0, 0, 0);
+  msg.otherint = 0xFFFFFF00;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, hover), &msg, 0, 0, 0, 0);
+  msg.otherint = 0xFF00FFFF;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, active), &msg, 0, 0, 0, 0);
+
+  FG_UINT bnuetral = fgSkin_AddStyle(fgButtonSkin);
+  FG_UINT bactive = fgSkin_AddStyle(fgButtonSkin);
+  FG_UINT bhover = fgSkin_AddStyle(fgButtonSkin);
+  msg.type = FG_SETTEXT;
+  msg.other = "Nuetral";
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bnuetral), &msg, 0, 0, 0, 0);
+  msg.other = "Hover";
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bactive), &msg, 0, 0, 0, 0);
+  msg.other = "Active";
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bhover), &msg, 0, 0, 0, 0);
+
+  void* font = fgCreateFont(0, "arial.ttf", 14, 16, 0);
+  msg.type = FG_SETCOLOR;
+  msg.otherint = 0xFFFFFFFF;
+  fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
+  msg.type = FG_SETFONT;
+  msg.other = font;
+  fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
+
+  fgChild_VoidMessage((fgChild*)fgSingleton(), FG_SETSKIN, &skin);
+
+  fgChild* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, FGCHILD_EXPAND | FGCHILD_IGNORE, 0, 0);
+  fgChild* button = fgButton_Create(0, FGCHILD_EXPAND, (fgChild*)fgSingleton(), 0);
+  fgChild_VoidMessage(button, FG_ADDITEM, res);
+
+  const fgElement fgElement_topwindow = { { 0, 0.2, 0, 0.2, 0, 0.8, 0, 0.8 }, 0, { 0, 0, 0, 0 } };
+  fgChild* topwindow = fgTopWindow_Create("test window", 0, &fgElement_topwindow);
+  AbsRect r = { 10,22,10,10 };
+  fgChild_IntMessage(topwindow, FG_SETCOLOR, 0xFFFFFFFF, 0);
+  fgChild_VoidMessage(topwindow, FG_SETFONT, font);
+  fgChild_VoidMessage(topwindow, FG_SETPADDING, &r);
+
+  while(!gotonext && engine->Begin())
+  {
+    psRoot::Instance()->Render();
+    engine->End();
+    updatefpscount(timer, fps);
+  }
+
+  fgSkin_Destroy(&skin);
 
   ENDTEST;
 }
@@ -380,6 +469,7 @@ int main(int argc, char** argv)
     { "psParticles", &test_psParticles },
     { "psEffect", &test_psEffect },
     { "psInheritable", &test_psInheritable },
+    { "ps_feather", &test_feather },
   };
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
@@ -406,6 +496,7 @@ int main(int argc, char** argv)
   {
     psEngine ps(init);
     if(ps.GetQuit()) return 0;
+
     std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool
     { 
       if(evt.type == GUI_KEYDOWN || evt.type == GUI_KEYUP)
@@ -435,6 +526,7 @@ int main(int argc, char** argv)
       return false;
     };
     ps.SetInputReceiver(guicallback);
+    fgInitialize();
     //ps[0].SetClear(true, 0);
     engine=&ps;
 

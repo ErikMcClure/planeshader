@@ -167,8 +167,12 @@ void psPass::_queue(psRenderable* r)
     (_renderqueue[0]->_internaltype() != r->_internaltype() ||
     _renderqueue[0]->GetShader() != r->GetShader() ||
     _renderqueue[0]->GetStateblock() != r->GetStateblock() ||
-    !_renderqueue[0]->_batch(r)))
+    !_renderqueue[0]->_batch(r) ||
+    _checkrt(_renderqueue[0], r)))
+  {
     FlushQueue();
+  }
+
   _renderqueue.Add(r);
 }
 
@@ -194,4 +198,18 @@ void psPass::_addcullgroup(psCullGroup* g)
 void psPass::_removecullgroup(psCullGroup* g)
 {
   LLRemove<psCullGroup>(g, _cullgroups);
+}
+bool psPass::_checkrt(psRenderable* l, psRenderable* r)
+{
+  unsigned char rtc = l->NumRT();
+  if(rtc != r->NumRT())
+    return false;
+  psTex* const* t = l->GetRenderTargets();
+  psTex* const* o = r->GetRenderTargets();
+  for(unsigned char i = 0; i < rtc; ++i)
+  {
+    if(t[i] != o[i])
+      return false;
+  }
+  return true;
 }

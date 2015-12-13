@@ -36,7 +36,7 @@ namespace planeshader {
     virtual psTex* const* GetRenderTargets() const;
     virtual unsigned char NumRT() const;
     virtual void BSS_FASTCALL SetZOrder(int zorder);
-    psInheritable* AddClone(const psInheritable* inheritable);
+    psInheritable* BSS_FASTCALL AddClone(const psInheritable* inheritable);
 
     psInheritable& operator=(const psInheritable& copy);
     psInheritable& operator=(psInheritable&& mov);

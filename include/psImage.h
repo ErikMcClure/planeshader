@@ -15,9 +15,9 @@ namespace planeshader {
   public:
     psImage(const psImage& copy);
     psImage(psImage&& mov);
-    virtual ~psImage();
     explicit psImage(psTex* tex = 0, const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned int color=0xFFFFFFFF);
     explicit psImage(const char* file, const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned int color=0xFFFFFFFF);
+    virtual ~psImage();
     void AddSource(const psRect& r = RECT_UNITRECT);
     void ClearSources();
     inline psRect GetSource(unsigned int index=0) const { if(index>=_uvs.Capacity() || index >= _tex.Capacity()) return RECT_ZERO; return _uvs[index]*_tex[index]->GetDim(); }
