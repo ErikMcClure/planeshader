@@ -195,6 +195,7 @@ TESTDEF::RETPAIR test_psDirectX11()
 
   psVec imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y));
+  psBatchObj obj;
 
   while(!gotonext && engine->Begin())
   {
@@ -202,19 +203,20 @@ TESTDEF::RETPAIR test_psDirectX11()
     driver->Clear(0);
     driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
     driver->library.IMAGE->Activate();
-    driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, &pslogo, 1, 0);
+    driver->SetTextures(&pslogo, 1);
+    driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
     driver->library.CIRCLE->Activate();
-    driver->DrawRectBatchBegin(&pslogo, 1, 1, 0);
+    driver->DrawRectBatchBegin(obj, 1, 0);
     for(int i = 0; i < NUMBATCH; ++i) {
-      driver->DrawRectBatch(psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), &RECT_UNITRECT, 0xFFFFFFFF);
+      driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF);
     }
-    driver->DrawRectBatchEnd();
+    driver->DrawBatchEnd(obj);
 
     driver->library.LINE->Activate();
-    driver->DrawLinesStart(PSFLAG_FIXED);
-    driver->DrawLines(psLine(0, 0, 100, 200), 0, 0, 0xFFFFFFFF);
-    driver->DrawLines(psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
-    driver->DrawLinesEnd();
+    driver->DrawLinesStart(obj, PSFLAG_FIXED);
+    driver->DrawLines(obj, psLine(0, 0, 100, 200), 0, 0, 0xFFFFFFFF);
+    driver->DrawLines(obj, psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
+    driver->DrawBatchEnd(obj);
 
     driver->library.POLYGON->Activate();
     psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
@@ -253,6 +255,8 @@ TESTDEF::RETPAIR test_psParticles()
 
   psTex* particle = psTex::Create("../media/particle.png");
   psVertex verts[5000];
+  psVec velocities[5000];
+  memset(velocities, 0, sizeof(psVec)*5000);
   psDriver* driver = engine->GetDriver();
 
   for(int i = 0; i < 5000; ++i)
@@ -260,20 +264,34 @@ TESTDEF::RETPAIR test_psParticles()
     verts[i].x = bssrandreal(0, driver->screendim.x);
     verts[i].y = bssrandreal(0, driver->screendim.y);
     verts[i].z = 0;
-    verts[i].w = 0;
+    verts[i].w = bssrandreal(8, 32);
     verts[i].color = 0x88FFFFFF;
   }
+
+  psBatchObj obj;
 
   while(!gotonext && engine->Begin())
   {
     processGUI();
     driver->Clear(0);
     driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
+
+    for(int i = 0; i < 5000; ++i)
+    {
+      verts[i].x += velocities[i].x;
+      verts[i].y += velocities[i].y;
+      double s = dist(verts[i].x, verts[i].y, driver->screendim.x / 2, driver->screendim.y / 2) / 2000.0; // This gets the distance from the center, scaling the outer boundary at 2000 to 1.0
+      double d = bssrandreal(-1.0, 1.0);
+      d = std::pow(abs(d), 1.0 + s*s) * ((d < 0.0) ? -1.0 : 1.0); // This causes the distribution of d to tend towards zero at a higher rate the farther away a particle is from the center. This allows particles to move freely near the center, but get dragged towards it farther away.
+      velocities[i] += psVec::FromPolar(0.004, bssfmod<double>(d*PI - atan2(verts[i].y - driver->screendim.y / 2, -verts[i].x + driver->screendim.x / 2), PI_DOUBLE)); // At d = 0, the velocity will always point towards the center.
+    }
+
     driver->library.PARTICLE->Activate();
     driver->SetStateblock(STATEBLOCK_LIBRARY::GLOW->GetSB());
-    driver->DrawPointsBegin(&particle, 1, 16, 0);
-    driver->DrawPoints(verts, 5000);
-    driver->DrawPointsEnd();
+    driver->SetTextures(&particle, 1);
+    driver->DrawPointsBegin(obj, 0);
+    driver->DrawPoints(obj, verts, 5000);
+    driver->DrawBatchEnd(obj);
     engine->End();
     updatefpscount(timer, fps);
   }
@@ -355,27 +373,27 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgButtonSkin = fgSkin_AddSkin(&skin, "fgButton");
   fgSkin* fgResourceSkin = fgSkin_AddSkin(fgButtonSkin, "fgResource");
 
-  FG_UINT nuetral = fgSkin_AddStyle(fgResourceSkin);
-  FG_UINT active = fgSkin_AddStyle(fgResourceSkin);
-  FG_UINT hover = fgSkin_AddStyle(fgResourceSkin);
+  FG_UINT nuetral = fgSkin_AddStyle(fgResourceSkin, "nuetral");
+  FG_UINT active = fgSkin_AddStyle(fgResourceSkin, "active");
+  FG_UINT hover = fgSkin_AddStyle(fgResourceSkin, "hover");
   FG_Msg msg = { 0 };
   msg.type = FG_SETCOLOR;
   msg.otherint = 0xFFFF00FF;
   fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, nuetral), &msg, 0, 0, 0, 0);
-  msg.otherint = 0xFFFFFF00;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, hover), &msg, 0, 0, 0, 0);
   msg.otherint = 0xFF00FFFF;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, hover), &msg, 0, 0, 0, 0);
+  msg.otherint = 0xFFFFFF00;
   fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, active), &msg, 0, 0, 0, 0);
 
-  FG_UINT bnuetral = fgSkin_AddStyle(fgButtonSkin);
-  FG_UINT bactive = fgSkin_AddStyle(fgButtonSkin);
-  FG_UINT bhover = fgSkin_AddStyle(fgButtonSkin);
+  FG_UINT bnuetral = fgSkin_AddStyle(fgButtonSkin, "nuetral");
+  FG_UINT bactive = fgSkin_AddStyle(fgButtonSkin, "active");
+  FG_UINT bhover = fgSkin_AddStyle(fgButtonSkin, "hover");
   msg.type = FG_SETTEXT;
   msg.other = "Nuetral";
   fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bnuetral), &msg, 0, 0, 0, 0);
-  msg.other = "Hover";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bactive), &msg, 0, 0, 0, 0);
   msg.other = "Active";
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bactive), &msg, 0, 0, 0, 0);
+  msg.other = "Hover";
   fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bhover), &msg, 0, 0, 0, 0);
 
   void* font = fgCreateFont(0, "arial.ttf", 14, 16, 0);
@@ -429,7 +447,8 @@ TESTDEF::RETPAIR test_psFont()
     processGUI();
     driver->Clear(0xFF999999);
     driver->library.IMAGE0->Activate();
-    driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF999900, 0, 0, PSFLAG_FIXED);
+    driver->SetTextures(0, 0);
+    driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF999900, PSFLAG_FIXED);
     //driver->library.IMAGE->Activate();
     //driver->SetStateblock(block->GetSB());
     driver->library.TEXT1->Activate();
@@ -438,7 +457,8 @@ TESTDEF::RETPAIR test_psFont()
     font->DrawText("the dog jumped \nover the lazy fox", psRect(0, 0, 100, 0), TDT_WORDBREAK, 0, 0xCCFFAAFF);
 
     const psTex* t = font->GetTex();
-    driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, &t, 1, PSFLAG_FIXED);
+    driver->SetTextures(&t, 1);
+    driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
     driver->SetStateblock(psStateblock::DEFAULT->GetSB());
 

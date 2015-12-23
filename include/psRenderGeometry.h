@@ -33,9 +33,8 @@ namespace planeshader {
     static void DrawEllipse(float x, float y, float a, float b, unsigned int color);
 
   protected:
-    virtual void _render();
-    virtual void _renderbatch();
-    virtual void BSS_FASTCALL _renderbatchlist(psRenderable** rlist, unsigned int count);
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
     virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
   };
 
@@ -57,9 +56,8 @@ namespace planeshader {
     static inline void DrawLine(const psLine& p, unsigned int color) { DrawLine(psLine3D(p.x1, p.y1, 0, p.x2, p.y2, 0), color); }
 
   protected:
-    virtual void _render();
-    virtual void _renderbatch();
-    virtual void BSS_FASTCALL _renderbatchlist(psRenderable** rlist, unsigned int count);
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
     virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
 
     psVec3D _point;
@@ -81,7 +79,7 @@ namespace planeshader {
     static void DrawPolygon(const psVertex* p, size_t num, const float(&transform)[4][4] = psDriver::identity);
 
   protected:
-    virtual void _render();
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
   };
 
   class PS_DLLEXPORT psFullScreenQuad : public psInheritable, public psTextured, public psColored, public psDriverHold
@@ -93,7 +91,7 @@ namespace planeshader {
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
 
   protected:
-    virtual void _render();
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
   };
 }
 #endif

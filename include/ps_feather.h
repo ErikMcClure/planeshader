@@ -18,10 +18,10 @@ namespace planeshader {
 
     static psRoot* Instance();
 
-    static FLAG_TYPE GetDrawFlags(fgFlag flags);
+    static psFlag GetDrawFlags(fgFlag flags);
 
   protected:
-    void _render();
+    void BSS_FASTCALL _render(psBatchObj* obj);
 
     static psRoot* instance;
 

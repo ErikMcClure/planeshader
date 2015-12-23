@@ -45,7 +45,7 @@ void BSS_FASTCALL psCamera::SetPivotAbs(const psVec& pivot)
 }
 
 // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
-const psRectRotate psCamera::GetScreenRect(FLAG_TYPE flags) const
+const psRectRotate psCamera::GetScreenRect(psFlag flags) const
 {
   return psRectRotate(0, 0, 0, 0, 0);
 }

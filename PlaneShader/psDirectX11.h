@@ -65,30 +65,27 @@ namespace planeshader {
     // Ends a scene
     virtual char End();
     // Draws a vertex object
-    virtual void BSS_FASTCALL Draw(psVertObj* buf, FLAG_TYPE flags, const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity);
     // Draws a rectangle
-    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, const psTex* const* texes, unsigned char numtex, FLAG_TYPE flags, const float(&xform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawRectBatchBegin(const psTex* const* texes, unsigned char numtex, unsigned char numuv, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawRectBatch(const psRectRotateZ rect, const psRect* uv, unsigned int color, const float(&xform)[4][4] = identity);
-    virtual void DrawRectBatchEnd(const float(&xform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawRectBatchBegin(psBatchObj& obj, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& obj, const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color);
     // Draws a polygon
-    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, FLAG_TYPE flags, const float(&transform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, FLAG_TYPE flags, const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, psFlag flags, const float(&transform)[4][4] = identity);
     // Draws points (which are always batch rendered)
-    virtual void BSS_FASTCALL DrawPointsBegin(const psTex* const* texes, unsigned char numtex, float size, FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawPoints(psVertex* particles, unsigned int num);
-    virtual void DrawPointsEnd();
+    virtual void BSS_FASTCALL DrawPointsBegin(psBatchObj& obj, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawPoints(psBatchObj& obj, psVertex* particles, unsigned int num);
     // Draws lines (which are also always batch rendered)
-    virtual void BSS_FASTCALL DrawLinesStart(FLAG_TYPE flags);
-    virtual void BSS_FASTCALL DrawLines(const psLine& line, float Z1, float Z2, unsigned long vertexcolor, const float(&transform)[4][4] = identity);
-    virtual void DrawLinesEnd(const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawLinesStart(psBatchObj& obj, psFlag flags, const float(&xform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor);
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport);
     virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport);
     virtual void BSS_FASTCALL PopCamera();
     // Applies the camera transform (or it's inverse) according to the flags to a point.
-    psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, FLAG_TYPE flags) const;
-    psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, FLAG_TYPE flags) const;
+    psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, psFlag flags) const;
+    psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, psFlag flags) const;
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad();
     // Gets/Sets the extent
@@ -197,12 +194,6 @@ namespace planeshader {
     psVertObj _ptobjbuf;
     psVertObj _lineobjbuf;
     psVertObj _rectobjbuf;
-    DX11_rectvert* _lockedrectbuf;
-    DX11_simplevert* _lockedptbuf;
-    DX11_simplevert* _lockedlinebuf;
-    unsigned int _lockedcount;
-    unsigned int _lockedrectuv;
-    FLAG_TYPE _lockedflag;
     psVec _extent;
     psVeciu _dpi;
     bool _zerocamrot;

@@ -57,7 +57,11 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, 
     uv->top.rel + (uv->top.abs / tex->GetDim().y),
     uv->right.rel + (uv->right.abs / tex->GetDim().x),
     uv->bottom.rel+ (uv->bottom.abs / tex->GetDim().y) };
-  psRoot::Instance()->GetDriver()->DrawRect(psRectRotate(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y)), &uvresolve, 1, color, &tex, 1, 0);
+
+  psRoot::Instance()->GetDriver()->library.IMAGE->Activate();
+  psRoot::Instance()->GetDriver()->SetStateblock(0);
+  psRoot::Instance()->GetDriver()->SetTextures(&tex, 1);
+  psRoot::Instance()->GetDriver()->DrawRect(psRectRotate(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y)), &uvresolve, 1, color, 0);
 }
 void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
 {
@@ -164,7 +168,7 @@ bool psRoot::ProcessGUI(const psGUIEvent& evt)
   return true;
 }
 
-void psRoot::_render()
+void BSS_FASTCALL psRoot::_render(psBatchObj*)
 {
   CRect area = _root.gui.element.element.area;
   area.right.abs = _driver->screendim.x;
@@ -172,9 +176,9 @@ void psRoot::_render()
   fgChild_VoidMessage(&_root.gui.element, FG_SETAREA, &area);
   fgChild_VoidMessage(&_root.gui.element, FG_DRAW, 0);
 }
-FLAG_TYPE psRoot::GetDrawFlags(fgFlag flags)
+psFlag psRoot::GetDrawFlags(fgFlag flags)
 {
-  FLAG_TYPE flag = 0;
+  psFlag flag = 0;
   if(flags&FGTEXT_CHARWRAP) flag |= TDT_CHARBREAK;
   if(flags&FGTEXT_WORDWRAP) flag |= TDT_WORDBREAK;
   if(flags&FGTEXT_RTL) flag |= TDT_RTL;

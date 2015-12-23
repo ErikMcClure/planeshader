@@ -25,7 +25,7 @@ psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov))
     cur->_parent=this;
   SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor
 }
-psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, unsigned char internaltype) :
+psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, unsigned char internaltype) :
   psRenderable(flags, zorder, stateblock, shader, pass, internaltype), psLocatable(position, rotation, pivot), _parent(0), _children(0), _depth(0)
 {
   _lchild.next=_lchild.prev=0;
@@ -100,7 +100,7 @@ void BSS_FASTCALL psInheritable::SetZOrder(int zorder)
     cur->_invalidate();
 }
 
-void psInheritable::_render() {}
+void BSS_FASTCALL psInheritable::_render(psBatchObj*) {} // don't render anything
 
 void psInheritable::_gettotalpos(psVec3D& pos) const
 {
