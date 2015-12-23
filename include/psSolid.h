@@ -16,7 +16,7 @@ namespace planeshader {
   public:
     psSolid(const psSolid& copy);
     psSolid(psSolid&& mov);
-    explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, FLAG_TYPE flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned char internaltype=0);
+    explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, const psVec& scale=VEC_ONE, unsigned char internaltype=0);
     virtual ~psSolid();
     // Recalculates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 
     inline const psRectRotateZ& GetCollisionRect() { UpdateBoundingRect(); return _collisionrect; }

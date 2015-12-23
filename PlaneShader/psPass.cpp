@@ -73,7 +73,7 @@ void psPass::Begin()
 
   float last;
   float lastfixed;
-  FLAG_TYPE flags;
+  psFlag flags;
   float adjust;
 
   for(psSolid* solid = static_cast<psSolid*>(_solids); solid!=0; solid=static_cast<psSolid*>(solid->_llist.next))
@@ -147,16 +147,7 @@ void psPass::FlushQueue()
 {
   if(_renderqueue.Length() > 0) // Don't render an empty render queue, which can happen if you call this manually or at the end of a pass that has nothing in it.
   {
-    _renderqueue[0]->GetShader()->Activate();
-    _driver->SetStateblock(!_renderqueue[0]->GetStateblock()?0:_renderqueue[0]->GetStateblock()->GetSB());
-    _driver->SetRenderTargets(_renderqueue[0]->GetRenderTargets(), _renderqueue[0]->NumRT(), 0);
-
-    if(_renderqueue.Length() == 1)
-      _renderqueue[0]->_render();
-    else
-    {
-      _renderqueue[0]->_renderbatchlist(_renderqueue, _renderqueue.Length());
-    }
+    _renderqueue[0]->_renderbatch(_renderqueue, _renderqueue.Length());
     _renderqueue.SetLength(0);
   }
 }

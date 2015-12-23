@@ -9,13 +9,13 @@ using namespace planeshader;
 psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColored(copy), _uvs(copy._uvs) {}
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
 psImage::~psImage() {}
-psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) : 
+psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) : 
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, INTERNALTYPE_IMAGE), psTextured(tex), psColored(color)
 {
   AddSource();
 }
 
-psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) :
+psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, INTERNALTYPE_IMAGE), psTextured(file), psColored(color)
 {
   AddSource();
@@ -51,23 +51,27 @@ void psImage::_setuvs(unsigned int size)
     _uvs[i]=RECT_UNITRECT;
 }
 
-void psImage::_render()
+void BSS_FASTCALL psImage::_render(psBatchObj* obj)
 {
-  _driver->DrawRect(GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetTextures(), NumTextures(), GetAllFlags());
-}
-void psImage::_renderbatch()
-{
-  _driver->DrawRectBatch(GetCollisionRect(), _uvs, GetColor().color);
+  if(obj)
+    _driver->DrawRectBatch(*obj, GetCollisionRect(), _uvs, NumSources(), GetColor().color);
+  else
+  {
+    Activate(this);
+    _driver->DrawRect(GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetAllFlags());
+  }
 }
 
-void BSS_FASTCALL psImage::_renderbatchlist(psRenderable** rlist, unsigned int count)
+void BSS_FASTCALL psImage::_renderbatch(psRenderable** rlist, unsigned int count)
 {
-  _driver->DrawRectBatchBegin(GetTextures(), NumTextures(), NumSources(), GetAllFlags());
+  psBatchObj obj;
+  Activate(this);
+  _driver->DrawRectBatchBegin(obj, NumSources(), GetAllFlags());
 
   for(unsigned int i = 0; i < count; ++i)
-    rlist[i]->_renderbatch();
+    rlist[i]->_render(&obj);
 
-  _driver->DrawRectBatchEnd();
+  _driver->DrawBatchEnd(obj);
 }
 
 bool BSS_FASTCALL psImage::_batch(psRenderable* r) const

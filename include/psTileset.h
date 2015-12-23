@@ -28,7 +28,7 @@ namespace planeshader {
   public:
     psTileset(const psTileset& copy);
     psTileset(psTileset&& mov);
-    explicit psTileset(const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, FLAG_TYPE flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, psInheritable* parent = 0, const psVec& scale = VEC_ONE);
+    explicit psTileset(const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, psInheritable* parent = 0, const psVec& scale = VEC_ONE);
     ~psTileset();
     inline psVeci GetTileDim() const { return _tiledim; }
     void SetTileDim(psVeci tiledim);
@@ -43,7 +43,7 @@ namespace planeshader {
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
 
   protected:
-    virtual void _render();
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
 
     size_t _rowlength;
     psVeci _tiledim; // Size of the actual tile for figuring out where to put each tile.

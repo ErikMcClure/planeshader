@@ -8,6 +8,7 @@
 #include "bss-util/cKDTree.h"
 #include "bss-util/LLBase.h"
 #include "psSolid.h"
+#include "psPass.h"
 
 namespace planeshader {
   // Used to efficiently cull a group of images that are static relative to each other. Intended for static level geometry.
@@ -38,7 +39,7 @@ namespace planeshader {
   protected:
     BSS_FORCEINLINE static const float* BSS_FASTCALL CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic()._ltrbarray; }
     BSS_FORCEINLINE static bss_util::LLBase<psSolid>& BSS_FASTCALL CF_FLIST(psSolid* p) { return *((bss_util::LLBase<psSolid>*)&p->_llist); }
-    BSS_FORCEINLINE static void BSS_FASTCALL CF_FACTION(psSolid* p) { p->_render(); }
+    BSS_FORCEINLINE static void BSS_FASTCALL CF_FACTION(psSolid* p) { psPass::CurPass->_queue(p); }
     BSS_FORCEINLINE static bss_util::KDNode<psSolid>*& BSS_FASTCALL CF_FNODE(psSolid* p) { return p->_kdnode; }
     void BSS_FASTCALL _callsort(psSolid* s);
 

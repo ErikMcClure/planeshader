@@ -29,21 +29,21 @@
 namespace planeshader {
 #endif
   typedef float FNUM; //Float typedef (can be changed to double for double precision)
-  typedef unsigned int FLAG_TYPE;
+  typedef unsigned int psFlag;
 
   // All possible flags for objects 
-  const FLAG_TYPE PSFLAG_NOTVISIBLE = (1 << 0); //Prevents the object and its children from being rendered
-  const FLAG_TYPE PSFLAG_FIXED = (1 << 1); //Ignores the camera rotation and xyz position.
-  const FLAG_TYPE PSFLAG_ALWAYSRENDER = (1 << 2); //This object will always render itself regardless of any NOTVISIBLE flags anywhere in the parent chain
-  const FLAG_TYPE PSFLAG_DONOTCULL = (1 << 3); //Ensures the object is never culled for any reason
-  const FLAG_TYPE PSFLAG_USER = (1 << 4); //This is where you should start your own flag settings
+  const psFlag PSFLAG_NOTVISIBLE = (1 << 0); //Prevents the object and its children from being rendered
+  const psFlag PSFLAG_FIXED = (1 << 1); //Ignores the camera rotation and xyz position.
+  const psFlag PSFLAG_ALWAYSRENDER = (1 << 2); //This object will always render itself regardless of any NOTVISIBLE flags anywhere in the parent chain
+  const psFlag PSFLAG_DONOTCULL = (1 << 3); //Ensures the object is never culled for any reason
+  const psFlag PSFLAG_USER = (1 << 4); //This is where you should start your own flag settings
 
 #ifdef  __cplusplus
-  const FLAG_TYPE PSFLAG_INHERITABLE = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;
-  const FLAG_TYPE PSFLAG_BATCHFLAGS = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;
+  const psFlag PSFLAG_INHERITABLE = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;
+  const psFlag PSFLAG_BATCHFLAGS = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;
 }
 #else
-  const FLAG_TYPE PSFLAG_INHERITABLE=0x03;
+  const psFlag PSFLAG_INHERITABLE=0x03;
 #endif
 
 #endif

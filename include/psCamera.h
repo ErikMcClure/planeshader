@@ -18,7 +18,7 @@ namespace planeshader {
     // Gets the absolute mouse coordinates with respect to this camera.
     psVec GetMouseAbsolute() const;
     // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
-    const psRectRotate BSS_FASTCALL GetScreenRect(FLAG_TYPE flags=0) const;
+    const psRectRotate BSS_FASTCALL GetScreenRect(psFlag flags=0) const;
     // Gets or sets the viewport of the camera
     const psRect& GetViewPort() const { return _viewport; }
     void BSS_FASTCALL SetViewPort(const psRect& vp); // The viewport must be in pixels, but fractional values are technically valid here if rendering at a strange DPI

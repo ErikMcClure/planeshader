@@ -242,6 +242,7 @@
     <ClCompile Include="psColored.cpp" />
     <ClCompile Include="psCullGroup.cpp" />
     <ClCompile Include="psDirectX11.cpp" />
+    <ClCompile Include="psDriver.cpp" />
     <ClCompile Include="psDXGI.cpp" />
     <ClCompile Include="psEffect.cpp" />
     <ClCompile Include="psEngine.cpp" />

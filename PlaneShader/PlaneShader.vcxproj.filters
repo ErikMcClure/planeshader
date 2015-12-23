@@ -214,6 +214,9 @@
     <ClCompile Include="ps_feather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="psDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="fsquadVS.hlsl">

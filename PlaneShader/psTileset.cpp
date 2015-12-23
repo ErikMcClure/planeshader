@@ -14,7 +14,7 @@ psTileset::psTileset(psTileset&& mov) : psSolid(std::move(mov)), psTextured(std:
   mov._rowlength = 0;
 }
 
-psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot, FLAG_TYPE flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
+psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, psRenderable::INTERNALTYPE_TILESET), _rowlength(0), _tiledim(VEC_ZERO)
 {
 }
@@ -67,26 +67,29 @@ void psTileset::SetDimIndex(psVeci dim)
   SetDim(dim*_tiledim);
 }
 
-void psTileset::_render()
+void BSS_FASTCALL psTileset::_render(psBatchObj*)
 {
-  _driver->DrawRectBatchBegin(GetTextures(), NumTextures(), 1, GetAllFlags());
   const psRectRotateZ& rect = GetCollisionRect();
   bss_util::Matrix<float, 4, 4> m;
   bss_util::Matrix<float, 4, 4>::AffineTransform_T(rect.left, rect.top, rect.z, rect.rotation, rect.pivot.x, rect.pivot.y, m);
   sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
   sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];
 
+  Activate(this); // Sets all the textures and shaders
+  psBatchObj obj;
+  _driver->DrawRectBatchBegin(obj, 1, GetAllFlags(), m.v);
+
   for(size_t i = 0; i < _tiles.Length(); ++i)
   {
     float x = (i%_rowlength) * _tiledim.x;
     float y = (i/_rowlength) * _tiledim.y;
     psTileDef& def = _defs[_tiles[i].index];
-    _driver->DrawRectBatch(
+    _driver->DrawRectBatch(obj,
       psRectRotateZ(x + def.rect.left, y + def.rect.top, x + def.rect.right, y + def.rect.bottom, _tiles[i].rotate, _tiles[i].pivot, 0),
       &def.uv,
-      _tiles[i].color, 
-      m.v);
+      1,
+      _tiles[i].color);
   }
 
-  _driver->DrawRectBatchEnd(m.v);
+  _driver->DrawBatchEnd(obj);
 }

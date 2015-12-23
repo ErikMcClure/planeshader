@@ -18,28 +18,32 @@ void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, unsigned i
 {
   _driver->SetStateblock(0);
   _driver->library.CIRCLE->Activate();
-  _driver->DrawRect(psRectRotateZ(x-a, y-b, x+a, y+b, 0), 0, 0, color, 0, 0, 0);
+  _driver->SetTextures(0, 0);
+  _driver->DrawRect(psRectRotateZ(x-a, y-b, x+a, y+b, 0), 0, 0, color, 0);
 }
 
-void psRenderEllipse::_renderbatch()
+void BSS_FASTCALL psRenderEllipse::_render(psBatchObj* obj)
 {
-  _driver->DrawRectBatch(GetCollisionRect(), 0, GetColor());
+  if(obj)
+    _driver->DrawRectBatch(*obj, GetCollisionRect(), 0, 0, GetColor());
+  else
+  {
+    Activate(this);
+    _driver->DrawRect(GetCollisionRect(), 0, 0, GetColor(), GetAllFlags());
+  }
 }
-void BSS_FASTCALL psRenderEllipse::_renderbatchlist(psRenderable** rlist, unsigned int count)
+void BSS_FASTCALL psRenderEllipse::_renderbatch(psRenderable** rlist, unsigned int count)
 {
-  _driver->DrawRectBatchBegin(0, 0, 0, GetAllFlags());
+  Activate(this);
+  psBatchObj obj;
+  _driver->DrawRectBatchBegin(obj, 0, GetAllFlags());
 
   for(size_t i = 0; i < count; ++i)
-    rlist[i]->_renderbatch();
+    rlist[i]->_render(&obj);
 
-  _driver->DrawRectBatchEnd();
+  _driver->DrawBatchEnd(obj);
 }
 bool BSS_FASTCALL psRenderEllipse::_batch(psRenderable* r) const { return (GetAllFlags()&PSFLAG_BATCHFLAGS)==(r->GetAllFlags()&PSFLAG_BATCHFLAGS); }
-
-void psRenderEllipse::_render()
-{
-  _driver->DrawRect(GetCollisionRect(), 0, 0, GetColor(), 0, 0, GetAllFlags());
-}
 
 psRenderLine::psRenderLine(const psRenderLine& copy) : psInheritable(copy), psColored(copy) {}
 psRenderLine::psRenderLine(psRenderLine&& mov) : psInheritable(std::move(mov)), psColored(std::move(mov)) {}
@@ -66,29 +70,32 @@ void psRenderLine::DrawLine(const psLine3D& p, unsigned int color)
 {
   _driver->SetStateblock(0);
   _driver->library.LINE->Activate();
-  _driver->DrawLinesStart(0);
-  _driver->DrawLines(psLine(p.p1.xy, p.p2.xy), p.p1.z, p.p2.z, color);
-  _driver->DrawLinesEnd();
+  psBatchObj obj;
+  _driver->DrawLinesStart(obj, 0);
+  _driver->DrawLines(obj, psLine(p.p1.xy, p.p2.xy), p.p1.z, p.p2.z, color);
+  _driver->DrawBatchEnd(obj);
 }
 
-void psRenderLine::_render()
+void BSS_FASTCALL psRenderLine::_render(psBatchObj* obj)
 {
-  _driver->DrawLinesStart(GetAllFlags());
-  _renderbatch();
-  _driver->DrawLinesEnd();
+  if(obj)
+    _driver->DrawLines(*obj, psLine(_relpos.xy, _point.xy), _relpos.z, _point.z, GetColor().color);
+  else
+  {
+    psRenderable* r = this;
+    _renderbatch(&r, 1);
+  }
 }
-void psRenderLine::_renderbatch()
+void BSS_FASTCALL psRenderLine::_renderbatch(psRenderable** rlist, unsigned int count)
 {
-  _driver->DrawLines(psLine(_relpos.xy, _point.xy), _relpos.z, _point.z, GetColor().color);
-}
-void BSS_FASTCALL psRenderLine::_renderbatchlist(psRenderable** rlist, unsigned int count)
-{
-  _driver->DrawLinesStart(GetAllFlags());
+  Activate(this);
+  psBatchObj obj;
+  _driver->DrawLinesStart(obj, GetAllFlags());
 
   for(size_t i = 0; i < count; ++i)
-    rlist[i]->_renderbatch();
+    rlist[i]->_render(&obj);
 
-  _driver->DrawLinesEnd();
+  _driver->DrawBatchEnd(obj);
 }
 bool BSS_FASTCALL psRenderLine::_batch(psRenderable* r) const { return (GetAllFlags()&PSFLAG_BATCHFLAGS) == (r->GetAllFlags()&PSFLAG_BATCHFLAGS); }
 
@@ -104,7 +111,7 @@ psRenderPolygon& psRenderPolygon::operator =(const psPolygon& polygon) { psPolyg
 void psRenderPolygon::DrawPolygon(const psVec* p, size_t num, unsigned int color, const psVec3D& offset) { _driver->SetStateblock(0); _driver->library.POLYGON->Activate(); _driver->DrawPolygon(p, num, offset, color, 0); }
 void psRenderPolygon::DrawPolygon(const psVertex* p, size_t num, const float(&transform)[4][4]) { _driver->SetStateblock(0); _driver->library.POLYGON->Activate(); _driver->DrawPolygon(p, num, 0, transform); }
 
-void psRenderPolygon::_render()
+void BSS_FASTCALL psRenderPolygon::_render(psBatchObj*)
 {
   psVec3D pos;
   GetTotalPosition(pos);
@@ -116,7 +123,7 @@ void psRenderPolygon::_render()
 psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy){}
 psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov){}
 psFullScreenQuad::psFullScreenQuad(){}
-void psFullScreenQuad::_render()
+void BSS_FASTCALL psFullScreenQuad::_render(psBatchObj*)
 {
   psVec dim = !NumRT() ? _driver->screendim : GetRenderTargets()[0]->GetDim();
   _driver->PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, dim.x, dim.y));

@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short drawflags, FNUM Z, unsigned int color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   float linewidth;
   float curwidth = 0.0f;
@@ -62,7 +62,9 @@ psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short
       cur.y = area.top;
 
     curwidth = 0.0f;
-    _driver->DrawRectBatchBegin(&_textures[i], 1, 1, flags);
+    psBatchObj obj;
+    _driver->SetTextures(&_textures[i], 1);
+    _driver->DrawRectBatchBegin(obj, 1, flags, transform);
     texdim = _textures[i]->GetDim();
 
     while(*pos)
@@ -105,13 +107,13 @@ psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short
         rect.bottom = rect.top + (g->uv.bottom-g->uv.top)*texdim.y;
 
         if(!d.IsEmpty()) d(ipos, rect, color);
-        _driver->DrawRectBatch(rect, &g->uv, color, transform);
+        _driver->DrawRectBatch(obj, rect, &g->uv, 1, color);
 
         cur.x += g->width + letterspacing;
       }
       cur.y += _lineheight;
     }
-    _driver->DrawRectBatchEnd(transform);
+    _driver->DrawBatchEnd(obj);
   }
 
   if(drawflags&TDT_CLIP)
@@ -120,7 +122,7 @@ psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short
   return dim;
 }
 
-psVec psTexFont::DrawText(const char* text, const psRect& area, unsigned short drawflags, FNUM Z, unsigned int color, FLAG_TYPE flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(const char* text, const psRect& area, unsigned short drawflags, FNUM Z, unsigned int color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   size_t len = strlen(text)+1;
   if(len < 1000000)
