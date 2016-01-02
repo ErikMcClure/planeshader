@@ -132,6 +132,12 @@
     <ClInclude Include="..\include\ps_feather.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psChart.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psVector.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PlaneShader.rc">
@@ -215,6 +221,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psDriver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psVector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

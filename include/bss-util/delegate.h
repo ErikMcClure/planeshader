@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __DELEGATE_H__BSS__
@@ -27,6 +27,8 @@ namespace bss_util {
     inline static delegate From(T* src) { return delegate(src, &stub<T, F>); }
     template<class T, RTYPE(MSC_FASTCALL T::*GCC_FASTCALL F)(Args...) const>
     inline static delegate From(const T* src) { return delegate(const_cast<T*>(src), &stubconst<T, F>); }
+    template<RTYPE(MSC_FASTCALL *GCC_FASTCALL F)(Args...)>
+    inline static delegate FromC() { return delegate(0, &stubstateless<F>); }
 
   protected:
     void* _src;
@@ -37,6 +39,8 @@ namespace bss_util {
     template <class T, RTYPE(MSC_FASTCALL T::*GCC_FASTCALL F)(Args...) const>
     static R BSS_FASTCALL stubconst(void* src, Args... args) { return (static_cast<const T*>(src)->*F)(args...); }
     static R BSS_FASTCALL stublambda(void* src, Args... args) { return (*static_cast<std::function<R(Args...)>*>(src))(args...); }
+    template <RTYPE(MSC_FASTCALL *GCC_FASTCALL F)(Args...)>
+    static R BSS_FASTCALL stubstateless(void* src, Args... args) { return (*F)(args...); }
   };
 #else
   template<typename R = void, typename T1 = void, typename T2 = void, typename T3 = void, typename T4 = void, typename T5 = void>

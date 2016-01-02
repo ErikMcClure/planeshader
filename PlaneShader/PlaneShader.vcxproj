@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D4997047-629C-4100-AEDA-4670F3D277CA}</ProjectGuid>
     <RootNamespace>PlaneShader</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -70,6 +71,7 @@
     <TargetName>$(ProjectName)_d</TargetName>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)64_d</TargetName>
@@ -80,6 +82,7 @@
     <OutDir>$(SolutionDir)bin\</OutDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CustomBuildAfterTargets />
@@ -204,6 +207,7 @@
     <ClInclude Include="..\include\psEllipse.h" />
     <ClInclude Include="..\include\psEngine.h" />
     <ClInclude Include="..\include\psFont.h" />
+    <ClInclude Include="..\include\psChart.h" />
     <ClInclude Include="..\include\psGUIEvent.h" />
     <ClInclude Include="..\include\psGUIManager.h" />
     <ClInclude Include="..\include\psImage.h" />
@@ -225,6 +229,7 @@
     <ClInclude Include="..\include\psTileset.h" />
     <ClInclude Include="..\include\psTriangle.h" />
     <ClInclude Include="..\include\psVec.h" />
+    <ClInclude Include="..\include\psVector.h" />
     <ClInclude Include="..\include\ps_dec.h" />
     <ClInclude Include="..\include\ps_feather.h" />
     <ClInclude Include="..\include\ps_interface.h" />
@@ -262,6 +267,7 @@
     <ClCompile Include="psText.cpp" />
     <ClCompile Include="psTextured.cpp" />
     <ClCompile Include="psTileset.cpp" />
+    <ClCompile Include="psVector.cpp" />
     <ClCompile Include="ps_feather.cpp" />
   </ItemGroup>
   <ItemGroup>

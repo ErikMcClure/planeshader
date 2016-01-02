@@ -2,7 +2,7 @@
 // -------------------------
 // This example runs a series of verification tests to ensure Planeshader is working properly.
 //
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -15,6 +15,7 @@
 #include "psTileset.h"
 #include "psPass.h"
 #include "psRenderGeometry.h"
+#include "psVector.h"
 #include "ps_feather.h"
 #include "feathergui/fgButton.h"
 #include "feathergui/fgResource.h"
@@ -467,6 +468,35 @@ TESTDEF::RETPAIR test_psFont()
   ENDTEST;
 }
 
+TESTDEF::RETPAIR test_psVector()
+{
+  BEGINTEST;
+
+  int fps = 0;
+  auto timer = psEngine::OpenProfiler();
+  psDriver* driver = engine->GetDriver();
+
+  psQuadraticCurve curve(psVec(100), psVec(300,100), psVec(300), 1.25f);
+  engine->GetPass(0)->Insert(&curve);
+
+  //psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(300, 100), psVec(300), 1.25f);
+  //engine->GetPass(0)->Insert(&curve2);
+
+  engine->GetPass(0)->SetClearColor(0xFF000000);
+  engine->GetPass(0)->SetCamera(&globalcam);
+
+  while(!gotonext && engine->Begin(0))
+  {
+    processGUI();
+    engine->End();
+    updatefpscount(timer, fps);
+    curve.Set(psVec(100), engine->GetMouse(), psVec(300));
+    //curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
+  }
+
+  ENDTEST;
+}
+
 // Main program function
 int main(int argc, char** argv)
 {
@@ -481,6 +511,7 @@ int main(int argc, char** argv)
 
   TESTDEF tests[] ={
     { "psCircle", &test_psCircle },
+    { "psVector", &test_psVector },
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
     { "psDirectX11", &test_psDirectX11 },

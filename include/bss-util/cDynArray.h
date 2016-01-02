@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __C_DYN_ARRAY_H__BSS__
@@ -34,6 +34,10 @@ namespace bss_util {
     inline ~cDynArray() { BASE::_setlength(_array, _length, 0); }
     BSS_FORCEINLINE CT_ Add(const T_& t) { _checksize(); new(_array + _length) T(t); return _length++; }
     BSS_FORCEINLINE CT_ Add(T_&& t) { _checksize(); new(_array + _length) T(std::move(t)); return _length++; }
+#ifdef BSS_VARIADIC_TEMPLATES
+    template<typename... Args>
+    BSS_FORCEINLINE CT_ AddConstruct(Args... args) { _checksize(); new(_array + _length) T(args...); return _length++; }
+#endif
     inline void Remove(CT_ index)
     {
       assert(index < _length);
@@ -408,7 +412,6 @@ namespace bss_util {
     CT_ _length; // Total length of the array in number of elements
     CT_ _element; // Size of each element
   };
-
 }
 
 #endif
