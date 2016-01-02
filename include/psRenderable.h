@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __RENDERABLE_H__PS__
@@ -78,6 +78,7 @@ namespace planeshader {
       INTERNALTYPE_POLYGON,
       INTERNALTYPE_TILESET,
       INTERNALTYPE_TEXT,
+      INTERNALTYPE_CURVE,
     };
 
     enum INTERNALFLAGS : unsigned char

@@ -1,0 +1,258 @@
+*************************
+* PlaneShader Changelog *
+*************************
+
+0.6.90
+------
+- Removed a few old macros and linked against bss_util v0.4
+- Added PlaneShader.rc so windows builds contain version/copyright information.
+- Reverted some lingering unsigned long color values to unsigned int.
+- Added static ToSource to tileset for calculation assistance
+- Polyarea returns the area instead of a boolean value (???)
+- cSprite has an empty constructor
+- cTileset is now a cRotatable, and culls properly in response to both camera and self rotation.
+- Generalized matrix helper functions
+- Added GetTileDim() to cTileset
+- Transparently restructured how mouse button information is stored (pressed is now IsPressed()), and added time information to cGUIEvent
+- cGUIEvent no longer uses a subevt. This may be added back in later if a need for it arises
+- Fixed memory error in cPS_Font and cDXEffectASM
+- Reinstated autoupdatein cEngine and added GetVSync()
+- Moved DeviceLost to the device driver
+- Removed a bunch of useless predefines
+- Fixed source-dim copy/move bug
+- Moved Evaluate logic out of cAniAttribute
+- Changed around the arguments for the CreateTexObj methods
+- Adjusted array usage to use realloc properly
+- Changed flags to be self-contained cBitField objects
+- Removed PSFLAG_ALIGNRIGHT and PSFLAG_ALIGNBOTTOM, as they have been superseded by featherGUI
+- PlaneShader now contains an implementation of featherGUI because CEGUI is just that terrible.
+- cDimensions is replaced by cInheritable, which supersedes cSolid, now an extension of cInheritable that implements cDimensions.
+- cGroup now operates on cInheritables, and there has been a mass refactoring of internal engine classes
+- Set/GetCenterPos is now Set/GetPivot, and GetCenterPosRel has been removed.
+- cAnimation was moved to bss_util and now has better memory management. Use cAnimationPS instead.
+- Tweaked cRect/cVec IntersectPoint function so it's treated as an Inclusive-Exclusive rectangle
+- Removed lots of superflous cLinkedLists
+- Animation updates can now be done outside the Render() loop
+- Changed Update() to Refresh(), which now only exists for cSolids and only updates the bounding rectangle.
+- cDirectX is now a generic cDriver, though the engine still only supports DirectX9.
+- Removed several wchar_t specializations in favor of having everything in UTF-8 format
+- Reconstructed cText and font handling to allow for supplementary plane unicode characters.
+- Flattened the render tree and implemented temporal optimization
+- Completely redesigned the RenderInfo mechanism
+- Rewrote cSource and cTextured to support an arbitrary number of textures.
+- _camx, _camy and _camz have been replaced by _campos
+- cColor now converts to and from HSL
+- cArbitraryTexture is now cTexObj
+- Removed unused width/height elements from cTexture
+- Rewrote particle rendering pipeline
+- Old particle system has been completely removed and replaced with a generalized field version in cParticles.h
+- Removed cText_Drawflags.h (now in cPS_Font.h), driver_type.h (now in cDriver.h), and ps_dlldef.h (now in ps_dec.h)
+- Removed internal cPS_Font.inl file and dx_code.h
+- Adjusted ps_dec.h so it can be used by C code
+- Moved reference counting down to cTexObj
+- Removed Set/GetZDepth and replaced it with SetPositionZ and a GetPosition that returns a cVec3D
+- Seperated cPS_ImageFont from cPS_Font to allow custom image based fonts instead of only traditional ones.
+- Tilesets can no longer be clamped
+- cRect now supports operations involving cVec.
+- Fixed some functions in cPS_Circle.h
+- cRotatable no longer exists. All of cRotatable's properties have been absorbed into cLocatable
+- cTextured is now entirely independent and is no longer connected to cColorSolid
+- cSource is now cImage and cImage is now cMaskable.
+- c2DModel now supports multitexturing, and by extension cRenderComplexPolygon can be textured.
+- Rewrote KDTree from a generalized version now in bss_util
+- Added Testbed
+- Fonts are now reference counted
+- CreateTexObj and CreateStateObj are now just Create because you have to access them using cTexture:: and cStateBlock:: anyway
+- Fixed text lineheight and added SUBTRACTIVE stateblock to the library for black LCD text on white
+- Completely removed Refresh() from cSolid. All objects not in a kd-tree have their bounding rects updated each frame. 
+- Expanded cControlBind to support up to 4 key bindings to a single BIND_ID and removed cControlManager
+- Added ZOrder animation
+- Changed cTexture hashing mechanism so if you are copying data from a memory location you can re-use the same memory location repeatedly
+
+0.6.75
+------
+- Improved copy constructors
+- Added move constructors/assignments
+- Forced throw on win32 exceptions
+- Fixed bug in definition assignment
+- Changed how animations deal with moving/copying
+- Moved pass to cSolid definition
+- Removed _add() and de-virtualized _remove(). To make your object behave as a renderable, override SetPass to call cRenderable::SetPass, and have the destructor call cRenderable::_remove, along with the usual Update override.
+- Fixed potential memory leak in c2DModel
+- Adjusted memory allocations to match bss_util v0.3.83
+- Removed code cruft in some areas
+- Fixed bug allowing composite settings to leak through in fullscreen mode (usually causing a crash)
+- Improved lambda handling
+- Removed operator[] from cAnimated because of operator conflicts
+- Increased verbosity of errors that are logged. Informatic logs are still very rare.
+- Fixed bug in exact binary search algorithm
+- The engine now rotates things in the correct direction
+- Changed BuildAABB() to perform mathematically correct calculations (previously masked by inverted rotations)
+- Added RotatePoint to cVec and replaced a lot of redundant code
+- Increased support for x64 builds. 64-bit is still technically unsupported but appears to work fine.
+- cColor renamed to cColored
+- cColor now represents an ARGB color in floating point and supports many operations for color manipulation.
+- cGradient now represents a linear gradient between two colors with an angle (internally calculated as 4 cColors).
+- Cliprect has been torn out of the engine.
+- Several useless renderinfos were torn out
+- cImageShader has been torn out (it didn't work very well), it'll be replaced with a shader system in the future
+- Removed an amazing amount of useless crap from cDirectX.cpp
+- cParticle no longer uses cClassAllocator
+- The rendering queue has been seperated from cDirectX as cRenderList.
+- Some particles were upside-down
+- Texel correction is now z-depth aware
+- Camera is now centered and rotates relative to its position.
+
+0.6.74
+------
+- Renamed several variables and improved wide character support
+- Logging can now be done in UTF-8
+- Switched to fast floating point model
+- Implemented KEY_CHAR and redesigned KEYDOWN/UP pipeline
+- Adjusted some low level routines
+- kd-tree re-implemented to with a more efficient model
+- cPositionf is now cVec or cVector
+- cPosition3Df is now cVec3D or cVector3D
+- cEllipsef, cCirclef, cRenderLinef, cLinef, cTrianglef, cPolygonf, etc. have all dropped the 'f'
+- 0.5 position offset problem fixed on tileset rendering
+- Many lower level functions inline'd
+- Updated bss_util references, took advantage of improved linked list functions
+- Implemented ellipse collisions
+- Changed low level cSolid constructor behavior
+- Improved object idling and updating
+- cTexture GetFileW is now GetFile()
+- BlitCircle now renders based on a quality factor and adjusts the number of polygons used depending on how large the circle is after all scaling and camera factors have been applied (so zooming in on a small circle will not reveal a hexagon, it will stay a circle)
+- cRenderCircle no longer ignores SetScale, and can render ellipses.
+- cRenderCircle centered behavior is now consistent
+- cRenderRect no longer inherits a rect, but can still be converted into one
+- flipped inheritance order of cRect and cLine
+- Fixed VS2010 header reference bug forcing a rebuild on every build
+- Added lambda-based cDebugText
+- Fixed update order so children always update sometime after their parents
+- Rebuilt update system so that everything is always updated
+- Renamed PSFLAG_FIXED to PSFLAG_NOCAMPOS and made PSFLAG_FIXED a combination of PSFLAG_NOCAMPOS,PSFLAG_NOCAMROT, and PSFLAG_NOZOOM
+- Fixed camera rotation culling glitch
+- Removed PSFLAG_INHERITCENTER - If you needed this flag, you should instead simply assign the centers of your children
+- Changed the cRect constructor to the more standard left-top-right-bottom configuration and edited everything accordingly
+- Textures can now be animated
+- Increased number of situations where the engine can be destroyed before an object without crashing
+- cPS_Font now pads the calculated text rect by one pixel to withstand pertubations in floating point calculations
+- Mirror sources (UV coordinates where the left is larger than the right) no longer cause negative dimensions and render properly
+- Setting a texture no longer causes a recalculation if the texture didn't change.
+- Optimized animation update routine
+- cSource no longer attempts to adjust the source to the pixel source on a texture change, because this resulted in all images created without textures to be set to a pixel source of 0,0,0,0 whenever they were assigned to a new texture. Consequently, any texture switching will now result in a scaled adoption of the previous source assignment, which makes sense in the majority of cases.
+- GetCenterPos and GetSource return references
+- inline'd several additional get/set functions
+- Animation now supports loop points
+- RENDER_INFO is now dynamically allocated using an additive allocator as needed, drastically cutting memory usage with high volumes of images being culled.
+- Rewrote parent/child render pipeline to be more self-contained and to work regardless of whether the parent is being rendered.
+- New parent/child render pipeline renders totalzorder irrelevent, so it has been removed. All render calls should now use _zorder only.
+- Animation now supports end events
+- Added debug variable changer
+- Animation typeID registration has been greatly simplified
+- Fixed using namespaces problem
+- Replaced broken ellipse code with slower, precise nearest point calculator. The fast, inaccurate version is still available.
+- cText now has more inline'd functions, and set/get font
+- Most objects now have default (empty) constructors for array initialization
+- ENGINE_INIT now has a boolean yield parameter for turning it on and off. The yield amount has been renamed to yieldamt
+- Antialiasing is now supported
+- Tilesets can now be clamped on anything supporting ps.2.0 shaders
+- Tilesets can discard edges, allowing tilesets to have 1 pixel borders as an alternative to antialiasing to support interpolation
+- You can now change the mipmapping filter or disable mipmapping altogether (if you have no resizing, for example)
+- The default behavior of textures has been reverted to no filtering.
+- Textures now properly hash their associated metadata
+- Small optimizations in Blit calls
+- Cleaned up junk in cSolid
+- cStateResource has been completely rewritten and renamed as cStateBlock
+- cStateBlock is now cStateful and is inherited by cSolid and inherits cRenderable.
+- Stateblock is now a member of ALL RENDER_INFO structs and is handled automatically. Failure to set stateblock in your render info will blow things up
+- Everything uses FLAG_TYPE properly now
+- static_assert is now used when it should be
+- SetSize has been removed
+- TransformPoint is now camera aware, and GetAbsoluteMouse() has been moved to cCamera. GetAbsoluteMouse() on cEngine now simply calls GetAbsoluteMouse() on the first pass's camera.
+- Added GetChildren() to cSolid
+- Added EnforceLTRB funciton to cPS_Rect
+- Added experimental x64 support
+- cRenderLine no longer attempts to cull itself, so keeping the boundingrect updated is entirely optional (and must be done manually)
+- Added ToPolar/FromPolar to cVec
+
+0.6.73
+------
+- Implemented cControlManager
+- Fixed PassNum bug
+- cRenderKDTree now uses BSS_FASTCALL
+- markall() no longer uses hardcoded color
+- Added Unicode Support
+- Stripped down GUI system so that a GUI library of the user's choice may be used
+- Animation memory management has been refactored
+- Animation virtual inheritance removed due to raptors
+- Lighting system has been evicted from the internal engine
+- DirectX's font renderer dropped down a pit leading directly to hell
+- New font renderer implemented, based on freetype2
+- cText updated to support Z-axis, rotation, and scaling with new font render system
+- DEPTH_2D_POS has been renamed cPosition3D and is now a proper 3D vector
+- Fixed several math errors in cPosition
+- Rebuilt Pass system
+- cGroup's behavior has been modified so that it is more consistent. However, it can only have an accurate bounding box if the default center position isn't modified, so culling routines still ignore it.
+- CEGUI renderer added
+- Rewrote the resource manager as cDResetList and internalized it
+- Fixed D3DPOOL_MANAGED oversight which caused managed pool textures to be released and reloaded.
+- CEGUI Hardware cursor hack
+- CEGUI interface now supports on-demand rendering (demonstrated in 11 User Interface)
+- GUI namespace removed (still relevent for the cGUIReceiver and its cGUIEvent)
+- cArbitrarySurface functionality has been absorbed into cArbitraryTexture, which has then had some of its functions subclassed into a more accurate cArbitrarySurface it now inherits from.
+- Added Reassign hack to resource management
+- cPS_Font now works with DX3DEx
+
+0.6.72
+------
+- Swap to VS2010 dependencies
+- per-pixel composition preformance improvement
+- Copy pass bug fixed
+- Changed tileset to renderable/locatable instead of a cSolid
+- Culling bug fixed
+- Polygon/circle rendering bug fixed
+- fixed center position scaling assignment bug
+- Fixed delta bug
+- modified yield calculations
+- adjusted the behavior of Update()
+- Changed Normalize()
+- Adjusted ChildSetSize so that cGroup/cImagemap automatically update on a resize
+- Fixed p* const* to const p* const* which is proper const behavior.
+- Removed redundant friends
+- Moved OnMouseDown()/OnMouseUp() to cGUIElement
+- Fixed missing ChildSizeSet() notifications
+- Fixed GUI rendering detection glitch
+- RenderRect now supports rotation
+- Fixed fullscreen
+- Completely rewrote polygon/circle rendering
+- Polygons can now be rotated
+- improved circle segment calculation formula
+- CONFIRMED BUG: update failure for imagemaps. No repro and no known cause.
+
+0.6.71
+------
+- Objects are only added to update queue when actually in a pass
+- Redundant update queue entries removed
+- Added SetPosition(const cPositionf& pos) function to camera
+- GetCollisionRect no longer causes culling errors
+- Animation update behavior changed
+- position and scale variables in constructor lists are now references instead of pointers
+- Source is no longer restricted to integral pixel values
+- Fixed auto-height in cGUITextbox
+- Improved shader handling
+- Fixed shader compile problem (missing DLL)
+- added RENDER_INFO_IMAGESHADER
+- changed Render() functionality to auto-call Update()
+- added autoupdate to ENGINE_INIT struct
+- added cImageShader
+- made yeild ideal time adjustable
+- added definitions to cDXEffect
+- colorkey now texture specific
+- added per-pixel composition hit testing
+- Fixed issue with texture filtering
+- All textures are now filtered by default.
+
+0.6.7
+-----
+- Initial Public Release

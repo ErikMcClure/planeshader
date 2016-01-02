@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psDirectX11.h"
@@ -313,6 +313,23 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
       &SHADER_INFO::From<float>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl");
+
+    ELEMENT_DESC desc[6] = {
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint)-1 },
+      { ELEMENT_TEXCOORD, 3, FMT_R32G32B32A32F, 0, (uint)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 }
+    };
+
+    library.CURVE = psShader::CreateShader(desc, 2,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   _rectvertbuf = CreateBuffer(RECTBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0);

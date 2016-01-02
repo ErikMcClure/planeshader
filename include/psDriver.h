@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __DRIVER_H__PS__
@@ -437,6 +437,7 @@ namespace planeshader {
       psShader* PARTICLE;
       psShader* TEXT1;
       psShader* DEBUG;
+      psShader* CURVE;
     } library;
 
     psVec screendim; // DPI scaled screen dimensions, which can theoretically be fractional due to 1.5x DPI scaling
