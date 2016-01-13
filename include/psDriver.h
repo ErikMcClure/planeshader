@@ -438,6 +438,7 @@ namespace planeshader {
       psShader* TEXT1;
       psShader* DEBUG;
       psShader* CURVE;
+      psShader* ROUNDRECT;
     } library;
 
     psVec screendim; // DPI scaled screen dimensions, which can theoretically be fractional due to 1.5x DPI scaling

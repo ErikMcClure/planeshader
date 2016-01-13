@@ -337,7 +337,7 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
     for(unsigned int i = 0; i < gbmp.rows; ++i)
     {
       unsigned char *src = gbmp.buffer + (i * gbmp.pitch);
-      unsigned __int32 *dst = reinterpret_cast<unsigned __int32*>(lockbytes);
+      uint32_t *dst = reinterpret_cast<uint32_t*>(lockbytes);
 
       for(unsigned int j = 0; j < gbmp.width; ++j)
         dst[j] = (src[j / 8] & (0x80 >> (j & 7))) ? 0xFFFFFFFF : 0x00000000;

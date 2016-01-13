@@ -39,7 +39,7 @@ cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us 
 psEngine* engine=0;
 psCamera globalcam;
 bool dirkeys[9] = { false }; // left right up down in out counterclockwise clockwise shift
-float dirspeeds[4] = { 300.0f, 300.0f, 2.0f, 1.0f };
+float dirspeeds[4] = { 3.0f, 3.0f, 2.0f, 1.0f };
 bool gotonext = false;
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
@@ -70,10 +70,10 @@ struct TESTDEF
 #define TESTERROR(t, e) { atomic_xadd(&__testret.first); try { (t); FAILEDTEST(t); } catch(e) { atomic_xadd(&__testret.second); } }
 #define TESTERR(t) TESTERROR(t,...)
 #define TESTNOERROR(t) { atomic_xadd(&__testret.first); try { (t); atomic_xadd(&__testret.second); } catch(...) { FAILEDTEST(t); } }
-#define TESTARRAY(t,f) _ITERFUNC(__testret,t,[&](uint i) -> bool { f });
-#define TESTALL(t,f) _ITERALL(__testret,t,[&](uint i) -> bool { f });
-#define TESTCOUNT(c,t) { for(uint i = 0; i < c; ++i) TEST(t) }
-#define TESTCOUNTALL(c,t) { bool __val=true; for(uint i = 0; i < c; ++i) __val=__val&&(t); TEST(__val); }
+#define TESTARRAY(t,f) _ITERFUNC(__testret,t,[&](uint32_t i) -> bool { f });
+#define TESTALL(t,f) _ITERALL(__testret,t,[&](uint32_t i) -> bool { f });
+#define TESTCOUNT(c,t) { for(uint32_t i = 0; i < c; ++i) TEST(t) }
+#define TESTCOUNTALL(c,t) { bool __val=true; for(uint32_t i = 0; i < c; ++i) __val=__val&&(t); TEST(__val); }
 #define TESTFOUR(s,a,b,c,d) TEST(((s)[0]==(a)) && ((s)[1]==(b)) && ((s)[2]==(c)) && ((s)[3]==(d)))
 #define TESTALLFOUR(s,a) TEST(((s)[0]==(a)) && ((s)[1]==(a)) && ((s)[2]==(a)) && ((s)[3]==(a)))
 #define TESTRELFOUR(s,a,b,c,d) TEST(fcompare((s)[0],(a)) && fcompare((s)[1],(b)) && fcompare((s)[2],(c)) && fcompare((s)[3],(d)))
@@ -81,9 +81,9 @@ struct TESTDEF
 #define TESTVEC3(v,cx,cy,cz) TEST((v).x==(cx)) TEST((v).y==(cy)) TEST((v).z==(cz))
 
 template<class T, size_t SIZE, class F>
-void _ITERFUNC(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { for(uint i = 0; i < SIZE; ++i) TEST(f(i)) }
+void _ITERFUNC(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { for(uint32_t i = 0; i < SIZE; ++i) TEST(f(i)) }
 template<class T, size_t SIZE, class F>
-void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val=true; for(uint i = 0; i < SIZE; ++i) __val=__val&&(f(i)); TEST(__val); }
+void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val=true; for(uint32_t i = 0; i < SIZE; ++i) __val=__val&&(f(i)); TEST(__val); }
 
 bool comparevec(psVec a, psVec b, int diff=1)
 {
@@ -167,7 +167,7 @@ TESTDEF::RETPAIR test_psColor()
   ENDTEST;
 }
 
-void updatefpscount(unsigned __int64& timer, int& fps)
+void updatefpscount(uint64_t& timer, int& fps)
 {
   if(psEngine::CloseProfiler(timer)>1000000000)
   {
@@ -322,8 +322,9 @@ TESTDEF::RETPAIR test_psPass()
   //globalcam.SetPositionZ(-4.0);
 
   image.SetStateblock(STATEBLOCK_LIBRARY::PREMULTIPLIED);
+  const_cast<psTex*>(image.GetTexture())->SetTexblock(STATEBLOCK_LIBRARY::UVBORDER);
+  image.ApplyEdgeBuffer();
   image2.SetShader(shader);
-  //image2.ApplyEdgeBuffer();
 
   while(!gotonext && engine->Begin(0))
   {
@@ -421,6 +422,7 @@ TESTDEF::RETPAIR test_feather()
   while(!gotonext && engine->Begin())
   {
     psRoot::Instance()->Render();
+    engine->GetDriver()->Clear(0xFF000000);
     engine->End();
     updatefpscount(timer, fps);
   }
@@ -476,13 +478,22 @@ TESTDEF::RETPAIR test_psVector()
   auto timer = psEngine::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  psQuadraticCurve curve(psVec(100), psVec(300,100), psVec(300), 1.25f);
-  engine->GetPass(0)->Insert(&curve);
+  psQuadraticCurve curve(psVec(100), psVec(200, 200), psVec(300), 4.25f);
+  //psQuadraticCurve curve(psVec(186.236328, 105.025391), psVec(202.958221, 106.747375), psVec(220.288574, 109.005638), 4.25f);
+  //engine->GetPass(0)->Insert(&curve);
 
-  //psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(300, 100), psVec(300), 1.25f);
-  //engine->GetPass(0)->Insert(&curve2);
+  //psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(793, 213), psVec(300), 4.25f);
+  psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(927, 115), psVec(300), 4.25f);
+  engine->GetPass(0)->Insert(&curve2);
+  
+  psRoundedRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
+  rect.SetCorners(psRect(50, 30, 30, 0));
+  rect.SetOutlineColor(0xFF0000FF);
+  rect.SetOutline(5);
 
-  engine->GetPass(0)->SetClearColor(0xFF000000);
+  engine->GetPass(0)->Insert(&rect);
+
+  engine->GetPass(0)->SetClearColor(0x00000000);
   engine->GetPass(0)->SetCamera(&globalcam);
 
   while(!gotonext && engine->Begin(0))
@@ -491,7 +502,7 @@ TESTDEF::RETPAIR test_psVector()
     engine->End();
     updatefpscount(timer, fps);
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
-    //curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
+    curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
   }
 
   ENDTEST;
@@ -516,8 +527,8 @@ int main(int argc, char** argv)
     { "psColor", &test_psColor },
     { "psDirectX11", &test_psDirectX11 },
     { "psPass", &test_psPass },
-    { "psFont", &test_psFont },
     { "psParticles", &test_psParticles },
+    { "psFont", &test_psFont },
     { "psEffect", &test_psEffect },
     { "psInheritable", &test_psInheritable },
     { "ps_feather", &test_feather },
@@ -525,13 +536,13 @@ int main(int argc, char** argv)
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
 
-  std::cout << "Black Sphere Studios - PlaneShader v" << (uint)PS_VERSION_MAJOR << '.' << (uint)PS_VERSION_MINOR << '.' <<
-    (uint)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2015 Black Sphere Studios\n" << std::endl;
+  std::cout << "Black Sphere Studios - PlaneShader v" << (uint32_t)PS_VERSION_MAJOR << '.' << (uint32_t)PS_VERSION_MINOR << '.' <<
+    (uint32_t)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2015 Black Sphere Studios\n" << std::endl;
   const int COLUMNS[3] ={ 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 
 
-  std::vector<uint> failures;
+  std::vector<uint32_t> failures;
   PSINIT init;
   init.driver=RealDriver::DRIVERTYPE_DX11;
   init.width=640;
@@ -539,7 +550,7 @@ int main(int argc, char** argv)
   //init.mode = PSINIT::MODE_BORDERLESS;
   init.extent.x = 0.2;
   init.extent.y = 100;
-  init.antialias = 8;
+  //init.antialias = 8;
   //init.sRGB = true;
   init.mediapath = "../media";
   //init.iconresource=101;
@@ -582,7 +593,7 @@ int main(int argc, char** argv)
     engine=&ps;
 
     TESTDEF::RETPAIR numpassed;
-    for(uint i = 0; i < NUMTESTS; ++i)
+    for(uint32_t i = 0; i < NUMTESTS; ++i)
     {
       gotonext = false;
       globalcam.SetPosition(psVec3D(0, 0, -1));
@@ -599,7 +610,7 @@ int main(int argc, char** argv)
   else
   {
     std::cout << "\nThe following tests failed: " << std::endl;
-    for(uint i = 0; i < failures.size(); i++)
+    for(uint32_t i = 0; i < failures.size(); i++)
       std::cout << "  " << tests[failures[i]].NAME << std::endl;
     std::cout << "\nThese failures indicate either a misconfiguration on your system, or a potential bug. \n\nA detailed list of failed tests was written to failedtests.txt" << std::endl;
   }

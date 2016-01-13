@@ -59,6 +59,7 @@ namespace planeshader {
     static psShader* BSS_FASTCALL CreateShader(const psShader* copy);
     // merges num shaders into a new shader in left to right order (so the first will be overwritten by the rest). num cannot be 0.
     static psShader* BSS_FASTCALL MergeShaders(unsigned int num, const psShader* first, ...); 
+    void** GetInternalPrograms() { return _ss; }
 
     psShader& operator+=(const psShader& right);
 

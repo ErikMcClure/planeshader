@@ -83,7 +83,7 @@ struct psGUIEvent {
     struct { char joydown; short joybutton; }; // JOYBUTTON
   };
   unsigned char type;
-  unsigned __int64 time;
+  uint64_t time;
 };
 
 struct cEngine* cEngine_new(struct cEngine* ptr, const PSINIT* args);

@@ -4,7 +4,7 @@
 #ifndef __VECTOR_H__PS__
 #define __VECTOR_H__PS__
 
-#include "psRenderable.h"
+#include "psSolid.h"
 #include "psColored.h"
 #include "bss-util\cDynArray.h"
 
@@ -15,10 +15,9 @@ namespace planeshader {
     struct QuadVertex
     {
       float x, y, z, t;
-      float u, v, w;
-      float p1x, p1y, p1z, p1t;
-      float p2x, p2y, p2z, p2t;
-      float p3x, p3y, p3z, p3t;
+      float p0[4];
+      float p1[4];
+      float p2[4];
       unsigned int color;
     };
 
@@ -26,9 +25,11 @@ namespace planeshader {
     psQuadraticHull();
     ~psQuadraticHull();
     void Clear();
-    void BSS_FASTCALL AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, unsigned int color);
+    void BSS_FASTCALL AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, unsigned int color, char cap);
 
     static const int CURVEBUFSIZE = 512 * 3;
+    static inline psVec FromQuad(QuadVertex& v) { return psVec(v.x, v.y); }
+    static void SetVert(float(&v)[4], psVec& x, float thickness);
 
   protected:
     virtual void BSS_FASTCALL _render(psBatchObj* obj);
@@ -72,6 +73,75 @@ namespace planeshader {
     float _maxerr;
   };
 
+  class PS_DLLEXPORT psRoundedRect : public psSolid, public psColored, public psDriverHold
+  {
+    struct RRVertex
+    {
+      float x, y, z, t;
+      psRect dimpivot;
+      psRect corners;
+      float outline;
+      unsigned int color;
+      unsigned int outlinecolor;
+    };
+
+  public:
+    psRoundedRect(const psRoundedRect& copy);
+    psRoundedRect(psRoundedRect&& mov);
+    explicit psRoundedRect(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, psInheritable* parent = 0, const psVec& scale = VEC_ONE);
+    virtual ~psRoundedRect();
+    const psRect& GetCorners() const { return _corners; }
+    void SetCorners(const psRect& corners) { _corners = corners; }
+    float GetOutline() const { return _edge; }
+    void SetOutline(float outline) { _edge = outline; }
+    psColor32 GetOutlineColor() const { return _outline; }
+    void SetOutlineColor(psColor32 color) { _outline = color; }
+
+    static const int RRBUFSIZE = 64;
+
+  protected:
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+
+    psRect _corners;
+    psColor32 _outline;
+    float _edge;
+  };
+
+  class PS_DLLEXPORT psRenderCircle : public psSolid, public psColored, public psDriverHold
+  {
+    struct CircleVertex
+    {
+      float x, y, z, t;
+      psRect dimpivot;
+      psRect arcs;
+      float outline;
+      unsigned int color;
+      unsigned int outlinecolor;
+    };
+
+  public:
+    psRenderCircle(const psRenderCircle& copy);
+    psRenderCircle(psRenderCircle&& mov);
+    explicit psRenderCircle(float radius = 0, const psVec3D& position = VEC3D_ZERO, psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, psInheritable* parent = 0, const psVec& scale = VEC_ONE);
+    virtual ~psRenderCircle();
+    const psRect& GetArcs() const { return _arcs; }
+    void SetArcs(const psRect& arcs) { _arcs = arcs; }
+    float GetOutline() const { return _edge; }
+    void SetOutline(float outline) { _edge = outline; }
+    psColor32 GetOutlineColor() const { return _outline; }
+    void SetOutlineColor(psColor32 color) { _outline = color; }
+
+    static const int CIRCLEBUFSIZE = 64;
+
+  protected:
+    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+
+    psRect _arcs;
+    psColor32 _outline;
+    float _edge;
+  };
 }
 
 #endif

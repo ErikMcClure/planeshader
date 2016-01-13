@@ -146,14 +146,14 @@ namespace planeshader {
     psColor32() {}
     psColor32(unsigned char A, unsigned char R, unsigned char G, unsigned char B) : a(A), r(R), g(G), b(B) {}
     explicit psColor32(unsigned char(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
-    psColor32(unsigned __int32 c) : color(c) {}
-    inline psColor32& operator=(unsigned __int32 c) { color=c; return *this; }
-    inline operator unsigned __int32() const { return color; }
+    psColor32(uint32_t c) : color(c) {}
+    inline psColor32& operator=(uint32_t c) { color=c; return *this; }
+    inline operator uint32_t() const { return color; }
     unsigned short BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
 
     union
     {
-      unsigned __int32 color;
+      uint32_t color;
       unsigned char colors[4];
       struct {
         unsigned char r;

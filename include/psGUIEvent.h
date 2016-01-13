@@ -254,7 +254,7 @@ namespace planeshader {
       struct { char joydown; short joybutton; }; // JOYBUTTON
     };
     unsigned char type;
-    unsigned __int64 time;
+    uint64_t time;
 
     bool IsPressed() const { return (button&allbtn)!=0; }
     bool IsShiftDown() const { return (1&sigkeys)!=0; }
