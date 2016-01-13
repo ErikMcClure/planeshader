@@ -1,6 +1,7 @@
 *.sdf
 *.suo
 *.opensdf
+*.opendb
 *.bak
 *.aps
 bin/
@@ -11,5 +12,6 @@ examples/00 Testbed/x64/
 examples/00 Testbed/Win32/
 examples/bin/
 examples/bin64/
-examples/media/
-*.opendb
+examples/media/*.ico
+examples/media/*.png
+
