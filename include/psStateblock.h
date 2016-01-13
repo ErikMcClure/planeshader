@@ -87,7 +87,7 @@ namespace planeshader {
         STATETYPE type;
         unsigned short index;
       };
-      unsigned __int64 __vali64;
+      uint64_t __vali64;
     };
 
     typedef bss_util::cArray<STATEINFO, unsigned short> STATEINFOS;
@@ -97,7 +97,7 @@ namespace planeshader {
       unsigned short sz=sb->Capacity();
       khint32_t r=0;
       for(unsigned short i = 0; i < sz; ++i)
-        r=bss_util::KH_INT64_HASHFUNC((((__int64)bss_util::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
+        r=bss_util::KH_INT64_HASHFUNC((((int64_t)bss_util::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
       return r;
     }
     inline static bool SIEQUALITY(STATEINFOS* left, STATEINFOS* right)

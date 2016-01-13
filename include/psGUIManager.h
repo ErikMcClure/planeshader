@@ -16,7 +16,7 @@ struct tagPOINTS;
 
 
 #if defined(_WIN64)
-typedef __int64 longptr_t;
+typedef int64_t longptr_t;
 #else
 typedef __w64 long longptr_t;
 #endif
@@ -113,7 +113,7 @@ namespace planeshader {
     
     cMouseData _mousedata;
     unsigned char _allkeys[NUMKEYS]; //holds keyboard layout state
-    unsigned __int32 _allbuttons[NUMJOY];
+    uint32_t _allbuttons[NUMJOY];
     bss_util::delegate<bool, const psGUIEvent&> _receiver;
     //cControlManager _controls; //manages controls;
     unsigned short _firstjoystick; //Joystick ID of whatever the first plugged in joystick is

@@ -45,9 +45,6 @@
     <ClInclude Include="..\include\psPass.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="psDirectX10_fsquadVS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\psTex.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -137,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="..\include\psVector.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="psDirectX11_fsquadVS.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

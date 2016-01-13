@@ -2,7 +2,7 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psDirectX11.h"
-#include "psDirectX10_fsquadVS.h"
+#include "psDirectX11_fsquadVS.h"
 #include "psEngine.h"
 #include "psTex.h"
 #include "psStateblock.h"
@@ -190,10 +190,10 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl");
 
     ELEMENT_DESC desc[4] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint)-1 }
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint32_t)-1 }
     };
 
     library.IMAGE = psShader::CreateShader(desc, 3,
@@ -206,9 +206,9 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl");
 
     ELEMENT_DESC desc[3] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 }
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 }
     };
 
     library.IMAGE0 = psShader::CreateShader(desc, 3,
@@ -221,11 +221,11 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl");
 
     ELEMENT_DESC desc[5] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint)-1 }
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint32_t)-1 }
     };
 
     library.IMAGE2 = psShader::CreateShader(desc, 3,
@@ -238,12 +238,12 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl");
 
     ELEMENT_DESC desc[6] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 3, FMT_R32G32B32A32F, 0, (uint)-1 }
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 3, FMT_R32G32B32A32F, 0, (uint32_t)-1 }
     };
 
     library.IMAGE3 = psShader::CreateShader(desc, 3,
@@ -291,8 +291,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl");
 
     ELEMENT_DESC desc[2] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 }
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 }
     };
 
     library.LINE = psShader::CreateShader(desc, 2,
@@ -305,8 +305,8 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl");
 
     ELEMENT_DESC desc[2] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 }
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 }
     };
 
     library.PARTICLE = psShader::CreateShader(desc, 3,
@@ -318,18 +318,35 @@ _backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
   {
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl");
 
-    ELEMENT_DESC desc[6] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_TEXCOORD, 3, FMT_R32G32B32A32F, 0, (uint)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint)-1 }
+    ELEMENT_DESC desc[5] = {
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 }
     };
 
     library.CURVE = psShader::CreateShader(desc, 2,
       &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+  }
+
+  {
+    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsrectround.hlsl");
+
+    ELEMENT_DESC desc[6] = {
+      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
+      { ELEMENT_TEXCOORD, 2, FMT_R32F, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 },
+      { ELEMENT_COLOR, 1, FMT_R8G8B8A8, 0, (uint32_t)-1 }
+    };
+
+    library.ROUNDRECT = psShader::CreateShader(desc, 3,
+      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<float>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
   }
 
   _rectvertbuf = CreateBuffer(RECTBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0);
@@ -1422,10 +1439,18 @@ void* BSS_FASTCALL psDirectX11::CreateShader(const void* data, size_t datasize, 
 char BSS_FASTCALL psDirectX11::SetShader(void* shader, SHADER_VER profile)
 {
   PROFILE_FUNC();
-  if(profile <= VERTEX_SHADER_5_0 && _lastVS != shader)
+  if(profile <= VERTEX_SHADER_5_0 && _lastVS != shader) {
+#ifdef BSS_DEBUG
+    if(!shader) shader = _fsquadVS;
+#endif
     _context->VSSetShader(_lastVS = (ID3D11VertexShader*)shader, 0, 0);
-  else if(profile <= PIXEL_SHADER_5_0 && _lastPS != shader)
+  }
+  else if(profile <= PIXEL_SHADER_5_0 && _lastPS != shader) {
+#ifdef BSS_DEBUG
+    if(!shader) shader = library.DEBUG->GetInternalPrograms()[1];
+#endif
     _context->PSSetShader(_lastPS = (ID3D11PixelShader*)shader, 0, 0);
+  }
   else if(profile <= GEOMETRY_SHADER_5_0 && _lastGS != shader)
     _context->GSSetShader(_lastGS = (ID3D11GeometryShader*)shader, 0, 0);
   else
