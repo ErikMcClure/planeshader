@@ -198,8 +198,8 @@ void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const floa
 psRoundedRect::psRoundedRect(const psRoundedRect& copy) : psSolid(copy), psColored(copy) {}
 psRoundedRect::psRoundedRect(psRoundedRect&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
 psRoundedRect::psRoundedRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, stateblock, !shader?_driver->library.ROUNDRECT:shader, pass, parent, scale, INTERNALTYPE_NONE),
-  _outline(0), _edge(-1), _corners(0,0,0,0)
+  psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
+  !shader?_driver->library.ROUNDRECT:shader, pass, parent, scale, INTERNALTYPE_NONE), _outline(0), _edge(-1), _corners(0,0,0,0)
 {
   SetDim(rect.GetDimensions());
 }
@@ -247,12 +247,11 @@ void BSS_FASTCALL psRoundedRect::_renderbatch(psRenderable** rlist, unsigned int
   _driver->DrawBatchEnd(obj);
 }
 
-
 psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psColored(copy) {}
 psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
 psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psSolid(position - psVec3D(radius, radius, 0), 0, VEC_ZERO, flags, zorder, stateblock, !shader ? _driver->library.ROUNDRECT : shader, pass, parent, scale, INTERNALTYPE_NONE),
-  _outline(0), _edge(-1), _arcs(0, 0, 0, 0)
+  psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, parent, scale, INTERNALTYPE_NONE),
+  _outline(0), _edge(-1), _arcs(-PI, PI, -PI, PI)
 {
   SetDim(psVec(radius*2));
 }
@@ -286,6 +285,7 @@ void BSS_FASTCALL psRenderCircle::_render(psBatchObj* obj)
     _renderbatch(&r, 1);
   }
 }
+
 void BSS_FASTCALL psRenderCircle::_renderbatch(psRenderable** rlist, unsigned int count)
 {
   static psVertObj vertobj = { _driver->CreateBuffer(sizeof(CircleVertex)*CIRCLEBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0), 0, 0, 0, sizeof(CircleVertex), FMT_INDEX16, POINTLIST };

@@ -194,8 +194,8 @@ TESTDEF::RETPAIR test_psDirectX11()
   psDriver* driver = engine->GetDriver();
   globalcam.SetPosition(500, 500);
 
-  psVec imgpos[NUMBATCH];
-  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y));
+  psVec3D imgpos[NUMBATCH];
+  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y), RANDFLOATGEN(0, PI_DOUBLEf));
   psBatchObj obj;
 
   while(!gotonext && engine->Begin())
@@ -206,10 +206,9 @@ TESTDEF::RETPAIR test_psDirectX11()
     driver->library.IMAGE->Activate();
     driver->SetTextures(&pslogo, 1);
     driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
-    driver->library.CIRCLE->Activate();
     driver->DrawRectBatchBegin(obj, 1, 0);
     for(int i = 0; i < NUMBATCH; ++i) {
-      driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF);
+      driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, imgpos[i].z, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF);
     }
     driver->DrawBatchEnd(obj);
 
@@ -491,9 +490,14 @@ TESTDEF::RETPAIR test_psVector()
   rect.SetOutlineColor(0xFF0000FF);
   rect.SetOutline(5);
 
-  engine->GetPass(0)->Insert(&rect);
+  psRenderCircle circle(50, psVec3D(200, 300, 0));
+  circle.SetOutlineColor(0xFF0000FF);
+  circle.SetOutline(0.5);
 
-  engine->GetPass(0)->SetClearColor(0x00000000);
+  engine->GetPass(0)->Insert(&rect);
+  engine->GetPass(0)->Insert(&circle);
+
+  engine->GetPass(0)->SetClearColor(0xFF999999);
   engine->GetPass(0)->SetCamera(&globalcam);
 
   while(!gotonext && engine->Begin(0))
@@ -503,9 +507,15 @@ TESTDEF::RETPAIR test_psVector()
     updatefpscount(timer, fps);
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
     curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
+    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(engine->GetTime()*0.001,PI_DOUBLE)));
   }
 
   ENDTEST;
+}
+
+TESTDEF::RETPAIR test_psTileset()
+{
+
 }
 
 // Main program function
@@ -547,7 +557,7 @@ int main(int argc, char** argv)
   init.driver=RealDriver::DRIVERTYPE_DX11;
   init.width=640;
   init.height=480;
-  //init.mode = PSINIT::MODE_BORDERLESS;
+  init.mode = PSINIT::MODE_BORDERLESS;
   init.extent.x = 0.2;
   init.extent.y = 100;
   //init.antialias = 8;
