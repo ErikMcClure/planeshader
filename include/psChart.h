@@ -11,7 +11,7 @@
 #include "bss-util\cDynArray.h"
 
 namespace planeshader {
-  struct psChart
+  struct psChart : public psDriverHold
   {
   public:
     inline const psRect& GetExtrema() { return _extrema; }
@@ -36,7 +36,7 @@ namespace planeshader {
   };
 
   // Renders a line graph of samples that must be sorted on the y-axis but not evenly spaced. You can render multiple line graphs on top of each other.
-  class psLineChart : public psChart
+  class psLineChart : public psChart, public psColored
   {
   public:
     psLineChart(const psLineChart&);
@@ -53,7 +53,7 @@ namespace planeshader {
   };
 
   // Renders a bar graph of several variables. You can render multiple bar graphs on top of each other or next to each other.
-  class psBarChart : public psChart
+  class psBarChart : public psChart, public psColored
   {
   public:
     psBarChart(const psBarChart&);
@@ -69,7 +69,7 @@ namespace planeshader {
   };
 
   // Simple assigns a point to each element of the dataset, which can be unordered and take on arbitrary values.
-  class psScatterChart : public psChart
+  class psScatterChart : public psChart, public psColored
   {
   public:
     psScatterChart(const psScatterChart&);
@@ -97,17 +97,27 @@ namespace planeshader {
   };
 
   // Acts as a container for multiple overlayed charts, and optionally renders a standard background.
-  class psChartContainer : public psSolid
+  class psChartContainer : public psSolid, public psDriverHold, public psColored
   {
   public:
-    psChartContainer();
-    void SetView(psRect view);
-    void SetTitle(const char* title);
-    void SetXLabel(const char* label);
-    void SetYLabel(const char* label);
+    psChartContainer(psTexFont* font = 0);
+    inline void SetView(const psRect& view) { _view = view; }
+    inline void SetViewRel(const psRect& view) { _viewrel = view; }
+    inline void SetTitle(const char* title) { _title = title; }
+    inline void SetXLabel(const char* label) { _xlabel = label; }
+    inline void SetYLabel(const char* label) { _ylabel = label; }
+    void SetDim(const psVec& dim);
     size_t AddChart(const psChart* chart);
     psChart* GetChart(size_t index);
     bool RemoveChart(size_t index);
+
+    enum CONTAINER_FLAGS
+    {
+      CONTAINER_HIDEX = 0b1,
+      CONTAINER_HIDEY = 0b10,
+      CONTAINER_INVERTX = 0b100,
+      CONTAINER_INVERTY = 0b1000,
+    };
 
   protected:
     virtual void BSS_FASTCALL _render(psBatchObj* obj);
@@ -117,7 +127,10 @@ namespace planeshader {
     cStr _xlabel;
     cStr _ylabel;
     psRect _view;
+    psRect _viewrel;
     bss_util::cDynArray<std::unique_ptr<psChart>, size_t, bss_util::CARRAY_SAFE> _captions;
+    psFlag _flags;
+    psColor32 _textcolor;
   };
 }
 

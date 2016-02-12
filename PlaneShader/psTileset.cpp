@@ -71,9 +71,7 @@ void BSS_FASTCALL psTileset::_render(psBatchObj*)
 {
   const psRectRotateZ& rect = GetCollisionRect();
   bss_util::Matrix<float, 4, 4> m;
-  bss_util::Matrix<float, 4, 4>::AffineTransform_T(rect.left, rect.top, rect.z, rect.rotation, rect.pivot.x, rect.pivot.y, m);
-  sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
-  sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];
+  GetTransform(m);
 
   Activate(this); // Sets all the textures and shaders
   psBatchObj obj;

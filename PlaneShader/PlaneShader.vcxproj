@@ -243,6 +243,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="psCamera.cpp" />
+    <ClCompile Include="psChart.cpp" />
     <ClCompile Include="psColor.cpp" />
     <ClCompile Include="psColored.cpp" />
     <ClCompile Include="psCullGroup.cpp" />
