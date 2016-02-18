@@ -43,7 +43,7 @@ namespace planeshader {
     virtual void Render(const psRect& rect, const psRect& view);
     virtual bool SetCaption(size_t index, const char* caption);
     virtual size_t GetLegend(psColor32* colors, const char** strings);
-    inline virtual psChart* Clone() const { return new psLineChart(*this); }
+    inline virtual psLineChart* Clone() const { return new psLineChart(*this); }
 
   protected:
     psColor32 _outline;
@@ -60,7 +60,7 @@ namespace planeshader {
     virtual void Render(const psRect& rect, const psRect& view);
     virtual bool SetCaption(size_t index, const char* caption);
     virtual size_t GetLegend(psColor32* colors, const char** strings);
-    inline virtual psChart* Clone() const { return new psBarChart(*this); }
+    inline virtual psBarChart* Clone() const { return new psBarChart(*this); }
 
   protected:
     psColor32 _fill;
@@ -76,7 +76,7 @@ namespace planeshader {
     virtual void Render(const psRect& rect, const psRect& view);
     virtual bool SetCaption(size_t index, const char* caption);
     virtual size_t GetLegend(psColor32* colors, const char** strings);
-    inline virtual psChart* Clone() const { return new psScatterChart(*this); }
+    inline virtual psScatterChart* Clone() const { return new psScatterChart(*this); }
 
   protected:
     psColor32 _fill;
@@ -90,7 +90,7 @@ namespace planeshader {
     virtual void Render(const psRect& rect, const psRect& view);
     virtual bool SetCaption(size_t index, const char* caption);
     virtual size_t GetLegend(psColor32* colors, const char** strings);
-    inline virtual psChart* Clone() const { return new psPieChart(*this); }
+    inline virtual psPieChart* Clone() const { return new psPieChart(*this); }
 
   protected:
     psTex* _data;
@@ -107,7 +107,7 @@ namespace planeshader {
     inline void SetXLabel(const char* label) { _xlabel = label; }
     inline void SetYLabel(const char* label) { _ylabel = label; }
     void SetDim(const psVec& dim);
-    size_t AddChart(const psChart* chart);
+    size_t AddChart(psChart* chart);
     psChart* GetChart(size_t index);
     bool RemoveChart(size_t index);
 

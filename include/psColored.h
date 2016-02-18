@@ -20,7 +20,7 @@ namespace planeshader {
     inline void BSS_FASTCALL SetColor(unsigned char a, unsigned char r, unsigned char g, unsigned char b) { SetColor(psColor32(a,r,g,b)); }
 
     inline psColored& operator=(const psColored& right) { _color = right._color; return *this; }
-    inline virtual psColored* BSS_FASTCALL Clone() const { return new psColored(*this); } // Clone function
+    inline virtual psColored* Clone() const { return new psColored(*this); } // Clone function
 
     // Interpolation functions for animation
     //template<unsigned char TypeID>

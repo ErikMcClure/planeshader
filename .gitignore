@@ -5,13 +5,12 @@
 *.bak
 *.aps
 bin/
+bin32/
 lib/
 PlaneShader/x64/
 PlaneShader/Win32/
 examples/00 Testbed/x64/
 examples/00 Testbed/Win32/
-examples/bin/
-examples/bin64/
-examples/media/*.ico
-examples/media/*.png
+media/*.ico
+media/*.png
 

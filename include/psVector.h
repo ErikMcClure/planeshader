@@ -67,7 +67,7 @@ namespace planeshader {
     inline const psVec(&Get() const)[4] { return _p; }
 
   protected:
-    void _addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2]);
+    void BSS_FASTCALL _addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2]);
     psVec _p[4];
     float _thickness;
     float _maxerr;

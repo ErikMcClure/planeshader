@@ -81,7 +81,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
   float2 p = input.xywh.xy;
   float2 d = input.xywh.zw;
   float4 r = input.corners;
-  float2 dist = 0;
+  float2 dist;
   float outline = input.outline;
   if(p.x < r[0] && p.y < r[0])
     dist = float2(distance(p, float2(r[0],r[0])), input.outline) / r[0];

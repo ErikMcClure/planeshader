@@ -43,17 +43,17 @@ float dirspeeds[4] = { 3.0f, 3.0f, 2.0f, 1.0f };
 bool gotonext = false;
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../../bin/PlaneShader64_d.lib")
-#pragma comment(lib, "../../lib/bss-util64_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../../bin/PlaneShader64.lib")
-#pragma comment(lib, "../../lib/bss-util64.lib")
-#elif defined(BSS_DEBUG)
 #pragma comment(lib, "../../bin/PlaneShader_d.lib")
 #pragma comment(lib, "../../lib/bss-util_d.lib")
-#else
+#elif defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../../bin/PlaneShader.lib")
 #pragma comment(lib, "../../lib/bss-util.lib")
+#elif defined(BSS_DEBUG)
+#pragma comment(lib, "../../bin32/PlaneShader32_d.lib")
+#pragma comment(lib, "../../lib/bss-util32_d.lib")
+#else
+#pragma comment(lib, "../../bin32/PlaneShader32.lib")
+#pragma comment(lib, "../../lib/bss-util32.lib")
 #endif
 
 struct TESTDEF
@@ -407,8 +407,8 @@ TESTDEF::RETPAIR test_feather()
 
   fgChild_VoidMessage((fgChild*)fgSingleton(), FG_SETSKIN, &skin);
 
-  fgChild* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, FGCHILD_EXPAND | FGCHILD_IGNORE, 0, 0);
-  fgChild* button = fgButton_Create(0, FGCHILD_EXPAND, (fgChild*)fgSingleton(), 0);
+  fgChild* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, FGCHILD_EXPAND | FGCHILD_IGNORE, 0, 0, 0);
+  fgChild* button = fgButton_Create(0, FGCHILD_EXPAND, (fgChild*)fgSingleton(), 0, 0);
   fgChild_VoidMessage(button, FG_ADDITEM, res);
 
   const fgElement fgElement_topwindow = { { 0, 0.2, 0, 0.2, 0, 0.8, 0, 0.8 }, 0, { 0, 0, 0, 0 } };
@@ -488,7 +488,7 @@ TESTDEF::RETPAIR test_psVector()
   psRoundedRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
   rect.SetCorners(psRect(50, 30, 30, 0));
   rect.SetOutlineColor(0xFF0000FF);
-  rect.SetOutline(5);
+  rect.SetOutline(0);
 
   psRenderCircle circle(50, psVec3D(200, 300, 0));
   circle.SetOutlineColor(0xFF0000FF);
@@ -515,7 +515,9 @@ TESTDEF::RETPAIR test_psVector()
 
 TESTDEF::RETPAIR test_psTileset()
 {
+  BEGINTEST;
 
+  ENDTEST;
 }
 
 // Main program function

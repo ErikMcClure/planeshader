@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
 #ifndef __FG_SLIDER_H__
@@ -18,8 +18,8 @@ typedef struct _FG_SLIDER {
   size_t value;
 } fgSlider;
 
-FG_EXTERN fgChild* FG_FASTCALL fgSlider_Create(size_t range, fgFlag flags, fgChild* parent, const fgElement* element);
-FG_EXTERN void FG_FASTCALL fgSlider_Init(fgSlider* BSS_RESTRICT self, size_t range, fgFlag flags, fgChild* BSS_RESTRICT parent, const fgElement* element);
+FG_EXTERN fgChild* FG_FASTCALL fgSlider_Create(size_t range, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);
+FG_EXTERN void FG_FASTCALL fgSlider_Init(fgSlider* BSS_RESTRICT self, size_t range, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);
 FG_EXTERN void FG_FASTCALL fgSlider_Destroy(fgSlider* self);
 FG_EXTERN size_t FG_FASTCALL fgSlider_Message(fgSlider* self, const FG_Msg* msg);
 
