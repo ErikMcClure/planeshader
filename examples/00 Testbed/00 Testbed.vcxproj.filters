@@ -20,7 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\media\blank.rc">
+    <ResourceCompile Include="..\..\media\blank.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

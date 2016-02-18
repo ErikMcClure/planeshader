@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "bss_util.h"
 
 #ifndef __BSS_COMPILER_H__
@@ -39,6 +39,7 @@
 #define BSS_COMPILER_INTEL
 #define BSS_COMPILER_DLLEXPORT __declspec(dllexport)
 #define BSS_COMPILER_DLLIMPORT __declspec(dllimport)
+#define BSS_TEMPLATE_DLLEXPORT
 #define MEMBARRIER_READWRITE __memory_barrier()
 #define MEMBARRIER_READ MEMBARRIER_READWRITE
 #define MEMBARRIER_WRITE MEMBARRIER_READWRITE
@@ -56,34 +57,46 @@
 #define BSS_ASSUME(x) 
 #define BSS_EXPLICITSTATIC static
 
-# elif defined __GNUC__ // GCC
-#define BSS_COMPILER_GCC
+#elif defined(__clang__) // Clang (must be before GCC, because clang also pretends it's GCC)
+#define BSS_COMPILER_CLANG
 #define BSS_COMPILER_DLLEXPORT __attribute__((dllexport))
 #define BSS_COMPILER_DLLIMPORT __attribute__((dllimport))
+#define BSS_TEMPLATE_DLLEXPORT
 #define MEMBARRIER_READWRITE __asm__ __volatile__ ("" ::: "memory");
 #define MEMBARRIER_READ MEMBARRIER_READWRITE
 #define MEMBARRIER_WRITE MEMBARRIER_READWRITE
 #define BSS_COMPILER_FASTCALL __attribute__((fastcall))
-#define BSS_COMPILER_STDCALL __attribute__((BSS_COMPILER_STDCALL__))
+#define BSS_COMPILER_STDCALL __attribute__((stdcall))
 #define BSS_COMPILER_NAKED __attribute__((naked)) // Will only work on ARM, AVR, MCORE, RX and SPU. 
 #define BSS_FORCEINLINE __attribute__((always_inline))
 #define BSS_RESTRICT __restrict__
 #define BSS_ALIGN(n) __attribute__((aligned(n)))
 #define BSS_ALIGNED(sn, n) sn BSS_ALIGN(n)
 #define BSS_VARIADIC_TEMPLATES
-#ifndef __int8
-#define __int8 char
-#endif
-#ifndef __int16
-#define __int16 short
-#endif
-#ifndef __int32
-#define __int32 int
-#endif
-#ifndef __int64
-#define __int64 long long
-#endif
-//typedef __int128 __int128; // GCC doesn't have __int64/32/16/8, but it does have __int128 for whatever reason.
+
+#define MSC_FASTCALL 
+#define GCC_FASTCALL BSS_FASTCALL
+#define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
+#define BSS_DELETEFUNCOP BSS_COMPILER_DELETEOPFUNC
+#define BSS_EXPLICITSTATIC // GCC says that putting "static" on explicit templatizations of functions is illegal. VC++ breaks if you don't.
+
+#elif defined __GNUC__ // GCC
+#define BSS_COMPILER_GCC
+#define BSS_COMPILER_DLLEXPORT __attribute__((dllexport))
+#define BSS_COMPILER_DLLIMPORT __attribute__((dllimport))
+#define BSS_TEMPLATE_DLLEXPORT
+#define MEMBARRIER_READWRITE __asm__ __volatile__ ("" ::: "memory");
+#define MEMBARRIER_READ MEMBARRIER_READWRITE
+#define MEMBARRIER_WRITE MEMBARRIER_READWRITE
+#define BSS_COMPILER_FASTCALL __attribute__((fastcall))
+#define BSS_COMPILER_STDCALL __attribute__((stdcall))
+#define BSS_COMPILER_NAKED __attribute__((naked)) // Will only work on ARM, AVR, MCORE, RX and SPU. 
+#define BSS_FORCEINLINE __attribute__((always_inline))
+#define BSS_RESTRICT __restrict__
+#define BSS_ALIGN(n) __attribute__((aligned(n)))
+#define BSS_ALIGNED(sn, n) sn BSS_ALIGN(n)
+#define BSS_VARIADIC_TEMPLATES
+
 #define MSC_FASTCALL 
 #define GCC_FASTCALL BSS_FASTCALL
 #define BSS_DELETEFUNC BSS_COMPILER_DELETEFUNC
@@ -103,6 +116,7 @@
 #define BSS_COMPILER_MSC
 #define BSS_COMPILER_DLLEXPORT __declspec(dllexport)
 #define BSS_COMPILER_DLLIMPORT __declspec(dllimport)
+#define BSS_TEMPLATE_DLLEXPORT BSS_COMPILER_DLLEXPORT
 #define MEMBARRIER_READWRITE _ReadWriteBarrier()
 #define MEMBARRIER_READ _ReadBarrier()
 #define MEMBARRIER_WRITE _WriteBarrier()

@@ -1,4 +1,4 @@
-// Copyright ©2015 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
 #ifndef __FG_MENU_H__
@@ -20,8 +20,8 @@ typedef struct FG_MENU {
   fgVector* members; // ordered list of menu items. Null values indicate a seperator.
 } fgMenu;
 
-FG_EXTERN fgChild* FG_FASTCALL fgMenu_Create(fgChild* parent, const fgElement* element, FG_UINT id, fgFlag flags);
-FG_EXTERN void FG_FASTCALL fgMenu_Init(fgMenu* self, fgChild* parent, const fgElement* element, FG_UINT id, fgFlag flags);
+FG_EXTERN fgChild* FG_FASTCALL fgMenu_Create(fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element, FG_UINT id, fgFlag flags);
+FG_EXTERN void FG_FASTCALL fgMenu_Init(fgMenu* self, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element, FG_UINT id, fgFlag flags);
 FG_EXTERN void FG_FASTCALL fgMenu_Destroy(fgMenu* self);
 FG_EXTERN char FG_FASTCALL fgMenu_Message(fgMenu* self, const FG_Msg* msg);
 FG_EXTERN char FG_FASTCALL fgMenu_DoDropdown(fgMenu* self);

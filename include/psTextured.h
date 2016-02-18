@@ -24,7 +24,7 @@ namespace planeshader {
     inline const psTex* GetTexture(unsigned int index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
     virtual inline psTex* const* GetTextures() const { return _tex; }
     virtual inline unsigned char NumTextures() const { return _tex.Capacity(); }
-    inline virtual psTextured* BSS_FASTCALL Clone() const { return new psTextured(*this); } //Clone function
+    inline virtual psTextured* Clone() const { return new psTextured(*this); } //Clone function
 
     psTextured& operator=(const psTextured& right);
     psTextured& operator=(psTextured&& right);

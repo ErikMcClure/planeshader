@@ -32,7 +32,7 @@ namespace planeshader {
     // Overloads SetPass so it propogates to our children
     virtual void BSS_FASTCALL SetPass(psPass* pass);
     // Clone function
-    virtual psInheritable* BSS_FASTCALL Clone() const { return 0; }
+    virtual psInheritable* Clone() const { return 0; }
     virtual psTex* const* GetRenderTargets() const;
     virtual unsigned char NumRT() const;
     virtual void BSS_FASTCALL SetZOrder(int zorder);

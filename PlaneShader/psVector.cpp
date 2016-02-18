@@ -190,7 +190,7 @@ void psCubicCurve::Set(psVec(&p)[4])
 {
   Set(p[0], p[1], p[2], p[3]);
 }
-void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2])
+void BSS_FASTCALL psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2])
 {
   AppendQuadraticCurve(psVec(P0), psVec(P1), psVec(P2), _thickness, _color.color, !_verts.Length() | (psVec(P2) == _p[3])*2);
 }

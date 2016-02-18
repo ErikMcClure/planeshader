@@ -14,13 +14,13 @@ using namespace bss_util;
 
 #ifdef BSS_COMPILER_MSC
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/bss-util64_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/bss-util64.lib")
-#elif defined(BSS_DEBUG)
 #pragma comment(lib, "../lib/bss-util_d.lib")
-#else
+#elif defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../lib/bss-util.lib")
+#elif defined(BSS_DEBUG)
+#pragma comment(lib, "../lib/bss-util32_d.lib")
+#else
+#pragma comment(lib, "../lib/bss-util32.lib")
 #endif
 #endif
 
