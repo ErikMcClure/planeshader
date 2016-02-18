@@ -486,9 +486,9 @@ TESTDEF::RETPAIR test_psVector()
   engine->GetPass(0)->Insert(&curve2);
   
   psRoundedRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
-  rect.SetCorners(psRect(50, 30, 30, 0));
+  rect.SetCorners(psRect(0, 0, 0, 0));
   rect.SetOutlineColor(0xFF0000FF);
-  rect.SetOutline(0);
+  rect.SetOutline(5);
 
   psRenderCircle circle(50, psVec3D(200, 300, 0));
   circle.SetOutlineColor(0xFF0000FF);
@@ -559,7 +559,7 @@ int main(int argc, char** argv)
   init.driver=RealDriver::DRIVERTYPE_DX11;
   init.width=640;
   init.height=480;
-  init.mode = PSINIT::MODE_BORDERLESS;
+  //init.mode = PSINIT::MODE_BORDERLESS;
   init.extent.x = 0.2;
   init.extent.y = 100;
   //init.antialias = 8;
