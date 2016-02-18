@@ -94,11 +94,15 @@ float4 mainPS(PS_INPUT input) : SV_Target
   else
   {
     dist = min(p, d - p);
-    dist.x = 1 - (min(dist.x, dist.y) / abs(input.outline));
-    dist.y = sign(input.outline);
+    //if(dist.y <= dist.x) dist.x = dist.y;
+    dist.x = 1 - (dist.x / input.outline);
+    dist.y = 1;
   }
   
   float w = fwidth(dist.x)*0.5;
   float s = smoothstep(1 - dist.y - w, 1 - dist.y + w, dist.x);
-  return lerp(input.color, input.outlinecolor, s)*float4(1,1,1,1.0-smoothstep(1-w, 1+w, dist.x));
+  float alpha = smoothstep(1+w, 1-w, dist.x);
+  float4 fill = float4(input.color.rgb, 1);
+  float4 edge = float4(input.outlinecolor.rgb, 1);
+  return (fill*input.color.a*(1-s)) + (edge*input.outlinecolor.a*s*alpha);
 }
