@@ -51,7 +51,7 @@ namespace planeshader {
     virtual void BSS_FASTCALL DrawLinesStart(psBatchObj& obj, psFlag flags, const float(&xform)[4][4] = identity) { }
     virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) { }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport) { }
+    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) { }
     virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport) { }
     virtual void BSS_FASTCALL PopCamera() {}
     // Applies the camera transform (or it's inverse) according to the flags to a point.
@@ -59,9 +59,6 @@ namespace planeshader {
     psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, psFlag flags) const { return VEC3D_ZERO; }
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad() { }
-    // Gets/Sets the extent
-    virtual const psVec& GetExtent() const { return VEC_ZERO; }
-    virtual void BSS_FASTCALL SetExtent(float znear, float zfar) { }
     // Creates a vertex or index buffer
     virtual void* BSS_FASTCALL CreateBuffer(size_t bytes, unsigned int usage, const void* initdata=0) { return (void*)0xFFFFFFFF; }
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags) { return 0; }

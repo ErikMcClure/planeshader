@@ -14,11 +14,13 @@ float4 mainPS(PS_INPUT input) : SV_Target
   float2 d = input.xywh.zw;
   float angle = atan2(p.y, p.x);
   float anglew = fwidth(angle);
-  float r = distance(p/d, float2(0.50, 0.50));
-  float rw = fwidth(r);
-  float dist = smoothstep(input.arcs.y - anglew, input.arcs.y + anglew, angle)*smoothstep(input.arcs.x - anglew, input.arcs.x + anglew, 1 - angle);
+  float r = distance(p/d, float2(0.50, 0.50))*2;
+  float w = fwidth(r);
+  float outline = (input.outline / d.x)*2;
   
-  float delta = fwidth(dist);
-  float alpha = 1.0-smoothstep(0.45-delta, 0.45, dist);
-	return input.color*float4(1,1,1,alpha);
+  float s = 1 - smoothstep(1 - outline - w, 1 - outline + w, r);
+  float alpha = smoothstep(1+w, 1-w, r);
+  float4 fill = float4(input.color.rgb, 1);
+  float4 edge = float4(input.outlinecolor.rgb, 1);
+  return (fill*input.color.a*s) + (edge*input.outlinecolor.a*saturate(alpha-s));
 }

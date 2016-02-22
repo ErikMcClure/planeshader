@@ -10,6 +10,7 @@
 #include "bss-util/cDynArray.h"
 #include "bss-util/profiler.h"
 #include "psColor.h"
+#include "psCamera.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -50,7 +51,7 @@ using namespace bss_util;
 
 // Constructors
 psDirectX11::psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
-_backbuffer(0), _extent(10000, 1), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
+_backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
 {
   PROFILE_FUNC();
   memset(&library, 0, sizeof(SHADER_LIBRARY));
@@ -590,7 +591,7 @@ void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj& obj, const psLine& line, fl
   linebuf[obj.buffer->nvert++] = { line.x1, line.y1, Z1, 1, vertexcolor };
   linebuf[obj.buffer->nvert++] = { line.x2, line.y2, Z2, 1, vertexcolor };
 }
-void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport)
+void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
 {
   PROFILE_FUNC();
 
@@ -603,8 +604,8 @@ void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot
   // to the right, and +z points into the screen.
   BSS_ALIGN(16) Matrix<float, 4, 4> matProj;
   memset((float*)matProj.v, 0, sizeof(Matrix<float, 4, 4>));
-  float znear = _extent.x;
-  float zfar = _extent.y;
+  float znear = extent.x;
+  float zfar = extent.y;
   matProj.v[0][0] = 2.0f / viewport.right;
   matProj.v[1][1] = -2.0f / viewport.bottom;
   matProj.v[2][2] = zfar / (zfar - znear);
@@ -688,7 +689,6 @@ void psDirectX11::DrawFullScreenQuad()
   _context->Draw(3, 0);
   if(_lastVS != _fsquadVS) _context->VSSetShader(_lastVS, 0, 0); // restore last shader
 }
-void BSS_FASTCALL psDirectX11::SetExtent(float znear, float zfar) { _extent.x = znear; _extent.y = zfar; }
 void* BSS_FASTCALL psDirectX11::CreateBuffer(size_t bytes, unsigned int usage, const void* initdata)
 {
   PROFILE_FUNC();
@@ -784,7 +784,8 @@ void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsign
   info->FirstMipLevel = 0;
   info->Filter = _filtertodx11(loadfilter);
   if(sRGB) info->Filter |= D3DX11_FILTER_SRGB_IN;
-  info->MipFilter = _filtertodx11(mipfilter);
+  info->MipFilter = _filtertodx11(FILTERS(mipfilter&FILTER_MASK));
+  if(sRGB || (mipfilter&FILTER_SRGB_MIPMAP)) info->MipFilter |= D3DX11_FILTER_SRGB;
   if(dim.x != 0) info->Width = dim.x;
   if(dim.y != 0) info->Height = dim.y;
   info->Usage = (D3D11_USAGE)_usagetodxtype(usage);
@@ -819,7 +820,7 @@ void BSS_FASTCALL psDirectX11::_applyloadshader(ID3D11Texture2D* tex, psShader* 
   _context->OMSetRenderTargets(1, &rtview, 0);
   SetStateblock(STATEBLOCK_LIBRARY::REPLACE->GetSB());
   shader->Activate();
-  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc.Width, desc.Height));
+  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc.Width, desc.Height), psCamera::default_extent);
   DrawFullScreenQuad();
   PopCamera();
   _applyrendertargets(); //re-apply whatever render target we had before
@@ -872,7 +873,7 @@ void BSS_FASTCALL psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* s
     _context->PSSetShaderResources(0, 1, &view);
     _context->PSSetSamplers(0, 1, &samp);
     _context->OMSetRenderTargets(1, &rtview, 0);
-    PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc2d.Width/(1<<i), desc2d.Height/(1<<i)));
+    PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc2d.Width/(1<<i), desc2d.Height/(1<<i)), psCamera::default_extent);
     DrawFullScreenQuad();
     PopCamera();
     _applyrendertargets();
@@ -1386,7 +1387,7 @@ void psDirectX11::_resetscreendim()
   rawscreendim = _backbuffer->GetDim();
   screendim = ((_dpi == psVeciu(BASE_DPI)) ? psVec(rawscreendim) : (psVec(rawscreendim) * (psVec(BASE_DPI) / psVec(_dpi))));
   _camstack.Clear();
-  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y));
+  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y), psCamera::default_extent);
 }
 void BSS_FASTCALL psDirectX11::Clear(unsigned int color)
 {
