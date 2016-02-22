@@ -73,7 +73,6 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   STATEBLOCK_LIBRARY::INITLIBRARY();
   psStateblock::DEFAULT = psStateblock::Create(0, 0);
   _driver->SetStateblock(psStateblock::DEFAULT->GetSB());
-  _driver->SetExtent(init.extent.x, init.extent.y);
   
   if(_guiflags&PSGUIMANAGER_LOCKCURSOR) // Ensure the mouse cursor is actually locked
     _dolockcursor(_window);

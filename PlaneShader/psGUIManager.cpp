@@ -646,8 +646,6 @@ void psGUIManager::_exactmousecalc()
   ScreenToClient(_window, &p);
   _mousedata.relcoord.x = p.x;
   _mousedata.relcoord.y = p.y;
-  //_mousedata.abscoord=_mousedata.relcoord;
-  //_driver->TransformPoint(_mousedata.abscoord,false,false,false);
 }
 
 psVeciu psGUIManager::_resizewindow(psVeciu dim, char mode)

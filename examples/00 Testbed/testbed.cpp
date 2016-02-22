@@ -202,7 +202,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   {
     processGUI();
     driver->Clear(0);
-    driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
+    driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
     driver->library.IMAGE->Activate();
     driver->SetTextures(&pslogo, 1);
     driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
@@ -274,7 +274,7 @@ TESTDEF::RETPAIR test_psParticles()
   {
     processGUI();
     driver->Clear(0);
-    driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim));
+    driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
 
     for(int i = 0; i < 5000; ++i)
     {
@@ -312,13 +312,16 @@ TESTDEF::RETPAIR test_psPass()
 
   psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_PREMULTIPLY_SRGB, false));
   psImage image2(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_ALPHABOX, 0, FILTER_NONE, false));
+  psImage image3(psTex::Create("../media/blendtest.png", USAGE_SHADER_RESOURCE, FILTERS(FILTER_LINEAR|FILTER_SRGB_MIPMAP), 0, FILTER_NONE, false));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
   //engine->GetPass(0)->Insert(&image2);
   engine->GetPass(0)->Insert(&image);
+  engine->GetPass(0)->Insert(&image3);
   //engine->GetPass(0)->Insert(&line);
   engine->GetPass(0)->SetClearColor(0xFF000000);
   engine->GetPass(0)->SetCamera(&globalcam);
   //globalcam.SetPositionZ(-4.0);
+  image3.SetScale(psVec(0.5));
 
   image.SetStateblock(STATEBLOCK_LIBRARY::PREMULTIPLIED);
   const_cast<psTex*>(image.GetTexture())->SetTexblock(STATEBLOCK_LIBRARY::UVBORDER);
@@ -486,13 +489,13 @@ TESTDEF::RETPAIR test_psVector()
   engine->GetPass(0)->Insert(&curve2);
   
   psRoundedRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
-  rect.SetCorners(psRect(0, 0, 0, 0));
+  rect.SetCorners(psRect(30, 10, 30, 0));
   rect.SetOutlineColor(0xFF0000FF);
-  rect.SetOutline(5);
+  rect.SetOutline(0.5);
 
   psRenderCircle circle(50, psVec3D(200, 300, 0));
   circle.SetOutlineColor(0xFF0000FF);
-  circle.SetOutline(0.5);
+  circle.SetOutline(5);
 
   engine->GetPass(0)->Insert(&rect);
   engine->GetPass(0)->Insert(&circle);
@@ -560,16 +563,17 @@ int main(int argc, char** argv)
   init.width=640;
   init.height=480;
   //init.mode = PSINIT::MODE_BORDERLESS;
-  init.extent.x = 0.2;
-  init.extent.y = 100;
   //init.antialias = 8;
-  //init.sRGB = true;
+  init.sRGB = false;
   init.mediapath = "../media";
   //init.iconresource=101;
   //init.filter=5;
   {
     psEngine ps(init);
     if(ps.GetQuit()) return 0;
+    psCamera::default_extent.x = 0.2f;
+    psCamera::default_extent.y = 100;
+    globalcam.SetExtent(psCamera::default_extent);
 
     std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool
     { 

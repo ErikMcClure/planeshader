@@ -22,7 +22,7 @@ namespace planeshader {
   struct PSINIT
   {
     inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX11), mode(MODE_WINDOWED), vsync(false), sRGB(false),
-      antialias(0), extent(1.0f, 50000.0f), errout(0), mediapath("") {}
+      antialias(0), errout(0), mediapath("") {}
 
     int width;
     int height;
@@ -40,7 +40,6 @@ namespace planeshader {
     bool vsync;
     bool sRGB;
     unsigned char antialias;
-    psVec extent;
     std::ostream* errout;
     const char* mediapath;
   };

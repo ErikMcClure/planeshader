@@ -83,26 +83,29 @@ float4 mainPS(PS_INPUT input) : SV_Target
   float4 r = input.corners;
   float2 dist;
   float outline = input.outline;
-  if(p.x < r[0] && p.y < r[0])
+  float w;
+  if(p.x < r[0] && p.y < r[0]) {
     dist = float2(distance(p, float2(r[0],r[0])), input.outline) / r[0];
-  else if(p.x > d.x - r[1] && p.y < r[1])
+    w = fwidth(dist.x)*0.5;
+  } else if(p.x > d.x - r[1] && p.y < r[1]) {
     dist = float2(distance(p, float2(d.x - r[1],r[1])), input.outline) / r[1];
-  else if(p.x < r[2] && p.y > d.y - r[2])
+    w = fwidth(dist.x)*0.5;
+  } else if(p.x < r[2] && p.y > d.y - r[2]) {
     dist = float2(distance(p, float2(r[2],d.y - r[2])), input.outline) / r[2];
-  else if(p.x > d.x - r[3] && p.y > d.y - r[3])
+    w = fwidth(dist.x)*0.5;
+  } else if(p.x > d.x - r[3] && p.y > d.y - r[3]) {
     dist = float2(distance(p, float2(d.x - r[3],d.y - r[3])), input.outline) / r[3];
-  else
-  {
+    w = fwidth(dist.x)*0.5;
+  } else {
     dist = min(p, d - p);
-    //if(dist.y <= dist.x) dist.x = dist.y;
-    dist.x = 1 - (dist.x / input.outline);
+    dist.x = 1 - (min(dist.x,dist.y) / input.outline);
     dist.y = 1;
+    w = (fwidth((p.x + p.y)/2) / input.outline)*0.5; // Don't use dist.x here because it's not continuous, which breaks ddx and ddy
   }
   
-  float w = fwidth(dist.x)*0.5;
-  float s = smoothstep(1 - dist.y - w, 1 - dist.y + w, dist.x);
+  float s = 1 - smoothstep(1 - dist.y - w, 1 - dist.y + w, dist.x);
   float alpha = smoothstep(1+w, 1-w, dist.x);
   float4 fill = float4(input.color.rgb, 1);
   float4 edge = float4(input.outlinecolor.rgb, 1);
-  return (fill*input.color.a*(1-s)) + (edge*input.outlinecolor.a*s*alpha);
+  return (fill*input.color.a*s) + (edge*input.outlinecolor.a*saturate(alpha-s));
 }

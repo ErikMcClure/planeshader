@@ -9,14 +9,13 @@ using namespace planeshader;
 using namespace bss_util;
 
 const psCamera psCamera::default_camera;
+psVec psCamera::default_extent(1.0f, 50000.0f);
 
-psCamera::psCamera(const psCamera& copy) : psLocatable(copy), _viewport(copy._viewport)
+psCamera::psCamera(const psCamera& copy) : psLocatable(copy), _viewport(copy._viewport), _extent(copy._extent)
 {
-
 }
-psCamera::psCamera(const psVec3D& position, FNUM rotation, const psVec& pivot) : psLocatable(position, rotation, VEC_ZERO), _viewport(RECT_UNITRECT)
+psCamera::psCamera(const psVec3D& position, FNUM rotation, const psVec& pivot, const psVec& extent) : psLocatable(position, rotation, VEC_ZERO), _viewport(RECT_UNITRECT), _extent(extent)
 {
-
 }
 psCamera::~psCamera() {}
 
