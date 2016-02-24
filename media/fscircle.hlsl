@@ -8,19 +8,31 @@ struct PS_INPUT
   float4 outlinecolor : COLOR1;
 };
 
+float fmod(float n, float d)
+{
+  return n - floor(n/d)*d;
+}
+
+float getarc(float2 arcs, float angle, float anglew)
+{
+  const float PI = 3.14159265359;
+  angle = fmod(angle-arcs.x+anglew, PI*2) - anglew; // Instead of enclosing within [0, 2PI], we shift to [-anglew, PI*2-anglew] which prevents the smoothstep from breaking
+  return smoothstep(-anglew, anglew, angle) - smoothstep(arcs.y-anglew, arcs.y+anglew, angle);
+}
+
 float4 mainPS(PS_INPUT input) : SV_Target
 {
-  float2 p = input.xywh.xy;
   float2 d = input.xywh.zw;
-  float angle = atan2(p.y, p.x);
-  float anglew = fwidth(angle);
-  float r = distance(p/d, float2(0.50, 0.50))*2;
-  float w = fwidth(r);
+  float2 p = input.xywh.xy/d;
+  float angle = atan2(- p.y + 0.5, p.x - 0.5);
+  float anglew = fwidth(angle)*0.5;
+  float r = distance(p, float2(0.50, 0.50))*2;
+  float w = fwidth(r)*0.5;
   float outline = (input.outline / d.x)*2;
   
   float s = 1 - smoothstep(1 - outline - w, 1 - outline + w, r);
   float alpha = smoothstep(1+w, 1-w, r);
   float4 fill = float4(input.color.rgb, 1);
   float4 edge = float4(input.outlinecolor.rgb, 1);
-  return (fill*input.color.a*s) + (edge*input.outlinecolor.a*saturate(alpha-s));
+  return (fill*input.color.a*s*getarc(input.arcs.xy, angle, anglew)) + (edge*input.outlinecolor.a*saturate(alpha-s)*getarc(input.arcs.zw, angle, anglew));
 }
