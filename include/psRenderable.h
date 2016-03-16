@@ -20,7 +20,7 @@ namespace planeshader {
   public:
     psRenderable(const psRenderable& copy);
     psRenderable(psRenderable&& mov);
-    explicit psRenderable(psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass=0, unsigned char internaltype=0);
+    explicit psRenderable(psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass=0);
     virtual ~psRenderable();
     virtual void Render();
     inline int GetZOrder() const { return _zorder; }
@@ -46,17 +46,14 @@ namespace planeshader {
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);
 
-    static void Activate(psRenderable* r);
-    virtual void BSS_FASTCALL _render(psBatchObj* obj) = 0;
+    void Activate();
+    virtual void BSS_FASTCALL _render() = 0;
 
   protected:
     void _destroy();
     void _invalidate();
-    BSS_FORCEINLINE unsigned char _internaltype() const { return _internalflags&INTERNALFLAG_MASK; }
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
-    virtual char BSS_FASTCALL _sort(psRenderable* r) const;
     virtual psRenderable* BSS_FASTCALL _getparent() const;
-    virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
+    virtual char BSS_FASTCALL _sort(psRenderable* r) const;
 
     bss_util::cBitField<psFlag> _flags;
     psPass* _pass; // Stores what pass we are in
@@ -68,26 +65,12 @@ namespace planeshader {
     bss_util::TRB_Node<psRenderable*>* _psort;
     bss_util::cArray<psTex*, unsigned char> _rts;
 
-    enum INTERNALTYPE : unsigned char
-    {
-      INTERNALTYPE_NONE = 0,
-      INTERNALTYPE_IMAGE,
-      INTERNALTYPE_LINE,
-      INTERNALTYPE_POINT,
-      INTERNALTYPE_ELLIPSE,
-      INTERNALTYPE_POLYGON,
-      INTERNALTYPE_TILESET,
-      INTERNALTYPE_TEXT,
-      INTERNALTYPE_CURVE,
-    };
-
     enum INTERNALFLAGS : unsigned char
     {
       INTERNALFLAG_ACTIVE = 0x80,
       INTERNALFLAG_SOLID = 0x40,
       INTERNALFLAG_SORTED = 0x20,
       INTERNALFLAG_OWNED = 0x10,
-      INTERNALFLAG_MASK = 0x0F,
     };
   };
 }

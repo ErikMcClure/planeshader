@@ -120,7 +120,7 @@ namespace planeshader {
     };
 
   protected:
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    virtual void BSS_FASTCALL _render();
 
     psTexFont* _font;
     cStr _title;

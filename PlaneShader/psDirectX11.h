@@ -11,6 +11,7 @@
 #include "directx/D3D11.h"
 #include "directx/D3DX11.h"
 #include "psDXGI.h"
+#include <array>
 
 namespace planeshader {
   // Vertex input to geometry shader for rect rendering (UV coordinates are added in batches of 4 floats after the end)
@@ -64,20 +65,22 @@ namespace planeshader {
     virtual bool Begin();
     // Ends a scene
     virtual char End();
+    // Flush draw buffer
+    virtual void BSS_FASTCALL Flush();
+    virtual psBatchObj& BSS_FASTCALL FlushPreserve();
     // Draws a vertex object
     virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity);
     // Draws a rectangle
-    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawRectBatchBegin(psBatchObj& obj, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& obj, const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color);
+    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity);
+    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity);
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, unsigned int color);
     // Draws a polygon
-    virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, psFlag flags, const float(&transform)[4][4] = identity);
-    // Draws points (which are always batch rendered)
-    virtual void BSS_FASTCALL DrawPointsBegin(psBatchObj& obj, psFlag flags, const float(&transform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawPoints(psBatchObj& obj, psVertex* particles, unsigned int num);
-    // Draws lines (which are also always batch rendered)
-    virtual void BSS_FASTCALL DrawLinesStart(psBatchObj& obj, psFlag flags, const float(&xform)[4][4] = identity);
+    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity);
+    // Draws points
+    virtual psBatchObj& BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity);
+    // Draws lines
+    virtual psBatchObj& BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity);
     virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor);
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent);
@@ -89,7 +92,7 @@ namespace planeshader {
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad();
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(size_t bytes, unsigned int usage, const void* initdata = 0);
+    virtual void* BSS_FASTCALL CreateBuffer(uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata);
     virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags);
     virtual void BSS_FASTCALL UnlockBuffer(void* target);
     virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0);
@@ -99,9 +102,10 @@ namespace planeshader {
     virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false);
     virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false);
     virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0);
-    // Pushes or pops a scissor rect on to the stack
-    virtual void BSS_FASTCALL PushScissorRect(const psRect& rect);
-    virtual void PopScissorRect();
+    // Pushes or pops a clip rect on to the stack
+    virtual void BSS_FASTCALL PushClipRect(const psRect& rect);
+    virtual psRect PeekClipRect();
+    virtual void PopClipRect();
     // Sets the rendertargets
     virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil = 0);
     // Sets shader constants
@@ -140,16 +144,19 @@ namespace planeshader {
     // Gets/Sets the effective DPI
     virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI));
     virtual psVeciu GetDPI();
+    // Returns an index to an internal state snapshot
+    virtual unsigned int BSS_FASTCALL GetSnapshot();
 
     inline long GetLastError() const { return _lasterr; }
 
     static const int BATCHSIZE = 512;
-    static const int RECTBUFSIZE = sizeof(DX11_rectvert)*(BATCHSIZE + (BATCHSIZE / 2));
+    static const int RECTBUFSIZE = BATCHSIZE + (BATCHSIZE / 2);
 
     static void* operator new(std::size_t sz);
     static void operator delete(void* ptr, std::size_t sz);
 
     struct CamDef { bss_util::Matrix<float, 4, 4> viewproj; bss_util::Matrix<float, 4, 4> proj; psRectiu viewport; };
+    struct Snapshot { uint32_t tex[3]; uint32_t ntex[3]; uint32_t rt; uint32_t nrt; ID3D11DepthStencilView* depth; psRectl cliprect; };
 
   protected:
     static inline unsigned int BSS_FASTCALL _usagetodxtype(unsigned int types);
@@ -168,37 +175,38 @@ namespace planeshader {
     ID3D11View* _createshaderview(ID3D11Resource* src);
     ID3D11View* _creatertview(ID3D11Resource* src);
     ID3D11View* _createdepthview(ID3D11Resource* src);
-    long _lasterr;
     void _processdebugqueue();
     void _getbackbufferref();
     void _resetscreendim();
     void _applycamera();
     void _applyrendertargets();
+    void _applysnapshot(const Snapshot& s);
     void BSS_FASTCALL _applyloadshader(ID3D11Texture2D* tex, psShader* shader, bool sRGB);
     void BSS_FASTCALL _applymipshader(ID3D11Texture2D* tex, psShader* shader);
     void BSS_FASTCALL _processdebugmessage(UINT64 index, SIZE_T len);
     psVeciu _getrendertargetsize(ID3D11RenderTargetView* view);
+    bool _checksnapshot(Snapshot& s);
+    psBatchObj& _checkflush(psBatchObj& obj, uint32_t num);
 
     ID3D11Device* _device;
     ID3D11DeviceContext* _context;
     IDXGISwapChain* _swapchain;
     D3D_FEATURE_LEVEL _featurelevel;
     psTex* _backbuffer;
-    void* _rectvertbuf;
-    void* _batchvertbuf;
-    void* _batchindexbuf;
-    psVertObj _batchobjbuf;
-    psVertObj _ptobjbuf;
-    psVertObj _lineobjbuf;
-    psVertObj _rectobjbuf;
+    psBufferObj _rectvertbuf;
+    psBufferObj _batchvertbuf;
+    psBufferObj _batchindexbuf;
     psVec _extent;
     psVeciu _dpi;
     bool _zerocamrot;
     bool _vsync;
-    bss_util::cStack<psRectl> _scissorstack;
+    bss_util::cStack<psRectl> _clipstack;
     bss_util::cStack<CamDef> _camstack;
-    bss_util::cDynArray<const psTex*> _lastrt;
-    const psTex* _lastdepth;
+    bss_util::cDynArray<Snapshot, uint32_t> _snapshotstack;
+    bss_util::cDynArray<void*, uint32_t> _texstack;
+    std::array<bss_util::cDynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
+    bss_util::cDynArray<ID3D11RenderTargetView*, uint32_t> _lastrt;
+    ID3D11DepthStencilView* _lastdepth;
     ID3D11VertexShader* _fsquadVS;
     ID3D11VertexShader* _defaultVS;
     ID3D11VertexShader* _lastVS;
@@ -214,6 +222,7 @@ namespace planeshader {
     ID3D11InfoQueue * _infoqueue;
     psShader* _alphaboxfilter;
     psShader* _premultiplyfilter;
+    long _lasterr;
   };
 }
 

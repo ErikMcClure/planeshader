@@ -28,6 +28,7 @@ typedef struct _FG_ROOT {
   fgDeferAction* updateroot;
   struct __kh_fgRadioGroup_t* radiohash;
   double time; // In seconds
+  fgMouseState mouse;
 } fgRoot;
 
 FG_EXTERN fgRoot* FG_FASTCALL fgInitialize();
@@ -41,6 +42,7 @@ FG_EXTERN size_t FG_FASTCALL fgRoot_Message(fgRoot* self, const FG_Msg* msg);
 FG_EXTERN size_t FG_FASTCALL fgRoot_Inject(fgRoot* self, const FG_Msg* msg); // Returns 0 if handled, 1 otherwise
 FG_EXTERN size_t FG_FASTCALL fgRoot_BehaviorDefault(fgChild* self, const FG_Msg* msg);
 FG_EXTERN void FG_FASTCALL fgRoot_Update(fgRoot* self, double delta);
+FG_EXTERN void FG_FASTCALL fgRoot_CheckMouseMove(fgRoot* self);
 FG_EXTERN fgDeferAction* FG_FASTCALL fgRoot_AllocAction(char (FG_FASTCALL *action)(void*), void* arg, double time);
 FG_EXTERN void FG_FASTCALL fgRoot_DeallocAction(fgRoot* self, fgDeferAction* action); // Removes action from the list if necessary
 FG_EXTERN void FG_FASTCALL fgRoot_AddAction(fgRoot* self, fgDeferAction* action); // Adds an action. Action can't already be in list.
@@ -49,6 +51,11 @@ FG_EXTERN void FG_FASTCALL fgRoot_ModifyAction(fgRoot* self, fgDeferAction* acti
 FG_EXTERN void FG_FASTCALL fgStandardDraw(fgChild* self, AbsRect* area, int max);
 FG_EXTERN void fgPushClipRect(AbsRect* clip);
 FG_EXTERN void fgPopClipRect();
+FG_EXTERN void fgSetCursor(unsigned int type, void* custom); // What custom actually is depends on the implemention
+FG_EXTERN void fgClipboardCopy(unsigned int type, const void* data, size_t length); // passing in NULL will erase whatever what was in the clipboard.
+FG_EXTERN char fgClipboardExists(unsigned int type);
+FG_EXTERN const void* fgClipboardPaste(unsigned int type, size_t* length); // The pointer returned to this MUST BE FREED by calling fgClipboardFree() once you are done with it.
+FG_EXTERN void fgClipboardFree(const void* mem);
 
 #ifdef  __cplusplus
 }

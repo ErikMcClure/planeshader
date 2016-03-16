@@ -24,7 +24,7 @@ void psShader::Activate() const
   _driver->SetLayout(_layout);
 }
 
-bool BSS_FASTCALL psShader::SetConstants(const void* data, size_t sz, unsigned char I)
+bool BSS_FASTCALL psShader::SetConstants(const void* data, uint32_t sz, unsigned char I)
 {
   PROFILE_FUNC();
   if(!_sc[I] || sz != _sz[I]) return false;
@@ -51,7 +51,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
   if(!_driver) return 0;
   void* ss[6]={ 0 };
   void* sc[6]={ 0 };
-  size_t sz[6]={ 0 };
+  uint32_t sz[6]={ 0 };
 
   unsigned char index=-1;
   unsigned char minvalid=-1;
@@ -69,7 +69,7 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
 
     ss[index] = !infos[i].shader?0:_driver->CreateShader(infos[i].shader, infos[i].v);
     sz[index] = infos[i].ty_sz;
-    if(sz[index]>0) sc[index] = _driver->CreateBuffer(sz[index], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, infos[i].init);
+    if(sz[index]>0) sc[index] = _driver->CreateBuffer(sz[index], 1, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, infos[i].init);
   }
   assert(!num || (minindex<num));
   psShader* s = new psShader((!layout || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
@@ -106,7 +106,7 @@ psShader* BSS_FASTCALL psShader::MergeShaders(unsigned int num, const psShader* 
 }
 psShader::psShader(const psShader& copy) { _copy(copy); }
 psShader::psShader(psShader&& mov) { _move(std::move(mov)); }
-psShader::psShader(void* layout, void* ss[6], void* sc[6], size_t sz[6]) : _layout(layout)
+psShader::psShader(void* layout, void* ss[6], void* sc[6], uint32_t sz[6]) : _layout(layout)
 {
   for(unsigned char i = 0; i < 6; ++i) _ss[i]=ss[i];
   for(unsigned char i = 0; i < 6; ++i) _sc[i]=sc[i];
@@ -136,7 +136,7 @@ void psShader::_copy(const psShader& copy)
     _sc[i] = 0;
     if(copy._sc[i])
     {
-      _sc[i]=_driver->CreateBuffer(copy._sz[i], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, 0);
+      _sc[i]=_driver->CreateBuffer(copy._sz[i], 1, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, 0);
       _driver->CopyResource(_sc[i], copy._sc[i], psDriver::RES_CONSTBUF);
     }
   }
@@ -186,7 +186,7 @@ psShader& psShader::operator+=(const psShader& right)
       _driver->GrabResource(_ss[i], (psDriver::RESOURCE_TYPE)(psDriver::RES_SHADERVS+i));
       if(right._sc[i]!=0)
       {
-        _sc[i]=_driver->CreateBuffer(right._sz[i], USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, 0);
+        _sc[i]=_driver->CreateBuffer(right._sz[i], 1, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, 0);
         _driver->CopyResource(_sc[i], right._sc[i], psDriver::RES_CONSTBUF);
       }
     }

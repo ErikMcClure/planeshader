@@ -14,6 +14,7 @@ namespace bss_util {
   {
     cArraySlice(const cArraySlice& copy) : begin(copy.begin), length(copy.length) {}
     cArraySlice(T* b, CType l) : begin(b), length(l) { }
+    cArraySlice() {}
     inline cArraySlice& operator=(const cArraySlice& right) { begin = right.begin; length = right.length; return *this; }
     inline cArraySlice& operator++() { assert(length > 0); ++begin; --length; return *this; }
     inline cArraySlice operator++(int) { assert(length > 0); return cArraySlice(begin + 1, length - 1); }

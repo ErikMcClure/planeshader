@@ -42,6 +42,8 @@ bool dirkeys[9] = { false }; // left right up down in out counterclockwise clock
 float dirspeeds[4] = { 3.0f, 3.0f, 2.0f, 1.0f };
 bool gotonext = false;
 
+#pragma warning(disable:4244)
+
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../../bin/PlaneShader_d.lib")
 #pragma comment(lib, "../../lib/bss-util_d.lib")
@@ -196,31 +198,28 @@ TESTDEF::RETPAIR test_psDirectX11()
 
   psVec3D imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y), RANDFLOATGEN(0, PI_DOUBLEf));
-  psBatchObj obj;
 
   while(!gotonext && engine->Begin())
   {
     processGUI();
     driver->Clear(0);
     driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
-    driver->library.IMAGE->Activate();
     driver->SetTextures(&pslogo, 1);
-    driver->DrawRect(psRectRotateZ(500, 500, 500+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
-    driver->DrawRectBatchBegin(obj, 1, 0);
-    for(int i = 0; i < NUMBATCH; ++i) {
-      driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x+pslogo->GetDim().x, imgpos[i].y+pslogo->GetDim().y, imgpos[i].z, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF);
+    driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(600, 500, 600+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
+    driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(500, 500, 500 + pslogo->GetDim().x, 500 + pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
+    {
+      psBatchObj& obj = driver->DrawRectBatchBegin(driver->library.IMAGE, 0, 1, 0);
+      for(int i = 0; i < NUMBATCH; ++i) {
+        driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x + pslogo->GetDim().x, imgpos[i].y + pslogo->GetDim().y, imgpos[i].z, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 0xFFFFFFFF);
+      }
     }
-    driver->DrawBatchEnd(obj);
 
-    driver->library.LINE->Activate();
-    driver->DrawLinesStart(obj, PSFLAG_FIXED);
+    psBatchObj& obj = driver->DrawLinesStart(driver->library.LINE, 0, PSFLAG_FIXED);
     driver->DrawLines(obj, psLine(0, 0, 100, 200), 0, 0, 0xFFFFFFFF);
     driver->DrawLines(obj, psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
-    driver->DrawBatchEnd(obj);
 
-    driver->library.POLYGON->Activate();
     psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
-    driver->DrawPolygon(polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
+    driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
 
     updatefpscount(timer, fps);
@@ -268,8 +267,6 @@ TESTDEF::RETPAIR test_psParticles()
     verts[i].color = 0x88FFFFFF;
   }
 
-  psBatchObj obj;
-
   while(!gotonext && engine->Begin())
   {
     processGUI();
@@ -286,12 +283,8 @@ TESTDEF::RETPAIR test_psParticles()
       velocities[i] += psVec::FromPolar(0.004, bssfmod<double>(d*PI - atan2(verts[i].y - driver->screendim.y / 2, -verts[i].x + driver->screendim.x / 2), PI_DOUBLE)); // At d = 0, the velocity will always point towards the center.
     }
 
-    driver->library.PARTICLE->Activate();
-    driver->SetStateblock(STATEBLOCK_LIBRARY::GLOW->GetSB());
     driver->SetTextures(&particle, 1);
-    driver->DrawPointsBegin(obj, 0);
-    driver->DrawPoints(obj, verts, 5000);
-    driver->DrawBatchEnd(obj);
+    driver->DrawPoints(driver->library.PARTICLE, STATEBLOCK_LIBRARY::GLOW, verts, 5000, 0);
     engine->End();
     updatefpscount(timer, fps);
   }
@@ -316,7 +309,7 @@ TESTDEF::RETPAIR test_psPass()
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
   //engine->GetPass(0)->Insert(&image2);
   engine->GetPass(0)->Insert(&image);
-  engine->GetPass(0)->Insert(&image3);
+  //engine->GetPass(0)->Insert(&image3);
   //engine->GetPass(0)->Insert(&line);
   engine->GetPass(0)->SetClearColor(0xFF000000);
   engine->GetPass(0)->SetCamera(&globalcam);
@@ -330,6 +323,11 @@ TESTDEF::RETPAIR test_psPass()
 
   while(!gotonext && engine->Begin(0))
   {
+    for(int i = 0; i < 200; ++i)
+    {
+      image3.Render();
+      image.Render();
+    }
     processGUI();
     engine->End();
     updatefpscount(timer, fps);
@@ -429,6 +427,7 @@ TESTDEF::RETPAIR test_feather()
     updatefpscount(timer, fps);
   }
 
+
   fgSkin_Destroy(&skin);
 
   ENDTEST;
@@ -447,25 +446,22 @@ TESTDEF::RETPAIR test_psFont()
   psStateblock* block = STATEBLOCK_LIBRARY::SUBPIXELBLEND->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 1, 0.0f));
   block = block->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 0, 0.0f));
   block = block->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 2, 0.0f));
+  //font->PreloadGlyphs("qwertyuiopasdfghjklzxcvbnm`1234567890-=[];',./~!@#$%^&*()_+{}|:");
+
   while(!gotonext && engine->Begin())
   {
     processGUI();
     driver->Clear(0xFF999999);
-    driver->library.IMAGE0->Activate();
     driver->SetTextures(0, 0);
-    driver->DrawRect(psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF999900, PSFLAG_FIXED);
-    //driver->library.IMAGE->Activate();
-    //driver->SetStateblock(block->GetSB());
-    driver->library.TEXT1->Activate();
-    driver->SetStateblock(STATEBLOCK_LIBRARY::SUBPIXELBLEND1->GetSB());
+    driver->DrawRect(driver->library.IMAGE0, 0, psRectRotateZ(0, 0, 100, 100, 0), 0, 0, 0xFF999900, PSFLAG_FIXED);
     //font->DrawText("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla maximus sem at ante porttitor vehicula. Nulla a lorem imperdiet, consectetur metus id, congue enim. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Suspendisse potenti. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin placerat a ipsum ac sodales. Curabitur vel neque scelerisque elit mollis convallis. Proin porta augue metus, sed pulvinar nisl mollis ut. Proin at aliquam erat. Quisque at diam tellus. Aenean facilisis justo ut mauris egestas dignissim. Maecenas scelerisque, ante ac blandit consectetur, magna sem pharetra massa, eu luctus orci ligula luctus augue. Integer at metus eros. Donec sed eros molestie, posuere nunc id, porta sem. \nMauris fermentum mauris ac eleifend ultrices.Fusce nec sollicitudin turpis, a ultricies metus.Nulla suscipit cursus orci, ac fringilla massa volutpat et.Nullam vestibulum dolor at tortor bibendum condimentum.Donec vitae faucibus risus, ut placerat mauris.Curabitur quis purus at urna pharetra lobortis.Pellentesque turpis velit, molestie aliquet elit sed, vestibulum rutrum nibh. \nSuspendisse ultricies leo nec ante accumsan ullamcorper.Suspendisse scelerisque molestie enim sit amet lacinia.Proin at lorem justo.Curabitur lectus ipsum, accumsan at quam eu, iaculis pellentesque felis.Fusce blandit feugiat dui, id placerat justo sollicitudin sed.Cras auctor lorem hendrerit leo facilisis porttitor.Sed vitae pulvinar purus, sed ornare ligula.\nPhasellus blandit, magna quis bibendum mattis, neque quam gravida quam, at tempus sem sapien eu mi.Phasellus ornare laoreet neque at blandit.Suspendisse vulputate fringilla fermentum.Fusce ante eros, laoreet ultricies eros sit amet, lobortis viverra elit.Curabitur consequat erat neque, in fringilla eros elementum eu.Quisque aliquam laoreet metus, volutpat vulputate tortor vehicula ut.Fusce sodales commodo justo, in condimentum ipsum aliquam at.Phasellus eget tellus ac arcu ultrices vehicula.Integer sagittis metus nibh, in varius mi scelerisque quis.Etiam ullamcorper gravida urna, et vestibulum velit posuere id.Aenean fermentum nibh ac dui rhoncus volutpat.Cras quis felis eget tortor vehicula interdum.In efficitur nulla quam, non condimentum ipsum pulvinar non.\nCras ultricies mi sed lacinia consequat.Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Suspendisse potenti.Nam consectetur eleifend libero sed pharetra.Suspendisse in dolor dui.Sed imperdiet pellentesque fermentum.Vivamus ac tortor felis.Aliquam id turpis euismod, tincidunt sapien ac, varius sapien.Vivamus id nulla mauris.");
-    font->DrawText("the dog jumped \nover the lazy fox", psRect(0, 0, 100, 0), TDT_WORDBREAK, 0, 0xCCFFAAFF);
+    font->DrawText(driver->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, "the dog jumped \nover the lazy fox", psRect(0, 0, 100, 0), TDT_WORDBREAK, 0, 0xCCFFAAFF);
 
     const psTex* t = font->GetTex();
     driver->SetTextures(&t, 1);
-    driver->DrawRect(psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, PSFLAG_FIXED);
+    driver->DrawRect(driver->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, psRectRotateZ(0, 100, t->GetDim().x, 100 + t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, PSFLAG_FIXED);
+    //driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
-    driver->SetStateblock(psStateblock::DEFAULT->GetSB());
 
     updatefpscount(timer, fps);
   }
@@ -536,15 +532,15 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] ={
-    { "psCircle", &test_psCircle },
     { "psVector", &test_psVector },
+    { "psDirectX11", &test_psDirectX11 },
+    { "psFont", &test_psFont },
+    { "psPass", &test_psPass },
+    { "psCircle", &test_psCircle },
+    { "psEffect", &test_psEffect },
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
-    { "psDirectX11", &test_psDirectX11 },
-    { "psPass", &test_psPass },
     { "psParticles", &test_psParticles },
-    { "psFont", &test_psFont },
-    { "psEffect", &test_psEffect },
     { "psInheritable", &test_psInheritable },
     { "ps_feather", &test_feather },
   };

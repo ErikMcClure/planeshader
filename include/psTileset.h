@@ -12,7 +12,7 @@
 namespace planeshader {
   struct psTile
   {
-    size_t index;
+    uint32_t index;
     float rotate;
     psVec pivot;
     unsigned int color;
@@ -32,10 +32,10 @@ namespace planeshader {
     ~psTileset();
     inline psVeci GetTileDim() const { return _tiledim; }
     void SetTileDim(psVeci tiledim);
-    size_t AutoGenDefs(psVec dim);
-    size_t AddTileDef(psRect uv, psVec dim, psVec offset = VEC_ZERO);
-    bool SetTile(psVeci pos, size_t index, unsigned int color = 0xFFFFFFFF, float rotate = 0, psVec pivot = VEC_ZERO);
-    void SetTiles(psTile* tiles, size_t num, size_t pitch);
+    uint32_t AutoGenDefs(psVec dim);
+    uint32_t AddTileDef(psRect uv, psVec dim, psVec offset = VEC_ZERO);
+    bool SetTile(psVeci pos, uint32_t index, unsigned int color = 0xFFFFFFFF, float rotate = 0, psVec pivot = VEC_ZERO);
+    void SetTiles(psTile* tiles, uint32_t num, uint32_t pitch);
     inline psVeci GetDimIndex() const { return psVeci(_rowlength, _tiles.Length()/_rowlength); }
     void SetDimIndex(psVeci dim);
 
@@ -43,12 +43,12 @@ namespace planeshader {
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
 
   protected:
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    virtual void BSS_FASTCALL _render();
 
-    size_t _rowlength;
+    uint32_t _rowlength;
     psVeci _tiledim; // Size of the actual tile for figuring out where to put each tile.
-    bss_util::cDynArray<psTileDef> _defs; // For each tile indice, stores what the actual UV coordinates of that tile are and what the offset is
-    bss_util::cDynArray<psTile> _tiles;
+    bss_util::cDynArray<psTileDef, uint32_t> _defs; // For each tile indice, stores what the actual UV coordinates of that tile are and what the offset is
+    bss_util::cDynArray<psTile, uint32_t> _tiles;
   };
 }
 #endif

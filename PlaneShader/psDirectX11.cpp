@@ -60,9 +60,6 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
   _cam_usr = 0;
   _proj_def = 0;
   _proj_usr = 0;
-  _rectvertbuf = 0;
-  _batchindexbuf = 0;
-  _batchvertbuf = 0;
   _fsquadVS = 0;
   _defaultSB = 0;
   _defaultSS = 0;
@@ -162,11 +159,11 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
   LOGFAILURE(_factory->CreateSwapChain(_device, &swapdesc, &_swapchain), "CreateSwapChain failed with error: ", _geterror(_lasterr));
   _factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
 
-  _cam_def = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
-  _cam_usr = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
-  _proj_def = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
-  _proj_usr = (ID3D11Buffer*)CreateBuffer(sizeof(float) * 4 * 4 * 2, USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC);
-  _scissorstack.Push(RECT_ZERO); //push the initial scissor rect (it'll get set in PushCamera)
+  _cam_def = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
+  _cam_usr = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
+  _proj_def = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
+  _proj_usr = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
+  _clipstack.Push(RECT_ZERO); //push the initial clip rect (it'll get set in PushCamera, inside _resetscreendim)
 
   _getbackbufferref();
   _resetscreendim();
@@ -359,13 +356,7 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }
 
-  _rectvertbuf = CreateBuffer(RECTBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  _rectobjbuf.indices = 0;
-  _rectobjbuf.mode = POINTLIST;
-  _rectobjbuf.nindice = 0;
-  _rectobjbuf.vsize = sizeof(DX11_rectvert);
-  _rectobjbuf.verts = _rectvertbuf;
-  _rectobjbuf.nvert = BATCHSIZE;
+  CreateBufferObj(&_rectvertbuf, RECTBUFSIZE, sizeof(DX11_rectvert), USAGE_VERTEX | USAGE_DYNAMIC, 0);
 
   unsigned short ind[BATCHSIZE * 3];
   unsigned int k = 0;
@@ -375,29 +366,8 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
     ind[k++] = 1 + i;
     ind[k++] = 2 + i;
   }
-  _batchindexbuf = CreateBuffer(sizeof(unsigned short)*BATCHSIZE * 3, USAGE_INDEX | USAGE_IMMUTABLE, ind);
-  _batchvertbuf = CreateBuffer(sizeof(DX11_simplevert)*BATCHSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  _batchobjbuf.indices = _batchindexbuf;
-  _batchobjbuf.ifmt = FMT_INDEX16;
-  _batchobjbuf.nindice = BATCHSIZE * 3;
-  _batchobjbuf.mode = TRIANGLELIST;
-  _batchobjbuf.vsize = sizeof(DX11_simplevert);
-  _batchobjbuf.verts = _batchvertbuf;
-  _batchobjbuf.nvert = BATCHSIZE;
-
-  _ptobjbuf.indices = 0;
-  _ptobjbuf.mode = POINTLIST;
-  _ptobjbuf.nindice = 0;
-  _ptobjbuf.vsize = sizeof(DX11_simplevert);
-  _ptobjbuf.verts = _batchvertbuf;
-  _ptobjbuf.nvert = BATCHSIZE;
-
-  _lineobjbuf.indices = 0;
-  _lineobjbuf.mode = LINELIST;
-  _lineobjbuf.nindice = 0;
-  _lineobjbuf.vsize = sizeof(DX11_simplevert);
-  _lineobjbuf.verts = _batchvertbuf;
-  _lineobjbuf.nvert = BATCHSIZE;
+  CreateBufferObj(&_batchindexbuf, BATCHSIZE * 3, sizeof(unsigned short), USAGE_INDEX | USAGE_IMMUTABLE, ind);
+  CreateBufferObj(&_batchvertbuf, BATCHSIZE, sizeof(DX11_simplevert), USAGE_VERTEX | USAGE_DYNAMIC, 0);
 
   // Create default stateblock and sampler state, then activate the default stateblock.
   _defaultSB = (DX11_SB*)CreateStateblock(0, 0);
@@ -419,12 +389,12 @@ psDirectX11::~psDirectX11()
     FreeResource(_proj_def, RES_CONSTBUF);
   if(_proj_usr)
     FreeResource(_proj_usr, RES_CONSTBUF);
-  if(_rectvertbuf)
-    FreeResource(_rectvertbuf, RES_VERTEXBUF);
-  if(_batchindexbuf)
-    FreeResource(_batchindexbuf, RES_INDEXBUF);
-  if(_batchvertbuf)
-    FreeResource(_batchvertbuf, RES_VERTEXBUF);
+  if(_rectvertbuf.buffer)
+    FreeResource(_rectvertbuf.buffer, RES_VERTEXBUF);
+  if(_batchindexbuf.buffer)
+    FreeResource(_batchindexbuf.buffer, RES_INDEXBUF);
+  if(_batchvertbuf.buffer)
+    FreeResource(_batchvertbuf.buffer, RES_VERTEXBUF);
   if(_fsquadVS)
     FreeResource(_fsquadVS, RES_SHADERVS);
   if(_defaultSB)
@@ -456,7 +426,8 @@ bool psDirectX11::Begin()
 char psDirectX11::End()
 {
   PROFILE_FUNC();
-  HRESULT hr = _swapchain->Present(_vsync, DXGI_PRESENT_RESTART); // DXGI_PRESENT_DO_NOT_SEQUENCE doesn't seem to do anything other than break everything.
+  Flush();
+  HRESULT hr = _swapchain->Present(_vsync, 0); // DXGI_PRESENT_DO_NOT_SEQUENCE doesn't seem to do anything other than break everything.
 
   PROCESSQUEUE();
 
@@ -472,11 +443,54 @@ char psDirectX11::End()
   }
   return 0;
 }
+void BSS_FASTCALL psDirectX11::Flush()
+{
+  for(uint32_t i = 0; i < _jobstack.Length(); ++i)
+  {
+    psBatchObj& obj = _jobstack[i];
+    obj.shader->Activate();
+    SetStateblock(obj.stateblock);
+    _applysnapshot(_snapshotstack[obj.snapshot]);
+
+    if(obj.buffer.verts->mem != 0)
+    {
+      UnlockBuffer(obj.buffer.verts->buffer);
+      obj.buffer.verts->mem = 0;
+      obj.buffer.verts->length = 0;
+    }
+    if(obj.buffer.indices && obj.buffer.indices->mem != 0)
+    {
+      UnlockBuffer(obj.buffer.indices->buffer);
+      obj.buffer.indices->mem = 0;
+      obj.buffer.indices->length = 0;
+    }
+
+    if(obj.buffer.nvert > 0)
+      Draw(&obj.buffer, obj.flags, obj.transform);
+  }
+
+  _jobstack.Clear();
+  _snapshotstack.Clear();
+  _texstack.Clear();
+}
+psBatchObj& BSS_FASTCALL psDirectX11::FlushPreserve()
+{
+  assert(_jobstack.Length() > 0);
+
+  psBatchObj obj(_jobstack.Back());
+  //MEMCPY(&obj, sizeof(psBatchObj), &, sizeof(psBatchObj));
+  Flush();
+  return DrawBatchBegin(obj.shader, obj.stateblock, obj.flags, obj.buffer.verts, obj.buffer.indices, obj.buffer.mode, obj.transform);
+}
+
 void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4])
 {
+  static ID3D11Buffer* lastvert = 0;
   PROFILE_FUNC();
   unsigned int offset = 0;
-  _context->IASetVertexBuffers(0, 1, (ID3D11Buffer**)&buf->verts, &buf->vsize, &offset);
+
+  //if(buf->verts->buffer != lastvert)
+    _context->IASetVertexBuffers(0, 1, &(lastvert = (ID3D11Buffer*)buf->verts->buffer), &buf->verts->element, &offset);
   _context->IASetPrimitiveTopology(_getdx11topology(buf->mode));
 
   ID3D11Buffer* cam = (flags&PSFLAG_FIXED) ? _proj_def : _cam_def;
@@ -487,50 +501,59 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&t
   _context->GSSetConstantBuffers(0, 1, (ID3D11Buffer**)&cam);
 
   if(!buf->indices)
-    _context->Draw(buf->nvert, 0);
+    _context->Draw(buf->nvert, buf->vert);
   else
   {
-    _context->IASetIndexBuffer((ID3D11Buffer*)buf->indices, FMTtoDXGI(buf->ifmt), 0);
-    _context->DrawIndexed(buf->nindice, 0, 0);
+    _context->IASetIndexBuffer((ID3D11Buffer*)buf->indices->buffer, (buf->indices->element==2) ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
+    _context->DrawIndexed(buf->nindice, buf->indice, buf->vert);
   }
 }
 
-void BSS_FASTCALL psDirectX11::DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4])
 { // Because we have to send the rect position in SOMEHOW and DX11 forces us to send matrices through the shaders, we will lock a buffer no matter what we do. 
   PROFILE_FUNC();
-  psBatchObj obj;
-  DrawRectBatchBegin(obj, numuv, flags, xform);
-  DrawRectBatch(obj, rect, uv, numuv, color);
-  DrawBatchEnd(obj);
+  psBatchObj& obj = DrawRectBatchBegin(shader, stateblock, numuv, flags, xform);
+  DrawRectBatch(obj, rect, uv, color);
+  return obj;
 }
-void BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psBatchObj& obj, unsigned char numuv, psFlag flags, const float(&xform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, unsigned char numuv, psFlag flags, const float(&xform)[4][4])
 {
-  _rectobjbuf.vsize = sizeof(DX11_rectvert) + sizeof(psRect)*numuv;
-  DrawBatchBegin(obj, flags, &_rectobjbuf, xform);
-}
-void BSS_FASTCALL psDirectX11::DrawRectBatch(psBatchObj& obj, const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color)
-{
-  const int VSIZE = sizeof(DX11_rectvert) + sizeof(psRect)*numuv;
-
-  if((obj.offset+VSIZE) >= RECTBUFSIZE)
+  uint32_t size = sizeof(DX11_rectvert) + sizeof(psRect)*numuv;
+  if(size != _rectvertbuf.element)
   {
-    DrawBatchEnd(obj);
-    obj.mem = LockBuffer(obj.buffer->verts, LOCK_WRITE_DISCARD);
+    Flush();
+    _rectvertbuf.element = size;
   }
 
-  DX11_rectvert* buf = (DX11_rectvert*)(((char*)obj.mem) + obj.offset);
+  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_rectvertbuf, 0, POINTLIST, xform);
+}
+psBatchObj& psDirectX11::_checkflush(psBatchObj& obj, uint32_t num)
+{
+  if((obj.buffer.vert + obj.buffer.nvert + num)*obj.buffer.verts->element > obj.buffer.verts->capacity)
+    return FlushPreserve();
+  return obj;
+}
+void BSS_FASTCALL psDirectX11::DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, unsigned int color)
+{
+  psBatchObj& obj = _checkflush(o, 1);
+  const uint32_t numuv = (obj.buffer.verts->element - sizeof(DX11_rectvert)) / sizeof(psRect);
+
+  DX11_rectvert* buf = (DX11_rectvert*)obj.buffer.get();
   *buf = { rect.left, rect.top, rect.z, rect.rotation,
     rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y,
     color };
   memcpy(buf + 1, uv, sizeof(psRect)*numuv);
-  obj.offset += VSIZE;
-  ++obj.buffer->nvert;
+  ++obj.buffer.nvert;
 }
-void BSS_FASTCALL psDirectX11::DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4])
 {
-  DX11_simplevert* buf = (DX11_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
-  if(num > BATCHSIZE) return;
-  for(int i = 0; i < num; ++i)
+  psBatchObj& obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
+  psBufferObj* v = obj.buffer.verts;
+
+  if(num*v->element > v->capacity) return obj;
+  DX11_simplevert* buf = (DX11_simplevert*)obj.buffer.get();
+  assert(v->element == sizeof(DX11_simplevert));
+  for(uint32_t i = 0; i < num; ++i)
   {
     buf[i].x = verts[i].x + offset.x;
     buf[i].y = verts[i].y + offset.y;
@@ -538,58 +561,43 @@ void BSS_FASTCALL psDirectX11::DrawPolygon(const psVec* verts, int num, psVec3D 
     buf[i].w = 1;
     buf[i].color = vertexcolor;
   }
-  UnlockBuffer(_batchobjbuf.verts);
-  _batchobjbuf.nvert = num;
-  _batchobjbuf.nindice = (num - 2) * 3;
-  Draw(&_batchobjbuf, flags, transform);
+  obj.buffer.nvert += num;
+  obj.buffer.indice = 0;
+  obj.buffer.nindice = (num - 2) * 3;
+  return obj;
 }
-void BSS_FASTCALL psDirectX11::DrawPolygon(const psVertex* verts, int num, psFlag flags, const float(&transform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4])
 {
   static_assert(sizeof(psVertex) == sizeof(DX11_simplevert), "Error, psVertex is not equal to DX11_simplevert");
-  DX11_simplevert* buf = (DX11_simplevert*)LockBuffer(_batchobjbuf.verts, LOCK_WRITE_DISCARD);
-  if(num > BATCHSIZE) return;
-  memcpy(buf, verts, num*sizeof(psVertex));
-  UnlockBuffer(_batchobjbuf.verts);
-  _batchobjbuf.nvert = num;
-  _batchobjbuf.nindice = (num - 2) * 3;
-  Draw(&_batchobjbuf, flags, transform);
+  psBatchObj& obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
+  psBufferObj* v = obj.buffer.verts;
+
+  if(num*v->element > v->capacity) return obj;
+  assert(v->element == sizeof(DX11_simplevert));
+  memcpy(obj.buffer.get(), verts, num*sizeof(psVertex));
+  obj.buffer.nvert = num;
+  obj.buffer.indice = 0;
+  obj.buffer.nindice = (num - 2) * 3;
+  return obj;
 }
-void BSS_FASTCALL psDirectX11::DrawPointsBegin(psBatchObj& obj, psFlag flags, const float(&transform)[4][4])
-{
-  DrawBatchBegin(obj, flags, &_ptobjbuf, transform);
-  //library.PARTICLE->SetConstants<float, SHADER_VER::GEOMETRY_SHADER_4_0>(16.0f);
-}
-void BSS_FASTCALL psDirectX11::DrawPoints(psBatchObj& obj, psVertex* particles, unsigned int num)
+psBatchObj& BSS_FASTCALL psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4])
 {
   static_assert(sizeof(psVertex) == sizeof(DX11_simplevert), "Error, psVertex is not equal to DX11_simplevert");
-
-  for(unsigned int i = num + obj.buffer->nvert; i > BATCHSIZE; i -= BATCHSIZE)
-  {
-    memcpy(((DX11_simplevert*)obj.mem) + obj.buffer->nvert, particles, (BATCHSIZE - obj.buffer->nvert)*sizeof(DX11_simplevert));
-    obj.buffer->nvert = BATCHSIZE;
-    DrawBatchEnd(obj);
-    obj.mem = LockBuffer(obj.buffer->verts, LOCK_WRITE_DISCARD);
-    num -= BATCHSIZE;
-    particles += BATCHSIZE;
-  }
-  memcpy(((DX11_simplevert*)obj.mem) + obj.buffer->nvert, particles, num*sizeof(DX11_simplevert)); // We can do this because we know num+_lockedptcount does not exceed MAX_POINTS
-  obj.buffer->nvert += num;
+  assert(sizeof(DX11_simplevert) == _batchvertbuf.element);
+  return DrawArray(shader, stateblock, particles, num, &_batchvertbuf, 0, POINTLIST, flags, transform);
 }
-void BSS_FASTCALL psDirectX11::DrawLinesStart(psBatchObj& obj, psFlag flags, const float(&xform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
 {
-  DrawBatchBegin(obj, flags, &_lineobjbuf, xform);
+  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINELIST, xform);
 }
-void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
+void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj& o, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
 {
-  if((obj.buffer->nvert+2) >= BATCHSIZE)
-  {
-    DrawBatchEnd(obj);
-    obj.mem = LockBuffer(obj.buffer->verts, LOCK_WRITE_DISCARD);
-  }
+  psBatchObj& obj = _checkflush(o, 2);
 
-  DX11_simplevert* linebuf = (DX11_simplevert*)obj.mem;
-  linebuf[obj.buffer->nvert++] = { line.x1, line.y1, Z1, 1, vertexcolor };
-  linebuf[obj.buffer->nvert++] = { line.x2, line.y2, Z2, 1, vertexcolor };
+  DX11_simplevert* linebuf = (DX11_simplevert*)obj.buffer.get();
+  linebuf[0] = { line.x1, line.y1, Z1, 1, vertexcolor };
+  linebuf[1] = { line.x2, line.y2, Z2, 1, vertexcolor };
+  obj.buffer.nvert += 2;
 }
 void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
 {
@@ -647,13 +655,13 @@ void psDirectX11::_applycamera()
   D3D11_VIEWPORT vp = { viewport.left, viewport.top, viewport.right, viewport.bottom, 0.0f, 1.0f };
   _context->RSSetViewports(1, &vp);
 
-  _scissorstack[0].left = viewport.left;
-  _scissorstack[0].top = viewport.top;
-  _scissorstack[0].right = viewport.right;
-  _scissorstack[0].bottom = viewport.bottom;
+  _clipstack[0].left = viewport.left;
+  _clipstack[0].top = viewport.top;
+  _clipstack[0].right = viewport.right;
+  _clipstack[0].bottom = viewport.bottom;
 
-  if(_scissorstack.Length() <= 1) // if we are currently using the default scissor rect, re-apply with new dimensions
-    PopScissorRect();
+  if(_clipstack.Length() <= 1) // if we are currently using the default clip rect, re-apply with new dimensions
+    _context->RSSetScissorRects(1, (D3D11_RECT*)&_clipstack[0]);
 
   _setcambuf(_cam_def, _camstack.Peek().viewproj.v, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
   _setcambuf(_cam_usr, _camstack.Peek().viewproj.v, identity);
@@ -689,16 +697,18 @@ void psDirectX11::DrawFullScreenQuad()
   _context->Draw(3, 0);
   if(_lastVS != _fsquadVS) _context->VSSetShader(_lastVS, 0, 0); // restore last shader
 }
-void* BSS_FASTCALL psDirectX11::CreateBuffer(size_t bytes, unsigned int usage, const void* initdata)
+
+void* BSS_FASTCALL psDirectX11::CreateBuffer(uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata)
 {
   PROFILE_FUNC();
-  bytes = T_NEXTMULTIPLE(bytes, 15);
+  uint32_t bytes = T_NEXTMULTIPLE(capacity*element, 15);
   D3D11_BUFFER_DESC desc = {
     bytes,
     (D3D11_USAGE)_usagetodxtype(usage),
     _usagetobind(usage),
     _usagetocpuflag(usage),
-    _usagetomisc(usage, _samples.Count > 1 && !(usage & USAGE_STAGING) && (usage & USAGE_MULTISAMPLE)),
+    _usagetomisc(usage, _samples.Count > 1 && (usage & USAGE_STAGING) != USAGE_STAGING && (usage & USAGE_MULTISAMPLE)), // It's crucial to use != for the USAGE_STAGING check, becuase it is NOT a flag.
+    element,
   };
 
   D3D11_SUBRESOURCE_DATA subdata = { initdata, 0, 0 };
@@ -713,6 +723,12 @@ void* BSS_FASTCALL psDirectX11::LockBuffer(void* target, unsigned int flags)
   D3D11_MAPPED_SUBRESOURCE r;
   LOGFAILURERETNULL(_context->Map((ID3D11Buffer*)target, 0, (D3D11_MAP)(flags&LOCK_TYPEMASK), (flags&LOCK_DONOTWAIT) ? D3D11_MAP_FLAG_DO_NOT_WAIT : 0, &r), "LockBuffer failed with error ", _geterror(_lasterr))
   return r.pData;
+}
+void BSS_FASTCALL psDirectX11::UnlockBuffer(void* target)
+{
+  PROFILE_FUNC();
+  _context->Unmap((ID3D11Buffer*)target, 0);
+  PROCESSQUEUE();
 }
 
 ID3D11Resource* psDirectX11::_textotex2D(void* t)
@@ -731,13 +747,6 @@ void* BSS_FASTCALL psDirectX11::LockTexture(void* target, unsigned int flags, un
   pitch = tex.RowPitch;
   PROCESSQUEUE();
   return tex.pData;
-}
-
-void BSS_FASTCALL psDirectX11::UnlockBuffer(void* target)
-{
-  PROFILE_FUNC();
-  _context->Unmap((ID3D11Buffer*)target, 0);
-  PROCESSQUEUE();
 }
 void BSS_FASTCALL psDirectX11::UnlockTexture(void* target, unsigned char miplevel)
 {
@@ -764,7 +773,7 @@ void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsig
   PROFILE_FUNC();
   ID3D11Texture2D* tex = 0;
 
-  bool multisample = (_samples.Count > 1) && !(usage & USAGE_STAGING) && (usage & USAGE_MULTISAMPLE);
+  bool multisample = (_samples.Count > 1) && (usage & USAGE_STAGING) != USAGE_STAGING && (usage & USAGE_MULTISAMPLE);
   if(multisample) { miplevels = 1; initdata = 0; }
   D3D11_TEXTURE2D_DESC desc = { dim.x, dim.y, miplevels, 1, FMTtoDXGI(format), multisample ? _samples : DEFAULT_SAMPLE_DESC, (D3D11_USAGE)_usagetodxtype(usage), _usagetobind(usage), _usagetocpuflag(usage), _usagetomisc(usage, multisample) };
   D3D11_SUBRESOURCE_DATA subdata = { initdata, (((psColor::BitsPerPixel(format)*dim.x) + 7) >> 3), 0 }; // The +7 here is to force the per-line bits to correctly round up the number of bytes.
@@ -954,49 +963,34 @@ void BSS_FASTCALL psDirectX11::CopyTextureRect(const psRectiu* srcrect, psVeciu 
   _context->CopySubresourceRegion(_textotex2D(dest), D3D11CalcSubresource(miplevel, 0, 1), destpos.x, destpos.y, 0, _textotex2D(src), D3D11CalcSubresource(miplevel, 0, 1), &box);
 }
 
-void BSS_FASTCALL psDirectX11::PushScissorRect(const psRect& rect)
+void BSS_FASTCALL psDirectX11::PushClipRect(const psRect& rect)
 {
   PROFILE_FUNC();
   psVec scale = GetDPIScale();
   psRectl r(fFastTruncate(floor(rect.left*scale.x)), fFastTruncate(floor(rect.top*scale.y)), fFastTruncate(ceilf(rect.right*scale.x)), fFastTruncate(ceil(rect.bottom*scale.y)));
-  _scissorstack.Push(r);
-  _context->RSSetScissorRects(1, (D3D11_RECT*)&r);
+  _clipstack.Push(r);
 }
 
-void psDirectX11::PopScissorRect()
+psRect psDirectX11::PeekClipRect()
+{
+  if(!_clipstack.Length())
+    return psRect(VEC_ZERO, screendim);
+  return psRect(_clipstack.Peek());
+}
+
+void psDirectX11::PopClipRect()
 {
   PROFILE_FUNC();
-  if(_scissorstack.Length()>1)
-    _scissorstack.Discard();
-  _context->RSSetScissorRects(1, (D3D11_RECT*)&_scissorstack.Peek());
+  if(_clipstack.Length()>1)
+    _clipstack.Discard();
 }
 
 void BSS_FASTCALL psDirectX11::SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil)
 {
   PROFILE_FUNC();
-  if(num == _lastrt.Length() && _lastdepth == depthstencil)
-  {
-    unsigned char i;
-    for(i = 0; i < num; ++i)
-      if(_lastrt[i] != texes[i])
-        break;
-    if(i == num) // If true everything matched
-      return;
-  }
-  _lastdepth = depthstencil;
+  _lastdepth = !depthstencil ? 0 : (ID3D11DepthStencilView*)depthstencil->GetView(); 
   _lastrt.SetLength(num);
-  memcpy(_lastrt.begin(), texes, num*sizeof(const psTex*));
-  _applyrendertargets();
-}
-
-void psDirectX11::_applyrendertargets()
-{
-  unsigned char num = _lastrt.Length();
-  unsigned char realnum = (num<1) ? 1 : num;
-  DYNARRAY(ID3D11RenderTargetView*, views, realnum);
-  for(unsigned char i = 0; i < num; ++i) views[i] = (ID3D11RenderTargetView*)_lastrt[i]->GetView();
-  if(num<1 || !views[0]) views[0] = (ID3D11RenderTargetView*)_backbuffer->GetView();
-  _context->OMSetRenderTargets(realnum, views, (ID3D11DepthStencilView*)(!_lastdepth ? 0 : _lastdepth->GetView()));
+  for(unsigned char i = 0; i < num; ++i) _lastrt[i] = (ID3D11RenderTargetView*)texes[i]->GetView();
 }
 
 void BSS_FASTCALL psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER shader)
@@ -1013,30 +1007,9 @@ void BSS_FASTCALL psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER sha
 void BSS_FASTCALL psDirectX11::SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader)
 {
   PROFILE_FUNC();
-  DYNARRAY(ID3D11ShaderResourceView*, views, num);
-  DYNARRAY(ID3D11SamplerState*, states, num);
-  for(unsigned char i = 0; i < num; ++i)
-  {
-    views[i] = (ID3D11ShaderResourceView*)texes[i]->GetRes();
-    const psTexblock* texblock = texes[i]->GetTexblock();
-    states[i] = !texblock ? _defaultSS : (ID3D11SamplerState*)texblock->GetSB();
-  }
-
-  if(shader <= VERTEX_SHADER_5_0)
-  {
-    _context->VSSetShaderResources(0, num, views);
-    _context->VSSetSamplers(0, num, states);
-  }
-  else if(shader <= PIXEL_SHADER_5_0)
-  {
-    _context->PSSetShaderResources(0, num, views);
-    _context->PSSetSamplers(0, num, states);
-  }
-  else if(shader <= GEOMETRY_SHADER_5_0)
-  {
-    _context->GSSetShaderResources(0, num, views);
-    _context->GSSetSamplers(0, num, states);
-  }
+  auto& d = _lasttex[(shader >= PIXEL_SHADER_1_1) + (shader >= GEOMETRY_SHADER_4_0)];
+  d.SetLength(num);
+  memcpy(d.begin(), texes, sizeof(psTex*)*num);
 }
 // Builds a stateblock from the given set of state changes
 void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states, unsigned int count)
@@ -1389,6 +1362,15 @@ void psDirectX11::_resetscreendim()
   _camstack.Clear();
   PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y), psCamera::default_extent);
 }
+void psDirectX11::_applyrendertargets()
+{
+  if(!_lastrt.Length()) {
+    ID3D11RenderTargetView* v = (ID3D11RenderTargetView*)_backbuffer->GetView();
+    _context->OMSetRenderTargets(1, &v, _lastdepth);
+  }
+  else
+    _context->OMSetRenderTargets(_lastrt.Length(), _lastrt.begin(), _lastdepth);
+}
 void BSS_FASTCALL psDirectX11::Clear(unsigned int color)
 {
   PROFILE_FUNC();
@@ -1494,6 +1476,93 @@ psVeciu psDirectX11::GetDPI()
   return _dpi;
 }
 
+bool psDirectX11::_checksnapshot(Snapshot& s)
+{
+  psRectl& lastrect = _clipstack.Peek();
+  if(_lasttex[0].Length() == s.ntex[0] &&
+    _lasttex[1].Length() == s.ntex[1] &&
+    _lasttex[2].Length() == s.ntex[2] &&
+    _lastrt.Length() == s.nrt &&
+    _lastdepth == s.depth &&
+    lastrect.left == s.cliprect.left &&
+    lastrect.top == s.cliprect.top &&
+    lastrect.right == s.cliprect.right &&
+    lastrect.bottom == s.cliprect.bottom)
+  {
+    for(uint32_t j = 0; j < 3; ++j)
+      for(uint32_t i = 0; i < s.ntex[j]; ++i)
+        if(_lasttex[j][i] != _texstack[s.tex[j] + i])
+          return false;
+    for(uint32_t i = 0; i < s.nrt; ++i)
+      if(_lastrt[i] != _texstack[s.rt + i])
+        return false;
+    return true;
+  }
+  return false;
+}
+uint32_t BSS_FASTCALL psDirectX11::GetSnapshot()
+{
+  if(_snapshotstack.Length() > 0 && _checksnapshot(_snapshotstack.Back())) // Check if we can return the last snapshot
+    return _snapshotstack.Length() - 1;
+
+  // Snapshot textures (one for each shader type), rendertargets, depth target, and clipping rect
+  _snapshotstack.AddConstruct();
+  Snapshot& s = _snapshotstack.Back();
+  s.cliprect = _clipstack.Peek();
+  s.depth = _lastdepth;
+  s.nrt = _lastrt.Length();
+  s.rt = _texstack.Length();
+  for(uint32_t i = 0; i < s.nrt; ++i) _texstack.Add(_lastrt[i]);
+  for(uint32_t j = 0; j < 3; ++j)
+  {
+    s.ntex[j] = _lasttex[j].Length();
+    s.tex[j] = _texstack.Length();
+    for(uint32_t i = 0; i < s.ntex[j]; ++i) _texstack.Add(_lasttex[j][i]);
+  }
+
+  return _snapshotstack.Length() - 1;
+}
+
+void psDirectX11::_applysnapshot(const Snapshot& s)
+{
+  for(int k = 0; k < 3; ++k)
+  {
+    int num = s.ntex[k];
+    DYNARRAY(ID3D11ShaderResourceView*, views, num);
+    DYNARRAY(ID3D11SamplerState*, states, num);
+    for(int i = 0; i < num; ++i)
+    {
+      psTex* t = (psTex*)(_texstack[s.tex[i] + i]);
+      views[i] = (ID3D11ShaderResourceView*)t->GetRes();
+      const psTexblock* texblock = t->GetTexblock();
+      states[i] = !texblock ? _defaultSS : (ID3D11SamplerState*)texblock->GetSB();
+    }
+    switch(k)
+    {
+    case 0:
+      _context->VSSetShaderResources(0, num, views);
+      _context->VSSetSamplers(0, num, states);
+      break;
+    case 1:
+      _context->PSSetShaderResources(0, num, views);
+      _context->PSSetSamplers(0, num, states);
+      break;
+    case 2:
+      _context->GSSetShaderResources(0, num, views);
+      _context->GSSetSamplers(0, num, states);
+      break;
+    }
+  }
+  
+  if(!s.nrt) {
+    ID3D11RenderTargetView* v = (ID3D11RenderTargetView*)_backbuffer->GetView();
+    _context->OMSetRenderTargets(1, &v, s.depth);
+  } else
+    _context->OMSetRenderTargets(s.nrt, (ID3D11RenderTargetView**)&_texstack[s.rt], s.depth);
+
+  _context->RSSetScissorRects(1, (D3D11_RECT*)&s.cliprect);
+}
+
 void psDirectX11::_processdebugqueue()
 {
   if(!_infoqueue) return;
@@ -1593,10 +1662,10 @@ unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigne
   unsigned int r = 0;
   switch(usage)
   {
-  case D3D11_USAGE_DEFAULT: r = USAGE_DEFAULT;
-  case D3D11_USAGE_IMMUTABLE: r = USAGE_IMMUTABLE;
-  case D3D11_USAGE_DYNAMIC: r = USAGE_DYNAMIC;
-  case D3D11_USAGE_STAGING: r = USAGE_STAGING;
+  case D3D11_USAGE_DEFAULT: r = USAGE_DEFAULT; break;
+  case D3D11_USAGE_IMMUTABLE: r = USAGE_IMMUTABLE; break;
+  case D3D11_USAGE_DYNAMIC: r = USAGE_DYNAMIC; break;
+  case D3D11_USAGE_STAGING: r = USAGE_STAGING; break;
   }
   if(misc&D3D11_RESOURCE_MISC_TEXTURECUBE) r |= USAGE_TEXTURECUBE;
   switch(bind)

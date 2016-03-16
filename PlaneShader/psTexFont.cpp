@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short drawflags, FNUM Z, unsigned int color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, const psRect& prearea, unsigned short drawflags, FNUM Z, unsigned int color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   float linewidth;
   float curwidth = 0.0f;
@@ -39,14 +39,15 @@ psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short
   area.right = area.left + maxdim.x;
   area.bottom = area.top + maxdim.y;
 
-  if(drawflags&TDT_CLIP) //this applies a scissor rect to clip the text (text renders so fast anything more complicated would be too expensive to be worth it)
+  if(drawflags&TDT_CLIP) //this applies a clip rect to clip the text, but only within the currently defined clip rect.
   {
     psRect transfer;
     transfer.topleft = _driver->TransformPoint(psVec3D(area.top, area.left, 0), flags).xy;
     transfer.bottomright = _driver->TransformPoint(psVec3D(area.bottom, area.right, 0), flags).xy;
-    _driver->PushScissorRect(transfer);
+    _driver->MergeClipRect(transfer);
   }
 
+  // TODO: Skip forward based on the position of the scissor rect as queried by PeekClipRect, regardless of whether TDT_CLIP is specified or not.
   const int* begin;
 
   for(unsigned char i = 0; i < svar; ++i)
@@ -62,9 +63,8 @@ psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short
       cur.y = area.top;
 
     curwidth = 0.0f;
-    psBatchObj obj;
     _driver->SetTextures(&_textures[i], 1);
-    _driver->DrawRectBatchBegin(obj, 1, flags, transform);
+    psBatchObj& obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags, transform);
     texdim = _textures[i]->GetDim();
 
     while(*pos)
@@ -107,32 +107,31 @@ psVec psTexFont::DrawText(const int* text, const psRect& prearea, unsigned short
         rect.bottom = rect.top + (g->uv.bottom-g->uv.top)*texdim.y;
 
         if(!d.IsEmpty()) d(ipos, rect, color);
-        _driver->DrawRectBatch(obj, rect, &g->uv, 1, color);
+        _driver->DrawRectBatch(obj, rect, &g->uv, color);
 
         cur.x += g->width + letterspacing;
       }
       cur.y += _lineheight;
     }
-    _driver->DrawBatchEnd(obj);
   }
 
   if(drawflags&TDT_CLIP)
-    _driver->PopScissorRect();
+    _driver->PopClipRect();
 
   return dim;
 }
 
-psVec psTexFont::DrawText(const char* text, const psRect& area, unsigned short drawflags, FNUM Z, unsigned int color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const char* text, const psRect& area, unsigned short drawflags, FNUM Z, unsigned int color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   size_t len = strlen(text)+1;
   if(len < 1000000)
   {
     DYNARRAY(int, txt, len);
     UTF8toUTF32(text, txt, len);
-    return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
+    return DrawText(shader, stateblock, txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
   }
   cStrT<int> txt(text);
-  return DrawText(txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
+  return DrawText(shader, stateblock, txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
 }
 bool psTexFont::_isspace(int c) // We have to make our own isspace implementation because the standard isspace() explodes if you feed it unicode characters.
 {
@@ -140,7 +139,7 @@ bool psTexFont::_isspace(int c) // We have to make our own isspace implementatio
 }
 float psTexFont::_getlinewidth(const int*& text, float maxwidth, unsigned short drawflags, float letterspacing, float& cur)
 {
-  bool dobreak = maxwidth < 0 && (drawflags&TDT_CHARBREAK || drawflags&TDT_WORDBREAK);
+  bool dobreak = maxwidth > 0 && (drawflags&TDT_CHARBREAK || drawflags&TDT_WORDBREAK);
   float width = cur;
   int c;
   const psGlyph* g;

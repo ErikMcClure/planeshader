@@ -6,9 +6,15 @@
 
 #include "psLocatable.h"
 #include "psRect.h"
+#include "psDriver.h"
+
+#pragma warning(push)
+#pragma warning(disable:4251)
 
 namespace planeshader {
-  class PS_DLLEXPORT psCamera : public psLocatable
+  class psSolid;
+
+  class PS_DLLEXPORT psCamera : public psLocatable, public psDriverHold
   {
   public:
     // Constructors
@@ -27,14 +33,35 @@ namespace planeshader {
     inline void BSS_FASTCALL SetExtent(float znear, float zfar) { _extent.x = znear; _extent.y = zfar; }
     inline void BSS_FASTCALL SetExtent(const psVec& extent) { _extent = extent; }
     inline psCamera& operator =(const psCamera& copy) { psLocatable::operator =(copy); return *this; }
+    inline const psRect& Apply() const;
+    inline bool Cull(psSolid* solid) const;
 
     static const psVeci INVALID_LASTRELMOUSE;
     static const psCamera default_camera;
     static psVec default_extent;
 
+    struct CamCache {
+      BSS_ALIGN(16) psRect window;
+      BSS_ALIGN(16) psRect winfixed;
+      sseVec SSEwindow;
+      sseVec SSEwindow_center;
+      sseVec SSEwindow_hold;
+      sseVec SSEfixed;
+      sseVec SSEfixed_center;
+      sseVec SSEfixed_hold;
+      float last;
+      float lastfixed;
+
+      CamCache(const CamCache&);
+      CamCache();
+      inline void SetSSE();
+      inline bool BSS_FASTCALL Cull(psSolid* solid, float z);
+    };
+
   protected:
     psRect _viewport; // This is NOT an actual rectangle, it stores left/top/width/height
     psVec _extent;
+    mutable CamCache _cache;
   };
 
   /*class PS_DLLEXPORT psCamera3D : public psCamera
@@ -51,5 +78,6 @@ namespace planeshader {
     psRect _viewport;
   };*/
 }
+#pragma warning(pop)
 
 #endif

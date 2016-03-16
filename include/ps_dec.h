@@ -36,7 +36,8 @@ namespace planeshader {
   const psFlag PSFLAG_FIXED = (1 << 1); //Ignores the camera rotation and xyz position.
   const psFlag PSFLAG_ALWAYSRENDER = (1 << 2); //This object will always render itself regardless of any NOTVISIBLE flags anywhere in the parent chain
   const psFlag PSFLAG_DONOTCULL = (1 << 3); //Ensures the object is never culled for any reason
-  const psFlag PSFLAG_USER = (1 << 4); //This is where you should start your own flag settings
+  const psFlag PSFLAG_DONOTBATCH = (1 << 4); // Used to prevent automatic batching of jobs with the same vertex buffer (usually due to incompatible index buffers)
+  const psFlag PSFLAG_USER = (1 << 5); //This is where you should start your own flag settings
 
 #ifdef  __cplusplus
   const psFlag PSFLAG_INHERITABLE = PSFLAG_NOTVISIBLE | PSFLAG_FIXED;

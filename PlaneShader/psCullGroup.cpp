@@ -28,11 +28,7 @@ void BSS_FASTCALL psCullGroup::Traverse(const float(&rect)[4], FNUM camZ)
   sseVec d(diff2, diff, diff2, diff);
   (((sseVec(rect)-d)*sseVec(1+camZ))+d)>>rcull;
   
-  _tree.TraverseAction<bss_util::delegate<void, psSolid*>>(rcull, bss_util::delegate<void, psSolid*>::From<psCullGroup, &psCullGroup::_callsort>(this));
-}
-void BSS_FASTCALL psCullGroup::_callsort(psSolid* s)
-{
-  _pass->_sort(s);
+  _tree.Traverse(rcull);
 }
 
 void psCullGroup::SetPass(psPass* pass)

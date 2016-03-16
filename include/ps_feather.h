@@ -21,7 +21,7 @@ namespace planeshader {
     static psFlag GetDrawFlags(fgFlag flags);
 
   protected:
-    void BSS_FASTCALL _render(psBatchObj* obj);
+    void BSS_FASTCALL _render();
 
     static psRoot* instance;
 

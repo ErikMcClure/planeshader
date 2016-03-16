@@ -24,31 +24,11 @@ psPass::~psPass()
   while(_cullgroups) _cullgroups->SetPass(0);
 }
 
-BSS_FORCEINLINE void r_adjust(sseVec& window, sseVec& winhold, sseVec& center, float& last, float adjust)
-{
-  if(last != adjust)
-  {
-    last=adjust;
-    window=winhold;
-    window*=adjust;
-    window+=center;
-  }
-}
-
-float BSS_FASTCALL r_gettotalz(psInheritable* p)
-{
-  if(p->GetParent())
-    return p->GetPosition().z + r_gettotalz(p->GetParent());
-  return p->GetPosition().z;
-}
-
 void psPass::Begin()
 {
   PROFILE_FUNC();
   CurPass = this;
-  auto& vp = _cam->GetViewPort();
-  psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
-  _driver->PushCamera(_cam->GetPosition(), _cam->GetPivot()*psVec(_driver->rawscreendim), _cam->GetRotation(), realvp, _cam->GetExtent());
+  const psRect& window = _cam->Apply();
 
   if(_clear)
     _driver->Clear(_clearcolor);
@@ -59,50 +39,17 @@ void psPass::Begin()
     _sort(cur);
 
   // Go through the solids seperately, because they should be culled
-  const psVec3D& p = _cam->GetPosition();
-  BSS_ALIGN(16) psRect window = psRectRotate(realvp.left + p.x, realvp.top + p.y, realvp.right + p.x, realvp.bottom + p.y, _cam->GetRotation(), _cam->GetPivot()).BuildAABB();
-  BSS_ALIGN(16) psRect winfixed = realvp;
-
-  sseVec SSEwindow(window._ltrbarray);
-  sseVec SSEwindow_center((SSEwindow+sseVec::Shuffle<0x4E>(SSEwindow))*sseVec(0.5f));
-  sseVec SSEwindow_hold(SSEwindow - SSEwindow_center);
-
-  sseVec SSEfixed(winfixed._ltrbarray);
-  sseVec SSEfixed_center((SSEfixed+sseVec::Shuffle<0x4E>(SSEfixed))*sseVec(0.5f));
-  sseVec SSEfixed_hold(SSEfixed - SSEfixed_center);
-
-  float last;
-  float lastfixed;
-  psFlag flags;
-  float adjust;
-
   for(psSolid* solid = static_cast<psSolid*>(_solids); solid!=0; solid=static_cast<psSolid*>(solid->_llist.next))
   {
-    flags=solid->GetAllFlags();
-    if((flags&PSFLAG_DONOTCULL)!=0) { _sort(solid); continue; } // Don't cull if it has a DONOTCULL flag
-
-    const psRect& rect = solid->GetBoundingRect(); // Recalculates the bounding rect
-    adjust=r_gettotalz(solid);
-
-    if(flags&PSFLAG_FIXED) // This is the fixed case
-    {
-      adjust += 1.0f;
-      r_adjust(SSEfixed, SSEfixed_hold, SSEfixed_center, lastfixed, adjust);
-      BSS_ALIGN(16) psRect rfixed(SSEfixed);
-      if(rect.IntersectRect(rfixed)) _sort(solid);
-    } else { // This is the default case
-      adjust -= p.z;
-      r_adjust(SSEwindow, SSEwindow_hold, SSEwindow_center, last, adjust);
-      BSS_ALIGN(16) psRect rfixed(SSEwindow);
-      if(rect.IntersectRect(rfixed)) _sort(solid);
-    }
+    if(!_cam->Cull(solid))
+      solid->_render();
   }
 
   // Then we go through any specialized culling groups
   for(psCullGroup* group = _cullgroups; group != 0; group=group->next)
-    group->Traverse(window._ltrbarray, p.z);
+    group->Traverse(window._ltrbarray, _cam->GetPosition().z);
 
-  // Go through our sorted list of renderables and queue them all.
+  // Go through our sorted list of renderables and render them all.
   auto node = _renderlist.Front(); 
   auto next = node;
   while(node) {
@@ -112,7 +59,7 @@ void psPass::Begin()
       _renderlist.Remove(node);
       node = next;
     } else {
-      _queue(node->value);
+      node->value->_render();
       node->value->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
       node = node->next;
     }
@@ -121,7 +68,7 @@ void psPass::Begin()
 
 void psPass::End()
 {
-  FlushQueue();
+  _driver->Flush();
   CurPass = 0;
   _driver->PopCamera();
   PROFILE_FUNC();
@@ -143,39 +90,6 @@ void psPass::Remove(psRenderable* r)
   r->_pass = 0;
 }
 
-void psPass::FlushQueue()
-{
-  if(_renderqueue.Length() > 0) // Don't render an empty render queue, which can happen if you call this manually or at the end of a pass that has nothing in it.
-  {
-    _renderqueue[0]->_renderbatch(_renderqueue, _renderqueue.Length());
-    _renderqueue.SetLength(0);
-  }
-}
-
-void psPass::_queue(psRenderable* r)
-{
-  if(_renderqueue.Length() > 0 &&
-    (_renderqueue[0]->_internaltype() != r->_internaltype() ||
-    _renderqueue[0]->GetShader() != r->GetShader() ||
-    _renderqueue[0]->GetStateblock() != r->GetStateblock() ||
-    !_renderqueue[0]->_batch(r) ||
-    _checkrt(_renderqueue[0], r)))
-  {
-    FlushQueue();
-  }
-
-  _renderqueue.Add(r);
-}
-
-void psPass::_cullqueue(psRenderable* r)
-{
-  if(r->_internalflags&psRenderable::INTERNALFLAG_SOLID)
-  {
-    // TODO: implement culling
-  }
-  _queue(r);
-}
-
 void psPass::_sort(psRenderable* r)
 {
   if(!r->_psort) r->_psort = _renderlist.Insert(r);
@@ -189,18 +103,4 @@ void psPass::_addcullgroup(psCullGroup* g)
 void psPass::_removecullgroup(psCullGroup* g)
 {
   LLRemove<psCullGroup>(g, _cullgroups);
-}
-bool psPass::_checkrt(psRenderable* l, psRenderable* r)
-{
-  unsigned char rtc = l->NumRT();
-  if(rtc != r->NumRT())
-    return false;
-  psTex* const* t = l->GetRenderTargets();
-  psTex* const* o = r->GetRenderTargets();
-  for(unsigned char i = 0; i < rtc; ++i)
-  {
-    if(t[i] != o[i])
-      return false;
-  }
-  return true;
 }

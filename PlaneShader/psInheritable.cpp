@@ -25,8 +25,8 @@ psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov))
     cur->_parent=this;
   SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor
 }
-psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, unsigned char internaltype) :
-  psRenderable(flags, zorder, stateblock, shader, pass, internaltype), psLocatable(position, rotation, pivot), _parent(0), _children(0), _depth(0)
+psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent) :
+  psRenderable(flags, zorder, stateblock, shader, pass), psLocatable(position, rotation, pivot), _parent(0), _children(0), _depth(0)
 {
   _lchild.next=_lchild.prev=0;
   SetParent(parent);
@@ -43,14 +43,19 @@ psInheritable::~psInheritable()
 
   SetParent(0);
 }
-void psInheritable::Render()
+psInheritable* psInheritable::_prerender()
 {
   if(!(_internalflags&INTERNALFLAG_SORTED))
     _sortchildren();
 
   psInheritable* cur;
-  for(cur=_children; cur!=0 && cur->_zorder<0; cur=cur->_lchild.next)
+  for(cur = _children; cur != 0 && cur->_zorder<0; cur = cur->_lchild.next)
     cur->Render();
+  return cur;
+}
+void psInheritable::Render()
+{
+  psInheritable* cur = _prerender();
   psRenderable::Render();
   for(; cur != 0; cur = cur->_lchild.next)
     cur->Render();
@@ -100,7 +105,7 @@ void BSS_FASTCALL psInheritable::SetZOrder(int zorder)
     cur->_invalidate();
 }
 
-void BSS_FASTCALL psInheritable::_render(psBatchObj*) {} // don't render anything
+void BSS_FASTCALL psInheritable::_render() {} // don't render anything
 
 void psInheritable::_gettotalpos(psVec3D& pos) const
 {
@@ -137,25 +142,27 @@ psInheritable& psInheritable::operator=(psInheritable&& mov)
 void psInheritable::_sortchildren()
 {
   unsigned int count = NumChildren();
-  DYNARRAY(psInheritable*, buf, count);
-  
-  unsigned int i = 0;
-  for(psInheritable* cur = _children; i < count && cur != 0; cur = cur->_lchild.next)
-    buf[i++] = cur;
-
-  std::sort<psInheritable**>(buf, buf + count, &INHERITABLECOMP);
-
-  psInheritable* prev = 0;
-  --count;
-  for(i = 0; i < count; ++i)
+  if(count > 0)
   {
-    buf[i]->_lchild.prev = prev;
-    buf[i]->_lchild.next = buf[i + 1];
-  }
-  buf[count]->_lchild.prev = buf[count - 1];
-  buf[count]->_lchild.next = 0;
+    DYNARRAY(psInheritable*, buf, count);
 
-  _parent->_internalflags |= INTERNALFLAG_SORTED; // children are now sorted
+    unsigned int i = 0;
+    for(psInheritable* cur = _children; i < count && cur != 0; cur = cur->_lchild.next)
+      buf[i++] = cur;
+
+    std::sort<psInheritable**>(buf, buf + count, &INHERITABLECOMP);
+
+    psInheritable* prev = 0;
+    --count; // this is legal because we know count is at least 1
+    for(i = 0; i < count; ++i)
+    {
+      buf[i]->_lchild.prev = prev;
+      buf[i]->_lchild.next = buf[i + 1];
+    }
+    buf[count]->_lchild.prev = buf[count - 1];
+    buf[count]->_lchild.next = 0;
+  }
+  _internalflags |= INTERNALFLAG_SORTED; // children are now sorted
 }
 psRenderable* BSS_FASTCALL psInheritable::_getparent() const { return _parent; }
 
@@ -189,7 +196,6 @@ char BSS_FASTCALL psInheritable::_sort(psRenderable* r) const
   }
 
   char c = SGNCOMPARE(l->_zorder, r->_zorder);
-  if(!c) c = SGNCOMPARE(l->_internaltype(), r->_internaltype());
   if(!c) c = SGNCOMPARE(l, r);
   return c;
 }

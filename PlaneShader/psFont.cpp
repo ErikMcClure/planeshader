@@ -16,13 +16,13 @@
 
 #ifdef BSS_COMPILER_MSC
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/freetype64_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/freetype64.lib")
-#elif defined(BSS_DEBUG)
 #pragma comment(lib, "../lib/freetype_d.lib")
-#else
+#elif defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../lib/freetype.lib")
+#elif defined(BSS_DEBUG)
+#pragma comment(lib, "../lib/freetype32_d.lib")
+#else
+#pragma comment(lib, "../lib/freetype32.lib")
 #endif
 #endif
 

@@ -27,7 +27,7 @@ typedef struct {
   fgChild element;
   char* text;
   void* font;
-  unsigned int color;
+  fgColor color;
 } fgText;
 
 FG_EXTERN fgChild* FG_FASTCALL fgText_Create(char* text, void* font, unsigned int color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);

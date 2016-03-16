@@ -39,8 +39,8 @@ namespace planeshader {
   public:
     typedef bss_util::delegate<void, size_t, psRectRotateZ&, unsigned int&> DELEGATE;
     // Draws text in the given rectangle. Returns the dimensions of the text which can be cached used to assemble an area if the text doesn't change.
-    psVec DrawText(const int* text, const psRect& area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, psFlag flags = 0, psVec textdim = VEC_ZERO, float letterspacing = 0.0f, DELEGATE d = DELEGATE(0, 0), const float(&transform)[4][4] = psDriver::identity);
-    psVec DrawText(const char* text, const psRect& area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, psFlag flags = 0, psVec textdim = VEC_ZERO, float letterspacing = 0.0f, DELEGATE d = DELEGATE(0, 0), const float(&transform)[4][4] = psDriver::identity);
+    psVec DrawText(psShader* shader, const psStateblock* stateblock, const int* text, const psRect& area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, psFlag flags = 0, psVec textdim = VEC_ZERO, float letterspacing = 0.0f, DELEGATE d = DELEGATE(0, 0), const float(&transform)[4][4] = psDriver::identity);
+    psVec DrawText(psShader* shader, const psStateblock* stateblock, const char* text, const psRect& area = RECT_ZERO, unsigned short drawflags = 0, FNUM Z = 0, unsigned int color = 0xFFFFFFFF, psFlag flags = 0, psVec textdim = VEC_ZERO, float letterspacing = 0.0f, DELEGATE d = DELEGATE(0, 0), const float(&transform)[4][4] = psDriver::identity);
     // Given the drawing flags and text, this calculates what size would be required to display all the text. If dest has nonnegative width or height, that dimension is kept constant while calculating the other.
     void CalcTextDim(const int* text, psVec& dest, unsigned short drawflags=0, float letterspacing = 0.0f);
     // Lets you access the underlying textures

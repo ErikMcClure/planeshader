@@ -39,9 +39,8 @@ namespace planeshader {
   protected:
     BSS_FORCEINLINE static const float* BSS_FASTCALL CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic()._ltrbarray; }
     BSS_FORCEINLINE static bss_util::LLBase<psSolid>& BSS_FASTCALL CF_FLIST(psSolid* p) { return *((bss_util::LLBase<psSolid>*)&p->_llist); }
-    BSS_FORCEINLINE static void BSS_FASTCALL CF_FACTION(psSolid* p) { psPass::CurPass->_queue(p); }
+    BSS_FORCEINLINE static void BSS_FASTCALL CF_FACTION(psSolid* p) { if(!p->GetPass()) p->_render(); else p->GetPass()->_sort(p); }
     BSS_FORCEINLINE static bss_util::KDNode<psSolid>*& BSS_FASTCALL CF_FNODE(psSolid* p) { return p->_kdnode; }
-    void BSS_FASTCALL _callsort(psSolid* s);
 
     bss_util::cKDTree<psSolid, KDNODE_ALLOC, CF_FRECT, CF_FLIST, CF_FACTION, CF_FNODE> _tree;
     KDNODE_ALLOC _nodealloc;

@@ -70,9 +70,11 @@ FG_EXTERN size_t FG_FASTCALL fgLayout_Distribute(fgChild* self, const FG_Msg* ms
 FG_EXTERN size_t FG_FASTCALL fgLayout_Tile(fgChild* self, const FG_Msg* msg, char axes);
 FG_EXTERN size_t FG_FASTCALL fgChild_IntMessage(fgChild* self, unsigned char type, ptrdiff_t data, ptrdiff_t aux);
 FG_EXTERN size_t FG_FASTCALL fgChild_VoidAuxMessage(fgChild* self, unsigned char type, void* data, ptrdiff_t aux);
+FG_EXTERN size_t FG_FASTCALL fgChild_VoidAuxSubMessage(fgChild* self, unsigned char type, unsigned char subtype, void* data, ptrdiff_t aux);
 FG_EXTERN size_t FG_FASTCALL fgChild_VoidMessage(fgChild* self, unsigned char type, void* data);
 FG_EXTERN size_t FG_FASTCALL fgChild_PassMessage(fgChild* self, const FG_Msg* msg);
 FG_EXTERN size_t FG_FASTCALL fgChild_SubMessage(fgChild* self, unsigned char type, unsigned char subtype, void* data, ptrdiff_t aux);
+FG_EXTERN fgChild* FG_FASTCALL fgChild_GetChildUnderMouse(fgChild* self, int x, int y, AbsRect* cache);
 
 FG_EXTERN void FG_FASTCALL ResolveRect(const fgChild* self, AbsRect* out);
 FG_EXTERN void FG_FASTCALL ResolveRectCache(AbsRect* BSS_RESTRICT r, const fgChild* elem, const AbsRect* BSS_RESTRICT last);
@@ -82,6 +84,7 @@ FG_EXTERN void FG_FASTCALL LList_InsertAll(fgChild* BSS_RESTRICT self, fgChild* 
 FG_EXTERN void FG_FASTCALL VirtualFreeChild(fgChild* self);
 FG_EXTERN void FG_FASTCALL fgChild_Clear(fgChild* self);
 FG_EXTERN void FG_FASTCALL fgChild_AddPreChild(fgChild* self, fgChild* child);
+FG_EXTERN void FG_FASTCALL fgChild_MouseMoveCheck(fgChild* self);
 
 #ifdef  __cplusplus
 }
