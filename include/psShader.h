@@ -38,7 +38,7 @@ namespace planeshader {
       unsigned char index = (I >= PIXEL_SHADER_1_1) + (I >= GEOMETRY_SHADER_4_0) + (I >= COMPUTE_SHADER_4_0) + (I >= DOMAIN_SHADER_5_0) + (I >= HULL_SHADER_5_0);
       return SetConstants(&src, sizeof(T), index);
     }
-    bool BSS_FASTCALL SetConstants(const void* data, size_t sz, unsigned char I);
+    bool BSS_FASTCALL SetConstants(const void* data, uint32_t sz, unsigned char I);
 
     // Creates a new shader object out of a given layout and a list of SHADER_INFOs, which represent all included shader programs and their associated constant buffers.
     template<unsigned char I>
@@ -66,7 +66,7 @@ namespace planeshader {
   protected:
     psShader(const psShader& copy);
     psShader(psShader&& mov);
-    explicit psShader(void* layout, void* ss[6], void* sc[6], size_t sz[6]);
+    explicit psShader(void* layout, void* ss[6], void* sc[6], uint32_t sz[6]);
     ~psShader();
     void _destroy();
     void _copy(const psShader& copy);
@@ -77,7 +77,7 @@ namespace planeshader {
 
     void* _ss[6]; // Vertex, Pixel, Geometry, Compute, Domain, Hull
     void* _sc[6]; // Shader constants
-    size_t _sz[6]; // Size of the shader constants (so we can copy the shader)
+    uint32_t _sz[6]; // Size of the shader constants (so we can copy the shader)
     void* _layout;
   };
 

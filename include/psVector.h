@@ -32,9 +32,8 @@ namespace planeshader {
     static void SetVert(float(&v)[4], psVec& x, float thickness);
 
   protected:
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
-    bss_util::cDynArray<QuadVertex> _verts;
+    virtual void BSS_FASTCALL _render();
+    bss_util::cDynArray<QuadVertex, uint32_t> _verts;
   };
 
   class PS_DLLEXPORT psQuadraticCurve : public psQuadraticHull, public psColored
@@ -98,10 +97,10 @@ namespace planeshader {
     void SetOutlineColor(psColor32 color) { _outline = color; }
 
     static const int RRBUFSIZE = 64;
+    static void DrawRoundedRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
 
   protected:
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+    virtual void BSS_FASTCALL _render();
 
     psRect _corners;
     psColor32 _outline;
@@ -133,10 +132,10 @@ namespace planeshader {
     void SetOutlineColor(psColor32 color) { _outline = color; }
 
     static const int CIRCLEBUFSIZE = 64;
+    static void DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
 
   protected:
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
+    virtual void BSS_FASTCALL _render();
 
     psRect _arcs;
     psColor32 _outline;

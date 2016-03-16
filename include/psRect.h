@@ -114,7 +114,7 @@ namespace planeshader {
     BSS_FORCEINLINE psRectT<T> ExpandTo(const VEC& point) const { return psRectT<T>(bssmin(left, point.x), bssmin(top, point.y), bssmax(right, point.x), bssmax(bottom, point.y)); }
     BSS_FORCEINLINE psRectT<T> ExpandTo(const psRectT<T>& rect) const { return psRectT<T>(bssmin(left, rect.left), bssmin(top, rect.top), bssmax(right, rect.right), bssmax(bottom, rect.bottom)); }
     //Finds the rectangle of intersection
-    inline psRectT<T> GenerateIntersection(const psRectT<T>& other) const { if(!IntersectRect(other)) return psRectT<T>(0,0,0,0); return psRectT<T>(bssmax(left, other.left), bssmax(top, other.top), bssmin(right, other.right), bssmin(bottom, other.bottom)); }
+    inline psRectT<T> GenerateIntersection(const psRectT<T>& other) const { if(!IntersectRect(other)) return psRectT<T>(left, top, left, top); return psRectT<T>(bssmax(left, other.left), bssmax(top, other.top), bssmin(right, other.right), bssmin(bottom, other.bottom)); }
   };
 
   typedef psRectT<FNUM> psRect; //Default typedef

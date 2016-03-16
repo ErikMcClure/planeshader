@@ -7,7 +7,7 @@
 using namespace planeshader;
 
 psEffect::psEffect(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psPass* pass, psInheritable* parent) :
-  psInheritable(position, rotation, pivot, flags, zorder, 0, 0, pass, parent, INTERNALTYPE_NONE)
+  psInheritable(position, rotation, pivot, flags, zorder, 0, 0, pass, parent)
 {
 
 }
@@ -73,4 +73,4 @@ bool psEffect::_sort()
   return !fail;
 }
 
-void BSS_FASTCALL psEffect::_render(psBatchObj*) {} // don't render anything
+void BSS_FASTCALL psEffect::_render() {} // don't render anything

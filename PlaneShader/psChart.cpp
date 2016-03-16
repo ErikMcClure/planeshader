@@ -13,14 +13,12 @@ size_t psChartContainer::AddChart(psChart* chart) { return _captions.AddConstruc
 psChart* psChartContainer::GetChart(size_t index) { return _captions[index].get(); }
 bool psChartContainer::RemoveChart(size_t index) { if(index >= _captions.Length()) return false; _captions.Remove(index); return true; }
 
-void BSS_FASTCALL psChartContainer::_render(psBatchObj* obj)
+void BSS_FASTCALL psChartContainer::_render()
 {
-  assert(!obj);
   psFlag flags = GetAllFlags();
-  psBatchObj batch;
   bss_util::Matrix<float, 4, 4> m;
   GetTransform(m);
-  _driver->DrawLinesStart(batch, flags, m.v);
+  psBatchObj& batch = _driver->DrawLinesStart(_driver->library.LINE, 0, flags, m.v);
   _driver->DrawLines(batch, psLine(0, 0, _dim.x, 0), 0, 0, 0xFF999999);
   _driver->DrawLines(batch, psLine(0, 0, 0, _dim.y), 0, 0, 0xFF999999);
   _driver->DrawLines(batch, psLine(0, _dim.y, _dim.x, _dim.y), 0, 0, 0xAA999999);

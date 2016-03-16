@@ -164,7 +164,7 @@ namespace planeshader {
     }
 
   protected:
-    bss_util::cArray<VEC> _verts;
+    bss_util::cArray<VEC, uint32_t> _verts;
   };
 
   typedef psPolygonT<float> psPolygon; //default typedef

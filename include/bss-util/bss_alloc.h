@@ -18,7 +18,7 @@ namespace bss_util {
     template<typename U>
     struct rebind { typedef StandardAllocPolicy<U> other; };
 
-    inline pointer allocate(size_t cnt, const pointer p = 0) {
+    inline pointer allocate(size_t cnt, const pointer p = nullptr) {
       //return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T))); // note that while operator new does not call a constructor (it can't), it's much easier to override for leak tests.
       return reinterpret_cast<pointer>(realloc(p, cnt*sizeof(T)));
     }
@@ -35,7 +35,7 @@ namespace bss_util {
     template<typename U>
     struct rebind { typedef NullAllocPolicy<U> other; };
 
-    inline pointer allocate(size_t cnt, const pointer p = 0) { return 0; }
+    inline pointer allocate(size_t cnt, const pointer p = nullptr) { return nullptr; }
     inline void deallocate(pointer p, size_t = 0) { }
     inline size_t max_size() const { return ((size_t)(-1)/sizeof(T)); }
   };
@@ -47,7 +47,7 @@ namespace bss_util {
     typedef T value_type;
     template<typename U> struct rebind { typedef StaticAllocPolicy<U> other; };
 
-    inline static pointer allocate(size_t cnt, const pointer p = 0) { return reinterpret_cast<pointer>(realloc(p, cnt*sizeof(T))); }
+    inline static pointer allocate(size_t cnt, const pointer p = nullptr) { return reinterpret_cast<pointer>(realloc(p, cnt*sizeof(T))); }
     inline static void deallocate(pointer p, size_t = 0) { free(p); }
   };
 
@@ -58,7 +58,7 @@ namespace bss_util {
     typedef T value_type;
     template<typename U> struct rebind { typedef StaticNullPolicy<U> other; };
 
-    inline static pointer allocate(size_t cnt, const pointer = 0) { return 0; }
+    inline static pointer allocate(size_t cnt, const pointer = nullptr) { return nullptr; }
     inline static void deallocate(pointer p, size_t = 0) { }
   };
 
@@ -123,7 +123,7 @@ namespace bss_util {
 //    template <typename U>
 //    inline explicit StaticAllocPolicy(StaticAllocPolicy<U,Alloc> const&) {}
 //
-//    inline static pointer allocate(size_t cnt, const pointer = 0) { return _alloc.allocate(cnt); }
+//    inline static pointer allocate(size_t cnt, const pointer = nullptr) { return _alloc.allocate(cnt); }
 //    inline static void deallocate(pointer p, size_t = 0) { _alloc.deallocate(p); }
 //
 //    static Alloc _alloc;
@@ -142,7 +142,7 @@ namespace bss_util {
 //    template <typename U>
 //    inline explicit StaticAllocPolicy(StaticAllocPolicy<U,void> const&) {}
 //
-//    inline static pointer allocate(size_t cnt, const pointer = 0) { 
+//    inline static pointer allocate(size_t cnt, const pointer = nullptr) { 
 //        //return reinterpret_cast<pointer>(::operator new(cnt * sizeof (T))); // note that while operator new does not call a constructor (it can't), it's much easier to override for leak tests.
 //        return reinterpret_cast<pointer>(malloc(cnt*sizeof(T)));
 //    }

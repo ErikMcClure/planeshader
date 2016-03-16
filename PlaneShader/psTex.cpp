@@ -14,7 +14,7 @@ psTex::psTex(psTex&& mov) : _res(mov._res), _view(mov._view), _dim(mov._dim), _f
   mov._view=0;
 }
 
-psTex::psTex(const psTex& copy) : _texblock(copy._texblock), _dpi(copy._dpi)
+psTex::psTex(const psTex& copy) : _texblock(copy._texblock), _dpi(copy._dpi), _view(0)
 {
   _res = _driver->CreateTexture(copy._dim, copy._format, copy._usage, copy._miplevels, 0, &_view, _texblock);
   _driver->CopyResource(_res, copy._res, psDriver::RES_TEXTURE);
@@ -22,9 +22,9 @@ psTex::psTex(const psTex& copy) : _texblock(copy._texblock), _dpi(copy._dpi)
   Grab();
 }
 
-psTex::psTex(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock, psVeciu dpi) : _texblock(texblock), _dpi(dpi)
+psTex::psTex(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, psTexblock* texblock, psVeciu dpi) : _texblock(texblock), _dpi(dpi), _view(0)
 {
-  if(!(usage&USAGE_STAGING)) usage |= USAGE_SHADER_RESOURCE;
+  if((usage & USAGE_STAGING) != USAGE_STAGING) usage |= USAGE_SHADER_RESOURCE; // You MUST use != for USAGE_STAGING because it is NOT a flag!
   _res = _driver->CreateTexture(dim, format, usage, miplevels, 0, &_view, _texblock);
   if(_res) _applydesc(_driver->GetTextureDesc(_res));
   Grab();

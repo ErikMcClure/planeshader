@@ -10,13 +10,13 @@ psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColor
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
 psImage::~psImage() {}
 psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) : 
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, INTERNALTYPE_IMAGE), psTextured(tex), psColored(color)
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psTextured(tex), psColored(color)
 {
   AddSource();
 }
 
 psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) :
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale, INTERNALTYPE_IMAGE), psTextured(file), psColored(color)
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psTextured(file), psColored(color)
 {
   AddSource();
 }
@@ -51,46 +51,10 @@ void psImage::_setuvs(unsigned int size)
     _uvs[i]=RECT_UNITRECT;
 }
 
-void BSS_FASTCALL psImage::_render(psBatchObj* obj)
+void BSS_FASTCALL psImage::_render()
 {
-  if(obj)
-    _driver->DrawRectBatch(*obj, GetCollisionRect(), _uvs, NumSources(), GetColor().color);
-  else
-  {
-    Activate(this);
-    _driver->DrawRect(GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetAllFlags());
-  }
-}
-
-void BSS_FASTCALL psImage::_renderbatch(psRenderable** rlist, unsigned int count)
-{
-  psBatchObj obj;
-  Activate(this);
-  _driver->DrawRectBatchBegin(obj, NumSources(), GetAllFlags());
-
-  for(unsigned int i = 0; i < count; ++i)
-    rlist[i]->_render(&obj);
-
-  _driver->DrawBatchEnd(obj);
-}
-
-bool BSS_FASTCALL psImage::_batch(psRenderable* r) const
-{
-  unsigned char c = NumTextures();
-  unsigned char rtc = NumRT();
-  if(c != r->NumTextures() || (GetAllFlags()&PSFLAG_BATCHFLAGS) != (r->GetAllFlags()&PSFLAG_BATCHFLAGS)
-    || NumSources() != static_cast<psImage*>(r)->NumSources())
-    return false;
-
-  psTex* const* t = GetTextures();
-  psTex* const* o = r->GetTextures();
-  for(unsigned char i = 0; i < c; ++i)
-  {
-    if(t[i] != o[i])
-      return false;
-  }
-
-  return true;
+  Activate();
+  _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetAllFlags());
 }
 
 void BSS_FASTCALL psImage::SetTexture(psTex* tex, unsigned int index)

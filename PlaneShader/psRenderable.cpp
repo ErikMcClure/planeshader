@@ -26,8 +26,8 @@ psRenderable::psRenderable(psRenderable&& mov) : _flags(mov._flags), _pass(0), _
   SetPass(p);
 }
 
-psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, unsigned char internaltype) : _flags(flags), _zorder(zorder),
-  _stateblock(stateblock), _shader(psShader::CreateShader(shader)), _pass(0), _internalflags(internaltype), _psort(0)
+psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass) : _flags(flags), _zorder(zorder),
+  _stateblock(stateblock), _shader(psShader::CreateShader(shader)), _pass(0), _internalflags(0), _psort(0)
 { 
   _llist.next=_llist.prev=0;
   SetPass(pass);
@@ -36,10 +36,7 @@ psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, p
 psRenderable::~psRenderable() { _destroy(); }
 void psRenderable::Render()
 {
-  if(psPass::CurPass != 0)
-    psPass::CurPass->_cullqueue(this); // Get the current pass, and add this to it's render queue, culling if necessary.
-  else
-    _render(0); // Otherwise, render this immediately, without batch rendering (since we don't have access to a pass that supplies batch buffering)
+  _render(); // This is a renderable, so it can't be culled, so we just render it immediately and ignore our current pass.
 }
 void BSS_FASTCALL psRenderable::SetZOrder(int zorder)
 { 
@@ -94,9 +91,6 @@ void psRenderable::ClearRenderTargets() {
     _rts[i]->Drop();
   _rts.Clear();
 }
-//char psRenderable::_sort(psRenderable* r) const { return SGNCOMPARE(this, r); }
-bool psRenderable::_batch(psRenderable* r) const { return false; }
-void psRenderable::_renderbatch(psRenderable** rlist, unsigned int count) { for(unsigned int i = 0; i < count; ++i) rlist[i]->_render(0); }
 
 void psRenderable::_destroy()
 {
@@ -159,7 +153,6 @@ char BSS_FASTCALL psRenderable::_sort(psRenderable* r) const
   while(r = r->_getparent()) root = r;
 
   char c = SGNCOMPARE(_zorder, root->_zorder);
-  if(!c) c = SGNCOMPARE(_internaltype(), root->_internaltype());
   if(!c) c = SGNCOMPARE(this, root);
   return c; 
 }
@@ -167,10 +160,8 @@ char BSS_FASTCALL psRenderable::_sort(psRenderable* r) const
 psRenderable* BSS_FASTCALL psRenderable::_getparent() const { return 0; }
 //psCamera* psRenderable::GetCamera() const { return 0; }
 
-void psRenderable::Activate(psRenderable* r)
+void psRenderable::Activate()
 {
-  r->GetShader()->Activate();
-  psDriverHold::GetDriver()->SetStateblock(!r->GetStateblock() ? 0 : r->GetStateblock()->GetSB());
-  psDriverHold::GetDriver()->SetRenderTargets(r->GetRenderTargets(), r->NumRT(), 0);
-  psDriverHold::GetDriver()->SetTextures(r->GetTextures(), r->NumTextures(), PIXEL_SHADER_1_1);
+  psDriverHold::GetDriver()->SetRenderTargets(GetRenderTargets(), NumRT(), 0);
+  psDriverHold::GetDriver()->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
 }

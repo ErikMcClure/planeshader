@@ -29,6 +29,7 @@ typedef struct {
   fgChild selector;
   fgChild hover;
   fgChild* selected; // points to current selected item
+  fgMouseState mouse;
 } fgList;
 
 FG_EXTERN fgChild* FG_FASTCALL fgList_Create(fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element, FG_UINT id, fgFlag flags);

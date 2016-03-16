@@ -8,47 +8,14 @@
 using namespace planeshader;
 using namespace bss_util;
 
-psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0, INTERNALTYPE_CURVE) {}
+psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0) {}
 psQuadraticHull::~psQuadraticHull() {}
 
-void BSS_FASTCALL psQuadraticHull::_render(psBatchObj* obj)
+void BSS_FASTCALL psQuadraticHull::_render()
 {
-  if(obj)
-  {
-    QuadVertex* verts = _verts.begin();
-    size_t num = _verts.Length();
-    for(unsigned int i = obj->buffer->nvert + num; i > CURVEBUFSIZE; i -= CURVEBUFSIZE)
-    {
-      memcpy(((QuadVertex*)obj->mem) + obj->buffer->nvert, verts, (CURVEBUFSIZE - obj->buffer->nvert)*sizeof(QuadVertex));
-      obj->buffer->nvert = CURVEBUFSIZE;
-      _driver->DrawBatchEnd(*obj);
-      obj->mem = _driver->LockBuffer(obj->buffer->verts, LOCK_WRITE_DISCARD);
-      num -= CURVEBUFSIZE;
-      verts += CURVEBUFSIZE;
-    }
-
-    memcpy(((QuadVertex*)obj->mem) + obj->buffer->nvert, verts, num*sizeof(QuadVertex));
-    obj->buffer->nvert += num;
-  }
-  else
-  {
-    psRenderable* r = this;
-    _renderbatch(&r, 1);
-  }
-}
-
-void BSS_FASTCALL psQuadraticHull::_renderbatch(psRenderable** rlist, unsigned int count)
-{
-  static psVertObj vertobj = { _driver->CreateBuffer(sizeof(QuadVertex)*CURVEBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0), 0, 0, 0, sizeof(QuadVertex), FMT_INDEX16, TRIANGLELIST };
-
-  Activate(this);
-  psBatchObj obj;
-  _driver->DrawBatchBegin(obj, GetAllFlags(), &vertobj);
-
-  for(size_t i = 0; i < count; ++i)
-    rlist[i]->_render(&obj);
-
-  _driver->DrawBatchEnd(obj);
+  static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CURVEBUFSIZE, sizeof(QuadVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
+  Activate();
+  _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetAllFlags());
 }
 
 void psQuadraticHull::Clear()
@@ -122,7 +89,6 @@ void BSS_FASTCALL psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVe
     v[i].color = color;
   }
 }
-
 
 psQuadraticCurve::psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, unsigned int color) : psColored(color), _thickness(thickness) { Set(p0, p1, p2); }
 psQuadraticCurve::psQuadraticCurve(psVec(&p)[3], float thickness, unsigned int color) : psColored(color), _thickness(thickness) { Set(p); }
@@ -199,103 +165,63 @@ psRoundedRect::psRoundedRect(const psRoundedRect& copy) : psSolid(copy), psColor
 psRoundedRect::psRoundedRect(psRoundedRect&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
 psRoundedRect::psRoundedRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
-  !shader?_driver->library.ROUNDRECT:shader, pass, parent, scale, INTERNALTYPE_NONE), _outline(0), _edge(-1), _corners(0,0,0,0)
+  !shader?_driver->library.ROUNDRECT:shader, pass, parent, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
 {
   SetDim(rect.GetDimensions());
 }
 psRoundedRect::~psRoundedRect(){}
 
-void BSS_FASTCALL psRoundedRect::_render(psBatchObj* obj)
+void psRoundedRect::DrawRoundedRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
-  if(obj)
-  {
-    if(obj->buffer->nvert >= RRBUFSIZE)
-    {
-      _driver->DrawBatchEnd(*obj);
-      obj->mem = _driver->LockBuffer(obj->buffer->verts, LOCK_WRITE_DISCARD);
-    }
+  static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RRBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
+  psBatchObj& obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
 
-    unsigned int color;
-    unsigned int outline;
-    _color.WriteFormat(FMT_R8G8B8A8, &color);
-    _outline.WriteFormat(FMT_R8G8B8A8, &outline);
+  unsigned int color;
+  unsigned int outline;
+  color32.WriteFormat(FMT_R8G8B8A8, &color);
+  outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
-    RRVertex* vert = (RRVertex*)obj->mem;
-    const psRectRotateZ& rect = GetCollisionRect();
-    *vert = { rect.left, rect.top, rect.z, rect.rotation,
-      { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
-      _corners, _edge, color, outline };
-    ++obj->buffer->nvert;
-  }
-  else
-  {
-    psRenderable* r = this;
-    _renderbatch(&r, 1);
-  }
+  RRVertex* vert = (RRVertex*)obj.buffer.verts->mem;
+  *vert = { rect.left, rect.top, rect.z, rect.rotation,
+  { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
+    corners, edge, color, outline };
+  ++obj.buffer.nvert;
 }
-void BSS_FASTCALL psRoundedRect::_renderbatch(psRenderable** rlist, unsigned int count)
+void BSS_FASTCALL psRoundedRect::_render()
 {
-  static psVertObj vertobj = { _driver->CreateBuffer(sizeof(RRVertex)*RRBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0), 0, 0, 0, sizeof(RRVertex), FMT_INDEX16, POINTLIST };
-
-  Activate(this);
-  psBatchObj obj;
-  _driver->DrawBatchBegin(obj, GetAllFlags(), &vertobj);
-
-  for(size_t i = 0; i < count; ++i)
-    rlist[i]->_render(&obj);
-
-  _driver->DrawBatchEnd(obj);
+  Activate();
+  DrawRoundedRect(GetShader(), _stateblock, GetCollisionRect(), _corners, GetAllFlags(), _color, _outline, _edge);
 }
 
 psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psColored(copy) {}
 psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
 psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, parent, scale, INTERNALTYPE_NONE),
+  psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, parent, scale),
   _outline(0), _edge(-1), _arcs(-PI, PI, -PI, PI)
 {
   SetDim(psVec(radius*2));
 }
 psRenderCircle::~psRenderCircle() {}
 
-void BSS_FASTCALL psRenderCircle::_render(psBatchObj* obj)
+void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
-  if(obj)
-  {
-    if(obj->buffer->nvert >= CIRCLEBUFSIZE)
-    {
-      _driver->DrawBatchEnd(*obj);
-      obj->mem = _driver->LockBuffer(obj->buffer->verts, LOCK_WRITE_DISCARD);
-    }
+  static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CIRCLEBUFSIZE, sizeof(CircleVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
+  psBatchObj& obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
 
-    unsigned int color;
-    unsigned int outline;
-    _color.WriteFormat(FMT_R8G8B8A8, &color);
-    _outline.WriteFormat(FMT_R8G8B8A8, &outline);
+  unsigned int color;
+  unsigned int outline;
+  color32.WriteFormat(FMT_R8G8B8A8, &color);
+  outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
-    CircleVertex* vert = (CircleVertex*)obj->mem;
-    const psRectRotateZ& rect = GetCollisionRect();
-    *vert = { rect.left, rect.top, rect.z, rect.rotation,
-    { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
-      _arcs, _edge, color, outline };
-    ++obj->buffer->nvert;
-  }
-  else
-  {
-    psRenderable* r = this;
-    _renderbatch(&r, 1);
-  }
+  CircleVertex* vert = (CircleVertex*)obj.buffer.verts->mem; // we don't need to check length here because we reserved 1 vertex in DrawBatchBegin
+  *vert = { rect.left, rect.top, rect.z, rect.rotation,
+  { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
+    arcs, edge, color, outline };
+  ++obj.buffer.nvert;
 }
 
-void BSS_FASTCALL psRenderCircle::_renderbatch(psRenderable** rlist, unsigned int count)
+void BSS_FASTCALL psRenderCircle::_render()
 {
-  static psVertObj vertobj = { _driver->CreateBuffer(sizeof(CircleVertex)*CIRCLEBUFSIZE, USAGE_VERTEX | USAGE_DYNAMIC, 0), 0, 0, 0, sizeof(CircleVertex), FMT_INDEX16, POINTLIST };
-
-  Activate(this);
-  psBatchObj obj;
-  _driver->DrawBatchBegin(obj, GetAllFlags(), &vertobj);
-
-  for(size_t i = 0; i < count; ++i)
-    rlist[i]->_render(&obj);
-
-  _driver->DrawBatchEnd(obj);
+  Activate();
+  DrawCircle(GetShader(), _stateblock, GetCollisionRect(), _arcs, GetAllFlags(), _color, _outline, _edge);
 }

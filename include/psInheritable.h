@@ -13,7 +13,7 @@ namespace planeshader {
   public:
     psInheritable(const psInheritable& copy);
     psInheritable(psInheritable&& mov);
-    explicit psInheritable(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0, unsigned char internaltype=0);
+    explicit psInheritable(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0);
     virtual ~psInheritable();
     virtual void Render();
     // Sets/gets the parent
@@ -50,13 +50,16 @@ namespace planeshader {
     }
 
     inline static bool INHERITABLECOMP(psInheritable* l, psInheritable* r) { return l->_zorder < r->_zorder; }
+    virtual void BSS_FASTCALL _render();
 
   protected:
+    friend class psSolid;
+
     void _gettotalpos(psVec3D& pos) const;
     void _sortchildren();
     virtual char BSS_FASTCALL _sort(psRenderable* r) const;
     virtual psRenderable* BSS_FASTCALL _getparent() const;
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
+    psInheritable* _prerender();
 
     bss_util::LLBase<psInheritable> _lchild;
     psInheritable* _parent;

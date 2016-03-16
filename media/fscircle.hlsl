@@ -16,6 +16,14 @@ float fmod(float n, float d)
 float getarc(float2 arcs, float angle, float anglew)
 {
   const float PI = 3.14159265359;
+  if(arcs.y > PI) // we can only deal with an empty circle, not a full circle, so we invert the arc if it's greater than PI
+  {
+    arcs.x += arcs.y; // Note: this is probably mathematically equivelent to constructing something using abs()
+    arcs.y = PI*2 - arcs.y;
+    // Copy paste from below becuase no recursive functions in HLSL :C
+    angle = fmod(angle-arcs.x+anglew, PI*2) - anglew;
+    return 1.0 - (smoothstep(-anglew, anglew, angle) - smoothstep(arcs.y-anglew, arcs.y+anglew, angle));
+  }
   angle = fmod(angle-arcs.x+anglew, PI*2) - anglew; // Instead of enclosing within [0, 2PI], we shift to [-anglew, PI*2-anglew] which prevents the smoothstep from breaking
   return smoothstep(-anglew, anglew, angle) - smoothstep(arcs.y-anglew, arcs.y+anglew, angle);
 }

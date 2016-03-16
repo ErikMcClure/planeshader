@@ -50,7 +50,7 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   {
   case RealDriver::DRIVERTYPE_NULL:
     PSLOG(4) << "Initializing Null Driver" << std::endl;
-    new psNullDriver();
+    //new psNullDriver();
     break;
   case RealDriver::DRIVERTYPE_DX10:
     //PSLOG(4) << "Initializing DirectX10 Driver" << std::endl;

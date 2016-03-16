@@ -27,7 +27,6 @@ namespace planeshader {
     inline void SetRenderTarget(psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
-    void FlushQueue();
     inline void SetClearColor(unsigned int color, bool enable = true) { _clearcolor = color; _clear = enable; }
     inline unsigned int GetClearColor() const { return _clearcolor; }
 
@@ -36,7 +35,6 @@ namespace planeshader {
     {
       return l->_sort(r);
       //char c = SGNCOMPARE(l->_zorder, r->_zorder);
-      //if(!c) c = SGNCOMPARE(l->_internaltype(), r->_internaltype());
       //if(!c) c = SGNCOMPARE(l,r); return c; 
     }
     static psPass* CurPass;
@@ -46,12 +44,9 @@ namespace planeshader {
     friend class psCullGroup;
 
   protected:
-    void _queue(psRenderable* r);
-    void _cullqueue(psRenderable* r);
     void _sort(psRenderable* r);
     void _addcullgroup(psCullGroup* g);
     void _removecullgroup(psCullGroup* g);
-    static bool _checkrt(psRenderable* l, psRenderable* r);
 
     const psCamera* _cam;
     psRenderable* _renderables;
@@ -62,7 +57,6 @@ namespace planeshader {
     unsigned int _clearcolor;
     bool _clear;
     bss_util::cTRBtree<psRenderable*, StandardCompare, ALLOC> _renderlist;
-    bss_util::cDynArray<psRenderable*> _renderqueue;
   };
 }
 

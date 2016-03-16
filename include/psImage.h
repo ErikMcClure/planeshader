@@ -35,9 +35,7 @@ namespace planeshader {
     psImage& operator =(psImage&& right);
 
   protected:
-    virtual void BSS_FASTCALL _render(psBatchObj* obj);
-    virtual void BSS_FASTCALL _renderbatch(psRenderable** rlist, unsigned int count);
-    virtual bool BSS_FASTCALL _batch(psRenderable* r) const;
+    virtual void BSS_FASTCALL _render();
     void _setuvs(unsigned int size);
     void _recalcdim();
 

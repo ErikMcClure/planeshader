@@ -2,14 +2,15 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psSolid.h"
+#include "psPass.h"
 
 using namespace planeshader;
 
 psSolid::psSolid(const psSolid& copy) : psInheritable(copy), _scale(copy._scale), _dim(copy._dim), _realdim(copy._realdim), _collisionrect(copy._collisionrect), _boundingrect(copy._boundingrect) { _internalflags|=INTERNALFLAG_SOLID; }
 psSolid::psSolid(psSolid&& mov) : psInheritable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _collisionrect(mov._collisionrect), _boundingrect(mov._boundingrect) { _internalflags|=INTERNALFLAG_SOLID; }
 
-psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned char internaltype) :
-  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, 0, internaltype), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
+psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
+  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, 0), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
 {
   _internalflags|=INTERNALFLAG_SOLID;
   psSolid::SetScale(scale);
@@ -18,6 +19,15 @@ psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psF
 }
 
 psSolid::~psSolid() { }
+void psSolid::Render()
+{
+  psInheritable* cur = _prerender();
+  if(psPass::CurPass != 0)
+    if(!psPass::CurPass->GetCamera()->Cull(this))
+      psRenderable::Render();
+  for(; cur != 0; cur = cur->_lchild.next)
+    cur->Render();
+}
 
 void psSolid::UpdateBoundingRect() 
 {

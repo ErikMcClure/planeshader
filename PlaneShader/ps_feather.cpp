@@ -4,6 +4,7 @@
 #include "psEngine.h"
 #include "psFont.h"
 #include "psTex.h"
+#include "psVector.h"
 #include "feathergui\fgButton.h"
 #include "feathergui\fgText.h"
 #include "feathergui\fgResource.h"
@@ -34,7 +35,7 @@ void FG_FASTCALL fgDrawFont(void* font, const char* text, unsigned int color, co
 { 
   psFont* f = (psFont*)font;
   psRect rect = { area->left, area->top, area->right, area->bottom };
-  f->DrawText(text, rect, psRoot::GetDrawFlags(flags), 0, color, 0);
+  f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, rect, psRoot::GetDrawFlags(flags), 0, color, 0);
 }
 void FG_FASTCALL fgFontSize(void* font, const char* text, AbsRect* area, fgFlag flags)
 {
@@ -50,18 +51,32 @@ void FG_FASTCALL fgFontSize(void* font, const char* text, AbsRect* area, fgFlag 
 void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
 void* FG_FASTCALL fgCloneResource(void* res) { ((psTex*)res)->Grab(); return res; }
 void FG_FASTCALL fgDestroyResource(void* res) { ((psTex*)res)->Drop(); }
-void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags)
+void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags)
 {
   psTex* tex = (psTex*)res;
-  psRect uvresolve = { uv->left.rel + (uv->left.abs/tex->GetDim().x),
-    uv->top.rel + (uv->top.abs / tex->GetDim().y),
-    uv->right.rel + (uv->right.abs / tex->GetDim().x),
-    uv->bottom.rel+ (uv->bottom.abs / tex->GetDim().y) };
+  psRect uvresolve;
+  if(tex)
+  {
+    uvresolve = psRect { uv->left.rel + (uv->left.abs / tex->GetDim().x),
+      uv->top.rel + (uv->top.abs / tex->GetDim().y),
+      uv->right.rel + (uv->right.abs / tex->GetDim().x),
+      uv->bottom.rel + (uv->bottom.abs / tex->GetDim().y) };
+  }
+  else
+    uvresolve = psRect { uv->left.abs, uv->top.abs, uv->right.abs, uv->bottom.abs };
 
-  psRoot::Instance()->GetDriver()->library.IMAGE->Activate();
-  psRoot::Instance()->GetDriver()->SetStateblock(0);
-  psRoot::Instance()->GetDriver()->SetTextures(&tex, 1);
-  psRoot::Instance()->GetDriver()->DrawRect(psRectRotate(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y)), &uvresolve, 1, color, 0);
+  psDriver* driver = psRoot::Instance()->GetDriver();
+  if(tex)
+    driver->SetTextures(&tex, 1);
+
+  psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
+
+  if(flags&FGRESOURCE_ROUNDRECT)
+    psRoundedRect::DrawRoundedRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
+  else if(flags&FGRESOURCE_CIRCLE)
+    psRenderCircle::DrawCircle(driver->library.CIRCLE, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
+  else
+    driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
 }
 void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
 {
@@ -72,6 +87,14 @@ void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag 
     (uv->bottom.rel*tex->GetDim().y) + uv->bottom.abs };
   dim->x = uvresolve.right - uvresolve.left;
   dim->y = uvresolve.bottom - uvresolve.top;
+}
+void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, unsigned int color)
+{
+  psDriver* driver = psRoot::Instance()->GetDriver();
+  psBatchObj& obj = driver->DrawLinesStart(driver->library.LINE, 0, 0);
+  unsigned long vertexcolor;
+  psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
+  driver->DrawLines(obj, psLine(p1.x, p1.y, p2.x, p2.y), 0, 0, vertexcolor);
 }
 
 #define DEFAULT_CREATE(type, init, ...) \
@@ -117,12 +140,12 @@ char FG_FASTCALL fgLoadExtension(void* fg, const char* extname) { return -1; }
 void fgPushClipRect(AbsRect* clip)
 { 
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
-  psRoot::Instance()->GetDriver()->PushScissorRect(rect);
+  psRoot::Instance()->GetDriver()->MergeClipRect(rect);
 }
 
 void fgPopClipRect()
 {
-  psRoot::Instance()->GetDriver()->PopScissorRect();
+  psRoot::Instance()->GetDriver()->PopClipRect();
 }
 
 psRoot::psRoot() : _prev(0,0)
@@ -168,7 +191,7 @@ bool psRoot::ProcessGUI(const psGUIEvent& evt)
   return true;
 }
 
-void BSS_FASTCALL psRoot::_render(psBatchObj*)
+void BSS_FASTCALL psRoot::_render()
 {
   CRect area = _root.gui.element.element.area;
   area.right.abs = _driver->screendim.x;
@@ -190,4 +213,137 @@ psFlag psRoot::GetDrawFlags(fgFlag flags)
 psRoot* psRoot::Instance()
 {
   return instance;
+}
+
+#include "bss-util\bss_win32_includes.h"
+
+void fgSetCursor(unsigned int type, void* custom)
+{
+  static HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
+  static HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
+  static HCURSOR hCross = LoadCursor(NULL, IDC_CROSS);
+  static HCURSOR hWait = LoadCursor(NULL, IDC_WAIT);
+  //static HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
+  static HCURSOR hSizeNS = LoadCursor(NULL, IDC_SIZENS);
+  static HCURSOR hSizeWE = LoadCursor(NULL, IDC_SIZEWE);
+  static HCURSOR hSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
+  static HCURSOR hSizeNESW = LoadCursor(NULL, IDC_SIZENESW);
+  static HCURSOR hSizeAll = LoadCursor(NULL, IDC_SIZEALL);
+  static HCURSOR hNo = LoadCursor(NULL, IDC_NO);
+  static HCURSOR hHelp = LoadCursor(NULL, IDC_HELP);
+
+  switch(type)
+  {
+  case FGCURSOR_ARROW: SetCursor(hArrow); break;
+  case FGCURSOR_IBEAM: SetCursor(hIBeam); break;
+  case FGCURSOR_CROSS: SetCursor(hCross); break;
+  case FGCURSOR_WAIT: SetCursor(hWait); break;
+  //case FGCURSOR_HAND: SetCursor(hHand); break;
+  case FGCURSOR_RESIZENS: SetCursor(hSizeNS); break;
+  case FGCURSOR_RESIZEWE: SetCursor(hSizeWE); break;
+  case FGCURSOR_RESIZENWSE: SetCursor(hSizeNWSE); break;
+  case FGCURSOR_RESIZENESW: SetCursor(hSizeNESW); break;
+  case FGCURSOR_RESIZEALL: SetCursor(hSizeAll); break;
+  case FGCURSOR_NO: SetCursor(hNo); break;
+  case FGCURSOR_HELP: SetCursor(hHelp); break;
+  }
+}
+
+void fgClipboardCopy(unsigned int type, const void* data, size_t length)
+{
+  OpenClipboard(psEngine::Instance()->GetWindow());
+  if(EmptyClipboard() && data != 0 && length > 0)
+  {
+    HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, length);
+    if(gmem)
+    {
+      void* mem = GlobalLock(gmem);
+      MEMCPY(mem, length, data, length);
+      GlobalUnlock(gmem);
+      UINT format = CF_PRIVATEFIRST;
+      switch(type)
+      {
+      case FGCLIPBOARD_TEXT: 
+      {
+        format = CF_TEXT; // While our format is always CF_TEXT, because we use utf8, CF_UNICODE is also set for the benefit of other programs (windows assumes CF_TEXT is ascii, and so will not correctly translate it to unicode).
+        cStrW text((const char*)data);
+        size_t len = (text.length() + 1)*sizeof(wchar_t); // add one for null terminator
+        HGLOBAL unimem = GlobalAlloc(GMEM_MOVEABLE, len);
+        if(unimem)
+        {
+          void* uni = GlobalLock(unimem);
+          MEMCPY(uni, len, text.c_str(), len);
+          GlobalUnlock(unimem);
+          SetClipboardData(CF_UNICODETEXT, unimem);
+        }
+      }
+        break; 
+      case FGCLIPBOARD_WAVE: format = CF_WAVE; break;
+      case FGCLIPBOARD_BITMAP: format = CF_BITMAP; break;
+      }
+      SetClipboardData(format, gmem);
+    }
+  }
+  CloseClipboard();
+}
+
+char fgClipboardExists(unsigned int type)
+{
+  switch(type)
+  {
+  case FGCLIPBOARD_TEXT:
+    return IsClipboardFormatAvailable(CF_TEXT) | IsClipboardFormatAvailable(CF_UNICODETEXT);
+  case FGCLIPBOARD_WAVE:
+    return IsClipboardFormatAvailable(CF_WAVE);
+  case FGCLIPBOARD_BITMAP:
+    return IsClipboardFormatAvailable(CF_BITMAP);
+  case FGCLIPBOARD_CUSTOM:
+    return IsClipboardFormatAvailable(CF_PRIVATEFIRST);
+  case FGCLIPBOARD_ALL:
+    return IsClipboardFormatAvailable(CF_TEXT) | IsClipboardFormatAvailable(CF_UNICODETEXT) | IsClipboardFormatAvailable(CF_WAVE) | IsClipboardFormatAvailable(CF_BITMAP) | IsClipboardFormatAvailable(CF_PRIVATEFIRST);
+  }
+  return 0;
+}
+
+const void* fgClipboardPaste(unsigned int type, size_t* length)
+{
+  OpenClipboard(psEngine::Instance()->GetWindow());
+  UINT format = CF_PRIVATEFIRST;
+  switch(type)
+  {
+  case FGCLIPBOARD_TEXT:
+    if(IsClipboardFormatAvailable(CF_UNICODETEXT))
+    {
+      HANDLE gdata = GetClipboardData(CF_UNICODETEXT);
+      const wchar_t* str = (const wchar_t*)GlobalLock(gdata);
+      SIZE_T size = GlobalSize(gdata)/2;
+      if(!str[size - 1]) // Do not read text that is not null terminated.
+      {
+        cStr s(str);
+        size = s.length() + 1;
+        void* ret = malloc(size);
+        MEMCPY(ret, size, s.c_str(), size);
+        GlobalUnlock(gdata);
+        CloseClipboard();
+        return ret;
+      }
+    }
+    format = CF_TEXT; // otherwise if unicode isn't available directly paste from the ascii buffer.
+    break;
+  case FGCLIPBOARD_WAVE: format = CF_WAVE; break;
+  case FGCLIPBOARD_BITMAP: format = CF_BITMAP; break;
+  }
+  HANDLE gdata = GetClipboardData(format);
+  void* data = GlobalLock(gdata);
+  SIZE_T size = GlobalSize(gdata);
+  void* ret = malloc(size);
+  MEMCPY(ret, size, data, size);
+  GlobalUnlock(gdata);
+  CloseClipboard();
+  return ret;
+}
+
+void fgClipboardFree(const void* mem)
+{
+  free(const_cast<void*>(mem));
 }

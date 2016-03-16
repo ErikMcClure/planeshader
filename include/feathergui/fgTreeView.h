@@ -10,7 +10,12 @@
 extern "C" {
 #endif
 
-// A treeview visualizes a tree structure as a series of nested lists
+typedef struct _FG_TREEVIEW_CONTAINER {
+  fgChild window;
+  fgChild* content;
+} fgTreeViewContainer;
+
+// A treeview visualizes a tree structure as a series of nested lists. 
 typedef struct _FG_TREEVIEW {
   fgScrollbar window;
   fgChild expand;
@@ -21,6 +26,7 @@ FG_EXTERN fgChild* FG_FASTCALL fgTreeView_Create(fgFlag flags, fgChild* BSS_REST
 FG_EXTERN void FG_FASTCALL fgTreeView_Init(fgTreeView* BSS_RESTRICT self, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);
 FG_EXTERN void FG_FASTCALL fgTreeView_Destroy(fgTreeView* self);
 FG_EXTERN size_t FG_FASTCALL fgTreeView_Message(fgTreeView* self, const FG_Msg* msg);
+FG_EXTERN size_t FG_FASTCALL fgTreeViewContainer_Message(fgTreeViewContainer* self, const FG_Msg* msg);
 
 #ifdef  __cplusplus
 }
