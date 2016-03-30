@@ -18,6 +18,7 @@
 namespace planeshader {
   class psPass;
   class psDriver;
+  class psRoot;
 
   struct PSINIT
   {

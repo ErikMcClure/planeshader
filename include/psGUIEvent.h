@@ -242,12 +242,16 @@ namespace planeshader {
 
   struct BSS_COMPILER_DLLEXPORT psGUIEvent {
     union {
-      struct { int x; int y; unsigned char button; unsigned char allbtn; }; // Mouse events
-      struct { short scrolldelta; }; // Mouse scroll
+      struct {
+        int x; int y; // Mouse events
+        union {
+          struct { unsigned char button; unsigned char allbtn; };
+          short scrolldelta;
+        };
+      };
       struct {  // Keys
         int keychar; //Only used by KEYCHAR, represents a utf32 character
         unsigned char keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
-        char keydown;
         char sigkeys; // 1: shift, 2: ctrl, 4: alt, 8: held
       };
       struct { float joyvalue; short joyaxis; }; // JOYAXIS

@@ -116,15 +116,15 @@ fgChild* FG_FASTCALL fgButton_Create(const char* text, fgFlag flags, fgChild* BS
 {
   DEFAULT_CREATE(fgButton, fgButton_Init, flags, parent, prev, element);
   if(text)
-    fgChild_VoidMessage((fgChild*)r, FG_SETTEXT, (void*)text);
+    (*r)->SetText(text);
   return (fgChild*)r;
 }
 fgChild* FG_FASTCALL fgTopWindow_Create(const char* caption, fgFlag flags, const fgElement* element)
 {
   fgTopWindow* r = (fgTopWindow*)malloc(sizeof(fgTopWindow));
   fgTopWindow_Init(r, flags, element);
-  fgChild_VoidMessage((fgChild*)r, FG_SETPARENT, fgSingleton());
-  fgChild_VoidMessage((fgChild*)r, FG_SETTEXT, (void*)caption);
+  (*r)->SetParent(*fgSingleton(), 0);
+  (*r)->SetText(caption);
   r->window.element.free = &free;
   return (fgChild*)r;
 }
@@ -196,8 +196,8 @@ void BSS_FASTCALL psRoot::_render()
   CRect area = _root.gui.element.element.area;
   area.right.abs = _driver->screendim.x;
   area.bottom.abs = _driver->screendim.y;
-  fgChild_VoidMessage(&_root.gui.element, FG_SETAREA, &area);
-  fgChild_VoidMessage(&_root.gui.element, FG_DRAW, 0);
+  _root.gui->SetArea(area);
+  _root.gui->Draw(0);
 }
 psFlag psRoot::GetDrawFlags(fgFlag flags)
 {

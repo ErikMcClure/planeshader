@@ -255,7 +255,7 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
 
   //Register class
   WNDCLASSEXW wcex    ={ sizeof(WNDCLASSEXW),              // cbSize
-    CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,                            // style
+    CS_HREDRAW | CS_VREDRAW, //| CS_DBLCLKS, // Double clicking usually just causes problems
     (WNDPROC)WndProc,                      // lpfnWndProc
     NULL,                            // cbClsExtra
     NULL,                            // cbWndExtra
@@ -361,7 +361,6 @@ void psGUIManager::SetKey(unsigned char keycode, bool down, bool held, DWORD tim
   evt.type = down?GUI_KEYDOWN:GUI_KEYUP;
   evt.time=time;
   evt.keycode = keycode;
-  evt.keydown = down;
   evt.sigkeys = 0;
   if(GetKey(KEY_SHIFT)) evt.sigkeys = evt.sigkeys|1; //VK_SHIFT
   if(GetKey(KEY_CONTROL)) evt.sigkeys = evt.sigkeys|2; //VK_CONTROL

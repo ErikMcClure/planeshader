@@ -181,7 +181,7 @@ void psRoundedRect::DrawRoundedRect(psShader* shader, psStateblock* stateblock, 
   color32.WriteFormat(FMT_R8G8B8A8, &color);
   outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
-  RRVertex* vert = (RRVertex*)obj.buffer.verts->mem;
+  RRVertex* vert = (RRVertex*)obj.buffer.get();
   *vert = { rect.left, rect.top, rect.z, rect.rotation,
   { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
     corners, edge, color, outline };
@@ -213,7 +213,7 @@ void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, cons
   color32.WriteFormat(FMT_R8G8B8A8, &color);
   outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
-  CircleVertex* vert = (CircleVertex*)obj.buffer.verts->mem; // we don't need to check length here because we reserved 1 vertex in DrawBatchBegin
+  CircleVertex* vert = (CircleVertex*)obj.buffer.get(); // we don't need to check length here because we reserved 1 vertex in DrawBatchBegin
   *vert = { rect.left, rect.top, rect.z, rect.rotation,
   { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
     arcs, edge, color, outline };
