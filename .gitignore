@@ -4,6 +4,7 @@
 *.opendb
 *.bak
 *.aps
+*.VC.db
 bin/
 bin32/
 lib/
