@@ -9,6 +9,9 @@
 #include "feathergui\fgText.h"
 #include "feathergui\fgResource.h"
 #include "feathergui\fgTopWindow.h"
+#include "feathergui\fgRadioButton.h"
+#include "feathergui\fgProgressbar.h"
+#include "feathergui\fgSlider.h"
 #include "ps_feather.h"
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
@@ -31,11 +34,12 @@ void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, unsigned int font
 }
 void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
 void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
-void FG_FASTCALL fgDrawFont(void* font, const char* text, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags)
+void* FG_FASTCALL fgDrawFont(void* font, const char* text, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
 { 
   psFont* f = (psFont*)font;
   psRect rect = { area->left, area->top, area->right, area->bottom };
   f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, rect, psRoot::GetDrawFlags(flags), 0, color, 0);
+  return 0;
 }
 void FG_FASTCALL fgFontSize(void* font, const char* text, AbsRect* area, fgFlag flags)
 {
@@ -96,7 +100,6 @@ void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, unsigned int color)
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
   driver->DrawLines(obj, psLine(p1.x, p1.y, p2.x, p2.y), 0, 0, vertexcolor);
 }
-
 #define DEFAULT_CREATE(type, init, ...) \
   type* r = (type*)malloc(sizeof(type)); \
   init(r, __VA_ARGS__); \
@@ -115,8 +118,7 @@ fgChild* FG_FASTCALL fgText_Create(char* text, void* font, unsigned int color, f
 fgChild* FG_FASTCALL fgButton_Create(const char* text, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
 {
   DEFAULT_CREATE(fgButton, fgButton_Init, flags, parent, prev, element);
-  if(text)
-    (*r)->SetText(text);
+  (*r)->SetText(text);
   return (fgChild*)r;
 }
 fgChild* FG_FASTCALL fgTopWindow_Create(const char* caption, fgFlag flags, const fgElement* element)
@@ -128,6 +130,30 @@ fgChild* FG_FASTCALL fgTopWindow_Create(const char* caption, fgFlag flags, const
   r->window.element.free = &free;
   return (fgChild*)r;
 }
+fgChild* FG_FASTCALL fgCheckbox_Create(const char* text, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
+{
+  DEFAULT_CREATE(fgCheckbox, fgCheckbox_Init, flags, parent, prev, element);
+  (*r)->SetText(text);
+  return (fgChild*)r;
+}
+fgChild* FG_FASTCALL fgRadiobutton_Create(const char* text, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
+{
+  DEFAULT_CREATE(fgRadiobutton, fgRadiobutton_Init, flags, parent, prev, element);
+  (*r)->SetText(text);
+  return (fgChild*)r;
+}
+fgChild* FG_FASTCALL fgProgressbar_Create(FREL value, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
+{
+  DEFAULT_CREATE(fgProgressbar, fgProgressbar_Init, flags, parent, prev, element);
+  fgChild_IntMessage((fgChild*)r, FG_SETSTATE, *reinterpret_cast<ptrdiff_t*>(&value), 0);
+  return (fgChild*)r;
+}
+fgChild* FG_FASTCALL fgSlider_Create(size_t range, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
+{
+  DEFAULT_CREATE(fgSlider, fgSlider_Init, range, flags, parent, prev, element);
+  return (fgChild*)r;
+}
+
 
 fgRoot* FG_FASTCALL fgInitialize()
 {
@@ -150,11 +176,9 @@ void fgPopClipRect()
 
 psRoot::psRoot() : _prev(0,0)
 {
-  fgRoot_Init(&_root);
-  _root.gui.element.element.area.right.abs = _driver->screendim.x;
-  _root.gui.element.element.area.bottom.abs = _driver->screendim.y;
   if(instance)
     delete instance;
+  fgRoot_Init(&_root, &AbsRect { 0, 0, _driver->screendim.x, _driver->screendim.y }, _driver->GetDPI().x);
   instance = this;
   _prev = psEngine::Instance()->GetInputReceiver();
   psEngine::Instance()->SetInputReceiver(bss_util::delegate<bool, const psGUIEvent&>::From<psRoot, &psRoot::ProcessGUI>(this));
@@ -197,7 +221,7 @@ void BSS_FASTCALL psRoot::_render()
   area.right.abs = _driver->screendim.x;
   area.bottom.abs = _driver->screendim.y;
   _root.gui->SetArea(area);
-  _root.gui->Draw(0);
+  _root.gui->Draw(0, 0);
 }
 psFlag psRoot::GetDrawFlags(fgFlag flags)
 {

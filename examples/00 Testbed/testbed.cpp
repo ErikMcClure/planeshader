@@ -20,6 +20,9 @@
 #include "feathergui/fgButton.h"
 #include "feathergui/fgResource.h"
 #include "feathergui/fgTopWindow.h"
+#include "feathergui/fgRadioButton.h"
+#include "feathergui/fgProgressbar.h"
+#include "feathergui/fgSlider.h"
 #include "feathergui/fgSkin.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
@@ -386,19 +389,10 @@ TESTDEF::RETPAIR test_feather()
   auto fnAddRect = [](fgSkin* target, const CRect& uv, const fgElement& element, unsigned int color, unsigned int edge, float outline) -> fgStyleLayout* {
     FG_Msg m = { 0 };
     fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", &element, FGRESOURCE_ROUNDRECT|FGCHILD_BACKGROUND));
-    m.type = FG_SETUV;
-    fgStyle_AddStyleMsg(&layout->style, &m, &uv, sizeof(CRect), 0, 0);
-    m.type = FG_SETCOLOR;
-    m.otherint = color;
-    fgStyle_AddStyleMsg(&layout->style, &m, 0, 0, 0, 0);
-    m.type = FG_SETCOLOR;
-    m.otherint = edge;
-    m.otheraux = 1;
-    fgStyle_AddStyleMsg(&layout->style, &m, 0, 0, 0, 0);
-    m.type = FG_SETOUTLINE;
-    m.otherf = outline;
-    m.otheraux = 0;
-    fgStyle_AddStyleMsg(&layout->style, &m, 0, 0, 0, 0);
+    AddStyleMsgArg<FG_SETUV>(&layout->style, &uv, sizeof(CRect));
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
+    AddStyleMsg<FG_SETOUTLINE, float>(&layout->style, outline);
     return layout;
   };
 
@@ -406,14 +400,10 @@ TESTDEF::RETPAIR test_feather()
   FG_UINT nuetral = fgSkin_AddStyle(fgResourceSkin, "nuetral");
   FG_UINT active = fgSkin_AddStyle(fgResourceSkin, "active");
   FG_UINT hover = fgSkin_AddStyle(fgResourceSkin, "hover");
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, nuetral), 0xFFFF00FF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, hover), 0xFF00FFFF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, active), 0xFFFFFF00);
   FG_Msg msg = { 0 };
-  msg.type = FG_SETCOLOR;
-  msg.otherint = 0xFFFF00FF;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, nuetral), &msg, 0, 0, 0, 0);
-  msg.otherint = 0xFF00FFFF;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, hover), &msg, 0, 0, 0, 0);
-  msg.otherint = 0xFFFFFF00;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, active), &msg, 0, 0, 0, 0);
 
   // fgButton
   FG_UINT bnuetral = fgSkin_AddStyle(fgButtonTestSkin, "nuetral");
@@ -432,15 +422,32 @@ TESTDEF::RETPAIR test_feather()
   msg.otherint = 0xFFFFFFFF;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgButtonTestSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgCheckboxSkin->style, &msg, 0, 0, 0, 0);
   msg.type = FG_SETFONT;
   msg.other = font;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgButtonTestSkin->style, &msg, 0, 0, 0, 0);
-  
+  fgStyle_AddStyleMsg(&fgCheckboxSkin->style, &msg, 0, 0, 0, 0);
+
   msg.type = FG_SETPADDING;
   msg.other2 = 0;
   AbsRect buttonpadding = { 5, 5, 5, 5 };
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, &buttonpadding, sizeof(AbsRect), 0, 0);
+
+  fgSkin* fgbuttonbgskin = fgSkin_GetSubSkin(fgButtonSkin, fgSkin_AddSubSkin(fgButtonSkin, 0));
+  bnuetral = fgSkin_AddStyle(fgbuttonbgskin, "nuetral");
+  bactive = fgSkin_AddStyle(fgbuttonbgskin, "active");
+  bhover = fgSkin_AddStyle(fgbuttonbgskin, "hover");
+
+  msg.type = FG_SETCOLOR;
+  msg.otherint = 0xFF666666;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgbuttonbgskin, bnuetral), &msg, 0, 0, 0, 0);
+  msg.type = FG_SETCOLOR;
+  msg.otherint = 0xFF505050;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgbuttonbgskin, bactive), &msg, 0, 0, 0, 0);
+  msg.type = FG_SETCOLOR;
+  msg.otherint = 0xFF7F7F7F;
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgbuttonbgskin, bhover), &msg, 0, 0, 0, 0);
 
   fnAddRect(fgButtonSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
 
@@ -453,6 +460,7 @@ TESTDEF::RETPAIR test_feather()
   fgStyle_AddStyleMsg(&topwindowcaption->style, &msg, &margin, sizeof(AbsRect), 0, 0);
 
   // fgCheckbox
+  fnAddRect(fgCheckboxSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
 
 
   // fgRadioButton
@@ -472,10 +480,12 @@ TESTDEF::RETPAIR test_feather()
   fgChild_VoidMessage(topwindow, FG_SETFONT, font, 0);
   fgChild_VoidMessage(topwindow, FG_SETPADDING, &r, 0);
 
-  fgChild* buttontop = fgButton_Create(0, FGCHILD_EXPAND, topwindow, 0, &fgElement { { 100, 0, 100, 0, 200, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  fgChild* buttontop = fgButton_Create(0, FGCHILD_EXPAND, topwindow, 0, &fgElement { { 100, 0, 100, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   buttontop->SetText("Not Pressed");
   FN_LISTENER listener = [](fgChild* self, const FG_Msg*) { self->SetText("Pressed!"); };
   buttontop->AddListener(FG_ACTION, listener);
+
+  fgChild* checkbox = fgCheckbox_Create("Check Test 1", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 100, 0, 200, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
 
@@ -487,7 +497,7 @@ TESTDEF::RETPAIR test_feather()
     updatefpscount(timer, fps);
   }
 
-
+  fgChild_Clear(*fgSingleton());
   fgSkin_Destroy(&skin);
 
   ENDTEST;
