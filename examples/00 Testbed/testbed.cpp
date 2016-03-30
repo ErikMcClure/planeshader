@@ -364,17 +364,45 @@ TESTDEF::RETPAIR test_psEffect()
   ENDTEST;
 }
 
+
 TESTDEF::RETPAIR test_feather()
 {
   BEGINTEST;
   int fps = 0;
   auto timer = psEngine::OpenProfiler();
+  const fgElement FILL_ELEMENT = { { 0, 0, 0, 0, 0, 1, 0, 1 }, 0, { 0, 0, 0, 0 } };
 
   fgSkin skin;
   fgSkin_Init(&skin);
+  fgSkin* fgButtonTestSkin = fgSkin_AddSkin(&skin, "buttontest");
   fgSkin* fgButtonSkin = fgSkin_AddSkin(&skin, "fgButton");
-  fgSkin* fgResourceSkin = fgSkin_AddSkin(fgButtonSkin, "fgResource");
+  fgSkin* fgResourceSkin = fgSkin_AddSkin(fgButtonTestSkin, "fgResource");
+  fgSkin* fgTopWindowSkin = fgSkin_AddSkin(&skin, "fgTopWindow");
+  fgSkin* fgCheckboxSkin = fgSkin_AddSkin(&skin, "fgCheckbox");
+  fgSkin* fgRadioButtonSkin = fgSkin_AddSkin(&skin, "fgRadioButton");
+  fgSkin* fgProgressbarSkin = fgSkin_AddSkin(&skin, "fgProgressbar");
+  fgSkin* fgSliderSkin = fgSkin_AddSkin(&skin, "fgSlider");
 
+  auto fnAddRect = [](fgSkin* target, const CRect& uv, const fgElement& element, unsigned int color, unsigned int edge, float outline) -> fgStyleLayout* {
+    FG_Msg m = { 0 };
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", &element, FGRESOURCE_ROUNDRECT|FGCHILD_BACKGROUND));
+    m.type = FG_SETUV;
+    fgStyle_AddStyleMsg(&layout->style, &m, &uv, sizeof(CRect), 0, 0);
+    m.type = FG_SETCOLOR;
+    m.otherint = color;
+    fgStyle_AddStyleMsg(&layout->style, &m, 0, 0, 0, 0);
+    m.type = FG_SETCOLOR;
+    m.otherint = edge;
+    m.otheraux = 1;
+    fgStyle_AddStyleMsg(&layout->style, &m, 0, 0, 0, 0);
+    m.type = FG_SETOUTLINE;
+    m.otherf = outline;
+    m.otheraux = 0;
+    fgStyle_AddStyleMsg(&layout->style, &m, 0, 0, 0, 0);
+    return layout;
+  };
+
+  // fgResource
   FG_UINT nuetral = fgSkin_AddStyle(fgResourceSkin, "nuetral");
   FG_UINT active = fgSkin_AddStyle(fgResourceSkin, "active");
   FG_UINT hover = fgSkin_AddStyle(fgResourceSkin, "hover");
@@ -387,42 +415,74 @@ TESTDEF::RETPAIR test_feather()
   msg.otherint = 0xFFFFFF00;
   fgStyle_AddStyleMsg(fgSkin_GetStyle(fgResourceSkin, active), &msg, 0, 0, 0, 0);
 
-  FG_UINT bnuetral = fgSkin_AddStyle(fgButtonSkin, "nuetral");
-  FG_UINT bactive = fgSkin_AddStyle(fgButtonSkin, "active");
-  FG_UINT bhover = fgSkin_AddStyle(fgButtonSkin, "hover");
+  // fgButton
+  FG_UINT bnuetral = fgSkin_AddStyle(fgButtonTestSkin, "nuetral");
+  FG_UINT bactive = fgSkin_AddStyle(fgButtonTestSkin, "active");
+  FG_UINT bhover = fgSkin_AddStyle(fgButtonTestSkin, "hover");
   msg.type = FG_SETTEXT;
   msg.other = "Nuetral";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bnuetral), &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonTestSkin, bnuetral), &msg, 0, 0, 0, 0);
   msg.other = "Active";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bactive), &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonTestSkin, bactive), &msg, 0, 0, 0, 0);
   msg.other = "Hover";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonSkin, bhover), &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonTestSkin, bhover), &msg, 0, 0, 0, 0);
 
   void* font = fgCreateFont(0, "arial.ttf", 14, 16, 0);
   msg.type = FG_SETCOLOR;
   msg.otherint = 0xFFFFFFFF;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgButtonTestSkin->style, &msg, 0, 0, 0, 0);
   msg.type = FG_SETFONT;
   msg.other = font;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgButtonTestSkin->style, &msg, 0, 0, 0, 0);
+  
+  msg.type = FG_SETPADDING;
+  msg.other2 = 0;
+  AbsRect buttonpadding = { 5, 5, 5, 5 };
+  fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, &buttonpadding, sizeof(AbsRect), 0, 0);
 
-  fgChild_VoidMessage((fgChild*)fgSingleton(), FG_SETSKIN, &skin);
+  fnAddRect(fgButtonSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
+
+  // fgTopWindow
+  fnAddRect(fgTopWindowSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
+
+  fgSkin* topwindowcaption = fgSkin_GetSubSkin(fgTopWindowSkin, fgSkin_AddSubSkin(fgTopWindowSkin, -1));
+  msg.type = FG_SETMARGIN;
+  AbsRect margin = { 4, 4, 0, 0 };
+  fgStyle_AddStyleMsg(&topwindowcaption->style, &msg, &margin, sizeof(AbsRect), 0, 0);
+
+  // fgCheckbox
+
+
+  // fgRadioButton
+
+
+  // Apply skin and set up layout
+  fgChild_VoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
   fgChild* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, FGCHILD_EXPAND | FGCHILD_IGNORE, 0, 0, 0);
-  fgChild* button = fgButton_Create(0, FGCHILD_EXPAND, (fgChild*)fgSingleton(), 0, 0);
-  fgChild_VoidMessage(button, FG_ADDITEM, res);
+  fgChild* button = fgButton_Create(0, FGCHILD_EXPAND, *fgSingleton(), 0, 0);
+  fgChild_VoidMessage(button, FG_ADDITEM, res, 0);
+  button->SetName("buttontest");
 
-  const fgElement fgElement_topwindow = { { 0, 0.2, 0, 0.2, 0, 0.8, 0, 0.8 }, 0, { 0, 0, 0, 0 } };
-  fgChild* topwindow = fgTopWindow_Create("test window", 0, &fgElement_topwindow);
+  fgChild* topwindow = fgTopWindow_Create("test window", 0, &fgElement { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
   AbsRect r = { 10,22,10,10 };
   fgChild_IntMessage(topwindow, FG_SETCOLOR, 0xFFFFFFFF, 0);
-  fgChild_VoidMessage(topwindow, FG_SETFONT, font);
-  fgChild_VoidMessage(topwindow, FG_SETPADDING, &r);
+  fgChild_VoidMessage(topwindow, FG_SETFONT, font, 0);
+  fgChild_VoidMessage(topwindow, FG_SETPADDING, &r, 0);
+
+  fgChild* buttontop = fgButton_Create(0, FGCHILD_EXPAND, topwindow, 0, &fgElement { { 100, 0, 100, 0, 200, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  buttontop->SetText("Not Pressed");
+  FN_LISTENER listener = [](fgChild* self, const FG_Msg*) { self->SetText("Pressed!"); };
+  buttontop->AddListener(FG_ACTION, listener);
+
+  fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
 
   while(!gotonext && engine->Begin())
   {
-    psRoot::Instance()->Render();
     engine->GetDriver()->Clear(0xFF000000);
+    psRoot::Instance()->Render();
     engine->End();
     updatefpscount(timer, fps);
   }
@@ -532,6 +592,7 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] ={
+    { "ps_feather", &test_feather },
     { "psVector", &test_psVector },
     { "psDirectX11", &test_psDirectX11 },
     { "psFont", &test_psFont },
@@ -542,7 +603,6 @@ int main(int argc, char** argv)
     { "psColor", &test_psColor },
     { "psParticles", &test_psParticles },
     { "psInheritable", &test_psInheritable },
-    { "ps_feather", &test_feather },
   };
 
   const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);

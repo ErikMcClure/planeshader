@@ -1,8 +1,8 @@
 // Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
-#ifndef __FG_MENU_H__
-#define __FG_MENU_H__
+#ifndef _FG_MENU_H__
+#define _FG_MENU_H__
 
 #include "fgScrollbar.h"
 
@@ -11,15 +11,19 @@ extern "C" {
 #endif
 
 // A Menu is either a window menu or a context menu. Turns into a menubar if made the child of a top-level window
-typedef struct FG_MENU {
+typedef struct _FG_MENU {
   fgScrollbar window;
   fgChild highlight;
   fgChild arrow;
-  fgVector members; // ordered list of menu items.
-  fgVector submenus; // If a menu item has a submenu, it's listed here.
+  fgVectorChild members; // ordered list of menu items.
+  fgDeclareVector(struct _FG_MENU*, Menu) submenus; // If a menu item has a submenu, it's listed here.
   fgChild seperator; // cloned to replace a null value inserted into the list. This allows a style to control the size and appearence of the seperator.
-  struct FG_MENU* expanded; // holds the submenu that is currently expanded, if one is.
+  struct _FG_MENU* expanded; // holds the submenu that is currently expanded, if one is.
   //fgDeferAction* dropdown; // Keeps track of our dropdown action in fgRoot
+#ifdef  __cplusplus
+  inline operator fgChild*() { return &window.window.element; }
+  inline fgChild* operator->() { return operator fgChild*(); }
+#endif
 } fgMenu;
 
 FG_EXTERN fgChild* FG_FASTCALL fgMenu_Create(fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element, FG_UINT id, fgFlag flags, char submenu);

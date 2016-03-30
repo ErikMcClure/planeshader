@@ -38,6 +38,17 @@ typedef unsigned int fgFlag;
 #define FG_FASTCALL BSS_COMPILER_FASTCALL
 #define FG_EXTERN extern BSS_COMPILER_DLLEXPORT
 
+#ifndef FG_STATIC_LIB
+#ifdef feathergui_EXPORTS
+#pragma warning(disable:4251)
+#define FG_DLLEXPORT BSS_COMPILER_DLLEXPORT
+#else
+#define FG_DLLEXPORT BSS_COMPILER_DLLIMPORT
+#endif
+#else
+#define FG_DLLEXPORT
+#endif
+
 // A unified coordinate specifies things in terms of absolute and relative positions.
 typedef struct {
   FABS abs; // Absolute coordinates are added to relative coordinates, which specify a point from a linear interpolation of the parent's dimensions
@@ -80,11 +91,13 @@ static BSS_FORCEINLINE FABS FG_FASTCALL lerp(FABS a, FABS b, FREL amt)
 	return a+((FABS)((b-a)*amt));
 }
 
-typedef struct __VECTOR {
-  void* p;
-  size_t s; // This is the total size of the array in BYTES.
-  size_t l; // This is how much of the array is being used in ELEMENTS.
-} fgVector;
+#define fgDeclareVector(type, n) struct __VECTOR__ ## n { \
+  type* p; \
+  size_t s; /* This is the total size of the array in BYTES. */ \
+  size_t l; /* This is how much of the array is being used in ELEMENTS. */ \
+}
+
+typedef fgDeclareVector(void, void) fgVector;
 
 typedef struct {
   CRect area;
@@ -377,7 +390,7 @@ enum FG_MOUSEFLAGS {
   FGMOUSE_SEND_MOUSEMOVE = 32, // Used on the root only, schedules another mousemove event to be sent to compensate for a moving control.
 };
 
-typedef struct FG_MOUSESTATE
+typedef struct _FG_MOUSESTATE
 {
   int x, y; // Last known position of the mouse for this control
   unsigned char buttons; // Last known configuration of mouse buttons recieved by this control
@@ -385,22 +398,25 @@ typedef struct FG_MOUSESTATE
 } fgMouseState;
 
 // General message structure which contains the message type and then various kinds of information depending on the type.
-typedef struct __FG_MSG {
+typedef struct _FG_MSG {
   union {
-    struct { int x; int y; unsigned char button; unsigned char allbtn; }; // Mouse events
-    struct { short scrolldelta; }; // Mouse scroll
+    struct { int x; int y; // Mouse events
+      union { 
+        struct { unsigned char button; unsigned char allbtn; }; 
+        short scrolldelta; 
+      };
+    }; 
     struct {  // Keys
         int keychar; //Only used by KEYCHAR, represents a utf32 character
         unsigned char keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
-        char keydown;
         char sigkeys; // 1: shift, 2: ctrl, 4: alt, 8: held
     };
     struct { float joyvalue; short joyaxis; }; // JOYAXIS
     struct { char joydown; short joybutton; }; // JOYBUTTON
-    struct { void* other; size_t otheraux; }; // Used by any generic messages (FG_SETPARENT, etc.)
-    struct { void* other1; void* other2; }; // Used by anything requiring 2 pointers, possibly for a return value.
-    struct { ptrdiff_t otherint; ptrdiff_t otherintaux; }; // Used by any generic message that want an int (FG_SETORDER, etc.)
-    struct { FABS otherf; FABS otherfaux; };
+    struct {
+      union { void* other; ptrdiff_t otherint; FABS otherf; };
+      union { void* other2; size_t otheraux; FABS otherfaux; };
+    };
   };
   unsigned short type;
   unsigned char subtype;

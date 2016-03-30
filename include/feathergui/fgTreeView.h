@@ -1,8 +1,8 @@
 // Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
-#ifndef __FG_TREEVIEW_H__
-#define __FG_TREEVIEW_H__
+#ifndef _FG_TREEVIEW_H__
+#define _FG_TREEVIEW_H__
 
 #include "fgScrollbar.h"
 
@@ -20,6 +20,10 @@ typedef struct _FG_TREEVIEW {
   fgScrollbar window;
   fgChild expand;
   fgChild shrink;
+#ifdef  __cplusplus
+  inline operator fgChild*() { return &window.window.element; }
+  inline fgChild* operator->() { return operator fgChild*(); }
+#endif
 } fgTreeView;
 
 FG_EXTERN fgChild* FG_FASTCALL fgTreeView_Create(fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);

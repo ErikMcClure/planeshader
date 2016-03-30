@@ -8,6 +8,7 @@
 #include "psNullDriver.h"
 #include "psStateblock.h"
 #include "bss-util/profiler.h"
+#include "ps_feather.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -82,6 +83,9 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 psEngine::~psEngine()
 {
   PROFILE_FUNC();
+  if(psRoot::Instance())
+    psRoot::Instance()->~psRoot();
+
   if(_driver)
     delete _driver;
   _driver=0;

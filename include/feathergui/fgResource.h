@@ -1,8 +1,8 @@
 // Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
-#ifndef __FG_RESOURCE_H__
-#define __FG_RESOURCE_H__
+#ifndef _FG_RESOURCE_H__
+#define _FG_RESOURCE_H__
 
 #include "fgChild.h"
 
@@ -27,6 +27,10 @@ typedef struct {
   FABS outline; // for rounded rectangles and circles, this specifies the width of the outline
   fgColor color;
   fgColor edge;
+#ifdef  __cplusplus
+  inline operator fgChild*() { return &element; }
+  inline fgChild* operator->() { return operator fgChild*(); }
+#endif
 } fgResource;
 
 FG_EXTERN fgChild* FG_FASTCALL fgResource_Create(void* res, const CRect* uv, unsigned int color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);

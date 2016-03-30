@@ -1,8 +1,8 @@
 // Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
-#ifndef __FG_TEXT_H__
-#define __FG_TEXT_H__
+#ifndef _FG_TEXT_H__
+#define _FG_TEXT_H__
 
 #include "fgChild.h"
 
@@ -28,6 +28,10 @@ typedef struct {
   char* text;
   void* font;
   fgColor color;
+#ifdef  __cplusplus
+  inline operator fgChild*() { return &element; }
+  inline fgChild* operator->() { return operator fgChild*(); }
+#endif
 } fgText;
 
 FG_EXTERN fgChild* FG_FASTCALL fgText_Create(char* text, void* font, unsigned int color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element);
