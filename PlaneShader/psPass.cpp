@@ -42,7 +42,7 @@ void psPass::Begin()
   for(psSolid* solid = static_cast<psSolid*>(_solids); solid!=0; solid=static_cast<psSolid*>(solid->_llist.next))
   {
     if(!_cam->Cull(solid))
-      solid->_render();
+      _sort(solid);
   }
 
   // Then we go through any specialized culling groups

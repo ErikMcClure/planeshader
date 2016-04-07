@@ -19,6 +19,9 @@ enum FGCHILD_FLAGS
   FGCHILD_EXPANDX = (1 << 4), // Signals to the layout that the control should expand to include all it's elements
   FGCHILD_EXPANDY = (1 << 5),
   FGCHILD_EXPAND = FGCHILD_EXPANDX | FGCHILD_EXPANDY,
+  FGCHILD_SNAPX = (1 << 6), // If true, the rect resolution will snap this element to the nearest pixel on this axis.
+  FGCHILD_SNAPY = (1 << 7),
+  FGCHILD_SNAP = FGCHILD_SNAPX | FGCHILD_SNAPY,
   FGCHILD_LAYOUTRESIZE = 1, // Called when the element is resized
   FGCHILD_LAYOUTADD = 2, // Called when any child is added that needs to have the layout applied to it.
   FGCHILD_LAYOUTREMOVE = 3, // Called when any child is removed that needs to have the layout applied to it.
@@ -56,7 +59,6 @@ typedef struct _FG_CHILD {
   struct _FG_CHILD* lastfocus; // Stores the last child that had focus, if any. This never points to the child that CURRENTLY has focus, only to the child that HAD focus.
   AbsRect margin; // defines the amount of external margin.
   AbsRect padding; // Defines the amount of internal padding. Only affects children that DON'T have FGCHILD_BACKGROUND set.
-  int index; // Internal index used for layout ordering or vector mapping.
   fgFlag flags;
   const struct _FG_SKIN* skin; // skin reference
   fgVectorChild skinrefs; // Type: fgChild* - References to skin children or subcontrols.
@@ -80,7 +82,6 @@ typedef struct _FG_CHILD {
   FG_DLLEXPORT size_t FG_FASTCALL RemoveChild(struct _FG_CHILD* child);
   FG_DLLEXPORT size_t FG_FASTCALL LayoutFunction(const FG_Msg& msg, const CRect& area);
   FG_DLLEXPORT void FG_FASTCALL LayoutChange(unsigned char subtype, struct _FG_CHILD* target, struct _FG_CHILD* old);
-  FG_DLLEXPORT ptrdiff_t FG_FASTCALL LayoutIndex(struct _FG_CHILD* child);
   FG_DLLEXPORT size_t FG_FASTCALL LayoutLoad(struct _FG_LAYOUT* layout, FN_MAPPING mapping);
   FG_DLLEXPORT size_t Drag(struct _FG_CHILD* target, const FG_Msg& msg);
   FG_DLLEXPORT size_t Dragging(int x, int y);
@@ -117,6 +118,10 @@ typedef struct _FG_CHILD {
   FG_DLLEXPORT void Active();
   FG_DLLEXPORT void Action();
   FG_DLLEXPORT struct _FG_CHILD* GetSelectedItem();
+  FG_DLLEXPORT size_t GetState(ptrdiff_t aux);
+  FG_DLLEXPORT float GetStatef(ptrdiff_t aux);
+  FG_DLLEXPORT size_t SetState(ptrdiff_t state, size_t aux);
+  FG_DLLEXPORT size_t SetStatef(float state, size_t aux);
   FG_DLLEXPORT size_t FG_FASTCALL SetResource(void* res);
   FG_DLLEXPORT size_t FG_FASTCALL SetUV(const CRect& uv);
   FG_DLLEXPORT size_t FG_FASTCALL SetColor(unsigned int color, int index);
@@ -139,7 +144,7 @@ FG_EXTERN void FG_FASTCALL fgChild_Destroy(fgChild* self);
 FG_EXTERN void FG_FASTCALL fgChild_SetParent(fgChild* BSS_RESTRICT self, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev);
 FG_EXTERN size_t FG_FASTCALL fgChild_Message(fgChild* self, const FG_Msg* msg);
 
-FG_EXTERN size_t FG_FASTCALL fgLayout_Default(fgChild* self, const FG_Msg* msg, CRect* area);
+FG_EXTERN size_t FG_FASTCALL fgLayout_Default(fgChild* self, const FG_Msg* msg, CRect* area, AbsRect* parent);
 FG_EXTERN size_t FG_FASTCALL fgLayout_Distribute(fgChild* self, const FG_Msg* msg, char axis);
 FG_EXTERN size_t FG_FASTCALL fgLayout_Tile(fgChild* self, const FG_Msg* msg, char axes);
 FG_EXTERN size_t FG_FASTCALL fgChild_IntMessage(fgChild* self, unsigned char type, ptrdiff_t data, size_t aux);

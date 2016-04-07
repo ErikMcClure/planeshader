@@ -24,7 +24,20 @@ psTileset::~psTileset() {}
 uint32_t psTileset::AutoGenDefs(psVec dim)
 {
   _defs.Clear();
+  const psTex* base = GetTexture(0);
+  psVeci defs = base->GetDim() / dim;
+  _defs.SetLength(defs.x*defs.y);
 
+  for(int j = 0; j < defs.y; ++j)
+    for(int i = 0; i < defs.x; ++i)
+    {
+      psTileDef& def = _defs[i + (j*defs.x)];
+      def.level = 0;
+      def.rect = psRect { 0, 0, dim.x, dim.y };
+      def.uv = (psRect { dim.x, dim.y, dim.x, dim.y }*psRect(i, j, i + 1, j + 1)) / base->GetDim();
+    }
+
+  SetTileDim(dim);
   return _defs.Length();
 }
 
@@ -37,7 +50,7 @@ uint32_t psTileset::AddTileDef(psRect uv, psVec dim, psVec offset)
 void psTileset::SetTileDim(psVeci tiledim)
 {
   _tiledim = tiledim;
-  SetDim(psVeci(_rowlength, _tiles.Length()/_rowlength)*_tiledim);
+  SetDim(!_rowlength ? VEC_ZERO : psVeci(_rowlength, _tiles.Length() / _rowlength)*_tiledim);
 }
 
 bool psTileset::SetTile(psVeci pos, uint32_t index, unsigned int color, float rotate, psVec pivot)
@@ -57,7 +70,7 @@ void psTileset::SetTiles(psTile* tiles, uint32_t num, uint32_t pitch)
 {
   SetDimIndex(psVeci(pitch, num / pitch));
   memset(_tiles.begin(), 0, _tiles.Length()*sizeof(psTile)); // zero everything, which prevents our trailing tiles from showing up in case you didn't give a perfectly square array.
-  memcpy(_tiles.begin(), tiles, num); // copy memory in
+  memcpy(_tiles.begin(), tiles, num*sizeof(psTile)); // copy memory in
 }
 
 void psTileset::SetDimIndex(psVeci dim)
@@ -69,12 +82,11 @@ void psTileset::SetDimIndex(psVeci dim)
 
 void BSS_FASTCALL psTileset::_render()
 {
-  const psRectRotateZ& rect = GetCollisionRect();
-  bss_util::Matrix<float, 4, 4> m;
-  GetTransform(m);
+  assert(_defs.Length() > 0);
+  GetTransform(_m);
   Activate();
 
-  psBatchObj& obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), m.v);
+  psBatchObj& obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), _m.v);
 
   for(uint32_t i = 0; i < _tiles.Length(); ++i)
   {
@@ -83,7 +95,7 @@ void BSS_FASTCALL psTileset::_render()
     psTileDef& def = _defs[_tiles[i].index];
     _driver->DrawRectBatch(obj,
       psRectRotateZ(x + def.rect.left, y + def.rect.top, x + def.rect.right, y + def.rect.bottom, _tiles[i].rotate, _tiles[i].pivot, 0),
-      &def.uv,
+      &def.uv, 
       _tiles[i].color);
   }
 }

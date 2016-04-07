@@ -35,6 +35,7 @@ namespace planeshader {
     inline psCamera& operator =(const psCamera& copy) { psLocatable::operator =(copy); return *this; }
     inline const psRect& Apply() const;
     inline bool Cull(psSolid* solid) const;
+    inline bool Cull(const psRectRotateZ& rect, psFlag flags) const;
 
     static const psVeci INVALID_LASTRELMOUSE;
     static const psCamera default_camera;
@@ -55,7 +56,7 @@ namespace planeshader {
       CamCache(const CamCache&);
       CamCache();
       inline void SetSSE();
-      inline bool BSS_FASTCALL Cull(psSolid* solid, float z);
+      BSS_FORCEINLINE bool BSS_FASTCALL Cull(const psRect& rect, float rectz, float camz, psFlag flags);
     };
 
   protected:

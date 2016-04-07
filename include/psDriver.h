@@ -342,8 +342,9 @@ namespace planeshader {
     virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
     virtual void BSS_FASTCALL PopCamera() = 0;
     // Applies the camera transform (or it's inverse) according to the flags to a point.
-    virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point, psFlag flags) const=0;
-    virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point, psFlag flags) const=0;
+    virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point) const=0;
+    virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point) const=0;
+    psVec3D BSS_FASTCALL FromScreenSpace(const psVec& point) const { psVec pt = (point - (rawscreendim/2u)) * (-ReversePoint(VEC3D_ZERO).z); return ReversePoint(psVec3D(pt.x, pt.y, 1.0f)); }
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad()=0;
     // Creates a vertex or index buffer

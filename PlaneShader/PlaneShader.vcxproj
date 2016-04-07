@@ -72,11 +72,13 @@
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <ExecutablePath>$(WindowsSdkDir_81)bin\x86;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
     <CustomBuildAfterTargets />
     <OutDir>$(SolutionDir)bin\</OutDir>
+    <ExecutablePath>$(WindowsSdkDir_81)bin\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)bin32\</OutDir>
@@ -84,11 +86,13 @@
     </CustomBuildAfterTargets>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)32</TargetName>
+    <ExecutablePath>$(WindowsSdkDir_81)bin\x86;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CustomBuildAfterTargets />
     <TargetName>$(ProjectName)</TargetName>
     <OutDir>$(SolutionDir)bin\</OutDir>
+    <ExecutablePath>$(WindowsSdkDir_81)bin\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -122,7 +126,7 @@
       <AdditionalIncludeDirectories>../include;freetype</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;feathergui_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -244,9 +248,6 @@
     <ClInclude Include="psNullDriver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PlaneShader.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="psCamera.cpp" />
     <ClCompile Include="psChart.cpp" />
     <ClCompile Include="psColor.cpp" />
@@ -303,6 +304,9 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="PlaneShader.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

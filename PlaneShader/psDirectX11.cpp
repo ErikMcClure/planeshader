@@ -638,14 +638,14 @@ void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot
   BSS_ALIGN(16) Matrix<float, 4, 4> defaultCam;
   Matrix<float, 4, 4>::Translation_T(viewport.right*-0.5f, viewport.bottom*-0.5f, 1, defaultCam);
 
-  CamDef camdef = { matView * matProj, defaultCam*matProj, viewport };
+  CamDef camdef = { matView * matProj, defaultCam*matProj, matView, viewport };
   _camstack.Push(camdef);
   _applycamera();
 }
 void BSS_FASTCALL psDirectX11::PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)
 {
   PROFILE_FUNC();
-  CamDef camdef = { Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(m), viewport };
+  CamDef camdef = { Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(identity), viewport };
   _camstack.Push(camdef);
   _applycamera();
 }
@@ -677,16 +677,16 @@ void BSS_FASTCALL psDirectX11::PopCamera()
   }
 }
 // Applies the camera transform (or it's inverse) according to the flags to a point.
-psVec3D BSS_FASTCALL psDirectX11::TransformPoint(const psVec3D& point, psFlag flags) const
+psVec3D BSS_FASTCALL psDirectX11::TransformPoint(const psVec3D& point) const
 {
   Vector<float, 4> v = { point.x, point.y, point.z, 1 };
-  Vector<float, 4> out = v * ((flags&PSFLAG_FIXED) ? _camstack.Peek().proj : _camstack.Peek().viewproj);
+  Vector<float, 4> out = v * _camstack.Peek().view;
   return out.xyz;
 }
-psVec3D BSS_FASTCALL psDirectX11::ReversePoint(const psVec3D& point, psFlag flags) const
+psVec3D BSS_FASTCALL psDirectX11::ReversePoint(const psVec3D& point) const
 {
   Vector<float, 4> v = { point.x, point.y, point.z, 1 };
-  Vector<float, 4> out = v * ((flags&PSFLAG_FIXED) ? _camstack.Peek().proj : _camstack.Peek().viewproj).Inverse();
+  Vector<float, 4> out = v * _camstack.Peek().view.Inverse();
   return out.xyz;
 }
 void psDirectX11::DrawFullScreenQuad()
