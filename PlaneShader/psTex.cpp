@@ -51,20 +51,20 @@ void BSS_FASTCALL psTex::_applydesc(TEXTURE_DESC& desc)
   _miplevels = desc.miplevels;
 }
 
-psTex* BSS_FASTCALL psTex::Create(const char* file, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, bool sRGB, psVeciu dpi)
+psTex* BSS_FASTCALL psTex::Create(const char* file, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
 {
   void* view = 0;
-  void* res = _driver->LoadTexture(file, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, 0, sRGB);
-  return _create(res, view, dpi);
+  void* res = _driver->LoadTexture(file, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, texblock, sRGB);
+  return _create(res, view, dpi, texblock);
 }
 
-psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, bool sRGB, psVeciu dpi)
+psTex* BSS_FASTCALL psTex::Create(const void* data, unsigned int datasize, unsigned int usage, FILTERS mipfilter, unsigned char miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
 {
   if(!datasize)
     return Create((const char*)data, usage);
   void* view = 0;
-  void* res = _driver->LoadTextureInMemory(data, datasize, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, 0, sRGB);
-  return _create(res, view, dpi);
+  void* res = _driver->LoadTextureInMemory(data, datasize, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, texblock, sRGB);
+  return _create(res, view, dpi, texblock);
 }
 psTex* BSS_FASTCALL psTex::Create(const psTex& copy)
 {
@@ -75,11 +75,11 @@ psTex* BSS_FASTCALL psTex::Create(psVeciu dim, FORMATS format, unsigned int usag
   return new psTex(dim, format, usage, miplevels, texblock, dpi);
 }
 
-psTex* BSS_FASTCALL psTex::_create(void* res, void* view, psVeciu dpi)
+psTex* BSS_FASTCALL psTex::_create(void* res, void* view, psVeciu dpi, psTexblock* texblock)
 {
   if(!res) return 0;
   TEXTURE_DESC desc = _driver->GetTextureDesc(res);
-  return new psTex(res, view, desc.dim.xy, desc.format, desc.usage, desc.miplevels, 0, dpi);
+  return new psTex(res, view, desc.dim.xy, desc.format, desc.usage, desc.miplevels, texblock, dpi);
 }
 
 inline void* psTex::Lock(unsigned int& rowpitch, psVeciu offset, unsigned char lockflags, unsigned char miplevel)

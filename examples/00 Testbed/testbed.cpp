@@ -24,6 +24,7 @@
 #include "feathergui/fgProgressbar.h"
 #include "feathergui/fgSlider.h"
 #include "feathergui/fgSkin.h"
+#include "feathergui/fgRoot.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/lockless.h"
 #include "bss-util/cStr.h"
@@ -42,7 +43,7 @@ cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us 
 psEngine* engine=0;
 psCamera globalcam;
 bool dirkeys[9] = { false }; // left right up down in out counterclockwise clockwise shift
-float dirspeeds[4] = { 3.0f, 3.0f, 2.0f, 1.0f };
+float dirspeeds[4] = { 300.0f, 300.0f, 2.0f, 1.0f }; // X Y Z R
 bool gotonext = false;
 
 #pragma warning(disable:4244)
@@ -198,6 +199,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
   globalcam.SetPosition(500, 500);
+  globalcam.SetPivotAbs(psVec(300, 300));
 
   psVec3D imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y), RANDFLOATGEN(0, PI_DOUBLEf));
@@ -206,9 +208,17 @@ TESTDEF::RETPAIR test_psDirectX11()
   {
     processGUI();
     driver->Clear(0);
-    driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
+    //driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
+    globalcam.Apply();
     driver->SetTextures(&pslogo, 1);
-    driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(600, 500, 600+pslogo->GetDim().x, 500+pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
+
+    //psVec pt = psVec(engine->GetMouse() - (driver->rawscreendim / 2u)) * (-driver->ReversePoint(VEC3D_ZERO).z);
+    //psVec3D point = driver->ReversePoint(psVec3D(pt.x, pt.y, 1));
+    psVec3D point = driver->FromScreenSpace(engine->GetMouse());
+    //psVec3D point = driver->FromScreenSpace(VEC_ZERO);
+    auto& mouserect = psRectRotateZ(point.x, point.y, point.x + pslogo->GetDim().x, point.y + pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f);
+    //if(!globalcam.Cull(mouserect, 0))
+    driver->DrawRect(driver->library.IMAGE, 0, mouserect, &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
     driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(500, 500, 500 + pslogo->GetDim().x, 500 + pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
     {
       psBatchObj& obj = driver->DrawRectBatchBegin(driver->library.IMAGE, 0, 1, 0);
@@ -224,10 +234,12 @@ TESTDEF::RETPAIR test_psDirectX11()
     psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
     driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
+    driver->PopCamera();
 
     updatefpscount(timer, fps);
   }
 
+  globalcam.SetPivotAbs(psVec(0));
   ENDTEST;
 }
 
@@ -367,6 +379,7 @@ TESTDEF::RETPAIR test_psEffect()
   ENDTEST;
 }
 
+fgChild* fg_progbar;
 
 TESTDEF::RETPAIR test_feather()
 {
@@ -386,10 +399,17 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgProgressbarSkin = fgSkin_AddSkin(&skin, "fgProgressbar");
   fgSkin* fgSliderSkin = fgSkin_AddSkin(&skin, "fgSlider");
 
-  auto fnAddRect = [](fgSkin* target, const CRect& uv, const fgElement& element, unsigned int color, unsigned int edge, float outline) -> fgStyleLayout* {
-    FG_Msg m = { 0 };
-    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", &element, FGRESOURCE_ROUNDRECT|FGCHILD_BACKGROUND));
-    AddStyleMsgArg<FG_SETUV>(&layout->style, &uv, sizeof(CRect));
+  auto fnAddRect = [](fgSkin* target, const CRect& uv, const fgElement& element, unsigned int color, unsigned int edge, float outline, fgFlag flags) -> fgStyleLayout* {
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", &element, FGRESOURCE_ROUNDRECT | flags));
+    AddStyleMsgArg<FG_SETUV, CRect>(&layout->style, &uv);
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
+    AddStyleMsg<FG_SETOUTLINE, float>(&layout->style, outline);
+    return layout;
+  };
+  auto fnAddCircle = [](fgSkin* target, const CRect& uv, const fgElement& element, unsigned int color, unsigned int edge, float outline, fgFlag flags) -> fgStyleLayout* {
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", &element, FGRESOURCE_CIRCLE | flags));
+    AddStyleMsgArg<FG_SETUV, CRect>(&layout->style, &uv);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
     AddStyleMsg<FG_SETOUTLINE, float>(&layout->style, outline);
@@ -403,68 +423,97 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, nuetral), 0xFFFF00FF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, hover), 0xFF00FFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, active), 0xFFFFFF00);
-  FG_Msg msg = { 0 };
 
   // fgButton
   FG_UINT bnuetral = fgSkin_AddStyle(fgButtonTestSkin, "nuetral");
   FG_UINT bactive = fgSkin_AddStyle(fgButtonTestSkin, "active");
   FG_UINT bhover = fgSkin_AddStyle(fgButtonTestSkin, "hover");
-  msg.type = FG_SETTEXT;
-  msg.other = "Nuetral";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonTestSkin, bnuetral), &msg, 0, 0, 0, 0);
-  msg.other = "Active";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonTestSkin, bactive), &msg, 0, 0, 0, 0);
-  msg.other = "Hover";
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgButtonTestSkin, bhover), &msg, 0, 0, 0, 0);
+  AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bnuetral), "Nuetral");
+  AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bactive), "Active");
+  AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bhover), "Hover");
 
   void* font = fgCreateFont(0, "arial.ttf", 14, 16, 0);
+  FG_Msg msg = { 0 };
   msg.type = FG_SETCOLOR;
   msg.otherint = 0xFFFFFFFF;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgButtonTestSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgCheckboxSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgRadioButtonSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgProgressbarSkin->style, &msg, 0, 0, 0, 0);
   msg.type = FG_SETFONT;
   msg.other = font;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgButtonTestSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgCheckboxSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgRadioButtonSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgProgressbarSkin->style, &msg, 0, 0, 0, 0);
 
-  msg.type = FG_SETPADDING;
-  msg.other2 = 0;
   AbsRect buttonpadding = { 5, 5, 5, 5 };
-  fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, &buttonpadding, sizeof(AbsRect), 0, 0);
+  AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgButtonSkin->style, &buttonpadding);
 
   fgSkin* fgbuttonbgskin = fgSkin_GetSubSkin(fgButtonSkin, fgSkin_AddSubSkin(fgButtonSkin, 0));
   bnuetral = fgSkin_AddStyle(fgbuttonbgskin, "nuetral");
   bactive = fgSkin_AddStyle(fgbuttonbgskin, "active");
   bhover = fgSkin_AddStyle(fgbuttonbgskin, "hover");
 
-  msg.type = FG_SETCOLOR;
-  msg.otherint = 0xFF666666;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgbuttonbgskin, bnuetral), &msg, 0, 0, 0, 0);
-  msg.type = FG_SETCOLOR;
-  msg.otherint = 0xFF505050;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgbuttonbgskin, bactive), &msg, 0, 0, 0, 0);
-  msg.type = FG_SETCOLOR;
-  msg.otherint = 0xFF7F7F7F;
-  fgStyle_AddStyleMsg(fgSkin_GetStyle(fgbuttonbgskin, bhover), &msg, 0, 0, 0, 0);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bnuetral), 0xFF666666);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bactive), 0xFF505050);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bhover), 0xFF7F7F7F);
 
-  fnAddRect(fgButtonSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
+  fnAddRect(fgButtonSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f, FGCHILD_BACKGROUND);
 
   // fgTopWindow
-  fnAddRect(fgTopWindowSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
+  fnAddRect(fgTopWindowSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f, FGCHILD_BACKGROUND);
 
   fgSkin* topwindowcaption = fgSkin_GetSubSkin(fgTopWindowSkin, fgSkin_AddSubSkin(fgTopWindowSkin, -1));
-  msg.type = FG_SETMARGIN;
   AbsRect margin = { 4, 4, 0, 0 };
-  fgStyle_AddStyleMsg(&topwindowcaption->style, &msg, &margin, sizeof(AbsRect), 0, 0);
+  AddStyleMsgArg<FG_SETMARGIN, AbsRect>(&topwindowcaption->style, &margin);
 
   // fgCheckbox
-  fnAddRect(fgCheckboxSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_ELEMENT, 0xFF666666, 0xFFAAAAAA, 1.0f);
+  fnAddRect(fgCheckboxSkin, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, fgElement { { 5, 0, 12, 0, 20, 0, 27, 0 }, 0, { 0, 0, 0, 0 } }, 0xFFFFFFFF, 0xFF222222, 1.0f, FGCHILD_BACKGROUND);
+  AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgCheckboxSkin->style, &AbsRect { 25,5,5,5 });
+  fgSkin* fgCheckedSkin = fgSkin_GetSubSkin(fgCheckboxSkin, fgSkin_AddSubSkin(fgCheckboxSkin, -1));
+  fnAddRect(fgCheckedSkin, CRect { 2, 0, 2, 0, 2, 0, 2, 0 }, fgElement { { 8, 0, 15, 0, 17, 0, 24, 0 }, 0, { 0, 0, 0, 0 } }, 0xFF000000, 0, 0, 0);
 
+  fgSkin* fgCheckboxSkinbg = fgSkin_GetSubSkin(fgCheckboxSkin, fgSkin_AddSubSkin(fgCheckboxSkin, 0));
+  bnuetral = fgSkin_AddStyle(fgCheckboxSkinbg, "nuetral");
+  bactive = fgSkin_AddStyle(fgCheckboxSkinbg, "active");
+  bhover = fgSkin_AddStyle(fgCheckboxSkinbg, "hover");
+
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bnuetral), 0xFFFFFFFF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bactive), 0xFFBBBBBB);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bhover), 0xFFDDDDDD);
 
   // fgRadioButton
+  fnAddCircle(fgRadioButtonSkin, CRect { 0, 0, PI_DOUBLEf, 0, 0, 0, PI_DOUBLEf, 0 }, fgElement { { 5, 0, 12, 0, 20, 0, 27, 0 }, 0, { 0, 0, 0, 0 } }, 0xFFFFFFFF, 0xFF222222, 1.0f, FGCHILD_BACKGROUND);
+  AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgRadioButtonSkin->style, &AbsRect { 25,5,5,5 });
+  fgSkin* fgRadioSelectedSkin = fgSkin_GetSubSkin(fgRadioButtonSkin, fgSkin_AddSubSkin(fgRadioButtonSkin, -1));
+  fnAddCircle(fgRadioSelectedSkin, CRect { 0, 0, PI_DOUBLEf, 0, 0, 0, PI_DOUBLEf, 0 }, fgElement { { 8, 0, 15, 0, 17, 0, 24, 0 }, 0, { 0, 0, 0, 0 } }, 0xFF000000, 0, 0, 0);
 
+  fgSkin* fgRadioButtonSkinbg = fgSkin_GetSubSkin(fgRadioButtonSkin, fgSkin_AddSubSkin(fgRadioButtonSkin, 0));
+  bnuetral = fgSkin_AddStyle(fgRadioButtonSkinbg, "nuetral");
+  bactive = fgSkin_AddStyle(fgRadioButtonSkinbg, "active");
+  bhover = fgSkin_AddStyle(fgRadioButtonSkinbg, "hover");
+
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bnuetral), 0xFFFFFFFF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bactive), 0xFFBBBBBB);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bhover), 0xFFDDDDDD);
+
+  // fgSlider
+  AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgSliderSkin->style, &AbsRect { 5,0,5,0 });
+  {
+    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "fgResource", &fgElement { { 0, 0, 0.5, 0.5, 0, 1.0, 1.5, 0.5 }, 0, { 0, 0, 0, 0 } }, FGRESOURCE_LINE));
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
+  }
+  fgSkin* fgSliderDragSkin = fgSkin_GetSubSkin(fgSliderSkin, fgSkin_AddSubSkin(fgSliderSkin, -1));
+  fnAddRect(fgSliderDragSkin, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, fgElement { { 0, 0, 0, 0, 10, 0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0xFFFFFFFF, 0xFF666666, 1.0f, FGCHILD_NOCLIP);
+
+  // fgProgressbar
+  AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgProgressbarSkin->style, &AbsRect { 0,0,0,3 });
+  fnAddRect(fgProgressbarSkin, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_ELEMENT, 0, 0xFFDDDDDD, 3.0f, FGCHILD_BACKGROUND);
+  fgSkin* fgProgressSkin = fgSkin_GetSubSkin(fgProgressbarSkin, fgSkin_AddSubSkin(fgProgressbarSkin, -1));
+  fnAddRect(fgProgressSkin, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_ELEMENT, 0xFF333333, 0, 3.0f, 0);
 
   // Apply skin and set up layout
   fgChild_VoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
@@ -475,17 +524,26 @@ TESTDEF::RETPAIR test_feather()
   button->SetName("buttontest");
 
   fgChild* topwindow = fgTopWindow_Create("test window", 0, &fgElement { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
-  AbsRect r = { 10,22,10,10 };
-  fgChild_IntMessage(topwindow, FG_SETCOLOR, 0xFFFFFFFF, 0);
-  fgChild_VoidMessage(topwindow, FG_SETFONT, font, 0);
-  fgChild_VoidMessage(topwindow, FG_SETPADDING, &r, 0);
-
-  fgChild* buttontop = fgButton_Create(0, FGCHILD_EXPAND, topwindow, 0, &fgElement { { 100, 0, 100, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  topwindow->SetColor(0xFFFFFFFF, 0);
+  topwindow->SetFont(font);
+  topwindow->SetPadding(AbsRect { 10,22,10,10 });
+  
+  fgChild* buttontop = fgButton_Create(0, FGCHILD_EXPAND, topwindow, 0, &fgElement { { 10, 0, 40, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   buttontop->SetText("Not Pressed");
   FN_LISTENER listener = [](fgChild* self, const FG_Msg*) { self->SetText("Pressed!"); };
   buttontop->AddListener(FG_ACTION, listener);
 
-  fgChild* checkbox = fgCheckbox_Create("Check Test 1", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 100, 0, 200, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCheckbox_Create("Check Test 1", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 10, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCheckbox_Create("Check Test 2", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 10, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCheckbox_Create("Check Test 3", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 10, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+
+  fgRadiobutton_Create("Radio Test 1", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 170, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgRadiobutton_Create("Radio Test 2", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 170, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgRadiobutton_Create("Radio Test 3", FGCHILD_EXPAND, topwindow, 0, &fgElement { { 170, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  
+  fgChild* slider = fgSlider_Create(500, 0, topwindow, 0, &fgElement { { 10, 0, 100, 0, 150, 0, 120, 0 }, 0, { 0, 0, 0, 0 } });
+  slider->AddListener(FG_SETSTATE, [](fgChild* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
+  fg_progbar = fgProgressbar_Create(0.0, 0, topwindow, 0, &fgElement { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
 
@@ -585,6 +643,45 @@ TESTDEF::RETPAIR test_psVector()
 TESTDEF::RETPAIR test_psTileset()
 {
   BEGINTEST;
+  int fps = 0;
+  auto timer = psEngine::OpenProfiler();
+  psDriver* driver = engine->GetDriver();
+
+  const int dimx = 20;
+  const int dimy = 20;
+  char edges[dimy + 1][dimx + 1][2];
+  for(char* i = edges[0][0]; i - edges[0][0] < sizeof(edges)/sizeof(char); ++i)
+    *i = RANDBOOLGEN();
+
+  psTile map[dimy][dimx];
+  memset(&map, 0, sizeof(psTile) * dimx * dimy);
+  for(int j = 0; j < dimy; ++j)
+    for(int i = 0; i < dimx; ++i)
+      map[j][i].color = ~0;
+
+  for(int j = 0; j < dimy; ++j)
+    for(int i = 0; i < dimx; ++i)
+    {
+      psVeciu pos = psTileset::WangTile2D(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
+      map[j][i].index = pos.x + (pos.y * 4);
+    }
+
+  for(int j = 0; j < 4; ++j)
+    for(int i = 0; i < 4; ++i)
+      map[j][i].index = i + j * 4;
+
+  psTileset tiles(VEC3D_ZERO, 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
+  tiles.SetTexture(psTex::Create("../media/wang2test.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
+  tiles.AutoGenDefs(psVeciu(8, 8));
+  tiles.SetTiles(map[0], dimx*dimy, dimx);
+  engine->GetPass(0)->SetCamera(&globalcam);
+
+  while(!gotonext && engine->Begin(0))
+  {
+    updatefpscount(timer, fps);
+    processGUI();
+    engine->End();
+  }
 
   ENDTEST;
 }
@@ -602,9 +699,10 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] ={
+    { "psTileset", &test_psTileset },
+    { "psDirectX11", &test_psDirectX11 },
     { "ps_feather", &test_feather },
     { "psVector", &test_psVector },
-    { "psDirectX11", &test_psDirectX11 },
     { "psFont", &test_psFont },
     { "psPass", &test_psPass },
     { "psCircle", &test_psCircle },

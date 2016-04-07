@@ -12,7 +12,7 @@ using namespace bss_util;
 const psCamera psCamera::default_camera(psVec3D(0, 0, -1.0f), 0.0f, VEC_ZERO, psVec(1.0f, 50000.0f)); // we must manually set the extent because the default_extent constructor is not gauranteed to have been called.
 psVec psCamera::default_extent(1.0f, 50000.0f);
 
-BSS_FORCEINLINE void r_adjust(sseVec& window, sseVec& winhold, sseVec& center, float& last, float adjust)
+BSS_FORCEINLINE void r_adjust(sseVec& window, sseVec winhold, sseVec center, float& last, float adjust)
 {
   if(last != adjust)
   {
@@ -49,13 +49,6 @@ psVec psCamera::GetMouseAbsolute() const
   Matrix<float, 4, 4>::AffineTransform_T(_relpos.x - (_pivot.x*dim.x), _relpos.y - (_pivot.y*dim.y), _relpos.z, _rotation, _pivot.x, _pivot.y, cam.v);
   p = p*cam.Inverse();
   return psVec(p.x*p.z + dim.x, p.y*p.z + dim.y);
-  /*
-  float z = 1.0f - _relpos.z;
-  BSS_ALIGN(16) Matrix<float, 4, 4> m;
-  Matrix<float, 4, 4>::Translation_T(dim.x*-0.5f, dim.y*-0.5f, 0, m.v);
-
-  p = p*m*cam;
-  return (p.xy*z) + (dim*0.5f) + _relpos.xy;*/
 }
 void BSS_FASTCALL psCamera::SetPivotAbs(const psVec& pivot)
 {
@@ -78,15 +71,28 @@ inline const psRect& psCamera::Apply() const
 {
   auto& vp = GetViewPort();
   psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
-  _driver->PushCamera(_relpos, GetPivot()*psVec(_driver->rawscreendim), GetRotation(), realvp, GetExtent());
-  _cache.window = psRectRotate(realvp.left + _relpos.x, realvp.top + _relpos.y, realvp.right + _relpos.x, realvp.bottom + _relpos.y, GetRotation(), GetPivot()).BuildAABB();
+  psVec pivot = GetPivot()*psVec(_driver->rawscreendim);
+  _driver->PushCamera(_relpos, pivot, GetRotation(), realvp, GetExtent());
+  psVec pos = _relpos.xy - pivot;
+  _cache.window = psRectRotate(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot).BuildAABB();
   _cache.winfixed = realvp;
+  _cache.lastfixed = 0;
+  _cache.last = 0;
   _cache.SetSSE();
+  //_driver->DrawRect(_driver->library.IMAGE0, 0, psRectRotate(_cache.window, 0, VEC_ZERO), 0, 0, 0x88FFFFFF, 0);
   return _cache.window;
 }
 inline bool psCamera::Cull(psSolid* solid) const
 {
-  return _cache.Cull(solid, _relpos.z);
+  psFlag flags = solid->GetAllFlags();
+  if((flags&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
+
+  return _cache.Cull(solid->GetBoundingRect(), r_gettotalz(solid), _relpos.z, flags);
+}
+inline bool psCamera::Cull(const psRectRotateZ& rect, psFlag flags) const
+{
+  if((flags&PSFLAG_DONOTCULL) != 0) return false;
+  return _cache.Cull(rect.BuildAABB(), rect.z, _relpos.z, flags);
 }
 
 inline void psCamera::CamCache::SetSSE()
@@ -99,29 +105,22 @@ inline void psCamera::CamCache::SetSSE()
   SSEfixed_center = sseVec((SSEfixed + sseVec::Shuffle<0x4E>(SSEfixed))*sseVec(0.5f));
   SSEfixed_hold = sseVec(SSEfixed - SSEfixed_center);
 }
-inline bool BSS_FASTCALL psCamera::CamCache::Cull(psSolid* solid, float z)
+bool BSS_FASTCALL psCamera::CamCache::Cull(const psRect& rect, float rectz, float camz, psFlag flags)
 {
-  psFlag flags = solid->GetAllFlags();
-  if((flags&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
-
-  const psRect& rect = solid->GetBoundingRect(); // Recalculates the bounding rect
-  float adjust = r_gettotalz(solid);
-
   if(flags&PSFLAG_FIXED) // This is the fixed case
   {
-    adjust += 1.0f;
-    r_adjust(SSEfixed, SSEfixed_hold, SSEfixed_center, lastfixed, adjust);
+    rectz += 1.0f;
+    r_adjust(SSEfixed, SSEfixed_hold, SSEfixed_center, lastfixed, rectz);
     BSS_ALIGN(16) psRect rfixed(SSEfixed);
-    if(rect.IntersectRect(rfixed)) return false;
+    return !rect.IntersectRect(rfixed);
   }
-  else { // This is the default case
-    adjust -= z;
-    r_adjust(SSEwindow, SSEwindow_hold, SSEwindow_center, last, adjust);
-    BSS_ALIGN(16) psRect rfixed(SSEwindow);
-    if(rect.IntersectRect(rfixed)) return false;
-  }
-  return true;
+
+  rectz -= camz;
+  r_adjust(SSEwindow, SSEwindow_hold, SSEwindow_center, last, rectz);
+  BSS_ALIGN(16) psRect rfixed(SSEwindow);
+  return !rect.IntersectRect(rfixed);
 }
+
 
 psCamera::CamCache::CamCache(const CamCache& copy) : SSEwindow(copy.SSEwindow), SSEwindow_center(copy.SSEwindow_center), SSEwindow_hold(copy.SSEwindow_hold),
   SSEfixed(copy.SSEfixed), SSEfixed_center(copy.SSEfixed_center), SSEfixed_hold(copy.SSEfixed_hold), last(copy.last), lastfixed(copy.lastfixed),

@@ -336,8 +336,16 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
   return hWnd;
 }
 
-psGUIManager::psGUIManager() : _receiver(0,0)
+psGUIManager::psGUIManager() : _receiver(0,0), _firstjoystick(0), _alljoysticks(0), _maxjoy(JOYSTICK_ID16), _window(0)
 {
+  _mousedata.scrolldelta = 0;
+  GetKeyboardState(_allkeys);
+  memset(&_allbuttons, 0, sizeof(uint32_t)*NUMJOY);
+  memset(&_alljoyaxis, 0, sizeof(unsigned long)*NUMJOY*NUMAXIS);
+  memset(&_joydevs, 0, sizeof(JOY_DEVCAPS)*NUMJOY);
+
+  _joyupdateall();
+  _exactmousecalc();
 }
 psGUIManager::~psGUIManager()
 {

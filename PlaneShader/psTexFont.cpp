@@ -42,8 +42,10 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   if(drawflags&TDT_CLIP) //this applies a clip rect to clip the text, but only within the currently defined clip rect.
   {
     psRect transfer;
-    transfer.topleft = _driver->TransformPoint(psVec3D(area.top, area.left, 0), flags).xy;
-    transfer.bottomright = _driver->TransformPoint(psVec3D(area.bottom, area.right, 0), flags).xy;
+    if(!(flags&PSFLAG_FIXED)) {
+      transfer.topleft = _driver->TransformPoint(psVec3D(area.top, area.left, 0)).xy;
+      transfer.bottomright = _driver->TransformPoint(psVec3D(area.bottom, area.right, 0)).xy;
+    }
     _driver->MergeClipRect(transfer);
   }
 

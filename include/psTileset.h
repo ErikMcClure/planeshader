@@ -23,6 +23,7 @@ namespace planeshader {
     struct psTileDef {
       psRect uv;
       psRect rect;
+      int level;
     };
 
   public:
@@ -42,6 +43,13 @@ namespace planeshader {
     virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
     virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
 
+    static inline uint32_t BSS_FASTCALL WangTile1D(uint32_t e1, uint32_t e2) {
+      if(e1 < e2) return 2 * e1 + e2*e2;
+      if(e1 == e2) return (e1 > 0) ? ((e1 + 1) * (e1 + 1) - 2) : 0;
+      return (e2 > 0) ? (e1 * e1 + 2 * e2 - 1) : ((e1 + 1) * (e1 + 1) - 1);
+    }
+    static inline psVeciu BSS_FASTCALL WangTile2D(uint32_t e0, uint32_t e1, uint32_t e2, uint32_t e3) { return psVeciu(WangTile1D(e0, e2), WangTile1D(e1, e3)); }
+
   protected:
     virtual void BSS_FASTCALL _render();
 
@@ -49,6 +57,7 @@ namespace planeshader {
     psVeci _tiledim; // Size of the actual tile for figuring out where to put each tile.
     bss_util::cDynArray<psTileDef, uint32_t> _defs; // For each tile indice, stores what the actual UV coordinates of that tile are and what the offset is
     bss_util::cDynArray<psTile, uint32_t> _tiles;
+    bss_util::Matrix<float, 4, 4> _m;
   };
 }
 #endif

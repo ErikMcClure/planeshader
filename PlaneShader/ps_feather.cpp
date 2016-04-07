@@ -73,6 +73,7 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, 
   if(tex)
     driver->SetTextures(&tex, 1);
 
+  psRect hold = psRoot::Instance()->GetDriver()->PeekClipRect();
   psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
 
   if(flags&FGRESOURCE_ROUNDRECT)
@@ -210,7 +211,7 @@ bool psRoot::ProcessGUI(const psGUIEvent& evt)
   case GUI_JOYAXIS: msg.type = FG_JOYAXIS; break;
   }
 
-  if(fgRoot_Inject(&_root, &msg))
+  if(!fgRoot_Inject(&_root, &msg))
     return !_prev.IsEmpty() ? _prev(evt) : false;
   return true;
 }
