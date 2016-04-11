@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __FONT_H__PS__
@@ -35,7 +35,7 @@ namespace planeshader {
     psFont(const psFont&) = delete;
     psFont(const char* file, int psize, float lineheight=0, FONT_ANTIALIAS antialias = FAA_ANTIALIAS);
     ~psFont();
-    virtual psGlyph* _loadglyph(unsigned int codepoint);
+    virtual psGlyph* _loadglyph(unsigned int codepoint) override;
     psGlyph* _renderglyph(unsigned int codepoint);
     void _loadfont();
     void _cleanupfont();

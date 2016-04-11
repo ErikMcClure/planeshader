@@ -15,9 +15,9 @@ namespace planeshader {
     ~psRoot();
     fgRoot& GetRoot() { return _root; }
     bool BSS_FASTCALL ProcessGUI(const psGUIEvent& evt);
+    virtual psRoot* Clone() const override { return 0; }
 
     static psRoot* Instance();
-
     static psFlag GetDrawFlags(fgFlag flags);
 
   protected:

@@ -26,6 +26,7 @@
 #include "feathergui/fgSkin.h"
 #include "feathergui/fgRoot.h"
 #include "bss-util/bss_win32_includes.h"
+#include "bss-util/cHighPrecisionTimer.h"
 #include "bss-util/lockless.h"
 #include "bss-util/cStr.h"
 #include "bss-util/profiler.h"
@@ -117,23 +118,26 @@ cStr ReadFile(const char* path)
 }
 void processGUI()
 {
+  static cHighPrecisionTimer delta;
+  delta.Update();
+  double secdelta = delta.GetDeltaNS() / 1000000000.0;
   float scale = dirkeys[8] ? 0.01f : 1.0f;
   if(dirkeys[0])
-    globalcam.SetPositionX(globalcam.GetPosition().x + dirspeeds[0] * engine->secdelta * scale);
+    globalcam.SetPositionX(globalcam.GetPosition().x + dirspeeds[0] * secdelta * scale);
   if(dirkeys[1])
-    globalcam.SetPositionX(globalcam.GetPosition().x - dirspeeds[0] * engine->secdelta * scale);
+    globalcam.SetPositionX(globalcam.GetPosition().x - dirspeeds[0] * secdelta * scale);
   if(dirkeys[2])
-    globalcam.SetPositionY(globalcam.GetPosition().y + dirspeeds[1] * engine->secdelta * scale);
+    globalcam.SetPositionY(globalcam.GetPosition().y + dirspeeds[1] * secdelta * scale);
   if(dirkeys[3])
-    globalcam.SetPositionY(globalcam.GetPosition().y - dirspeeds[1] * engine->secdelta * scale);
+    globalcam.SetPositionY(globalcam.GetPosition().y - dirspeeds[1] * secdelta * scale);
   if(dirkeys[4])
-    globalcam.SetPositionZ(globalcam.GetPosition().z + dirspeeds[2] * engine->secdelta * scale);
+    globalcam.SetPositionZ(globalcam.GetPosition().z + dirspeeds[2] * secdelta * scale);
   if(dirkeys[5])
-    globalcam.SetPositionZ(globalcam.GetPosition().z - dirspeeds[2] * engine->secdelta * scale);
+    globalcam.SetPositionZ(globalcam.GetPosition().z - dirspeeds[2] * secdelta * scale);
   if(dirkeys[6])
-    globalcam.SetRotation(globalcam.GetRotation() + dirspeeds[3] * engine->secdelta * scale);
+    globalcam.SetRotation(globalcam.GetRotation() + dirspeeds[3] * secdelta * scale);
   if(dirkeys[7])
-    globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * engine->secdelta * scale);
+    globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * secdelta * scale);
 }
 
 TESTDEF::RETPAIR test_psCircle()
@@ -175,9 +179,9 @@ TESTDEF::RETPAIR test_psColor()
 
 void updatefpscount(uint64_t& timer, int& fps)
 {
-  if(psEngine::CloseProfiler(timer)>1000000000)
+  if(cHighPrecisionTimer::CloseProfiler(timer)>1000000000)
   {
-    timer = psEngine::OpenProfiler();
+    timer = cHighPrecisionTimer::OpenProfiler();
     char text[10] = { 0,0,0,0,0,0,0,0,0,0 };
     _itoa_r(fps, text, 10);
     engine->SetWindowTitle(text);
@@ -192,7 +196,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   cStr shfile = ReadFile("../media/testbed.hlsl");
   auto shader = psShader::CreateShader(0, 0, 2, &SHADER_INFO(shfile.c_str(), (const char*)"vs_main", VERTEX_SHADER_4_0),
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   int fps=0;
   //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
   psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, false);
@@ -234,6 +238,7 @@ TESTDEF::RETPAIR test_psDirectX11()
     psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
     driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
+    engine->FlushMessages();
     driver->PopCamera();
 
     updatefpscount(timer, fps);
@@ -264,7 +269,7 @@ TESTDEF::RETPAIR test_psInheritable()
 TESTDEF::RETPAIR test_psParticles()
 {
   BEGINTEST;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   int fps = 0;
 
   psTex* particle = psTex::Create("../media/particle.png");
@@ -301,6 +306,7 @@ TESTDEF::RETPAIR test_psParticles()
     driver->SetTextures(&particle, 1);
     driver->DrawPoints(driver->library.PARTICLE, STATEBLOCK_LIBRARY::GLOW, verts, 5000, 0);
     engine->End();
+    engine->FlushMessages();
     updatefpscount(timer, fps);
   }
 
@@ -312,7 +318,7 @@ TESTDEF::RETPAIR test_psPass()
   BEGINTEST;
 
   int fps = 0;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   cStr shfile = ReadFile("../media/motionblur.hlsl");
@@ -345,6 +351,7 @@ TESTDEF::RETPAIR test_psPass()
     }
     processGUI();
     engine->End();
+    engine->FlushMessages();
     updatefpscount(timer, fps);
   }
   ENDTEST;
@@ -354,7 +361,7 @@ TESTDEF::RETPAIR test_psEffect()
 {
   BEGINTEST;
   int fps = 0;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psTex* gamma = psTex::Create(driver->screendim, FMT_R8G8B8A8_SRGB, USAGE_RENDERTARGET | USAGE_SHADER_RESOURCE, 1);
@@ -373,6 +380,7 @@ TESTDEF::RETPAIR test_psEffect()
 
     processGUI();
     engine->End();
+    engine->FlushMessages();
     updatefpscount(timer, fps);
   }
 
@@ -385,7 +393,7 @@ TESTDEF::RETPAIR test_feather()
 {
   BEGINTEST;
   int fps = 0;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   const fgElement FILL_ELEMENT = { { 0, 0, 0, 0, 0, 1, 0, 1 }, 0, { 0, 0, 0, 0 } };
 
   fgSkin skin;
@@ -552,6 +560,7 @@ TESTDEF::RETPAIR test_feather()
     engine->GetDriver()->Clear(0xFF000000);
     psRoot::Instance()->Render();
     engine->End();
+    engine->FlushMessages();
     updatefpscount(timer, fps);
   }
 
@@ -568,7 +577,7 @@ TESTDEF::RETPAIR test_psFont()
   psFont* font = psFont::Create("arial.ttf", 14, 0, psFont::FAA_LCD);
 
   int fps=0;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psStateblock* block = STATEBLOCK_LIBRARY::SUBPIXELBLEND->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 1, 0.0f));
@@ -590,6 +599,7 @@ TESTDEF::RETPAIR test_psFont()
     driver->DrawRect(driver->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, psRectRotateZ(0, 100, t->GetDim().x, 100 + t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, PSFLAG_FIXED);
     //driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(0, 100, t->GetDim().x, 100+t->GetDim().y, 0), &RECT_UNITRECT, 1, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
+    engine->FlushMessages();
 
     updatefpscount(timer, fps);
   }
@@ -599,9 +609,9 @@ TESTDEF::RETPAIR test_psFont()
 TESTDEF::RETPAIR test_psVector()
 {
   BEGINTEST;
-
+  cHighPrecisionTimer time;
   int fps = 0;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psQuadraticCurve curve(psVec(100), psVec(200, 200), psVec(300), 4.25f);
@@ -631,24 +641,61 @@ TESTDEF::RETPAIR test_psVector()
   {
     processGUI();
     engine->End();
+    time.Update();
+    engine->FlushMessages();
     updatefpscount(timer, fps);
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
     curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
-    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(engine->GetTime()*0.001,PI_DOUBLE)));
+    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(time.GetTime()*0.001,PI_DOUBLE)));
   }
 
   ENDTEST;
+}
+/*
+int figure_out_wang(int p) // brute force wang
+{
+  switch(p)
+  {
+  case 0b0001: return 0;
+  case 0b0011: return 1;
+  case 0b1011: return 2;
+  case 0b1001: return 3;
+  case 0b0101: return 4;
+  case 0b0111: return 5;
+  case 0b1111: return 6;
+  case 0b1101: return 7;
+  case 0b0100: return 8;
+  case 0b0110: return 9;
+  case 0b1110: return 10;
+  case 0b1100: return 11;
+  case 0b0000: return 12;
+  case 0b0010: return 13;
+  case 0b1010: return 14;
+  case 0b1000: return 15;
+  }
+  assert(false);
+  return 0;
+}*/
+
+int wang_indices(int l, int t, int r, int b) // wang using bitwise operations
+{
+  int p = l << 3 | t << 2 | r << 1 | b << 0;
+  int _8 = (!(p & 1) << 3);
+  int _4 = ((p & 4) ^ (((~p) & 1) << 2));
+  int _2 = ((p & 8) >> 2);
+  int _1 = (((p & 2) >> 1) ^ ((p & 8) >> 3));
+  return _8 | _4 | _2 | _1;
 }
 
 TESTDEF::RETPAIR test_psTileset()
 {
   BEGINTEST;
   int fps = 0;
-  auto timer = psEngine::OpenProfiler();
+  auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  const int dimx = 20;
-  const int dimy = 20;
+  const int dimx = 500;
+  const int dimy = 500;
   char edges[dimy + 1][dimx + 1][2];
   for(char* i = edges[0][0]; i - edges[0][0] < sizeof(edges)/sizeof(char); ++i)
     *i = RANDBOOLGEN();
@@ -657,21 +704,15 @@ TESTDEF::RETPAIR test_psTileset()
   memset(&map, 0, sizeof(psTile) * dimx * dimy);
   for(int j = 0; j < dimy; ++j)
     for(int i = 0; i < dimx; ++i)
-      map[j][i].color = ~0;
-
-  for(int j = 0; j < dimy; ++j)
-    for(int i = 0; i < dimx; ++i)
     {
-      psVeciu pos = psTileset::WangTile2D(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
-      map[j][i].index = pos.x + (pos.y * 4);
+      map[j][i].color = ~0;
+      map[j][i].index = wang_indices(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
+      //psVeciu pos = psTileset::WangTile2D(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
+      //map[j][i].index = pos.x + (pos.y * 4);
     }
 
-  for(int j = 0; j < 4; ++j)
-    for(int i = 0; i < 4; ++i)
-      map[j][i].index = i + j * 4;
-
   psTileset tiles(VEC3D_ZERO, 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
-  tiles.SetTexture(psTex::Create("../media/wang2test.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
+  tiles.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
   tiles.AutoGenDefs(psVeciu(8, 8));
   tiles.SetTiles(map[0], dimx*dimy, dimx);
   engine->GetPass(0)->SetCamera(&globalcam);
@@ -681,6 +722,7 @@ TESTDEF::RETPAIR test_psTileset()
     updatefpscount(timer, fps);
     processGUI();
     engine->End();
+    engine->FlushMessages();
   }
 
   ENDTEST;

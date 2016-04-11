@@ -130,7 +130,7 @@ namespace planeshader {
   protected:
     psStateblock(const STATEINFO* infos, unsigned int numstates);
     ~psStateblock();
-    virtual void DestroyThis();
+    virtual void DestroyThis() override;
 
     void* _sb;
   };
@@ -151,7 +151,7 @@ namespace planeshader {
   protected:
     psTexblock(const STATEINFO* infos, unsigned int numstates);
     ~psTexblock();
-    virtual void DestroyThis();
+    virtual void DestroyThis() override;
 
     void* _tb; // In DX11, this is the sampler state, but in openGL, it's actually NULL, because openGL binds the sampler states to the texture at texture creation time using the STATEINFOs contained in this object.
   };

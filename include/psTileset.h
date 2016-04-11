@@ -40,8 +40,8 @@ namespace planeshader {
     inline psVeci GetDimIndex() const { return psVeci(_rowlength, _tiles.Length()/_rowlength); }
     void SetDimIndex(psVeci dim);
 
-    virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
-    virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
+    virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
+    virtual unsigned char NumTextures() const override { return psTextured::NumTextures(); }
 
     static inline uint32_t BSS_FASTCALL WangTile1D(uint32_t e1, uint32_t e2) {
       if(e1 < e2) return 2 * e1 + e2*e2;
@@ -51,7 +51,7 @@ namespace planeshader {
     static inline psVeciu BSS_FASTCALL WangTile2D(uint32_t e0, uint32_t e1, uint32_t e2, uint32_t e3) { return psVeciu(WangTile1D(e0, e2), WangTile1D(e1, e3)); }
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
 
     uint32_t _rowlength;
     psVeci _tiledim; // Size of the actual tile for figuring out where to put each tile.

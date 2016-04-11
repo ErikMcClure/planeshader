@@ -64,10 +64,10 @@ namespace bss_util {
     BSS_FORCEINLINE const T_& Back() const { assert(_length>0); return _array[_length-1]; }
     BSS_FORCEINLINE T_& Front() { assert(_length>0); return _array[0]; }
     BSS_FORCEINLINE T_& Back() { assert(_length>0); return _array[_length-1]; }
-    BSS_FORCEINLINE const T_* begin() const { return _array; }
-    BSS_FORCEINLINE const T_* end() const { return _array+_length; }
-    BSS_FORCEINLINE T_* begin() { return _array; }
-    BSS_FORCEINLINE T_* end() { return _array+_length; }
+    BSS_FORCEINLINE const T_* begin() const noexcept { return _array; }
+    BSS_FORCEINLINE const T_* end() const noexcept { return _array+_length; }
+    BSS_FORCEINLINE T_* begin() noexcept { return _array; }
+    BSS_FORCEINLINE T_* end() noexcept { return _array+_length; }
 
     BSS_FORCEINLINE operator T_*() { return _array; }
     BSS_FORCEINLINE operator const T_*() const { return _array; }

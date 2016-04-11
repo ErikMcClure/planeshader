@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __TEXFONT_H__PS__
@@ -49,7 +49,7 @@ namespace planeshader {
     void AddGlyph(int character, const psGlyph& glyph);
     // Adds a texture
     unsigned char AddTexture(psTex* tex);
-    virtual void DestroyThis();
+    virtual void DestroyThis() override;
 
     static psTexFont* CreateTexFont(psTex* tex=0, float lineheight=0);
 

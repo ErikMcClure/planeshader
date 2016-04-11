@@ -1,4 +1,4 @@
-// Copyright ©2014 Black Sphere Studios
+// Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #ifndef __IMAGE_H__PS__
@@ -26,16 +26,16 @@ namespace planeshader {
     inline void SetRelativeSource(const psRect& uv, unsigned int index = 0) { _setuvs(index+1); _uvs[index] = uv; if(!index) _recalcdim(); }
     inline void SetSource(const psRect& uv, unsigned int index=0) { _setuvs(index+1); _uvs[index] = uv/_tex[index]->GetDim(); if(!index) _recalcdim(); }
     unsigned char NumSources() const { return _uvs.Capacity(); }
-    virtual void BSS_FASTCALL SetTexture(psTex* tex, unsigned int index = 0);
-    virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
-    virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
+    virtual void BSS_FASTCALL SetTexture(psTex* tex, unsigned int index = 0) override;
+    virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
+    virtual unsigned char NumTextures() const override { return psTextured::NumTextures(); }
     void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
 
     psImage& operator =(const psImage& right);
     psImage& operator =(psImage&& right);
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
     void _setuvs(unsigned int size);
     void _recalcdim();
 

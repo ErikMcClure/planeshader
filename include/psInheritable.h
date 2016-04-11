@@ -15,7 +15,7 @@ namespace planeshader {
     psInheritable(psInheritable&& mov);
     explicit psInheritable(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, psInheritable* parent=0);
     virtual ~psInheritable();
-    virtual void Render();
+    virtual void Render() override;
     // Sets/gets the parent
     void SetParent(psInheritable* parent, bool ownership = false);
     inline psInheritable* GetParent() const { return _parent; }
@@ -28,14 +28,14 @@ namespace planeshader {
     // Gets the absolute position by adding up all the parent positions.
     inline void GetTotalPosition(psVec3D& pos) const { pos = _relpos; if(_parent!=0) _parent->_gettotalpos(pos); }
     // Gets all the flags inherited from the parent
-    virtual psFlag GetAllFlags() const { return !_parent?_flags:(_flags|(_parent->GetAllFlags()&PSFLAG_INHERITABLE)); }
+    virtual psFlag GetAllFlags() const override { return !_parent?_flags:(_flags|(_parent->GetAllFlags()&PSFLAG_INHERITABLE)); }
     // Overloads SetPass so it propogates to our children
-    virtual void BSS_FASTCALL SetPass(psPass* pass);
+    virtual void BSS_FASTCALL SetPass(psPass* pass) override;
     // Clone function
-    virtual psInheritable* Clone() const { return 0; }
-    virtual psTex* const* GetRenderTargets() const;
-    virtual unsigned char NumRT() const;
-    virtual void BSS_FASTCALL SetZOrder(int zorder);
+    virtual psInheritable* Clone() const override { return 0; }
+    virtual psTex* const* GetRenderTargets() const override;
+    virtual unsigned char NumRT() const override;
+    virtual void BSS_FASTCALL SetZOrder(int zorder) override;
     psInheritable* BSS_FASTCALL AddClone(const psInheritable* inheritable);
 
     psInheritable& operator=(const psInheritable& copy);
@@ -50,15 +50,15 @@ namespace planeshader {
     }
 
     inline static bool INHERITABLECOMP(psInheritable* l, psInheritable* r) { return l->_zorder < r->_zorder; }
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
 
   protected:
     friend class psSolid;
 
     void _gettotalpos(psVec3D& pos) const;
     void _sortchildren();
-    virtual char BSS_FASTCALL _sort(psRenderable* r) const;
-    virtual psRenderable* BSS_FASTCALL _getparent() const;
+    virtual char BSS_FASTCALL _sort(psRenderable* r) const override;
+    virtual psRenderable* BSS_FASTCALL _getparent() const override;
     psInheritable* _prerender();
 
     bss_util::LLBase<psInheritable> _lchild;

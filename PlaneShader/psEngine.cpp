@@ -31,8 +31,8 @@ const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
-psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), delta(_delta), secdelta(_secdelta), _curpass(0), _passes(1),
-  _mainpass(0), _timewarp(1.0), _secdelta(0.0), _mediapath(init.mediapath)
+psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), _curpass(0), _passes(1),
+  _mainpass(0), _mediapath(init.mediapath)
 {
   PROFILE_FUNC();
   if(_instance!=0) // If you try to make another instance, it violently explodes.
@@ -131,20 +131,6 @@ void psEngine::End()
   //    SetWindowLong(_window, GWL_EXSTYLE, ((GetWindowLong(_window, GWL_EXSTYLE))|WS_EX_TRANSPARENT));
 
   _driver->End();
-
-  if(_timewarp == 1.0) //Refresh the time
-    cHighPrecisionTimer::Update();
-  else
-    cHighPrecisionTimer::Update(_timewarp);
-
-  //_realdelta =_delta*_timescale;
-  _secdelta = _delta/1000.0;
-
-  FlushMessages();
-}
-void psEngine::End(double delta)
-{
-  End();
 }
 bool psEngine::NextPass()
 {

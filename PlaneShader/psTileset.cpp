@@ -88,6 +88,15 @@ void BSS_FASTCALL psTileset::_render()
 
   psBatchObj& obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), _m.v);
 
+  psRectiu window = psRectiu(0, 0, _rowlength, _tiles.Length() / _rowlength);
+
+  if(GetTotalRotation() == 0.0f)
+  {
+    psVec3D lt = _driver->FromScreenSpace(VEC_ZERO);
+    psVec3D rb = _driver->FromScreenSpace(_driver->screendim);
+
+  }
+
   for(uint32_t i = 0; i < _tiles.Length(); ++i)
   {
     float x = (i%_rowlength) * _tiledim.x;
