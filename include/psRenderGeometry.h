@@ -33,7 +33,7 @@ namespace planeshader {
     static void DrawEllipse(float x, float y, float a, float b, unsigned int color);
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
   };
 
   class PS_DLLEXPORT psRenderLine : public psInheritable, public psColored, public psDriverHold
@@ -54,7 +54,7 @@ namespace planeshader {
     static inline void DrawLine(const psLine& p, unsigned int color) { DrawLine(psLine3D(p.x1, p.y1, 0, p.x2, p.y2, 0), color); }
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
 
     psVec3D _point;
   };
@@ -75,7 +75,7 @@ namespace planeshader {
     static void DrawPolygon(const psVertex* p, uint32_t num, const float(&transform)[4][4] = psDriver::identity);
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
   };
 
   class PS_DLLEXPORT psFullScreenQuad : public psInheritable, public psTextured, public psColored, public psDriverHold
@@ -83,11 +83,11 @@ namespace planeshader {
     psFullScreenQuad(const psFullScreenQuad& copy);
     psFullScreenQuad(psFullScreenQuad&& mov);
     psFullScreenQuad();
-    virtual psTex* const* GetTextures() const { return psTextured::GetTextures(); }
-    virtual unsigned char NumTextures() const { return psTextured::NumTextures(); }
+    virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
+    virtual unsigned char NumTextures() const override { return psTextured::NumTextures(); }
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
   };
 }
 #endif

@@ -5,6 +5,7 @@
 #define __DXGI_H__PS__
 
 #include "psDriver.h"
+#include "bss-util\bss_win32_includes.h"
 #include "directx\DXGI.h"
 
 namespace planeshader {

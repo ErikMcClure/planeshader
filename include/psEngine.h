@@ -6,7 +6,6 @@
 
 #include "bss-util/cArray.h"
 #include "bss-util/cBitField.h"
-#include "bss-util/cHighPrecisionTimer.h"
 #include "bss-util/bss_log.h"
 #include "bss-util/cStr.h"
 #include "psGUIManager.h"
@@ -46,7 +45,7 @@ namespace planeshader {
   };
 
   // Core engine object
-  class PS_DLLEXPORT psEngine : public psGUIManager, public bss_util::cHighPrecisionTimer, public bss_util::cLog, public psDriverHold
+  class PS_DLLEXPORT psEngine : public psGUIManager, public bss_util::cLog, public psDriverHold
   {
     static const unsigned char PSENGINE_QUIT = (1<<0);
 
@@ -59,13 +58,13 @@ namespace planeshader {
     bool Begin(unsigned int clearcolor);
     // Ends a frame
     void End();
-    void End(double delta);
     // Renders the next pass, returns false if there are no more passes to render.
     bool NextPass();
     // Begins and ends a frame, returning false if rendering should stop.
     inline bool Render() {
       if(!Begin()) return false;
       End();
+      FlushMessages(); // For best results, calculate the frame delta right before flushing the messages
       return true;
     }
     // Insert a pass 
@@ -78,9 +77,6 @@ namespace planeshader {
     // Get/Sets the quit value
     inline void Quit() { _flags+=PSENGINE_QUIT; }
     inline bool GetQuit() const { return _flags[PSENGINE_QUIT]; }
-    // Get/set the timewarp factor
-    inline void SetTimeWarp(double timewarp) { _timewarp = timewarp; }
-    inline double GetTimeWarp() const { return _timewarp; }
     inline const char* GetMediaPath() const { return _mediapath.c_str(); }
     inline PSINIT::MODE GetMode() const { return _mode; }
     void Resize(psVeciu dim, PSINIT::MODE mode);
@@ -88,18 +84,13 @@ namespace planeshader {
     psPass& operator [](unsigned short index) { assert(index<_passes.Capacity()); return *_passes[index]; }
     const psPass& operator [](unsigned short index) const { assert(index<_passes.Capacity()); return *_passes[index]; }
 
-    const double& delta; //delta in milliseconds
-    const double& secdelta; //delta in seconds
-
     static psEngine* Instance(); // Cannot be inline'd for DLL reasons.
 
   protected:
-    virtual void _onresize(unsigned int width, unsigned int height);
+    virtual void _onresize(unsigned int width, unsigned int height) override;
 
     bss_util::cArray<psPass*, unsigned short> _passes;
     bss_util::cBitField<unsigned char> _flags;
-    double _secdelta;
-    double _timewarp;
     unsigned short _curpass;
     psPass* _mainpass;
     cStr _mediapath;

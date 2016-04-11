@@ -32,7 +32,7 @@ namespace planeshader {
     static void SetVert(float(&v)[4], psVec& x, float thickness);
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
     bss_util::cDynArray<QuadVertex, uint32_t> _verts;
   };
 
@@ -100,7 +100,7 @@ namespace planeshader {
     static void DrawRoundedRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
 
     psRect _corners;
     psColor32 _outline;
@@ -135,7 +135,7 @@ namespace planeshader {
     static void DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
 
     psRect _arcs;
     psColor32 _outline;

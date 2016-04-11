@@ -71,7 +71,7 @@ namespace planeshader {
     void _destroy();
     void _copy(const psShader& copy);
     void _move(psShader&& mov);
-    virtual void DestroyThis();
+    virtual void DestroyThis() override;
     psShader& operator=(const psShader& copy);
     psShader& operator=(psShader&& mov);
 

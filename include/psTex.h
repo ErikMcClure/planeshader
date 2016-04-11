@@ -49,7 +49,7 @@ namespace planeshader {
     static psTex* BSS_FASTCALL _create(void* res, void* view, psVeciu dpi, psTexblock* texblock);
 
     void BSS_FASTCALL _applydesc(TEXTURE_DESC& desc);
-    virtual void DestroyThis();
+    virtual void DestroyThis() override;
 
     void* _res; // In DX11 this is the shader resource view. In DX9 it's the texture pointer.
     void* _view; // In DX11 this is the render target or depth stencil view. In DX9 it's the surface pointer.

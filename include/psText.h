@@ -38,7 +38,7 @@ namespace planeshader {
     inline void SetFunc(psTexFont::DELEGATE func) { _func = func; }
 
   protected:
-    virtual void BSS_FASTCALL _render();
+    virtual void BSS_FASTCALL _render() override;
     void _recalcdim();
 
     cStrT<int> _text;

@@ -42,6 +42,7 @@ namespace planeshader {
     virtual unsigned char NumRT() const;
     virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0);
     void ClearRenderTargets();
+    virtual psRenderable* Clone() const = 0;
 
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);

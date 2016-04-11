@@ -62,94 +62,94 @@ namespace planeshader {
     psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd);
     ~psDirectX11();
     // Begins a scene
-    virtual bool Begin();
+    virtual bool Begin() override;
     // Ends a scene
-    virtual char End();
+    virtual char End() override;
     // Flush draw buffer
-    virtual void BSS_FASTCALL Flush();
-    virtual psBatchObj& BSS_FASTCALL FlushPreserve();
+    virtual void BSS_FASTCALL Flush() override;
+    virtual psBatchObj& BSS_FASTCALL FlushPreserve() override;
     // Draws a vertex object
-    virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity) override;
     // Draws a rectangle
-    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity);
-    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, unsigned int color);
+    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, unsigned int color) override;
     // Draws a polygon
-    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity);
-    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
     // Draws points
-    virtual psBatchObj& BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual psBatchObj& BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
     // Draws lines
-    virtual psBatchObj& BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity);
-    virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor);
+    virtual psBatchObj& BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) override;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent);
-    virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport);
-    virtual void BSS_FASTCALL PopCamera();
+    virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) override;
+    virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport) override;
+    virtual void BSS_FASTCALL PopCamera() override;
     // Applies the camera transform (or it's inverse) according to the flags to a point.
-    psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point) const;
-    psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point) const;
+    virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point) const override;
+    virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point) const override;
     // Draws a fullscreen quad
-    virtual void DrawFullScreenQuad();
+    virtual void DrawFullScreenQuad() override;
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata);
-    virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags);
-    virtual void BSS_FASTCALL UnlockBuffer(void* target);
-    virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0);
-    virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0);
+    virtual void* BSS_FASTCALL CreateBuffer(uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata) override;
+    virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags) override;
+    virtual void BSS_FASTCALL UnlockBuffer(void* target) override;
+    virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0) override;
+    virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0) override;
     // Creates a texture
-    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage = USAGE_SHADER_RESOURCE, unsigned char miplevels = 0, const void* initdata = 0, void** additionalview = 0, psTexblock* texblock = 0);
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false);
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false);
-    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0);
+    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage = USAGE_SHADER_RESOURCE, unsigned char miplevels = 0, const void* initdata = 0, void** additionalview = 0, psTexblock* texblock = 0) override;
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false) override;
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage = USAGE_SHADER_RESOURCE, FORMATS format = FMT_UNKNOWN, void** additionalview = 0, unsigned char miplevels = 0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock = 0, bool sRGB = false) override;
+    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0) override;
     // Pushes or pops a clip rect on to the stack
-    virtual void BSS_FASTCALL PushClipRect(const psRect& rect);
-    virtual psRect PeekClipRect();
-    virtual void PopClipRect();
+    virtual void BSS_FASTCALL PushClipRect(const psRect& rect) override;
+    virtual psRect PeekClipRect() override;
+    virtual void PopClipRect() override;
     // Sets the rendertargets
-    virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil = 0);
+    virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil = 0) override;
     // Sets shader constants
-    virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader);
+    virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader) override;
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
-    virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader = PIXEL_SHADER_1_1);
+    virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader = PIXEL_SHADER_1_1) override;
     // Builds a stateblock from the given set of state changes
-    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, unsigned int count);
+    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, unsigned int count) override;
     // Builds a texblock from the given set of sampler states
-    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, unsigned int count);
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, unsigned int count) override;
     // Sets a given stateblock
-    virtual void BSS_FASTCALL SetStateblock(void* stateblock);
+    virtual void BSS_FASTCALL SetStateblock(void* stateblock) override;
     // Create a vertex layout from several element descriptions
-    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num);
+    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num) override;
     void* BSS_FASTCALL CreateLayout(void* shader, size_t sz, const ELEMENT_DESC* elements, unsigned char num);
-    virtual void BSS_FASTCALL SetLayout(void* layout);
+    virtual void BSS_FASTCALL SetLayout(void* layout) override;
     // Frees a created resource of the specified type
-    virtual TEXTURE_DESC BSS_FASTCALL GetTextureDesc(void* t);
-    virtual void BSS_FASTCALL FreeResource(void* p, RESOURCE_TYPE t);
-    virtual void BSS_FASTCALL GrabResource(void* p, RESOURCE_TYPE t);
-    virtual void BSS_FASTCALL CopyResource(void* dest, void* src, RESOURCE_TYPE t);
-    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, char fullscreen);
-    virtual void BSS_FASTCALL Clear(unsigned int color);
+    virtual TEXTURE_DESC BSS_FASTCALL GetTextureDesc(void* t) override;
+    virtual void BSS_FASTCALL FreeResource(void* p, RESOURCE_TYPE t) override;
+    virtual void BSS_FASTCALL GrabResource(void* p, RESOURCE_TYPE t) override;
+    virtual void BSS_FASTCALL CopyResource(void* dest, void* src, RESOURCE_TYPE t) override;
+    virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, char fullscreen) override;
+    virtual void BSS_FASTCALL Clear(unsigned int color) override;
     // Gets a pointer to the driver implementation
-    inline virtual RealDriver GetRealDriver() { RealDriver d; d.dx11 = this; d.type = RealDriver::DRIVERTYPE_DX11; return d; }
-    inline virtual psTex* GetBackBuffer() { return _backbuffer; }
+    inline virtual RealDriver GetRealDriver() override { RealDriver d; d.dx11 = this; d.type = RealDriver::DRIVERTYPE_DX11; return d; }
+    inline virtual psTex* GetBackBuffer() override { return _backbuffer; }
     // Compile a shader from a string
-    virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint = "");
+    virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint = "") override;
     // Create an actual shader object from compiled shader source (either precompiled or from CompileShader())
     void* BSS_FASTCALL CreateShader(const void* data, size_t datasize, SHADER_VER profile);
-    virtual void* BSS_FASTCALL CreateShader(const void* data, SHADER_VER profile);
+    virtual void* BSS_FASTCALL CreateShader(const void* data, SHADER_VER profile) override;
     // Sets current shader
-    virtual char BSS_FASTCALL SetShader(void* shader, SHADER_VER profile);
+    virtual char BSS_FASTCALL SetShader(void* shader, SHADER_VER profile) override;
     // Returns true if shader version is supported
-    virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile);
+    virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile) override;
     // Gets/Sets the effective DPI
-    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI));
-    virtual psVeciu GetDPI();
+    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI)) override;
+    virtual psVeciu GetDPI() override;
     // Returns an index to an internal state snapshot
-    virtual unsigned int BSS_FASTCALL GetSnapshot();
+    virtual unsigned int BSS_FASTCALL GetSnapshot() override;
 
     inline long GetLastError() const { return _lasterr; }
 
-    static const int BATCHSIZE = 512;
+    static const int BATCHSIZE = 1024;
     static const int RECTBUFSIZE = BATCHSIZE + (BATCHSIZE / 2);
 
     static void* operator new(std::size_t sz);
