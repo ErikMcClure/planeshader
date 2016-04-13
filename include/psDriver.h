@@ -319,24 +319,24 @@ namespace planeshader {
     virtual char End()=0;
     // Flush draw buffer
     virtual void BSS_FASTCALL Flush() = 0;
-    virtual psBatchObj& BSS_FASTCALL FlushPreserve() = 0;
+    virtual psBatchObj* BSS_FASTCALL FlushPreserve() = 0;
     // Draws a vertex object
     virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4]=identity)=0;
-    virtual psBatchObj& BSS_FASTCALL DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4] = identity);
+    virtual psBatchObj* BSS_FASTCALL DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4] = identity);
     // Begins a standard batch job, setting all necessary states.
-    virtual psBatchObj& BSS_FASTCALL DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4] = identity, uint32_t reserve = 0);
+    virtual psBatchObj* BSS_FASTCALL DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4] = identity, uint32_t reserve = 0);
     // Draws a rectangle
-    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity)=0;
-    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity)=0;
-    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color)=0;
+    virtual psBatchObj* BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity)=0;
+    virtual psBatchObj* BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity)=0;
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color)=0;
     // Draws a polygon
-    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity)=0;
-    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity)=0;
+    virtual psBatchObj* BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity)=0;
+    virtual psBatchObj* BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity)=0;
     // Draws points
-    virtual psBatchObj& BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity)=0;
+    virtual psBatchObj* BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity)=0;
     // Draws lines
-    virtual psBatchObj& BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity)=0;
-    virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)=0;
+    virtual psBatchObj* BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity)=0;
+    virtual void BSS_FASTCALL DrawLines(psBatchObj*& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)=0;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)=0;
     virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
@@ -344,7 +344,7 @@ namespace planeshader {
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point) const=0;
     virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point) const=0;
-    psVec3D BSS_FASTCALL FromScreenSpace(const psVec& point) const { psVec pt = (point - (rawscreendim/2u)) * (-ReversePoint(VEC3D_ZERO).z); return ReversePoint(psVec3D(pt.x, pt.y, 1.0f)); }
+    psVec3D BSS_FASTCALL FromScreenSpace(const psVec& point, float z = 0.0f) const { psVec pt = (point - (rawscreendim/2u)) * (-ReversePoint(VEC3D_ZERO).z+z); return ReversePoint(psVec3D(pt.x, pt.y, 1.0f+z)); }
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad()=0;
     // Creates a vertex or index buffer

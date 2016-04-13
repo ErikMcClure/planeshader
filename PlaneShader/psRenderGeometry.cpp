@@ -50,14 +50,14 @@ psRenderLine& psRenderLine::operator =(const psLine3D& right) { SetPosition(righ
 psRenderLine& psRenderLine::operator =(const psLine& right) { operator=(psLine3D(right.x1, right.y1, 0, right.x2, right.y2, 0)); return *this; }
 void psRenderLine::DrawLine(const psLine3D& p, uint32_t color)
 {
-  psBatchObj& obj = _driver->DrawLinesStart(_driver->library.LINE, 0, 0);
+  psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, 0, 0);
   _driver->DrawLines(obj, psLine(p.p1.xy, p.p2.xy), p.p1.z, p.p2.z, color);
 }
 
 void BSS_FASTCALL psRenderLine::_render()
 {
   Activate();
-  psBatchObj& obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetAllFlags());
+  psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetAllFlags());
   _driver->DrawLines(obj, psLine(_relpos.xy, _point.xy), _relpos.z, _point.z, GetColor().color);
 }
 

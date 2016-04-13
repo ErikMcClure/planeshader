@@ -18,7 +18,7 @@ void BSS_FASTCALL psChartContainer::_render()
   psFlag flags = GetAllFlags();
   bss_util::Matrix<float, 4, 4> m;
   GetTransform(m);
-  psBatchObj& batch = _driver->DrawLinesStart(_driver->library.LINE, 0, flags, m.v);
+  psBatchObj* batch = _driver->DrawLinesStart(_driver->library.LINE, 0, flags, m.v);
   _driver->DrawLines(batch, psLine(0, 0, _dim.x, 0), 0, 0, 0xFF999999);
   _driver->DrawLines(batch, psLine(0, 0, 0, _dim.y), 0, 0, 0xFF999999);
   _driver->DrawLines(batch, psLine(0, _dim.y, _dim.x, _dim.y), 0, 0, 0xAA999999);

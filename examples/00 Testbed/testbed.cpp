@@ -225,13 +225,13 @@ TESTDEF::RETPAIR test_psDirectX11()
     driver->DrawRect(driver->library.IMAGE, 0, mouserect, &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
     driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(500, 500, 500 + pslogo->GetDim().x, 500 + pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
     {
-      psBatchObj& obj = driver->DrawRectBatchBegin(driver->library.IMAGE, 0, 1, 0);
+      psBatchObj* obj = driver->DrawRectBatchBegin(driver->library.IMAGE, 0, 1, 0);
       for(int i = 0; i < NUMBATCH; ++i) {
         driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x + pslogo->GetDim().x, imgpos[i].y + pslogo->GetDim().y, imgpos[i].z, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 0xFFFFFFFF);
       }
     }
 
-    psBatchObj& obj = driver->DrawLinesStart(driver->library.LINE, 0, PSFLAG_FIXED);
+    psBatchObj* obj = driver->DrawLinesStart(driver->library.LINE, 0, PSFLAG_FIXED);
     driver->DrawLines(obj, psLine(0, 0, 100, 200), 0, 0, 0xFFFFFFFF);
     driver->DrawLines(obj, psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
 
@@ -715,6 +715,12 @@ TESTDEF::RETPAIR test_psTileset()
   tiles.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
   tiles.AutoGenDefs(psVeciu(8, 8));
   tiles.SetTiles(map[0], dimx*dimy, dimx);
+
+  psTileset tiles2(psVec3D(0, 0, 1), 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
+  tiles2.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
+  tiles2.AutoGenDefs(psVeciu(8, 8));
+  tiles2.SetTiles(map[0], dimx*dimy, dimx);
+
   engine->GetPass(0)->SetCamera(&globalcam);
 
   while(!gotonext && engine->Begin(0))

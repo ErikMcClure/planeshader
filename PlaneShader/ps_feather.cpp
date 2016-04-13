@@ -96,7 +96,7 @@ void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag 
 void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
 {
   psDriver* driver = psRoot::Instance()->GetDriver();
-  psBatchObj& obj = driver->DrawLinesStart(driver->library.LINE, 0, 0);
+  psBatchObj* obj = driver->DrawLinesStart(driver->library.LINE, 0, 0);
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
   driver->DrawLines(obj, psLine(p1.x, p1.y, p2.x, p2.y), 0, 0, vertexcolor);

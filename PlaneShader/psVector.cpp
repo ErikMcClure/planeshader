@@ -174,18 +174,18 @@ psRoundedRect::~psRoundedRect(){}
 void psRoundedRect::DrawRoundedRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RRBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  psBatchObj& obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
+  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
 
   uint32_t color;
   uint32_t outline;
   color32.WriteFormat(FMT_R8G8B8A8, &color);
   outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
-  RRVertex* vert = (RRVertex*)obj.buffer.get();
+  RRVertex* vert = (RRVertex*)obj->buffer.get();
   *vert = { rect.left, rect.top, rect.z, rect.rotation,
   { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
     corners, edge, color, outline };
-  ++obj.buffer.nvert;
+  ++obj->buffer.nvert;
 }
 void BSS_FASTCALL psRoundedRect::_render()
 {
@@ -206,18 +206,18 @@ psRenderCircle::~psRenderCircle() {}
 void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CIRCLEBUFSIZE, sizeof(CircleVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  psBatchObj& obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
+  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
 
   uint32_t color;
   uint32_t outline;
   color32.WriteFormat(FMT_R8G8B8A8, &color);
   outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
-  CircleVertex* vert = (CircleVertex*)obj.buffer.get(); // we don't need to check length here because we reserved 1 vertex in DrawBatchBegin
+  CircleVertex* vert = (CircleVertex*)obj->buffer.get(); // we don't need to check length here because we reserved 1 vertex in DrawBatchBegin
   *vert = { rect.left, rect.top, rect.z, rect.rotation,
   { rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y },
     arcs, edge, color, outline };
-  ++obj.buffer.nvert;
+  ++obj->buffer.nvert;
 }
 
 void BSS_FASTCALL psRenderCircle::_render()
