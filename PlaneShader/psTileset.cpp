@@ -88,23 +88,31 @@ void BSS_FASTCALL psTileset::_render()
 
   psBatchObj& obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), _m.v);
 
-  psRectiu window = psRectiu(0, 0, _rowlength, _tiles.Length() / _rowlength);
+  psRecti window = psRecti(0, 0, _rowlength, _tiles.Length() / _rowlength);
 
-  if(GetTotalRotation() == 0.0f)
+  if(GetCollisionRectStatic().rotation == 0.0f)
   {
+    psRect r = GetBoundingRectStatic();
     psVec3D lt = _driver->FromScreenSpace(VEC_ZERO);
     psVec3D rb = _driver->FromScreenSpace(_driver->screendim);
-
+    r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
+    window = window.GenerateIntersection(psRecti(
+      bss_util::fFastTruncate(r.left / _tiledim.x), 
+      bss_util::fFastTruncate(r.top / _tiledim.y), 
+      bss_util::fFastTruncate(r.right / _tiledim.x) + 1, 
+      bss_util::fFastTruncate(r.bottom / _tiledim.y) + 1));
   }
 
-  for(uint32_t i = 0; i < _tiles.Length(); ++i)
-  {
-    float x = (i%_rowlength) * _tiledim.x;
-    float y = (i/_rowlength) * _tiledim.y;
-    psTileDef& def = _defs[_tiles[i].index];
-    _driver->DrawRectBatch(obj,
-      psRectRotateZ(x + def.rect.left, y + def.rect.top, x + def.rect.right, y + def.rect.bottom, _tiles[i].rotate, _tiles[i].pivot, 0),
-      &def.uv, 
-      _tiles[i].color);
-  }
+  for(uint32_t j = window.top; j < window.bottom; ++j)
+    for(uint32_t i = window.left; i < window.right; ++i)
+    {
+      uint32_t k = i + (j*_rowlength);
+      float x = i * _tiledim.x; //(k%_rowlength)
+      float y = j * _tiledim.y; //(k/_rowlength)
+      psTileDef& def = _defs[_tiles[k].index];
+      _driver->DrawRectBatch(obj,
+        psRectRotateZ(x + def.rect.left, y + def.rect.top, x + def.rect.right, y + def.rect.bottom, _tiles[k].rotate, _tiles[k].pivot, 0),
+        &def.uv, 
+        _tiles[k].color);
+    }
 }

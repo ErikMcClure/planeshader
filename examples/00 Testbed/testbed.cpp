@@ -762,7 +762,6 @@ int main(int argc, char** argv)
   const int COLUMNS[3] ={ 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 
-
   std::vector<uint32_t> failures;
   PSINIT init;
   init.driver=RealDriver::DRIVERTYPE_DX11;
