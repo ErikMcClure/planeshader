@@ -8,7 +8,7 @@
 
 using namespace planeshader;
 
-psBatchObj& BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
+psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
   uint32_t snapshot = GetSnapshot(); // Snapshot our driver state
   if(_jobstack.Length() > 0 && !(flags&PSFLAG_DONOTBATCH))
@@ -24,7 +24,7 @@ psBatchObj& BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateb
       &last.transform == &transform)
     {
       if((last.buffer.vert + last.buffer.nvert + reserve)*verts->element <= verts->capacity)
-        return last; // If we can handle the necessary buffer reserve, batch render with this
+        return &last; // If we can handle the necessary buffer reserve, batch render with this
       Flush(); // Otherwise, we have to flush everything and then create an entirely new buffer
     }
     else
@@ -49,7 +49,7 @@ psBatchObj& BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateb
   o.stateblock = stateblock;
   o.flags = flags;
   o.snapshot = snapshot;
-  return o;
+  return &o;
 }
 
 // Flushes the batch job queue
@@ -76,9 +76,9 @@ psBufferObj* BSS_FASTCALL psDriver::CreateBufferObj(psBufferObj* target, uint32_
   return target; // We return the same pointer we passed in due to restrictions on function calls in static variables (see psVector.cpp)
 }
 
-psBatchObj& BSS_FASTCALL psDriver::DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4])
+psBatchObj* BSS_FASTCALL psDriver::DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4])
 {
-  psBatchObj* obj = &DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, vbuf, ibuf, mode, transform);
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, vbuf, ibuf, mode, transform);
   psBufferObj* verts = obj->buffer.verts;
 
   for(uint32_t i = (num + obj->buffer.vert + obj->buffer.nvert)*verts->element; i > verts->capacity; i -= verts->capacity)
@@ -88,12 +88,12 @@ psBatchObj& BSS_FASTCALL psDriver::DrawArray(psShader* shader, const psStatebloc
     num -= n;
     obj->buffer.nvert += n;
     data = ((char*)data) + (n*verts->element);
-    obj = &FlushPreserve();
+    obj = FlushPreserve();
     verts = obj->buffer.verts;
   }
   memcpy(obj->buffer.get(), data, num*verts->element); // We can do this because we know num+_lockedptcount does not exceed MAX_POINTS
   obj->buffer.nvert += num;
-  return *obj;
+  return obj;
 }
 
 void BSS_FASTCALL psDriver::MergeClipRect(const psRect& rect)

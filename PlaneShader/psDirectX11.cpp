@@ -473,7 +473,7 @@ void BSS_FASTCALL psDirectX11::Flush()
   _snapshotstack.Clear();
   _texstack.Clear();
 }
-psBatchObj& BSS_FASTCALL psDirectX11::FlushPreserve()
+psBatchObj* BSS_FASTCALL psDirectX11::FlushPreserve()
 {
   assert(_jobstack.Length() > 0);
 
@@ -509,14 +509,14 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&t
   }
 }
 
-psBatchObj& BSS_FASTCALL psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4])
+psBatchObj* BSS_FASTCALL psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4])
 { // Because we have to send the rect position in SOMEHOW and DX11 forces us to send matrices through the shaders, we will lock a buffer no matter what we do. 
   PROFILE_FUNC();
-  psBatchObj& obj = DrawRectBatchBegin(shader, stateblock, numuv, flags, xform);
+  psBatchObj* obj = DrawRectBatchBegin(shader, stateblock, numuv, flags, xform);
   DrawRectBatch(obj, rect, uv, color);
   return obj;
 }
-psBatchObj& BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4])
+psBatchObj* BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4])
 {
   uint32_t size = sizeof(DX11_rectvert) + sizeof(psRect)*numuv;
   if(size != _rectvertbuf.element)
@@ -527,31 +527,31 @@ psBatchObj& BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psShader* shader, const
 
   return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_rectvertbuf, 0, POINTLIST, xform);
 }
-psBatchObj& psDirectX11::_checkflush(psBatchObj& obj, uint32_t num)
+psBatchObj* psDirectX11::_checkflush(psBatchObj* obj, uint32_t num)
 {
-  if((obj.buffer.vert + obj.buffer.nvert + num)*obj.buffer.verts->element > obj.buffer.verts->capacity)
+  if((obj->buffer.vert + obj->buffer.nvert + num)*obj->buffer.verts->element > obj->buffer.verts->capacity)
     return FlushPreserve();
   return obj;
 }
-void BSS_FASTCALL psDirectX11::DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color)
+void BSS_FASTCALL psDirectX11::DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color)
 {
-  psBatchObj& obj = _checkflush(o, 1);
-  const uint32_t numuv = (obj.buffer.verts->element - sizeof(DX11_rectvert)) / sizeof(psRect);
+  o = _checkflush(o, 1);
+  const uint32_t numuv = (o->buffer.verts->element - sizeof(DX11_rectvert)) / sizeof(psRect);
 
-  DX11_rectvert* buf = (DX11_rectvert*)obj.buffer.get();
+  DX11_rectvert* buf = (DX11_rectvert*)o->buffer.get();
   *buf = { rect.left, rect.top, rect.z, rect.rotation,
     rect.right - rect.left, rect.bottom - rect.top, rect.pivot.x, rect.pivot.y,
     color };
   memcpy(buf + 1, uv, sizeof(psRect)*numuv);
-  ++obj.buffer.nvert;
+  ++o->buffer.nvert;
 }
-psBatchObj& BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4])
+psBatchObj* BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4])
 {
-  psBatchObj& obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
-  psBufferObj* v = obj.buffer.verts;
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
+  psBufferObj* v = obj->buffer.verts;
 
   if(num*v->element > v->capacity) return obj;
-  DX11_simplevert* buf = (DX11_simplevert*)obj.buffer.get();
+  DX11_simplevert* buf = (DX11_simplevert*)obj->buffer.get();
   assert(v->element == sizeof(DX11_simplevert));
   for(uint32_t i = 0; i < num; ++i)
   {
@@ -561,43 +561,43 @@ psBatchObj& BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStat
     buf[i].w = 1;
     buf[i].color = vertexcolor;
   }
-  obj.buffer.nvert += num;
-  obj.buffer.indice = 0;
-  obj.buffer.nindice = (num - 2) * 3;
+  obj->buffer.nvert += num;
+  obj->buffer.indice = 0;
+  obj->buffer.nindice = (num - 2) * 3;
   return obj;
 }
-psBatchObj& BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4])
+psBatchObj* BSS_FASTCALL psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4])
 {
   static_assert(sizeof(psVertex) == sizeof(DX11_simplevert), "Error, psVertex is not equal to DX11_simplevert");
-  psBatchObj& obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
-  psBufferObj* v = obj.buffer.verts;
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
+  psBufferObj* v = obj->buffer.verts;
 
   if(num*v->element > v->capacity) return obj;
   assert(v->element == sizeof(DX11_simplevert));
-  memcpy(obj.buffer.get(), verts, num*sizeof(psVertex));
-  obj.buffer.nvert = num;
-  obj.buffer.indice = 0;
-  obj.buffer.nindice = (num - 2) * 3;
+  memcpy(obj->buffer.get(), verts, num*sizeof(psVertex));
+  obj->buffer.nvert = num;
+  obj->buffer.indice = 0;
+  obj->buffer.nindice = (num - 2) * 3;
   return obj;
 }
-psBatchObj& BSS_FASTCALL psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4])
+psBatchObj* BSS_FASTCALL psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4])
 {
   static_assert(sizeof(psVertex) == sizeof(DX11_simplevert), "Error, psVertex is not equal to DX11_simplevert");
   assert(sizeof(DX11_simplevert) == _batchvertbuf.element);
   return DrawArray(shader, stateblock, particles, num, &_batchvertbuf, 0, POINTLIST, flags, transform);
 }
-psBatchObj& BSS_FASTCALL psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
+psBatchObj* BSS_FASTCALL psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
 {
   return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINELIST, xform);
 }
-void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj& o, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
+void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
 {
-  psBatchObj& obj = _checkflush(o, 2);
+  o = _checkflush(o, 2);
 
-  DX11_simplevert* linebuf = (DX11_simplevert*)obj.buffer.get();
+  DX11_simplevert* linebuf = (DX11_simplevert*)o->buffer.get();
   linebuf[0] = { line.x1, line.y1, Z1, 1, vertexcolor };
   linebuf[1] = { line.x2, line.y2, Z2, 1, vertexcolor };
-  obj.buffer.nvert += 2;
+  o->buffer.nvert += 2;
 }
 void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
 {

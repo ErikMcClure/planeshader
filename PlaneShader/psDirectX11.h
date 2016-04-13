@@ -67,21 +67,21 @@ namespace planeshader {
     virtual char End() override;
     // Flush draw buffer
     virtual void BSS_FASTCALL Flush() override;
-    virtual psBatchObj& BSS_FASTCALL FlushPreserve() override;
+    virtual psBatchObj* BSS_FASTCALL FlushPreserve() override;
     // Draws a vertex object
     virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity) override;
     // Draws a rectangle
-    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity) override;
-    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity) override;
-    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color) override;
+    virtual psBatchObj* BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual psBatchObj* BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color) override;
     // Draws a polygon
-    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity) override;
-    virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual psBatchObj* BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual psBatchObj* BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
     // Draws points
-    virtual psBatchObj& BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual psBatchObj* BSS_FASTCALL DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
     // Draws lines
-    virtual psBatchObj& BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) override;
-    virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) override;
+    virtual psBatchObj* BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual void BSS_FASTCALL DrawLines(psBatchObj*& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) override;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) override;
     virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport) override;
@@ -186,7 +186,7 @@ namespace planeshader {
     void BSS_FASTCALL _processdebugmessage(UINT64 index, SIZE_T len);
     psVeciu _getrendertargetsize(ID3D11RenderTargetView* view);
     bool _checksnapshot(Snapshot& s);
-    psBatchObj& _checkflush(psBatchObj& obj, uint32_t num);
+    psBatchObj* _checkflush(psBatchObj* obj, uint32_t num);
 
     ID3D11Device* _device;
     ID3D11DeviceContext* _context;

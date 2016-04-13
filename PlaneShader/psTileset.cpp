@@ -83,18 +83,19 @@ void psTileset::SetDimIndex(psVeci dim)
 void BSS_FASTCALL psTileset::_render()
 {
   assert(_defs.Length() > 0);
+  if(!_rowlength || !_tiles.Length()) return;
   GetTransform(_m);
   Activate();
 
-  psBatchObj& obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), _m.v);
+  psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), _m.v);
 
   psRecti window = psRecti(0, 0, _rowlength, _tiles.Length() / _rowlength);
 
   if(GetCollisionRectStatic().rotation == 0.0f)
   {
     psRect r = GetBoundingRectStatic();
-    psVec3D lt = _driver->FromScreenSpace(VEC_ZERO);
-    psVec3D rb = _driver->FromScreenSpace(_driver->screendim);
+    psVec3D lt = _driver->FromScreenSpace(VEC_ZERO, GetCollisionRectStatic().z);
+    psVec3D rb = _driver->FromScreenSpace(_driver->screendim, GetCollisionRectStatic().z);
     r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
     window = window.GenerateIntersection(psRecti(
       bss_util::fFastTruncate(r.left / _tiledim.x), 

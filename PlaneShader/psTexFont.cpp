@@ -66,7 +66,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
 
     curwidth = 0.0f;
     _driver->SetTextures(&_textures[i], 1);
-    psBatchObj& obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags, transform);
+    psBatchObj* obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags, transform);
     texdim = _textures[i]->GetDim();
 
     while(*pos)
