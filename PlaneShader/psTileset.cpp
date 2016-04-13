@@ -53,7 +53,7 @@ void psTileset::SetTileDim(psVeci tiledim)
   SetDim(!_rowlength ? VEC_ZERO : psVeci(_rowlength, _tiles.Length() / _rowlength)*_tiledim);
 }
 
-bool psTileset::SetTile(psVeci pos, uint32_t index, unsigned int color, float rotate, psVec pivot)
+bool psTileset::SetTile(psVeci pos, uint32_t index, uint32_t color, float rotate, psVec pivot)
 {
   uint32_t i = pos.x + pos.y*_rowlength;
   if(i >= _tiles.Length())

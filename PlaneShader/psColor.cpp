@@ -5,7 +5,7 @@
 
 using namespace planeshader;
 
-unsigned short psColor::BitsPerPixel(FORMATS format)
+uint16_t psColor::BitsPerPixel(FORMATS format)
 {
   switch(format)
   {
@@ -113,7 +113,7 @@ unsigned short psColor::BitsPerPixel(FORMATS format)
   return 0;
 }
 
-template<unsigned char TYPE, unsigned char BITS, unsigned short OFFSET>
+template<uint8_t TYPE, uint8_t BITS, uint16_t OFFSET>
 void BSS_FORCEINLINE _psColor_WriteComponent(float c, void* target);
 
 // Adapted from: http://stackoverflow.com/a/3542975
@@ -158,7 +158,7 @@ template<> void BSS_FORCEINLINE _psColor_WriteComponent<2, 16, 0>(float c, void*
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 8, 0>(float c, void* target) { ((uint8_t*)target)[0] = bss_util::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint8_t>::max())); }
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 8, 0>(float c, void* target) { ((int8_t*)target)[0] = bss_util::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int8_t>::max())); }
 
-unsigned short psColor::WriteFormat(FORMATS format, void* target) const
+uint16_t psColor::WriteFormat(FORMATS format, void* target) const
 {
   char* t = (char*)target;
   switch(format)
@@ -285,7 +285,7 @@ unsigned short psColor::WriteFormat(FORMATS format, void* target) const
   return 0;
 }
 
-unsigned short psColor32::WriteFormat(FORMATS format, void* target) const
+uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
 {
   char* t = (char*)target;
   float* f32 = (float*)target;

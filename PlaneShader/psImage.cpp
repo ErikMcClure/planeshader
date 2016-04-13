@@ -9,13 +9,13 @@ using namespace planeshader;
 psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColored(copy), _uvs(copy._uvs) {}
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
 psImage::~psImage() {}
-psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) : 
+psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, uint32_t color) : 
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psTextured(tex), psColored(color)
 {
   AddSource();
 }
 
-psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, unsigned int color) :
+psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, uint32_t color) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psTextured(file), psColored(color)
 {
   AddSource();
@@ -42,12 +42,12 @@ psImage& psImage::operator =(psImage&& right)
 void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.Capacity()); if(_uvs.Capacity()==1) _recalcdim(); }
 void psImage::ClearSources() { _uvs.SetCapacityDiscard(0); }
 
-void psImage::_setuvs(unsigned int size)
+void psImage::_setuvs(uint32_t size)
 {
-  unsigned int oldsize = _uvs.Capacity();
+  uint32_t oldsize = _uvs.Capacity();
   if(size>oldsize)
     _uvs.SetCapacity(size);
-  for(unsigned int i = oldsize; i < _uvs.Capacity(); ++i)
+  for(uint32_t i = oldsize; i < _uvs.Capacity(); ++i)
     _uvs[i]=RECT_UNITRECT;
 }
 
@@ -57,7 +57,7 @@ void BSS_FASTCALL psImage::_render()
   _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetAllFlags());
 }
 
-void BSS_FASTCALL psImage::SetTexture(psTex* tex, unsigned int index)
+void BSS_FASTCALL psImage::SetTexture(psTex* tex, uint32_t index)
 {
   psTextured::SetTexture(tex, index);
   if(!index) _recalcdim();

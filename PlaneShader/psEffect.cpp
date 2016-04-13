@@ -12,13 +12,13 @@ psEffect::psEffect(const psVec3D& position, FNUM rotation, const psVec& pivot, p
 
 }
 
-bool psEffect::Link(psRenderable* src, unsigned char srcindex, psRenderable* dest, unsigned char destindex)
+bool psEffect::Link(psRenderable* src, uint8_t srcindex, psRenderable* dest, uint8_t destindex)
 {
   Edge e = { src, srcindex, dest, destindex };
   if(destindex >= dest->NumTextures())
     return false; //invalid index
 
-  unsigned int ind = _edges.Insert(e);
+  uint32_t ind = _edges.Insert(e);
   if(!_sort())
   {
     _edges.Remove(ind); // the edge we added was invalid so remove it and return false
@@ -38,7 +38,7 @@ bool psEffect::Link(psRenderable* src, unsigned char srcindex, psRenderable* des
 }
 
 // Topological sort using Tarjan's algorithm
-void psEffect::_sortvisit(psRenderable* child, bool& fail, unsigned int& order)
+void psEffect::_sortvisit(psRenderable* child, bool& fail, uint32_t& order)
 {
   static const int CYCLEFLAG = (1 << 31);
   static const int VISITEDFLAG = (1 << 30);
@@ -66,7 +66,7 @@ bool psEffect::_sort()
 {
   static const int FLAGMASK = (1 << 31) | (1 << 30);
   bool fail = false;
-  unsigned int order = NumChildren();
+  uint32_t order = NumChildren();
   
   MapToChildren([&](psInheritable* child) { _sortvisit(child, fail, order); });
   MapToChildren([&](psInheritable* child) { child->SetZOrder(child->GetZOrder()&(~FLAGMASK)); }); // Fix all the zorders

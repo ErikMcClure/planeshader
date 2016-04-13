@@ -24,7 +24,7 @@ void psShader::Activate() const
   _driver->SetLayout(_layout);
 }
 
-bool BSS_FASTCALL psShader::SetConstants(const void* data, uint32_t sz, unsigned char I)
+bool BSS_FASTCALL psShader::SetConstants(const void* data, uint32_t sz, uint8_t I)
 {
   PROFILE_FUNC();
   if(!_sc[I] || sz != _sz[I]) return false;
@@ -35,17 +35,17 @@ bool BSS_FASTCALL psShader::SetConstants(const void* data, uint32_t sz, unsigned
   return true;
 }
 
-psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, ...)
+psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, ...)
 {
   PROFILE_FUNC();
   DYNARRAY(SHADER_INFO, infos, num);
   va_list vl;
   va_start(vl, num);
-  for(unsigned int i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
+  for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
   va_end(vl);
   return CreateShader(nlayout, layout, num, infos);
 }
-psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layout, unsigned char num, const SHADER_INFO* infos)
+psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, const SHADER_INFO* infos)
 {
   PROFILE_FUNC();
   if(!_driver) return 0;
@@ -53,10 +53,10 @@ psShader* psShader::CreateShader(unsigned char nlayout, const ELEMENT_DESC* layo
   void* sc[6]={ 0 };
   uint32_t sz[6]={ 0 };
 
-  unsigned char index=-1;
-  unsigned char minvalid=-1;
-  unsigned char minindex=-1;
-  for(unsigned char i = 0; i < num; ++i)
+  uint8_t index=-1;
+  uint8_t minvalid=-1;
+  uint8_t minindex=-1;
+  for(uint8_t i = 0; i < num; ++i)
   {
     if(infos[i].v<=VERTEX_SHADER_5_0)
       index=0;
@@ -82,7 +82,7 @@ psShader* psShader::CreateShader(const psShader* copy)
   if(!_driver) return 0;
   if(!copy) return CreateShader(_driver->library.IMAGE);
 
-  unsigned char i;
+  uint8_t i;
   for(i = 0; i < 6; ++i)
     if(copy->_sc[i] != 0)
       break;
@@ -91,14 +91,14 @@ psShader* psShader::CreateShader(const psShader* copy)
   r->Grab();
   return r;
 }
-psShader* BSS_FASTCALL psShader::MergeShaders(unsigned int num, const psShader* first, ...)
+psShader* BSS_FASTCALL psShader::MergeShaders(uint32_t num, const psShader* first, ...)
 {
   PROFILE_FUNC();
   if(!num) return 0;
   psShader* r = new psShader(*first);
   va_list vl;
   va_start(vl, first);
-  for(unsigned int i = 1; i < num; ++i)
+  for(uint32_t i = 1; i < num; ++i)
     *r += *va_arg(vl, const psShader*);
   va_end(vl);
   r->Grab();
@@ -108,18 +108,18 @@ psShader::psShader(const psShader& copy) { _copy(copy); }
 psShader::psShader(psShader&& mov) { _move(std::move(mov)); }
 psShader::psShader(void* layout, void* ss[6], void* sc[6], uint32_t sz[6]) : _layout(layout)
 {
-  for(unsigned char i = 0; i < 6; ++i) _ss[i]=ss[i];
-  for(unsigned char i = 0; i < 6; ++i) _sc[i]=sc[i];
-  for(unsigned char i = 0; i < 6; ++i) _sz[i]=sz[i];
+  for(uint8_t i = 0; i < 6; ++i) _ss[i]=ss[i];
+  for(uint8_t i = 0; i < 6; ++i) _sc[i]=sc[i];
+  for(uint8_t i = 0; i < 6; ++i) _sz[i]=sz[i];
 }
 psShader::~psShader() { _destroy(); }
 void psShader::_destroy()
 {
   PROFILE_FUNC();
-  for(unsigned char i = 0; i < 6; ++i)
+  for(uint8_t i = 0; i < 6; ++i)
     if(_sc[i]) _driver->FreeResource(_sc[i], psDriver::RES_CONSTBUF);
 
-  for(unsigned char i = 0; i < 6; ++i)
+  for(uint8_t i = 0; i < 6; ++i)
     if(_ss[i]) _driver->FreeResource(_ss[i], (psDriver::RESOURCE_TYPE)(psDriver::RES_SHADERVS+i));
 
   if(_layout) _driver->FreeResource(_layout, psDriver::RES_LAYOUT);
@@ -129,9 +129,9 @@ void psShader::_copy(const psShader& copy)
   PROFILE_FUNC();
   _layout=copy._layout;
   if(_layout) _driver->GrabResource(_layout, psDriver::RES_LAYOUT);
-  for(unsigned char i = 0; i < 6; ++i) _ss[i]=copy._ss[i];
-  for(unsigned char i = 0; i < 6; ++i) _sz[i]=copy._sz[i];
-  for(unsigned char i = 0; i < 6; ++i)
+  for(uint8_t i = 0; i < 6; ++i) _ss[i]=copy._ss[i];
+  for(uint8_t i = 0; i < 6; ++i) _sz[i]=copy._sz[i];
+  for(uint8_t i = 0; i < 6; ++i)
   {
     _sc[i] = 0;
     if(copy._sc[i])
@@ -140,7 +140,7 @@ void psShader::_copy(const psShader& copy)
       _driver->CopyResource(_sc[i], copy._sc[i], psDriver::RES_CONSTBUF);
     }
   }
-  for(unsigned char i = 0; i < 6; ++i)
+  for(uint8_t i = 0; i < 6; ++i)
     if(_ss[i]) _driver->GrabResource(_ss[i], (psDriver::RESOURCE_TYPE)(psDriver::RES_SHADERVS+i));
 }
 void psShader::_move(psShader&& mov)
@@ -148,9 +148,9 @@ void psShader::_move(psShader&& mov)
   PROFILE_FUNC();
   _layout=mov._layout;
   mov._layout=0;
-  for(unsigned char i = 0; i < 6; ++i) { _ss[i]=mov._ss[i]; mov._ss[i] = 0; }
-  for(unsigned char i = 0; i < 6; ++i) { _sc[i]=mov._sc[i]; mov._sc[i] = 0; }
-  for(unsigned char i = 0; i < 6; ++i) { _sz[i]=mov._sz[i]; mov._sz[i] = 0; }
+  for(uint8_t i = 0; i < 6; ++i) { _ss[i]=mov._ss[i]; mov._ss[i] = 0; }
+  for(uint8_t i = 0; i < 6; ++i) { _sc[i]=mov._sc[i]; mov._sc[i] = 0; }
+  for(uint8_t i = 0; i < 6; ++i) { _sz[i]=mov._sz[i]; mov._sz[i] = 0; }
 }
 void psShader::DestroyThis() { delete this; }
 
@@ -175,7 +175,7 @@ psShader& psShader::operator+=(const psShader& right)
     _layout = right._layout;
     if(_layout) _driver->GrabResource(_layout, psDriver::RES_LAYOUT);
   }
-  for(unsigned char i = 0; i < 6; ++i)
+  for(uint8_t i = 0; i < 6; ++i)
     if(right._ss[i]!=0)
     {
       if(_ss[i]) _driver->FreeResource(_ss[i], (psDriver::RESOURCE_TYPE)(psDriver::RES_SHADERVS+i));

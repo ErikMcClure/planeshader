@@ -31,7 +31,7 @@ void psQuadraticHull::SetVert(float (&v)[4], psVec& x, float thickness)
   v[3] = thickness;
 }
 
-void BSS_FASTCALL psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, unsigned int color, char cap)
+void BSS_FASTCALL psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color, char cap)
 {
   const float BUFFER = 1.0;
   psVec p[3] = { p0, p1, p2 };
@@ -90,8 +90,8 @@ void BSS_FASTCALL psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVe
   }
 }
 
-psQuadraticCurve::psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, unsigned int color) : psColored(color), _thickness(thickness) { Set(p0, p1, p2); }
-psQuadraticCurve::psQuadraticCurve(psVec(&p)[3], float thickness, unsigned int color) : psColored(color), _thickness(thickness) { Set(p); }
+psQuadraticCurve::psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color) : psColored(color), _thickness(thickness) { Set(p0, p1, p2); }
+psQuadraticCurve::psQuadraticCurve(psVec(&p)[3], float thickness, uint32_t color) : psColored(color), _thickness(thickness) { Set(p); }
 psQuadraticCurve::~psQuadraticCurve() {}
 void psQuadraticCurve::Set(psVec p0, psVec p1, psVec p2)
 {
@@ -138,8 +138,8 @@ inline static void IterateCubic(const T(&P0)[2], const T(&P1)[2], const T(&P2)[2
   fn(W0, C, W3);
 }
 
-psCubicCurve::psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness, unsigned int color, float maxerr) : psColored(color), _thickness(thickness), _maxerr(maxerr) { Set(p0, p1, p2, p3); }
-psCubicCurve::psCubicCurve(psVec(&p)[4], float thickness, unsigned int color) : psColored(color), _thickness(thickness) { Set(p); }
+psCubicCurve::psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness, uint32_t color, float maxerr) : psColored(color), _thickness(thickness), _maxerr(maxerr) { Set(p0, p1, p2, p3); }
+psCubicCurve::psCubicCurve(psVec(&p)[4], float thickness, uint32_t color) : psColored(color), _thickness(thickness) { Set(p); }
 psCubicCurve::~psCubicCurve() {}
 void psCubicCurve::Set(psVec p0, psVec p1, psVec p2, psVec p3)
 {
@@ -176,8 +176,8 @@ void psRoundedRect::DrawRoundedRect(psShader* shader, psStateblock* stateblock, 
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RRBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
   psBatchObj& obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
 
-  unsigned int color;
-  unsigned int outline;
+  uint32_t color;
+  uint32_t outline;
   color32.WriteFormat(FMT_R8G8B8A8, &color);
   outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 
@@ -208,8 +208,8 @@ void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, cons
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CIRCLEBUFSIZE, sizeof(CircleVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
   psBatchObj& obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
 
-  unsigned int color;
-  unsigned int outline;
+  uint32_t color;
+  uint32_t outline;
   color32.WriteFormat(FMT_R8G8B8A8, &color);
   outline32.WriteFormat(FMT_R8G8B8A8, &outline);
 

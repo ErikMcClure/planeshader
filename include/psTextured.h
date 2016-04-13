@@ -19,18 +19,18 @@ namespace planeshader {
     explicit psTextured(psTex* tex = 0);
     virtual ~psTextured();
 
-    virtual void BSS_FASTCALL SetTexture(psTex* tex, unsigned int index = 0);
+    virtual void BSS_FASTCALL SetTexture(psTex* tex, uint32_t index = 0);
     void BSS_FASTCALL ClearTextures();
-    inline const psTex* GetTexture(unsigned int index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
+    inline const psTex* GetTexture(uint32_t index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
     virtual inline psTex* const* GetTextures() const { return _tex; }
-    virtual inline unsigned char NumTextures() const { return _tex.Capacity(); }
+    virtual inline uint8_t NumTextures() const { return _tex.Capacity(); }
     inline virtual psTextured* Clone() const { return new psTextured(*this); } //Clone function
 
     psTextured& operator=(const psTextured& right);
     psTextured& operator=(psTextured&& right);
 
   protected:
-    bss_util::cArray<psTex*, unsigned char> _tex;
+    bss_util::cArray<psTex*, uint8_t> _tex;
   };
 }
 

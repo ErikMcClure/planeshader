@@ -10,7 +10,7 @@
 #include "bss-util/cRefCounter.h"
 
 namespace planeshader {
-  enum STATETYPE : unsigned char {
+  enum STATETYPE : uint8_t {
     TYPE_BLEND_ALPHATOCOVERAGEENABLE=0,
     TYPE_BLEND_INDEPENDENTBLENDENABLE,
     TYPE_BLEND_BLENDENABLE, // index 0-7
@@ -76,36 +76,36 @@ namespace planeshader {
 
   struct STATEINFO
   {
-    STATEINFO(STATETYPE t, unsigned int v, unsigned short i = 0) : value(v), type(t), index(i) {}
-    STATEINFO(STATETYPE t, unsigned short i, float f) : valuef(f), type(t), index(i) {}
+    STATEINFO(STATETYPE t, uint32_t v, uint16_t i = 0) : value(v), type(t), index(i) {}
+    STATEINFO(STATETYPE t, uint16_t i, float f) : valuef(f), type(t), index(i) {}
     union {
       struct {
         union {
-          unsigned int value;
+          uint32_t value;
           float valuef;
         };
         STATETYPE type;
-        unsigned short index;
+        uint16_t index;
       };
       uint64_t __vali64;
     };
 
-    typedef bss_util::cArray<STATEINFO, unsigned short> STATEINFOS;
+    typedef bss_util::cArray<STATEINFO, uint16_t> STATEINFOS;
 
     inline static bool SILESS(const planeshader::STATEINFO& l, const planeshader::STATEINFO& r) { return l.type<=r.type && (l.type<r.type || l.index<r.index); }
     inline static khint_t SIHASHFUNC(STATEINFOS* sb) {
-      unsigned short sz=sb->Capacity();
+      uint16_t sz=sb->Capacity();
       khint32_t r=0;
-      for(unsigned short i = 0; i < sz; ++i)
+      for(uint16_t i = 0; i < sz; ++i)
         r=bss_util::KH_INT64_HASHFUNC((((int64_t)bss_util::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
       return r;
     }
     inline static bool SIEQUALITY(STATEINFOS* left, STATEINFOS* right)
     {
-      unsigned short sl=left->Capacity();
-      unsigned short sr=right->Capacity();
+      uint16_t sl=left->Capacity();
+      uint16_t sr=right->Capacity();
       if(sl!=sr) return false;
-      for(unsigned short i = 0; i < sl; ++i)
+      for(uint16_t i = 0; i < sl; ++i)
         if((*left)[i].__vali64 != (*right)[i].__vali64)
           return false;
       return true;
@@ -115,20 +115,20 @@ namespace planeshader {
     static BLOCKHASH _blocks;
   };
 
-  class PS_DLLEXPORT psStateblock : public bss_util::cArray<STATEINFO, unsigned short>, public bss_util::cRefCounter
+  class PS_DLLEXPORT psStateblock : public bss_util::cArray<STATEINFO, uint16_t>, public bss_util::cRefCounter
   {
   public:
     inline void* GetSB() const { return _sb; }
     psStateblock* Combine(psStateblock* other) const;
     psStateblock* Append(STATEINFO state) const;
 
-    static psStateblock* BSS_FASTCALL Create(unsigned int numstates, ...);
-    static psStateblock* BSS_FASTCALL Create(const STATEINFO* infos, unsigned int numstates);
+    static psStateblock* BSS_FASTCALL Create(uint32_t numstates, ...);
+    static psStateblock* BSS_FASTCALL Create(const STATEINFO* infos, uint32_t numstates);
 
     static psStateblock* DEFAULT;
 
   protected:
-    psStateblock(const STATEINFO* infos, unsigned int numstates);
+    psStateblock(const STATEINFO* infos, uint32_t numstates);
     ~psStateblock();
     virtual void DestroyThis() override;
 
@@ -136,20 +136,20 @@ namespace planeshader {
   };
 
   // Restricted to sampler infos
-  class PS_DLLEXPORT psTexblock : public bss_util::cArray<STATEINFO, unsigned short>, public bss_util::cRefCounter
+  class PS_DLLEXPORT psTexblock : public bss_util::cArray<STATEINFO, uint16_t>, public bss_util::cRefCounter
   {
   public:
     inline void* GetSB() const { return _tb; }
     psTexblock* Combine(psTexblock* other) const;
     psTexblock* Append(STATEINFO state) const;
 
-    static psTexblock* BSS_FASTCALL Create(unsigned int numstates, ...);
-    static psTexblock* BSS_FASTCALL Create(const STATEINFO* infos, unsigned int numstates);
+    static psTexblock* BSS_FASTCALL Create(uint32_t numstates, ...);
+    static psTexblock* BSS_FASTCALL Create(const STATEINFO* infos, uint32_t numstates);
 
     static psTexblock* DEFAULT;
 
   protected:
-    psTexblock(const STATEINFO* infos, unsigned int numstates);
+    psTexblock(const STATEINFO* infos, uint32_t numstates);
     ~psTexblock();
     virtual void DestroyThis() override;
 

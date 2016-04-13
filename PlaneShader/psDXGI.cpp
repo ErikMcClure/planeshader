@@ -24,9 +24,9 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, psVeciu& dpi, IDXGIOutput*& out)
 
   dpi = psGUIManager::GetMonitorDPI();
   //dpi = psVeciu(192); // DEBUG
-  bss_util::cDynArray<IDXGIAdapter*, unsigned char> _adapters;
+  bss_util::cDynArray<IDXGIAdapter*, uint8_t> _adapters;
   IDXGIAdapter* adapter = NULL;
-  for(unsigned char i = 0; _factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)
+  for(uint8_t i = 0; _factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)
     _adapters.Add(adapter);
 
   if(!_adapters.Length())
@@ -36,9 +36,9 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, psVeciu& dpi, IDXGIOutput*& out)
   }
   adapter = _adapters[0];
 
-  bss_util::cDynArray<IDXGIOutput*, unsigned char> _outputs;
+  bss_util::cDynArray<IDXGIOutput*, uint8_t> _outputs;
   IDXGIOutput* output = NULL;
-  for(unsigned char i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i)
+  for(uint8_t i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i)
     _outputs.Add(output);
 
   if(!_outputs.Length())

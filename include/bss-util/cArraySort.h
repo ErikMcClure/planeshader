@@ -39,6 +39,7 @@ namespace bss_util {
     inline const T* end() const noexcept { return _array.end(); }
     inline T* begin() noexcept { return _array.begin(); }
     inline T* end() noexcept { return _array.end(); }
+    BSS_FORCEINLINE cArraySlice<T, CT_> GetSlice() const noexcept { return _array.GetSlice(); }
 
     CT_ BSS_FASTCALL ReplaceData(CT_ index, constref data)
     {

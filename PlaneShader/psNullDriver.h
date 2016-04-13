@@ -38,15 +38,15 @@ namespace planeshader {
     // Draws a vertex object
     virtual void BSS_FASTCALL Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity) { }
     // Draws a rectangle
-    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity) { }
-    virtual void BSS_FASTCALL DrawRectBatchBegin(psBatchObj& obj, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity) { }
-    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& obj, const psRectRotateZ rect, const psRect* uv, unsigned char numuv, unsigned int color) { }
+    virtual void BSS_FASTCALL DrawRect(const psRectRotateZ rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity) { }
+    virtual void BSS_FASTCALL DrawRectBatchBegin(psBatchObj& obj, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity) { }
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& obj, const psRectRotateZ rect, const psRect* uv, uint8_t numuv, uint32_t color) { }
     // Draws a polygon
     virtual void BSS_FASTCALL DrawPolygon(const psVec* verts, int num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity) { }
     virtual void BSS_FASTCALL DrawPolygon(const psVertex* verts, int num, psFlag flags, const float(&transform)[4][4] = identity) { }
     // Draws points (which are always batch rendered)
     virtual void BSS_FASTCALL DrawPointsBegin(psBatchObj& obj, psFlag flags, const float(&transform)[4][4] = identity) { }
-    virtual void BSS_FASTCALL DrawPoints(psBatchObj& obj, psVertex* particles, unsigned int num) { }
+    virtual void BSS_FASTCALL DrawPoints(psBatchObj& obj, psVertex* particles, uint32_t num) { }
     // Draws lines (which are also always batch rendered)
     virtual void BSS_FASTCALL DrawLinesStart(psBatchObj& obj, psFlag flags, const float(&xform)[4][4] = identity) { }
     virtual void BSS_FASTCALL DrawLines(psBatchObj& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) { }
@@ -60,37 +60,37 @@ namespace planeshader {
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad() { }
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(size_t capacity, size_t element, unsigned int usage, const void* initdata = 0) { return 0; }
-    virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags) { return 0; }
+    virtual void* BSS_FASTCALL CreateBuffer(size_t capacity, size_t element, uint32_t usage, const void* initdata = 0) { return 0; }
+    virtual void* BSS_FASTCALL LockBuffer(void* target, uint32_t flags) { return 0; }
     virtual void BSS_FASTCALL UnlockBuffer(void* target) {}
-    virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0) { return 0; }
-    virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0) {}
+    virtual void* BSS_FASTCALL LockTexture(void* target, uint32_t flags, uint32_t& pitch, uint8_t miplevel = 0) { return 0; }
+    virtual void BSS_FASTCALL UnlockTexture(void* target, uint8_t miplevel = 0) {}
     // Creates a texture
-    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0) { return (void*)~size_t(0); }
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false) { return (void*)~size_t(0); }
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false) { return (void*)~size_t(0); }
-    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0) { }
+    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, uint32_t usage=USAGE_SHADER_RESOURCE, uint8_t miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0) { return (void*)~size_t(0); }
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, uint32_t usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, uint8_t miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false) { return (void*)~size_t(0); }
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, uint32_t usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, uint8_t miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false) { return (void*)~size_t(0); }
+    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, uint8_t miplevel = 0) { }
     // Pushes or pops a clip rect on to the stack
     virtual void BSS_FASTCALL PushClipRect(const psRect& rect) { }
     virtual psRect PeekClipRect() { return psRect(0, 0, 0, 0); }
     virtual void PopClipRect() { }
     // Sets the current rendertargets, setting all the rest to null.
-    virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0) { }
+    virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil=0) { }
     // Sets shader constants
     virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader) { }
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
-    virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1) { }
+    virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, uint8_t num, SHADER_VER shader=PIXEL_SHADER_1_1) { }
     // Builds a stateblock from the given set of state changes
-    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, unsigned int count) { return 0; }
+    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, uint32_t count) { return 0; }
     // Builds a texblock from the given set of sampler states
-    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, unsigned int count) { return 0; }
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, uint32_t count) { return 0; }
     // Sets a given stateblock
     virtual void BSS_FASTCALL SetStateblock(void* stateblock) { }
     // Create a vertex layout from several element descriptions
-    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num) { return 0; }
+    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, uint8_t num) { return 0; }
     virtual void BSS_FASTCALL SetLayout(void* layout) { }
     // Clears everything to a specified color
-    virtual void BSS_FASTCALL Clear(unsigned int color) { }
+    virtual void BSS_FASTCALL Clear(uint32_t color) { }
     // Frees a created resource of the specified type
     virtual TEXTURE_DESC BSS_FASTCALL GetTextureDesc(void* t) { TEXTURE_DESC r ={ }; return r; }
     virtual void BSS_FASTCALL FreeResource(void* p, psDriver::RESOURCE_TYPE t) { }

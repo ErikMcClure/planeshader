@@ -151,8 +151,8 @@ namespace planeshader {
   typedef psCircleT<double> psCircled;
   typedef psCircleT<short> psCircles;
   typedef psCircleT<long> psCirclel;
-  typedef psCircleT<unsigned int> psCircleiu;
-  typedef psCircleT<unsigned short> psCirclesu;
+  typedef psCircleT<uint32_t> psCircleiu;
+  typedef psCircleT<uint16_t> psCirclesu;
   typedef psCircleT<unsigned long> psCirclelu;
 }
 

@@ -27,10 +27,10 @@ namespace planeshader {
     inline psRenderEllipse& operator =(const psCircle& right) { operator=(psEllipse(right.x, right.y, right.r, right.r)); return *this; }
     inline psRenderEllipse& operator =(const psEllipse& right) { SetPosition(right.pos.x - right.a, right.pos.y - right.b); SetDim(psVec(right.a * 2, right.b * 2)); return *this; }
 
-    static inline void DrawCircle(const psCircle& p, unsigned int color) { DrawEllipse(p.x, p.y, p.r, p.r, color); }
-    static inline void DrawCircle(float x, float y, float r, unsigned int color) { DrawEllipse(x, y, r, r, color); }
-    static inline void DrawEllipse(const psEllipse& p, unsigned int color) { DrawEllipse(p.x, p.y, p.a, p.b, color); }
-    static void DrawEllipse(float x, float y, float a, float b, unsigned int color);
+    static inline void DrawCircle(const psCircle& p, uint32_t color) { DrawEllipse(p.x, p.y, p.r, p.r, color); }
+    static inline void DrawCircle(float x, float y, float r, uint32_t color) { DrawEllipse(x, y, r, r, color); }
+    static inline void DrawEllipse(const psEllipse& p, uint32_t color) { DrawEllipse(p.x, p.y, p.a, p.b, color); }
+    static void DrawEllipse(float x, float y, float a, float b, uint32_t color);
 
   protected:
     virtual void BSS_FASTCALL _render() override;
@@ -50,8 +50,8 @@ namespace planeshader {
     psRenderLine& operator =(const psLine3D& right);
     psRenderLine& operator =(const psLine& right);
 
-    static void DrawLine(const psLine3D& p, unsigned int color);
-    static inline void DrawLine(const psLine& p, unsigned int color) { DrawLine(psLine3D(p.x1, p.y1, 0, p.x2, p.y2, 0), color); }
+    static void DrawLine(const psLine3D& p, uint32_t color);
+    static inline void DrawLine(const psLine& p, uint32_t color) { DrawLine(psLine3D(p.x1, p.y1, 0, p.x2, p.y2, 0), color); }
 
   protected:
     virtual void BSS_FASTCALL _render() override;
@@ -64,14 +64,14 @@ namespace planeshader {
   public:
     psRenderPolygon(const psRenderPolygon& copy);
     psRenderPolygon(psRenderPolygon&& mov);
-    explicit psRenderPolygon(const psPolygon& polygon, unsigned int color = 0xFFFFFFFF);
-    explicit psRenderPolygon(psPolygon&& polygon, unsigned int color = 0xFFFFFFFF);
+    explicit psRenderPolygon(const psPolygon& polygon, uint32_t color = 0xFFFFFFFF);
+    explicit psRenderPolygon(psPolygon&& polygon, uint32_t color = 0xFFFFFFFF);
 
     psRenderPolygon& operator =(const psRenderPolygon& right);
     psRenderPolygon& operator =(psRenderPolygon&& right);
     psRenderPolygon& operator =(const psPolygon& right);
 
-    static void DrawPolygon(const psVec* p, uint32_t num, unsigned int color, const psVec3D& offset = VEC3D_ZERO);
+    static void DrawPolygon(const psVec* p, uint32_t num, uint32_t color, const psVec3D& offset = VEC3D_ZERO);
     static void DrawPolygon(const psVertex* p, uint32_t num, const float(&transform)[4][4] = psDriver::identity);
 
   protected:
@@ -84,7 +84,7 @@ namespace planeshader {
     psFullScreenQuad(psFullScreenQuad&& mov);
     psFullScreenQuad();
     virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
-    virtual unsigned char NumTextures() const override { return psTextured::NumTextures(); }
+    virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
 
   protected:
     virtual void BSS_FASTCALL _render() override;

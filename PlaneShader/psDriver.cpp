@@ -10,7 +10,7 @@ using namespace planeshader;
 
 psBatchObj& BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
-  unsigned int snapshot = GetSnapshot(); // Snapshot our driver state
+  uint32_t snapshot = GetSnapshot(); // Snapshot our driver state
   if(_jobstack.Length() > 0 && !(flags&PSFLAG_DONOTBATCH))
   {
     auto& last = _jobstack.Back(); // Can this be batch rendered?
@@ -65,7 +65,7 @@ psBatchObj& BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateb
   obj.buffer->nvert = 0;
 }*/
 
-psBufferObj* BSS_FASTCALL psDriver::CreateBufferObj(psBufferObj* target, uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata)
+psBufferObj* BSS_FASTCALL psDriver::CreateBufferObj(psBufferObj* target, uint32_t capacity, uint32_t element, uint32_t usage, const void* initdata)
 {
   assert(target != 0);
   target->buffer = CreateBuffer(capacity, element, usage, initdata);

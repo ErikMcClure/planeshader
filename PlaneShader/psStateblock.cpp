@@ -31,7 +31,7 @@ STATEINFO::STATEINFOS* STATEINFO::Exists(STATEINFOS* infos)
   _blocks.Insert(infos);
   return 0;
 }
-psStateblock::psStateblock(const STATEINFO* infos, unsigned int numstates) : bss_util::cArray<STATEINFO, unsigned short>(numstates)
+psStateblock::psStateblock(const STATEINFO* infos, uint32_t numstates) : bss_util::cArray<STATEINFO, uint16_t>(numstates)
 {
   memcpy(_array, infos, numstates*sizeof(STATEINFO));
   std::sort<STATEINFO*>(_array, _array+numstates, &STATEINFO::SILESS);
@@ -43,20 +43,20 @@ psStateblock::~psStateblock()
 }
 void psStateblock::DestroyThis() { delete this; }
 
-psStateblock* BSS_FASTCALL psStateblock::Create(unsigned int numstates, ...)
+psStateblock* BSS_FASTCALL psStateblock::Create(uint32_t numstates, ...)
 {
   PROFILE_FUNC();
   DYNARRAY(STATEINFO, states, numstates);
 
   va_list vl;
   va_start(vl, numstates);
-  for(unsigned int i = 0; i < numstates; ++i)
+  for(uint32_t i = 0; i < numstates; ++i)
     states[i]=*va_arg(vl, const STATEINFO*);
   va_end(vl);
 
   return Create(states, numstates);
 }
-psStateblock* BSS_FASTCALL psStateblock::Create(const STATEINFO* infos, unsigned int numstates)
+psStateblock* BSS_FASTCALL psStateblock::Create(const STATEINFO* infos, uint32_t numstates)
 {
   PROFILE_FUNC();
   psStateblock* r = new psStateblock(infos, numstates);
@@ -71,7 +71,7 @@ psStateblock* BSS_FASTCALL psStateblock::Create(const STATEINFO* infos, unsigned
 }
 
 template<class T>
-T* stateblock_combine(bss_util::cArray<STATEINFO, unsigned short>& left, STATEINFO* right, unsigned short num)
+T* stateblock_combine(bss_util::cArray<STATEINFO, uint16_t>& left, STATEINFO* right, uint16_t num)
 {
   DYNARRAY(STATEINFO, states, left.Capacity() + num);
   memcpy(states, (STATEINFO*)left, left.Capacity()*sizeof(STATEINFO));
@@ -80,14 +80,14 @@ T* stateblock_combine(bss_util::cArray<STATEINFO, unsigned short>& left, STATEIN
 }
 psStateblock* psStateblock::Combine(psStateblock* other) const
 { 
-  return stateblock_combine<psStateblock>((bss_util::cArray<STATEINFO, unsigned short>&)*this, (STATEINFO*)*other, other->Capacity());
+  return stateblock_combine<psStateblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
 }
 psStateblock* psStateblock::Append(STATEINFO state) const
 {
-  return stateblock_combine<psStateblock>((bss_util::cArray<STATEINFO, unsigned short>&)*this, &state, 1);
+  return stateblock_combine<psStateblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, &state, 1);
 }
 
-psTexblock::psTexblock(const STATEINFO* infos, unsigned int numstates) : bss_util::cArray<STATEINFO, unsigned short>(numstates)
+psTexblock::psTexblock(const STATEINFO* infos, uint32_t numstates) : bss_util::cArray<STATEINFO, uint16_t>(numstates)
 {
   memcpy(_array, infos, numstates*sizeof(STATEINFO));
   std::sort<STATEINFO*>(_array, _array+numstates, &STATEINFO::SILESS);
@@ -99,20 +99,20 @@ psTexblock::~psTexblock()
 }
 void psTexblock::DestroyThis() { delete this; }
 
-psTexblock* BSS_FASTCALL psTexblock::Create(unsigned int numstates, ...)
+psTexblock* BSS_FASTCALL psTexblock::Create(uint32_t numstates, ...)
 {
   PROFILE_FUNC();
   DYNARRAY(STATEINFO, states, numstates);
 
   va_list vl;
   va_start(vl, numstates);
-  for(unsigned int i = 0; i < numstates; ++i)
+  for(uint32_t i = 0; i < numstates; ++i)
     states[i]=*va_arg(vl, const STATEINFO*);
   va_end(vl);
 
   return Create(states, numstates);
 }
-psTexblock* BSS_FASTCALL psTexblock::Create(const STATEINFO* infos, unsigned int numstates)
+psTexblock* BSS_FASTCALL psTexblock::Create(const STATEINFO* infos, uint32_t numstates)
 {
   PROFILE_FUNC();
   psTexblock* r = new psTexblock(infos, numstates);
@@ -127,11 +127,11 @@ psTexblock* BSS_FASTCALL psTexblock::Create(const STATEINFO* infos, unsigned int
 }
 psTexblock* psTexblock::Combine(psTexblock* other) const
 {
-  return stateblock_combine<psTexblock>((bss_util::cArray<STATEINFO, unsigned short>&)*this, (STATEINFO*)*other, other->Capacity());
+  return stateblock_combine<psTexblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
 }
 psTexblock* psTexblock::Append(STATEINFO state) const
 {
-  return stateblock_combine<psTexblock>((bss_util::cArray<STATEINFO, unsigned short>&)*this, &state, 1);
+  return stateblock_combine<psTexblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, &state, 1);
 }
 
 void STATEBLOCK_LIBRARY::INITLIBRARY()

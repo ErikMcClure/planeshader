@@ -18,14 +18,14 @@ namespace planeshader {
       float p0[4];
       float p1[4];
       float p2[4];
-      unsigned int color;
+      uint32_t color;
     };
 
   public:
     psQuadraticHull();
     ~psQuadraticHull();
     void Clear();
-    void BSS_FASTCALL AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, unsigned int color, char cap);
+    void BSS_FASTCALL AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color, char cap);
 
     static const int CURVEBUFSIZE = 512 * 3;
     static inline psVec FromQuad(QuadVertex& v) { return psVec(v.x, v.y); }
@@ -39,8 +39,8 @@ namespace planeshader {
   class PS_DLLEXPORT psQuadraticCurve : public psQuadraticHull, public psColored
   {
   public:
-    psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness = 1.0f, unsigned int color = 0xFFFFFFFF);
-    psQuadraticCurve(psVec(&p)[3], float thickness = 1.0f, unsigned int color = 0xFFFFFFFF);
+    psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness = 1.0f, uint32_t color = 0xFFFFFFFF);
+    psQuadraticCurve(psVec(&p)[3], float thickness = 1.0f, uint32_t color = 0xFFFFFFFF);
     ~psQuadraticCurve();
     void Set(psVec p0, psVec p1, psVec p2);
     void Set(psVec (&p)[3]);
@@ -56,8 +56,8 @@ namespace planeshader {
   class PS_DLLEXPORT psCubicCurve : public psQuadraticHull, public psColored
   {
   public:
-    psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness = 1.0f, unsigned int color = 0xFFFFFFFF, float maxerr = 1.0f);
-    psCubicCurve(psVec(&p)[4], float thickness = 1.0f, unsigned int color = 0xFFFFFFFF);
+    psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness = 1.0f, uint32_t color = 0xFFFFFFFF, float maxerr = 1.0f);
+    psCubicCurve(psVec(&p)[4], float thickness = 1.0f, uint32_t color = 0xFFFFFFFF);
     ~psCubicCurve();
     void Set(psVec p0, psVec p1, psVec p2, psVec p3);
     void Set(psVec(&p)[4]);
@@ -80,8 +80,8 @@ namespace planeshader {
       psRect dimpivot;
       psRect corners;
       float outline;
-      unsigned int color;
-      unsigned int outlinecolor;
+      uint32_t color;
+      uint32_t outlinecolor;
     };
 
   public:
@@ -115,8 +115,8 @@ namespace planeshader {
       psRect dimpivot;
       psRect arcs;
       float outline;
-      unsigned int color;
-      unsigned int outlinecolor;
+      uint32_t color;
+      uint32_t outlinecolor;
     };
 
   public:

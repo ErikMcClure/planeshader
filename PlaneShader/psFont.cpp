@@ -74,15 +74,15 @@ psFont::~psFont()
   _Fonts.Remove(_hash);
 }
 
-unsigned short psFont::PreloadGlyphs(const char* glyphs)
+uint16_t psFont::PreloadGlyphs(const char* glyphs)
 {
   return PreloadGlyphs(cStrT<int>(glyphs).c_str());
 }
 
-unsigned short psFont::PreloadGlyphs(const int* glyphs)
+uint16_t psFont::PreloadGlyphs(const int* glyphs)
 {
-  const unsigned int* text=(const unsigned int*)glyphs;
-  unsigned short retval=0;
+  const uint32_t* text=(const uint32_t*)glyphs;
+  uint16_t retval=0;
   psGlyph* g;
   for(; *text; ++text)
   {
@@ -152,7 +152,7 @@ void psFont::_cleanupfont()
 
 void psFont::_stage()
 {
-  for(unsigned char i = 0; i < _staging.Capacity(); ++i)
+  for(uint8_t i = 0; i < _staging.Capacity(); ++i)
     _driver->CopyTextureRect(0, psVeciu(0, 0), _staging[i]->GetRes(), _textures[i]->GetRes());
 }
 
@@ -172,7 +172,7 @@ void psFont::_loadfont()
   long length=ftell(f);
   fseek(f, 0, SEEK_SET);
   if(_buf) delete[] _buf;
-  _buf=new unsigned char[length];
+  _buf=new uint8_t[length];
   fread(_buf, 1, length, f);
   fclose(f);
 
@@ -224,18 +224,18 @@ void psFont::_loadfont()
   if(_lineheight==0) _lineheight = _ft2face->size->metrics.height * FT_COEF * _driver->GetInvDPIScale().y;
 }
 
-psGlyph* psFont::_loadglyph(unsigned int codepoint)
+psGlyph* psFont::_loadglyph(uint32_t codepoint)
 {
   psGlyph* retval = _glyphs[codepoint];
   if(retval != 0)
     return retval;
 
-  psGlyph g ={ RECT_ZERO, 0, 0, 0, (unsigned char)-1 };
+  psGlyph g ={ RECT_ZERO, 0, 0, 0, (uint8_t)-1 };
   _glyphs.Insert(codepoint, g);
   return _renderglyph(codepoint);
 }
 
-psGlyph* psFont::_renderglyph(unsigned int codepoint)
+psGlyph* psFont::_renderglyph(uint32_t codepoint)
 {
   psGlyph* retval = _glyphs[codepoint];
   if(!retval) return 0;
@@ -249,8 +249,8 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
 
   FT_Bitmap& gbmp = _ft2face->glyph->bitmap;
   const float FT_COEF = (1.0f/64.0f);
-  unsigned int width = (gbmp.pixel_mode==FT_PIXEL_MODE_LCD)?(gbmp.width/3):gbmp.width;
-  unsigned int height=gbmp.rows;
+  uint32_t width = (gbmp.pixel_mode==FT_PIXEL_MODE_LCD)?(gbmp.width/3):gbmp.width;
+  uint32_t height=gbmp.rows;
   if(_curpos.x+width+1>_staging[_curtex]->GetRawDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
   {
     _curpos.x=1;
@@ -284,7 +284,7 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
     }
   }
 
-  unsigned int lockpitch;
+  uint32_t lockpitch;
   void* lockbytes = _staging[_curtex]->Lock(lockpitch, _curpos, LOCK_WRITE);
   //lockbytes = _staging[_curtex]->LockRect(0, &psRectl(_curpos.x, _curpos.y, _curpos.x+width, _curpos.y+height), D3DLOCK_NOOVERWRITE);
 
@@ -303,45 +303,45 @@ psGlyph* psFont::_renderglyph(unsigned int codepoint)
   switch(gbmp.pixel_mode) //Now we render the glyph to our next available buffer
   {
   case FT_PIXEL_MODE_LCD:
-    for(unsigned int i = 0; i < gbmp.rows; ++i)
+    for(uint32_t i = 0; i < gbmp.rows; ++i)
     {
-      unsigned char *src = gbmp.buffer + (i * gbmp.pitch);
-      unsigned char *dst = reinterpret_cast<unsigned char*>(lockbytes);
-      for(unsigned int j = 0; j < width; ++j) // RGBA
+      uint8_t *src = gbmp.buffer + (i * gbmp.pitch);
+      uint8_t *dst = reinterpret_cast<uint8_t*>(lockbytes);
+      for(uint32_t j = 0; j < width; ++j) // RGBA
       {
         psColor32 c(0xFF, src[0], src[1], src[2]);
         c.WriteFormat(_staging[_curtex]->GetFormat(), dst);
         src += 3;
         dst += 4;
       }
-      *((unsigned char**)&lockbytes)+=lockpitch;
+      *((uint8_t**)&lockbytes)+=lockpitch;
     }
 
     break;
   case FT_PIXEL_MODE_GRAY:
-    for(unsigned int i = 0; i < gbmp.rows; ++i)
+    for(uint32_t i = 0; i < gbmp.rows; ++i)
     {
-      unsigned char *src = gbmp.buffer + (i * gbmp.pitch);
-      unsigned char *dst = reinterpret_cast<unsigned char*>(lockbytes);
-      for(unsigned int j = 0; j < gbmp.width; ++j) // RGBA
+      uint8_t *src = gbmp.buffer + (i * gbmp.pitch);
+      uint8_t *dst = reinterpret_cast<uint8_t*>(lockbytes);
+      for(uint32_t j = 0; j < gbmp.width; ++j) // RGBA
       {
         *dst++ = 0xFF;
         *dst++ = 0xFF;
         *dst++ = 0xFF;
         *dst++ = *src++;
       }
-      *((unsigned char**)&lockbytes)+=lockpitch;
+      *((uint8_t**)&lockbytes)+=lockpitch;
     }
     break;
   case FT_PIXEL_MODE_MONO:
-    for(unsigned int i = 0; i < gbmp.rows; ++i)
+    for(uint32_t i = 0; i < gbmp.rows; ++i)
     {
-      unsigned char *src = gbmp.buffer + (i * gbmp.pitch);
+      uint8_t *src = gbmp.buffer + (i * gbmp.pitch);
       uint32_t *dst = reinterpret_cast<uint32_t*>(lockbytes);
 
-      for(unsigned int j = 0; j < gbmp.width; ++j)
+      for(uint32_t j = 0; j < gbmp.width; ++j)
         dst[j] = (src[j / 8] & (0x80 >> (j & 7))) ? 0xFFFFFFFF : 0x00000000;
-      *((unsigned char**)&lockbytes)+=lockpitch;
+      *((uint8_t**)&lockbytes)+=lockpitch;
     }
     break;
   default:

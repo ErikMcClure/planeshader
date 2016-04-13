@@ -13,23 +13,23 @@ namespace planeshader {
   {
   public:
     psColored(const psColored& copy);
-    explicit psColored(unsigned int color=0xFFFFFFFF);
+    explicit psColored(uint32_t color=0xFFFFFFFF);
     virtual ~psColored();
     inline const psColor32& GetColor() const { return _color; }
-    virtual void BSS_FASTCALL SetColor(unsigned int color);
-    inline void BSS_FASTCALL SetColor(unsigned char a, unsigned char r, unsigned char g, unsigned char b) { SetColor(psColor32(a,r,g,b)); }
+    virtual void BSS_FASTCALL SetColor(uint32_t color);
+    inline void BSS_FASTCALL SetColor(uint8_t a, uint8_t r, uint8_t g, uint8_t b) { SetColor(psColor32(a,r,g,b)); }
 
     inline psColored& operator=(const psColored& right) { _color = right._color; return *this; }
     inline virtual psColored* Clone() const { return new psColored(*this); } // Clone function
 
     // Interpolation functions for animation
-    //template<unsigned char TypeID>
-    //static inline unsigned int BSS_FASTCALL colorinterpolate(const typename bss_util::AniAttributeT<TypeID>::TVT_ARRAY_T& rarr, bss_util::AniAttribute::IDTYPE index, double factor) {
+    //template<uint8_t TypeID>
+    //static inline uint32_t BSS_FASTCALL colorinterpolate(const typename bss_util::AniAttributeT<TypeID>::TVT_ARRAY_T& rarr, bss_util::AniAttribute::IDTYPE index, double factor) {
     //  return psColor::Interpolate(rarr[index-1].value, rarr[index].value, factor);
     //}
 
   protected:
-    void BSS_FASTCALL _setcolor(unsigned int color) { SetColor(color); }
+    void BSS_FASTCALL _setcolor(uint32_t color) { SetColor(color); }
 
     psColor32 _color;
   };

@@ -36,8 +36,8 @@ struct psVeci {
   int y;
 };
 struct psVeciu {
-  unsigned int x;
-  unsigned int y;
+  uint32_t x;
+  uint32_t y;
 };
 struct psVec3D {
   FNUM x;
@@ -71,18 +71,18 @@ struct psColor {
 
 struct psGUIEvent {
   union {
-    struct { int x; int y; unsigned char button; unsigned char allbtn; }; // Mouse events
+    struct { int x; int y; uint8_t button; uint8_t allbtn; }; // Mouse events
     struct { short scrolldelta; }; // Mouse scroll
     struct {  // Keys
       int keychar; //Only used by KEYCHAR, represents a utf32 character
-      unsigned char keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
+      uint8_t keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
       char keydown;
       char sigkeys;
     };
     struct { float joyvalue; short joyaxis; }; // JOYAXIS
     struct { char joydown; short joybutton; }; // JOYBUTTON
   };
-  unsigned char type;
+  uint8_t type;
   uint64_t time;
 };
 

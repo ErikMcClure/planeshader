@@ -22,7 +22,7 @@ namespace planeshader {
     // Gets all the children
     inline psInheritable* GetChildren() const { return _children; }
     // Counts the number of children
-    unsigned int NumChildren() const;
+    uint32_t NumChildren() const;
     // Gets the rotation plus the rotation of our parents
     inline FNUM GetTotalRotation() const { return !_parent?_rotation:(_rotation+_parent->GetTotalRotation()); }
     // Gets the absolute position by adding up all the parent positions.
@@ -34,7 +34,7 @@ namespace planeshader {
     // Clone function
     virtual psInheritable* Clone() const override { return 0; }
     virtual psTex* const* GetRenderTargets() const override;
-    virtual unsigned char NumRT() const override;
+    virtual uint8_t NumRT() const override;
     virtual void BSS_FASTCALL SetZOrder(int zorder) override;
     psInheritable* BSS_FASTCALL AddClone(const psInheritable* inheritable);
 
@@ -64,7 +64,7 @@ namespace planeshader {
     bss_util::LLBase<psInheritable> _lchild;
     psInheritable* _parent;
     psInheritable* _children;
-    unsigned int _depth;
+    uint32_t _depth;
   };
 }
 

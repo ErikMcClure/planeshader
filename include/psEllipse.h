@@ -54,8 +54,8 @@ namespace planeshader {
   typedef psEllipseT<double> psEllipsed;
   typedef psEllipseT<short> psEllipses;
   typedef psEllipseT<long> psEllipsel;
-  typedef psEllipseT<unsigned int> psEllipseiu;
-  typedef psEllipseT<unsigned short> psEllipsesu;
+  typedef psEllipseT<uint32_t> psEllipseiu;
+  typedef psEllipseT<uint16_t> psEllipsesu;
   typedef psEllipseT<unsigned long> psEllipselu;
 }
 

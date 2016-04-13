@@ -15,7 +15,7 @@ psRenderEllipse::psRenderEllipse(const psEllipse& ellipse) : psSolid(VEC3D_ZERO,
 psRenderEllipse& psRenderEllipse::operator =(const psRenderEllipse& right) { psSolid::operator=(right); psColored::operator=(right); return *this; }
 psRenderEllipse& psRenderEllipse::operator =(psRenderEllipse&& right) { psSolid::operator=(std::move(right)); psColored::operator=(std::move(right)); return *this; }
 
-void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, unsigned int color)
+void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, uint32_t color)
 {
   _driver->SetTextures(0, 0);
   _driver->DrawRect(_driver->library.CIRCLE, 0, psRectRotateZ(x-a, y-b, x+a, y+b, 0), 0, 0, color, 0);
@@ -48,7 +48,7 @@ psRenderLine& psRenderLine::operator =(psRenderLine&& right)
 }
 psRenderLine& psRenderLine::operator =(const psLine3D& right) { SetPosition(right.p1); _point = right.p2; return *this; }
 psRenderLine& psRenderLine::operator =(const psLine& right) { operator=(psLine3D(right.x1, right.y1, 0, right.x2, right.y2, 0)); return *this; }
-void psRenderLine::DrawLine(const psLine3D& p, unsigned int color)
+void psRenderLine::DrawLine(const psLine3D& p, uint32_t color)
 {
   psBatchObj& obj = _driver->DrawLinesStart(_driver->library.LINE, 0, 0);
   _driver->DrawLines(obj, psLine(p.p1.xy, p.p2.xy), p.p1.z, p.p2.z, color);
@@ -63,14 +63,14 @@ void BSS_FASTCALL psRenderLine::_render()
 
 psRenderPolygon::psRenderPolygon(const psRenderPolygon& copy) : psInheritable(copy), psPolygon(copy), psColored(copy) {}
 psRenderPolygon::psRenderPolygon(psRenderPolygon&& mov) : psInheritable(std::move(mov)), psPolygon(std::move(mov)), psColored(std::move(mov)) {}
-psRenderPolygon::psRenderPolygon(const psPolygon& polygon, unsigned int color) : psInheritable(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.POLYGON, 0, 0), psPolygon(polygon), psColored(color) {}
-psRenderPolygon::psRenderPolygon(psPolygon&& polygon, unsigned int color) : psInheritable(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.POLYGON, 0, 0), psPolygon(std::move(polygon)), psColored(color) {}
+psRenderPolygon::psRenderPolygon(const psPolygon& polygon, uint32_t color) : psInheritable(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.POLYGON, 0, 0), psPolygon(polygon), psColored(color) {}
+psRenderPolygon::psRenderPolygon(psPolygon&& polygon, uint32_t color) : psInheritable(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.POLYGON, 0, 0), psPolygon(std::move(polygon)), psColored(color) {}
 
 psRenderPolygon& psRenderPolygon::operator =(const psRenderPolygon& right) { psInheritable::operator=(right); psPolygon::operator=(right); psColored::operator=(right); return *this; }
 psRenderPolygon& psRenderPolygon::operator =(psRenderPolygon&& right) { psInheritable::operator=(std::move(right)); psPolygon::operator=(std::move(right)); psColored::operator=(std::move(right)); return *this; }
 psRenderPolygon& psRenderPolygon::operator =(const psPolygon& polygon) { psPolygon::operator=(polygon); return *this; }
 
-void psRenderPolygon::DrawPolygon(const psVec* p, uint32_t num, unsigned int color, const psVec3D& offset) {  _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, offset, color, 0); }
+void psRenderPolygon::DrawPolygon(const psVec* p, uint32_t num, uint32_t color, const psVec3D& offset) {  _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, offset, color, 0); }
 void psRenderPolygon::DrawPolygon(const psVertex* p, uint32_t num, const float(&transform)[4][4]) { _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, 0, transform); }
 
 void BSS_FASTCALL psRenderPolygon::_render()

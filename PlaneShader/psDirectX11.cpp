@@ -50,7 +50,7 @@ using namespace bss_util;
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
 
 // Constructors
-psDirectX11::psDirectX11(const psVeciu& dim, unsigned int antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
+psDirectX11::psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
 _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
 {
   PROFILE_FUNC();
@@ -358,15 +358,15 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
 
   CreateBufferObj(&_rectvertbuf, RECTBUFSIZE, sizeof(DX11_rectvert), USAGE_VERTEX | USAGE_DYNAMIC, 0);
 
-  unsigned short ind[BATCHSIZE * 3];
-  unsigned int k = 0;
-  for(unsigned short i = 0; i < BATCHSIZE - 3; ++i)
+  uint16_t ind[BATCHSIZE * 3];
+  uint32_t k = 0;
+  for(uint16_t i = 0; i < BATCHSIZE - 3; ++i)
   {
     ind[k++] = 0;
     ind[k++] = 1 + i;
     ind[k++] = 2 + i;
   }
-  CreateBufferObj(&_batchindexbuf, BATCHSIZE * 3, sizeof(unsigned short), USAGE_INDEX | USAGE_IMMUTABLE, ind);
+  CreateBufferObj(&_batchindexbuf, BATCHSIZE * 3, sizeof(uint16_t), USAGE_INDEX | USAGE_IMMUTABLE, ind);
   CreateBufferObj(&_batchvertbuf, BATCHSIZE, sizeof(DX11_simplevert), USAGE_VERTEX | USAGE_DYNAMIC, 0);
 
   // Create default stateblock and sampler state, then activate the default stateblock.
@@ -487,7 +487,7 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&t
 {
   static ID3D11Buffer* lastvert = 0;
   PROFILE_FUNC();
-  unsigned int offset = 0;
+  uint32_t offset = 0;
 
   //if(buf->verts->buffer != lastvert)
     _context->IASetVertexBuffers(0, 1, &(lastvert = (ID3D11Buffer*)buf->verts->buffer), &buf->verts->element, &offset);
@@ -509,14 +509,14 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&t
   }
 }
 
-psBatchObj& BSS_FASTCALL psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4])
 { // Because we have to send the rect position in SOMEHOW and DX11 forces us to send matrices through the shaders, we will lock a buffer no matter what we do. 
   PROFILE_FUNC();
   psBatchObj& obj = DrawRectBatchBegin(shader, stateblock, numuv, flags, xform);
   DrawRectBatch(obj, rect, uv, color);
   return obj;
 }
-psBatchObj& BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, unsigned char numuv, psFlag flags, const float(&xform)[4][4])
+psBatchObj& BSS_FASTCALL psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4])
 {
   uint32_t size = sizeof(DX11_rectvert) + sizeof(psRect)*numuv;
   if(size != _rectvertbuf.element)
@@ -533,7 +533,7 @@ psBatchObj& psDirectX11::_checkflush(psBatchObj& obj, uint32_t num)
     return FlushPreserve();
   return obj;
 }
-void BSS_FASTCALL psDirectX11::DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, unsigned int color)
+void BSS_FASTCALL psDirectX11::DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color)
 {
   psBatchObj& obj = _checkflush(o, 1);
   const uint32_t numuv = (obj.buffer.verts->element - sizeof(DX11_rectvert)) / sizeof(psRect);
@@ -698,7 +698,7 @@ void psDirectX11::DrawFullScreenQuad()
   if(_lastVS != _fsquadVS) _context->VSSetShader(_lastVS, 0, 0); // restore last shader
 }
 
-void* BSS_FASTCALL psDirectX11::CreateBuffer(uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata)
+void* BSS_FASTCALL psDirectX11::CreateBuffer(uint32_t capacity, uint32_t element, uint32_t usage, const void* initdata)
 {
   PROFILE_FUNC();
   uint32_t bytes = T_NEXTMULTIPLE(capacity*element, 15);
@@ -717,7 +717,7 @@ void* BSS_FASTCALL psDirectX11::CreateBuffer(uint32_t capacity, uint32_t element
   LOGFAILURERETNULL(_device->CreateBuffer(&desc, !initdata ? 0 : &subdata, &buf), "CreateBuffer failed");
   return buf;
 }
-void* BSS_FASTCALL psDirectX11::LockBuffer(void* target, unsigned int flags)
+void* BSS_FASTCALL psDirectX11::LockBuffer(void* target, uint32_t flags)
 {
   PROFILE_FUNC();
   D3D11_MAPPED_SUBRESOURCE r;
@@ -738,7 +738,7 @@ ID3D11Resource* psDirectX11::_textotex2D(void* t)
   return r;
 }
 
-void* BSS_FASTCALL psDirectX11::LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel)
+void* BSS_FASTCALL psDirectX11::LockTexture(void* target, uint32_t flags, uint32_t& pitch, uint8_t miplevel)
 {
   PROFILE_FUNC();
   D3D11_MAPPED_SUBRESOURCE tex;
@@ -748,7 +748,7 @@ void* BSS_FASTCALL psDirectX11::LockTexture(void* target, unsigned int flags, un
   PROCESSQUEUE();
   return tex.pData;
 }
-void BSS_FASTCALL psDirectX11::UnlockTexture(void* target, unsigned char miplevel)
+void BSS_FASTCALL psDirectX11::UnlockTexture(void* target, uint8_t miplevel)
 {
   PROFILE_FUNC();
   _context->Unmap(_textotex2D(target), D3D11CalcSubresource(miplevel, 0, 1));
@@ -768,7 +768,7 @@ inline const char* BSS_FASTCALL psDirectX11::_geterror(HRESULT err)
 }
 
 // DX11 ignores the texblock parameter because it doesn't bind those states to the texture at creation time.
-void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsigned int usage, unsigned char miplevels, const void* initdata, void** additionalview, psTexblock* texblock)
+void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, uint32_t usage, uint8_t miplevels, const void* initdata, void** additionalview, psTexblock* texblock)
 {
   PROFILE_FUNC();
   ID3D11Texture2D* tex = 0;
@@ -786,7 +786,7 @@ void* BSS_FASTCALL psDirectX11::CreateTexture(psVeciu dim, FORMATS format, unsig
   return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
 }
 
-void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, unsigned int usage, FORMATS format, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB)
+void BSS_FASTCALL psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, FORMATS format, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB)
 {
   memset(info, D3DX11_DEFAULT, sizeof(D3DX11_IMAGE_LOAD_INFO));
   info->MipLevels = miplevels;
@@ -896,7 +896,7 @@ void BSS_FASTCALL psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* s
   buftex->Release();
 }
 
-void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
+void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
   PROFILE_FUNC();
   D3DX11_IMAGE_LOAD_INFO info;
@@ -922,7 +922,7 @@ void* BSS_FASTCALL psDirectX11::LoadTexture(const char* path, unsigned int usage
   return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
 }
 
-void* BSS_FASTCALL psDirectX11::LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage, FORMATS format, void** additionalview, unsigned char miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
+void* BSS_FASTCALL psDirectX11::LoadTextureInMemory(const void* data, size_t datasize, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
   PROFILE_FUNC();
   D3DX11_IMAGE_LOAD_INFO info;
@@ -944,7 +944,7 @@ void* BSS_FASTCALL psDirectX11::LoadTextureInMemory(const void* data, size_t dat
     *additionalview = _createdepthview(tex);
   return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
 }
-void BSS_FASTCALL psDirectX11::CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel)
+void BSS_FASTCALL psDirectX11::CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, uint8_t miplevel)
 {
   if(!srcrect)
   {
@@ -985,12 +985,12 @@ void psDirectX11::PopClipRect()
     _clipstack.Discard();
 }
 
-void BSS_FASTCALL psDirectX11::SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil)
+void BSS_FASTCALL psDirectX11::SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil)
 {
   PROFILE_FUNC();
   _lastdepth = !depthstencil ? 0 : (ID3D11DepthStencilView*)depthstencil->GetView(); 
   _lastrt.SetLength(num);
-  for(unsigned char i = 0; i < num; ++i) _lastrt[i] = (ID3D11RenderTargetView*)texes[i]->GetView();
+  for(uint8_t i = 0; i < num; ++i) _lastrt[i] = (ID3D11RenderTargetView*)texes[i]->GetView();
 }
 
 void BSS_FASTCALL psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER shader)
@@ -1004,7 +1004,7 @@ void BSS_FASTCALL psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER sha
     _context->GSSetConstantBuffers(1, 1, (ID3D11Buffer**)&constbuf);
 }
 
-void BSS_FASTCALL psDirectX11::SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader)
+void BSS_FASTCALL psDirectX11::SetTextures(const psTex* const* texes, uint8_t num, SHADER_VER shader)
 {
   PROFILE_FUNC();
   auto& d = _lasttex[(shader >= PIXEL_SHADER_1_1) + (shader >= GEOMETRY_SHADER_4_0)];
@@ -1012,7 +1012,7 @@ void BSS_FASTCALL psDirectX11::SetTextures(const psTex* const* texes, unsigned c
   memcpy(d.begin(), texes, sizeof(psTex*)*num);
 }
 // Builds a stateblock from the given set of state changes
-void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states, unsigned int count)
+void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states, uint32_t count)
 {
   PROFILE_FUNC();
   // Build each type of stateblock and independently check for duplicates.
@@ -1072,7 +1072,7 @@ void* BSS_FASTCALL psDirectX11::CreateStateblock(const STATEINFO* states, unsign
     return sb;
 }
 
-void* BSS_FASTCALL psDirectX11::CreateTexblock(const STATEINFO* states, unsigned int count)
+void* BSS_FASTCALL psDirectX11::CreateTexblock(const STATEINFO* states, uint32_t count)
 {
   D3D11_SAMPLER_DESC ss = { D3D11_FILTER_MIN_MAG_MIP_LINEAR, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_TEXTURE_ADDRESS_CLAMP, D3D11_TEXTURE_ADDRESS_CLAMP, 0.0f, 16, D3D11_COMPARISON_NEVER, { 0.0f, 0.0f, 0.0f, 0.0f }, 0.0f, FLT_MAX };
 
@@ -1105,18 +1105,18 @@ void BSS_FASTCALL psDirectX11::SetStateblock(void* stateblock)
   _context->OMSetDepthStencilState(sb->ds, sb->stencilref);
   _context->OMSetBlendState(sb->bs, sb->blendfactor, sb->sampleMask);
 }
-void* BSS_FASTCALL psDirectX11::CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num)
+void* BSS_FASTCALL psDirectX11::CreateLayout(void* shader, const ELEMENT_DESC* elements, uint8_t num)
 {
   PROFILE_FUNC();
   ID3D10Blob* blob = (ID3D10Blob*)shader;
   return CreateLayout(blob->GetBufferPointer(), blob->GetBufferSize(), elements, num);
 }
-void* BSS_FASTCALL psDirectX11::CreateLayout(void* shader, size_t sz, const ELEMENT_DESC* elements, unsigned char num)
+void* BSS_FASTCALL psDirectX11::CreateLayout(void* shader, size_t sz, const ELEMENT_DESC* elements, uint8_t num)
 {
   PROFILE_FUNC();
   DYNARRAY(D3D11_INPUT_ELEMENT_DESC, descs, num);
 
-  for(unsigned char i = 0; i < num; ++i)
+  for(uint8_t i = 0; i < num; ++i)
   {
     switch(elements[i].semantic)
     {
@@ -1371,7 +1371,7 @@ void psDirectX11::_applyrendertargets()
   else
     _context->OMSetRenderTargets(_lastrt.Length(), _lastrt.begin(), _lastdepth);
 }
-void BSS_FASTCALL psDirectX11::Clear(unsigned int color)
+void BSS_FASTCALL psDirectX11::Clear(uint32_t color)
 {
   PROFILE_FUNC();
   psColor colors = psColor(color).rgba();
@@ -1383,7 +1383,7 @@ void BSS_FASTCALL psDirectX11::Clear(unsigned int color)
     _context->ClearDepthStencilView(dview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     dview->Release(); // GetRenderTargets calls Get on everything
   }
-  for(unsigned char i = 0; i < 8; ++i)
+  for(uint8_t i = 0; i < 8; ++i)
     if(views[i])
     {
       _context->ClearRenderTargetView(views[i], colors);
@@ -1614,7 +1614,7 @@ void BSS_FASTCALL psDirectX11::_processdebugmessage(UINT64 index, SIZE_T len)
   PSLOG(level) << "(DirectX11" << category << ") " << cStr(message->pDescription, message->DescriptionByteLength) << std::endl;
 }
 
-unsigned int BSS_FASTCALL psDirectX11::_usagetodxtype(unsigned int types)
+uint32_t BSS_FASTCALL psDirectX11::_usagetodxtype(uint32_t types)
 {
   switch(types&USAGE_USAGEMASK)
   {
@@ -1625,7 +1625,7 @@ unsigned int BSS_FASTCALL psDirectX11::_usagetodxtype(unsigned int types)
   }
   return -1;
 }
-unsigned int BSS_FASTCALL psDirectX11::_usagetocpuflag(unsigned int types)
+uint32_t BSS_FASTCALL psDirectX11::_usagetocpuflag(uint32_t types)
 {
   switch(types&USAGE_USAGEMASK)
   {
@@ -1636,16 +1636,16 @@ unsigned int BSS_FASTCALL psDirectX11::_usagetocpuflag(unsigned int types)
   }
   return 0;
 }
-unsigned int BSS_FASTCALL psDirectX11::_usagetomisc(unsigned int types, bool multisampled)
+uint32_t BSS_FASTCALL psDirectX11::_usagetomisc(uint32_t types, bool multisampled)
 {
-  unsigned int r = 0;
+  uint32_t r = 0;
   if((types&USAGE_RENDERTARGET) && (types&USAGE_SHADER_RESOURCE) && !multisampled) r |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
   if(types&USAGE_TEXTURECUBE) r |= D3D11_RESOURCE_MISC_TEXTURECUBE;
   return r;
 }
-unsigned int BSS_FASTCALL psDirectX11::_usagetobind(unsigned int types)
+uint32_t BSS_FASTCALL psDirectX11::_usagetobind(uint32_t types)
 {
-  unsigned int r = 0;
+  uint32_t r = 0;
   switch(types&USAGE_BINDMASK)
   {
   case USAGE_VERTEX: r = D3D11_BIND_VERTEX_BUFFER; break;
@@ -1657,9 +1657,9 @@ unsigned int BSS_FASTCALL psDirectX11::_usagetobind(unsigned int types)
   if(types&USAGE_DEPTH_STENCIL) r |= D3D11_BIND_DEPTH_STENCIL;
   return r;
 }
-unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigned int misc, unsigned int bind, bool multisample)
+uint32_t BSS_FASTCALL psDirectX11::_reverseusage(uint32_t usage, uint32_t misc, uint32_t bind, bool multisample)
 {
-  unsigned int r = 0;
+  uint32_t r = 0;
   switch(usage)
   {
   case D3D11_USAGE_DEFAULT: r = USAGE_DEFAULT; break;
@@ -1680,7 +1680,7 @@ unsigned int BSS_FASTCALL psDirectX11::_reverseusage(unsigned int usage, unsigne
   if(multisample) r |= USAGE_MULTISAMPLE;
   return r;
 }
-inline unsigned int BSS_FASTCALL psDirectX11::_filtertodx11(FILTERS filter)
+inline uint32_t BSS_FASTCALL psDirectX11::_filtertodx11(FILTERS filter)
 {
   switch(filter)
   {

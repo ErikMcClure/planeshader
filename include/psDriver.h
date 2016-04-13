@@ -27,7 +27,7 @@ namespace planeshader {
       psOpenGL1* ogl1;
       psNullDriver* nul;
     };
-    enum DRIVERTYPE : unsigned char
+    enum DRIVERTYPE : uint8_t
     {
       DRIVERTYPE_DX9,
       DRIVERTYPE_DX10,
@@ -52,10 +52,10 @@ namespace planeshader {
     float y;
     float z;
     float w; // We have a w element to pad this to 32 bytes
-    unsigned int color;
+    uint32_t color;
   };
 
-  enum PRIMITIVETYPE : unsigned char {
+  enum PRIMITIVETYPE : uint8_t {
     TRIANGLELIST=0,
     TRIANGLESTRIP,
     LINELIST,
@@ -63,7 +63,7 @@ namespace planeshader {
     POINTLIST
   };
 
-  enum FORMATS : unsigned char {
+  enum FORMATS : uint8_t {
     FMT_UNKNOWN,
     FMT_R32G32B32A32X,
     FMT_R32G32B32A32F,
@@ -197,10 +197,10 @@ namespace planeshader {
     const float(&transform)[4][4];
     psShader* shader;
     void* stateblock;
-    unsigned int snapshot;
+    uint32_t snapshot;
   };
 
-  enum USAGETYPES : unsigned int {
+  enum USAGETYPES : uint32_t {
     USAGE_DEFAULT = 0,
     USAGE_IMMUTABLE = 1,
     USAGE_DYNAMIC = 2,
@@ -217,7 +217,7 @@ namespace planeshader {
     USAGE_BINDMASK = 12
   };
 
-  enum ELEMENT_SEMANTICS : unsigned char {
+  enum ELEMENT_SEMANTICS : uint8_t {
     ELEMENT_BINORMAL=0,
     ELEMENT_BLENDINDICES,
     ELEMENT_BLENDWEIGHT,
@@ -233,14 +233,14 @@ namespace planeshader {
   struct ELEMENT_DESC
   {
     ELEMENT_SEMANTICS semantic;
-    unsigned char semanticIndex;
+    uint8_t semanticIndex;
     FORMATS format;
-    unsigned char IAslot;
-    unsigned int byteOffset; // Set to -1 to define it as being directly after the next one
+    uint8_t IAslot;
+    uint32_t byteOffset; // Set to -1 to define it as being directly after the next one
   };
 
   // A list of shader versions that we recognize
-  enum SHADER_VER : unsigned char
+  enum SHADER_VER : uint8_t
   {
     VERTEX_SHADER_1_1=0, //vs_1_1
     VERTEX_SHADER_2_0,
@@ -271,7 +271,7 @@ namespace planeshader {
     NUM_SHADER_VERSIONS
   };
 
-  enum LOCK_FLAGS : unsigned char
+  enum LOCK_FLAGS : uint8_t
   {
     LOCK_READ=1,
     LOCK_WRITE=2,
@@ -287,10 +287,10 @@ namespace planeshader {
     psVec3Diu dim;
     USAGETYPES usage;
     FORMATS format;
-    unsigned char miplevels;
+    uint8_t miplevels;
   };
   
-  enum FILTERS : unsigned char 
+  enum FILTERS : uint8_t 
   {
     FILTER_NONE=0,
     FILTER_NEAREST,
@@ -326,9 +326,9 @@ namespace planeshader {
     // Begins a standard batch job, setting all necessary states.
     virtual psBatchObj& BSS_FASTCALL DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4] = identity, uint32_t reserve = 0);
     // Draws a rectangle
-    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, unsigned char numuv, unsigned int color, psFlag flags, const float(&xform)[4][4] = identity)=0;
-    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, unsigned char numuv, psFlag flags, const float(&xform)[4][4] = identity)=0;
-    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, unsigned int color)=0;
+    virtual psBatchObj& BSS_FASTCALL DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity)=0;
+    virtual psBatchObj& BSS_FASTCALL DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity)=0;
+    virtual void BSS_FASTCALL DrawRectBatch(psBatchObj& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color)=0;
     // Draws a polygon
     virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity)=0;
     virtual psBatchObj& BSS_FASTCALL DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity)=0;
@@ -348,17 +348,17 @@ namespace planeshader {
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad()=0;
     // Creates a vertex or index buffer
-    virtual void* BSS_FASTCALL CreateBuffer(uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata=0)=0;
-    virtual psBufferObj* BSS_FASTCALL CreateBufferObj(psBufferObj* target, uint32_t capacity, uint32_t element, unsigned int usage, const void* initdata=0);
-    virtual void* BSS_FASTCALL LockBuffer(void* target, unsigned int flags)=0;
+    virtual void* BSS_FASTCALL CreateBuffer(uint32_t capacity, uint32_t element, uint32_t usage, const void* initdata=0)=0;
+    virtual psBufferObj* BSS_FASTCALL CreateBufferObj(psBufferObj* target, uint32_t capacity, uint32_t element, uint32_t usage, const void* initdata=0);
+    virtual void* BSS_FASTCALL LockBuffer(void* target, uint32_t flags)=0;
     virtual void BSS_FASTCALL UnlockBuffer(void* target)=0;
-    virtual void* BSS_FASTCALL LockTexture(void* target, unsigned int flags, unsigned int& pitch, unsigned char miplevel = 0)=0;
-    virtual void BSS_FASTCALL UnlockTexture(void* target, unsigned char miplevel = 0)=0;
+    virtual void* BSS_FASTCALL LockTexture(void* target, uint32_t flags, uint32_t& pitch, uint8_t miplevel = 0)=0;
+    virtual void BSS_FASTCALL UnlockTexture(void* target, uint8_t miplevel = 0)=0;
     // Creates a texture
-    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, unsigned int usage=USAGE_SHADER_RESOURCE, unsigned char miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0)=0;
-    virtual void* BSS_FASTCALL LoadTexture(const char* path, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false)=0;
-    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, unsigned int usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, unsigned char miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false)=0;
-    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, unsigned char miplevel = 0)=0;
+    virtual void* BSS_FASTCALL CreateTexture(psVeciu dim, FORMATS format, uint32_t usage=USAGE_SHADER_RESOURCE, uint8_t miplevels=0, const void* initdata=0, void** additionalview=0, psTexblock* texblock=0)=0;
+    virtual void* BSS_FASTCALL LoadTexture(const char* path, uint32_t usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, uint8_t miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false)=0;
+    virtual void* BSS_FASTCALL LoadTextureInMemory(const void* data, size_t datasize, uint32_t usage=USAGE_SHADER_RESOURCE, FORMATS format=FMT_UNKNOWN, void** additionalview=0, uint8_t miplevels=0, FILTERS mipfilter = FILTER_BOX, FILTERS loadfilter = FILTER_NONE, psVeciu dim = VEC_ZERO, psTexblock* texblock=0, bool sRGB = false)=0;
+    virtual void BSS_FASTCALL CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, uint8_t miplevel = 0)=0;
     // Pushes or pops a clip rect on to the stack
     virtual void BSS_FASTCALL PushClipRect(const psRect& rect) = 0;
     virtual psRect PeekClipRect()=0;
@@ -366,29 +366,29 @@ namespace planeshader {
     // pushes a clip rect on to the stack, but does not allow it to be bigger than the current clip rect on the stack.
     virtual void BSS_FASTCALL MergeClipRect(const psRect& rect);
     // Sets the current rendertargets, setting all the rest to null.
-    virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, unsigned char num, const psTex* depthstencil=0)=0;
+    virtual void BSS_FASTCALL SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil=0)=0;
     // Sets shader constants
     virtual void BSS_FASTCALL SetShaderConstants(void* constbuf, SHADER_VER shader)=0;
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
-    virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, unsigned char num, SHADER_VER shader=PIXEL_SHADER_1_1)=0;
+    virtual void BSS_FASTCALL SetTextures(const psTex* const* texes, uint8_t num, SHADER_VER shader=PIXEL_SHADER_1_1)=0;
     // Builds a stateblock from the given set of state changes
-    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, unsigned int count)=0;
+    virtual void* BSS_FASTCALL CreateStateblock(const STATEINFO* states, uint32_t count)=0;
     // Sets a stateblock
     virtual void BSS_FASTCALL SetStateblock(void* stateblock)=0;
     // Builds a texblock from the given set of sampler states
-    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, unsigned int count)=0;
+    virtual void* BSS_FASTCALL CreateTexblock(const STATEINFO* states, uint32_t count)=0;
     // Create a vertex layout from several element descriptions
-    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, unsigned char num)=0;
+    virtual void* BSS_FASTCALL CreateLayout(void* shader, const ELEMENT_DESC* elements, uint8_t num)=0;
     virtual void BSS_FASTCALL SetLayout(void* layout)=0;
     // Frees a created resource of the specified type
-    enum RESOURCE_TYPE : unsigned char { RES_TEXTURE, RES_SURFACE, RES_DEPTHVIEW, RES_SHADERVS, RES_SHADERPS, RES_SHADERGS, RES_SHADERCS, RES_SHADERDS, RES_SHADERHS, RES_STATEBLOCK, RES_TEXBLOCK, RES_INDEXBUF, RES_VERTEXBUF, RES_CONSTBUF, RES_LAYOUT };
+    enum RESOURCE_TYPE : uint8_t { RES_TEXTURE, RES_SURFACE, RES_DEPTHVIEW, RES_SHADERVS, RES_SHADERPS, RES_SHADERGS, RES_SHADERCS, RES_SHADERDS, RES_SHADERHS, RES_STATEBLOCK, RES_TEXBLOCK, RES_INDEXBUF, RES_VERTEXBUF, RES_CONSTBUF, RES_LAYOUT };
     virtual TEXTURE_DESC BSS_FASTCALL GetTextureDesc(void* t)=0;
     virtual void BSS_FASTCALL FreeResource(void* p, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL GrabResource(void* p, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL CopyResource(void* dest, void* src, RESOURCE_TYPE t)=0;
     virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, char fullscreen)=0;
     // Clears everything to a specified color
-    virtual void BSS_FASTCALL Clear(unsigned int color)=0;
+    virtual void BSS_FASTCALL Clear(uint32_t color)=0;
     // Gets the backbuffer texture
     virtual psTex* GetBackBuffer()=0;
     // Gets a pointer to the driver implementation
@@ -416,7 +416,7 @@ namespace planeshader {
     // Returns true if shader version is supported
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile)=0;
     // Returns an index to an internal state snapshot
-    virtual unsigned int BSS_FASTCALL GetSnapshot() = 0;
+    virtual uint32_t BSS_FASTCALL GetSnapshot() = 0;
 
     BSS_FORCEINLINE static FORMATS ToSRGBFormat(FORMATS format)
     {
