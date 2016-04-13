@@ -144,8 +144,8 @@ namespace planeshader {
   typedef psLineT<double> psLined;
   typedef psLineT<short> psLines;
   typedef psLineT<long> psLinel;
-  typedef psLineT<unsigned int> psLineiu;
-  typedef psLineT<unsigned short> psLinesu;
+  typedef psLineT<uint32_t> psLineiu;
+  typedef psLineT<uint16_t> psLinesu;
   typedef psLineT<unsigned long> psLinelu;
 
   // Represents a 3D line
@@ -188,8 +188,8 @@ namespace planeshader {
   typedef psLine3DT<double> psLine3Dd;
   typedef psLine3DT<short> psLine3Ds;
   typedef psLine3DT<long> psLine3Dl;
-  typedef psLine3DT<unsigned int> psLine3Diu;
-  typedef psLine3DT<unsigned short> psLine3Dsu;
+  typedef psLine3DT<uint32_t> psLine3Diu;
+  typedef psLine3DT<uint16_t> psLine3Dsu;
   typedef psLine3DT<unsigned long> psLine3Dlu;
 }
 

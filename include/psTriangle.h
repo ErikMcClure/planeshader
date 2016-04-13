@@ -19,8 +19,8 @@ namespace planeshader {
     inline bool IntersectRect(const psRectT<T>& other) const
     { //Here we pick the nearest point on the triangle to the center of the rectangle, then pick the nearest point on the rectangle to that given triangle and construct lines out of them.
       VEC comppoint((other.left+other.right)/(T)2, (other.top+other.bottom)/(T)2);
-      unsigned char nearptr = NearestPoint(comppoint);
-      unsigned char corner=0;
+      uint8_t nearptr = NearestPoint(comppoint);
+      uint8_t corner=0;
       T lastdist=p[nearptr].GetDistanceSquared(other.left, other.top);
       T hold=0;
       if(hold=p[nearptr].GetDistanceSquared(other.right, other.top)<lastdist) {
@@ -121,7 +121,7 @@ namespace planeshader {
     VEC p[3];
 
   protected:
-    inline unsigned char NearestPoint(const VEC& pos) const
+    inline uint8_t NearestPoint(const VEC& pos) const
     {
       T lastdist=pos.GetDistanceSquared(p[0]);
       T store;
@@ -143,8 +143,8 @@ namespace planeshader {
   typedef psTriangleT<double> psTriangled;
   typedef psTriangleT<short> psTriangles;
   typedef psTriangleT<long> psTrianglel;
-  typedef psTriangleT<unsigned int> psTriangleiu;
-  typedef psTriangleT<unsigned short> psTrianglesu;
+  typedef psTriangleT<uint32_t> psTriangleiu;
+  typedef psTriangleT<uint16_t> psTrianglesu;
   typedef psTriangleT<unsigned long> psTrianglelu;
 }
 

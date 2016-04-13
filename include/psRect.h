@@ -122,8 +122,8 @@ namespace planeshader {
   typedef psRectT<double> psRectd;
   typedef psRectT<short> psRects;
   typedef psRectT<long> psRectl;
-  typedef psRectT<unsigned int> psRectiu;
-  typedef psRectT<unsigned short> psRectsu;
+  typedef psRectT<uint32_t> psRectiu;
+  typedef psRectT<uint16_t> psRectsu;
   typedef psRectT<unsigned long> psRectlu;
 
   psRect const RECT_ZERO(0, 0, 0, 0);
@@ -192,8 +192,8 @@ namespace planeshader {
   typedef psRectRotateT<double> psRectRotated;
   typedef psRectRotateT<short> psRectRotates;
   typedef psRectRotateT<long> psRectRotatel;
-  typedef psRectRotateT<unsigned int> psRectRotateiu;
-  typedef psRectRotateT<unsigned short> psRectRotatesu;
+  typedef psRectRotateT<uint32_t> psRectRotateiu;
+  typedef psRectRotateT<uint16_t> psRectRotatesu;
   typedef psRectRotateT<unsigned long> psRectRotatelu;
 
   // The psRectRotateZT class is a rotated rectangle with a Z coordinate for the sole purpose of storing that Z coordinate in the culling rect

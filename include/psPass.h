@@ -27,8 +27,8 @@ namespace planeshader {
     inline void SetRenderTarget(psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
-    inline void SetClearColor(unsigned int color, bool enable = true) { _clearcolor = color; _clear = enable; }
-    inline unsigned int GetClearColor() const { return _clearcolor; }
+    inline void SetClearColor(uint32_t color, bool enable = true) { _clearcolor = color; _clear = enable; }
+    inline uint32_t GetClearColor() const { return _clearcolor; }
 
     static BSS_FORCEINLINE bss_util::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
     static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r)
@@ -54,7 +54,7 @@ namespace planeshader {
     psCullGroup* _cullgroups;
     psTex* _defaultrt;
     ALLOC _renderalloc;
-    unsigned int _clearcolor;
+    uint32_t _clearcolor;
     bool _clear;
     bss_util::cTRBtree<psRenderable*, StandardCompare, ALLOC> _renderlist;
   };

@@ -31,8 +31,8 @@ namespace planeshader {
     // Sets the pass this cull group belongs to
     void SetPass(psPass* pass);
     // Gets or sets the rebalance threshold
-    BSS_FORCEINLINE unsigned int GetRBThreshold() const { return _tree.GetRBThreshold(); }
-    BSS_FORCEINLINE void SetRBThreshold(unsigned int rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
+    BSS_FORCEINLINE uint32_t GetRBThreshold() const { return _tree.GetRBThreshold(); }
+    BSS_FORCEINLINE void SetRBThreshold(uint32_t rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
 
     typedef bss_util::BlockPolicy<bss_util::KDNode<psSolid>> KDNODE_ALLOC;
 

@@ -28,7 +28,10 @@ namespace bss_util {
       assert(end >= start);
       return cArraySlice(start + start, end - start);
     }
+    inline bool operator!() const { return !start || !length; }
+    inline operator bool() const { return Valid(); }
 
+    BSS_FORCEINLINE bool Valid() const { return start != 0 && length != 0; }
     BSS_FORCEINLINE const T& Front() const { assert(_length>0); return start[0]; }
     BSS_FORCEINLINE const T& Back() const { assert(_length>0); return start[length - 1]; }
     BSS_FORCEINLINE T& Front() { assert(_length>0); return start[0]; }

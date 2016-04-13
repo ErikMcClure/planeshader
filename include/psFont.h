@@ -16,11 +16,11 @@ namespace planeshader {
   {
   public:
     // Iterates through the string and preloads all the glyphs that are used. This is useful for common characters that you know will be loaded eventually. Returns the number of characters successfully loaded 
-    unsigned short PreloadGlyphs(const char* glyphs);
-    unsigned short PreloadGlyphs(const int* glyphs);
+    uint16_t PreloadGlyphs(const char* glyphs);
+    uint16_t PreloadGlyphs(const int* glyphs);
 
     static FT_Library PTRLIB;
-    enum FONT_ANTIALIAS : unsigned char {
+    enum FONT_ANTIALIAS : uint8_t {
       FAA_NONE=0, //No antialiasing
       FAA_ANTIALIAS, //default antialiasing
       FAA_LCD, //antialiasing optimized for LCD displays
@@ -35,8 +35,8 @@ namespace planeshader {
     psFont(const psFont&) = delete;
     psFont(const char* file, int psize, float lineheight=0, FONT_ANTIALIAS antialias = FAA_ANTIALIAS);
     ~psFont();
-    virtual psGlyph* _loadglyph(unsigned int codepoint) override;
-    psGlyph* _renderglyph(unsigned int codepoint);
+    virtual psGlyph* _loadglyph(uint32_t codepoint) override;
+    psGlyph* _renderglyph(uint32_t codepoint);
     void _loadfont();
     void _cleanupfont();
     void _adjustantialias(FONT_ANTIALIAS antialiased);
@@ -45,16 +45,16 @@ namespace planeshader {
 
     psFont& operator=(const psFont&) = delete;
 
-    unsigned int _antialiased;
+    uint32_t _antialiased;
     int _pointsize;
-    unsigned char* _buf;
+    uint8_t* _buf;
     FT_Face _ft2face;
     psVeciu _curpos;
-    unsigned int _nexty;
-    unsigned char _curtex;
+    uint32_t _nexty;
+    uint8_t _curtex;
     cStr _path;
     cStr _hash;
-    bss_util::cArray<psTex*, unsigned char> _staging;
+    bss_util::cArray<psTex*, uint8_t> _staging;
 
     static bss_util::cHash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.
   };

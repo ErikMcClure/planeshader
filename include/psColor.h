@@ -16,16 +16,16 @@ namespace planeshader {
     using BASE::b;
     using BASE::v;
 
-    explicit inline psColor(unsigned int argb) { operator=(argb); } // operator= is SSE optimized in this case
-    explicit inline psColor(const unsigned char(&rgba)[4]) : BASE(rgba[0]/255.0f, rgba[1]/255.0f, rgba[2]/255.0f, rgba[3]/255.0f) {}
-    //inline psColor(unsigned char r_, unsigned char g_, unsigned char b_, unsigned char a_=255) : BASE(r_/255.0f,g_/255.0f,b_/255.0f,a_/255.0f) { }
+    explicit inline psColor(uint32_t argb) { operator=(argb); } // operator= is SSE optimized in this case
+    explicit inline psColor(const uint8_t(&rgba)[4]) : BASE(rgba[0]/255.0f, rgba[1]/255.0f, rgba[2]/255.0f, rgba[3]/255.0f) {}
+    //inline psColor(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_=255) : BASE(r_/255.0f,g_/255.0f,b_/255.0f,a_/255.0f) { }
     explicit inline psColor(const float(&rgba)[4]) : BASE(rgba[0],rgba[1],rgba[2],rgba[3]) { }
     explicit inline psColor(const double(&rgba)[4]) : BASE((float)rgba[0],(float)rgba[1],(float)rgba[2],(float)rgba[3]) { }
     inline psColor(float r_, float g_, float b_, float a_=1.0f) : BASE(r_,g_,b_,a_) { }
     inline psColor(double r_, double g_, double b_, double a_=1.0f) : BASE((float)r_,(float)g_,(float)b_,(float)a_) { }
     explicit inline psColor(psVec3D rgb, float alpha=1.0f) : BASE(rgb.x,rgb.y,rgb.z,alpha) { }
     explicit inline psColor(float rgb=0.0f, float alpha=1.0f) : BASE(rgb,rgb,rgb,alpha) { }
-    unsigned short BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
+    uint16_t BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
 
     inline const psColor ToHSVA() const
     {
@@ -69,39 +69,39 @@ namespace planeshader {
     inline bool operator==(const psColor& c) { return (c.a==a)&&(c.r==r)&&(c.g==g)&&(c.b==b); }
     inline bool operator!=(const psColor& c) { return (c.a!=a)||(c.r!=r)||(c.g!=g)||(c.b!=b); }
     inline psColor& operator=(const psVec3D& rgb) { r=rgb.x; r=rgb.y; r=rgb.z; return *this; }
-    inline psColor& operator=(unsigned int argb) {
+    inline psColor& operator=(uint32_t argb) {
       sseVec c(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(argb), _mm_setzero_si128()), _mm_setzero_si128()));
       sseVec(_mm_castsi128_ps(BSS_SSE_SHUFFLE_EPI32(_mm_castps_si128(c/sseVec(255.0f)), _MM_SHUFFLE(3, 0, 1, 2)))) >> v; return *this;
     }
-    inline psColor& operator=(const unsigned char(&rgba)[4]) { r=rgba[0]/255.0f; g=rgba[1]/255.0f; b=rgba[2]/255.0f; a=rgba[3]/255.0f; return *this; }
+    inline psColor& operator=(const uint8_t(&rgba)[4]) { r=rgba[0]/255.0f; g=rgba[1]/255.0f; b=rgba[2]/255.0f; a=rgba[3]/255.0f; return *this; }
     inline psColor& operator=(const float(&rgba)[4]) { r=rgba[0]; g=rgba[1]; b=rgba[2]; a=rgba[3]; return *this; }
-    inline operator unsigned int() const
+    inline operator uint32_t() const
     {
       sseVeci xch(sseVec(v)*sseVec(255.0f, 255.0f, 255.0f, 255.0f));
       xch = _mm_packus_epi16(_mm_packs_epi32(BSS_SSE_SHUFFLE_EPI32(xch, _MM_SHUFFLE(3, 0, 1, 2)), _mm_setzero_si128()), _mm_setzero_si128());
-      return (unsigned int)_mm_cvtsi128_si32(xch);
+      return (uint32_t)_mm_cvtsi128_si32(xch);
     }
     inline operator const float*() const { return v; }
 
     // Interpolates between two colors
-    inline static unsigned int BSS_FASTCALL Interpolate(unsigned int l, unsigned int r, float c)
+    inline static uint32_t BSS_FASTCALL Interpolate(uint32_t l, uint32_t r, float c)
     {
       sseVec xl(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(l), _mm_setzero_si128()), _mm_setzero_si128())); // unpack left integer into floats (WITHOUT normalization)
       sseVec xr(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(r), _mm_setzero_si128()), _mm_setzero_si128())); // unpack right integer
       sseVec xc(c); // (c,c,c,c)
       sseVec xx = (xr*xc) + (xl*(sseVec(1.0f)-xc)); // Do operation (r*c) + (l*(1-c))
       sseVeci xch = _mm_packus_epi16(_mm_packs_epi32(sseVeci(xx), _mm_setzero_si128()), _mm_setzero_si128()); // Convert floats back to integers (WITHOUT renormalization) and repack into integer
-      return (unsigned int)_mm_cvtsi128_si32(xch);
+      return (uint32_t)_mm_cvtsi128_si32(xch);
     }
 
     // Multiplies a color by a value (equivalent to interpolating between r and 0x00000000)
-    inline static unsigned int BSS_FASTCALL Multiply(unsigned int r, float c)
+    inline static uint32_t BSS_FASTCALL Multiply(uint32_t r, float c)
     {
       sseVec xr(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(r), _mm_setzero_si128()), _mm_setzero_si128())); // unpack r
       sseVec xc(c); // (c,c,c,c)
       sseVec xx = xr*xc; // Do operation (r*c)
       sseVeci xch = _mm_packus_epi16(_mm_packs_epi32(sseVeci(xx), _mm_setzero_si128()), _mm_setzero_si128()); // Convert floats back to integers (WITHOUT renormalization) and repack into integer
-      return (unsigned int)_mm_cvtsi128_si32(xch);
+      return (uint32_t)_mm_cvtsi128_si32(xch);
     }
 
     inline static psColor BSS_FASTCALL Interpolate(const psColor& l, const psColor& r, float c)
@@ -126,10 +126,10 @@ namespace planeshader {
       return r;
     }
     // Builds a 32-bit color from 8-bit components
-    BSS_FORCEINLINE static unsigned int BSS_FASTCALL BuildColor(unsigned char a, unsigned char r, unsigned char g, unsigned char b)
+    BSS_FORCEINLINE static uint32_t BSS_FASTCALL BuildColor(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
     {
-      unsigned int ret;
-      unsigned char* c=(unsigned char*)(&ret);
+      uint32_t ret;
+      uint8_t* c=(uint8_t*)(&ret);
       c[0]=a;
       c[1]=r;
       c[2]=g;
@@ -137,29 +137,29 @@ namespace planeshader {
       return ret;
     }
     
-    static unsigned short BSS_FASTCALL BitsPerPixel(FORMATS format);
+    static uint16_t BSS_FASTCALL BitsPerPixel(FORMATS format);
   };
 
   // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
   struct PS_DLLEXPORT psColor32
   {
     psColor32() {}
-    psColor32(unsigned char A, unsigned char R, unsigned char G, unsigned char B) : a(A), r(R), g(G), b(B) {}
-    explicit psColor32(unsigned char(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
+    psColor32(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : a(A), r(R), g(G), b(B) {}
+    explicit psColor32(uint8_t(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
     psColor32(uint32_t c) : color(c) {}
     inline psColor32& operator=(uint32_t c) { color=c; return *this; }
     inline operator uint32_t() const { return color; }
-    unsigned short BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
+    uint16_t BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
 
     union
     {
       uint32_t color;
-      unsigned char colors[4];
+      uint8_t colors[4];
       struct {
-        unsigned char r;
-        unsigned char g;
-        unsigned char b;
-        unsigned char a;
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
       };
     };
   };

@@ -31,8 +31,8 @@ namespace planeshader {
     inline float GetLetterSpacing() const { return _letterspacing; }
     inline void SetLetterSpacing(float spacing) { _letterspacing = spacing; _recalcdim(); }
     // Get/Set draw flags
-    inline unsigned short GetDrawFlags() const { return _drawflags; }
-    inline void SetDrawFlags(unsigned short flags) { _drawflags = flags; }
+    inline uint16_t GetDrawFlags() const { return _drawflags; }
+    inline void SetDrawFlags(uint16_t flags) { _drawflags = flags; }
     // Get/Set per-character modification function
     inline const psTexFont::DELEGATE& GetFunc() const { return _func; }
     inline void SetFunc(psTexFont::DELEGATE func) { _func = func; }
@@ -45,7 +45,7 @@ namespace planeshader {
     bss_util::cAutoRef<psTexFont> _font;
     psVec _textdim;
     float _letterspacing;
-    unsigned short _drawflags;
+    uint16_t _drawflags;
     psTexFont::DELEGATE _func;
   };
 }

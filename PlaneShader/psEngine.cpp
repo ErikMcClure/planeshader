@@ -32,7 +32,7 @@ const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
 psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), _curpass(0), _passes(1),
-  _mainpass(0), _mediapath(init.mediapath)
+  _mainpass(0), _mediapath(init.mediapath), _frameprofiler(0)
 {
   PROFILE_FUNC();
   if(_instance!=0) // If you try to make another instance, it violently explodes.
@@ -96,13 +96,14 @@ psEngine::~psEngine()
 
   _instance=0;
 }
-bool psEngine::Begin(unsigned int clearcolor)
+bool psEngine::Begin(uint32_t clearcolor)
 {
   PROFILE_FUNC();
   if(GetQuit())
     return false;
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
+  _frameprofiler = cHighPrecisionTimer::OpenProfiler();
   _curpass = 0;
   _driver->Clear(clearcolor);
   _passes[0]->Begin();
@@ -115,11 +116,12 @@ bool psEngine::Begin()
     return false;
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
+  _frameprofiler = cHighPrecisionTimer::OpenProfiler();
   _curpass=0;
   _passes[0]->Begin();
   return true;
 }
-void psEngine::End()
+uint64_t psEngine::End()
 {
   PROFILE_FUNC();
   while(NextPass());
@@ -129,8 +131,9 @@ void psEngine::End()
   //    SetWindowLong(_window, GWL_EXSTYLE, ((GetWindowLong(_window, GWL_EXSTYLE))&(~WS_EX_TRANSPARENT)));
   //  else
   //    SetWindowLong(_window, GWL_EXSTYLE, ((GetWindowLong(_window, GWL_EXSTYLE))|WS_EX_TRANSPARENT));
-
+  _frameprofiler = cHighPrecisionTimer::CloseProfiler(_frameprofiler);
   _driver->End();
+  return _frameprofiler;
 }
 bool psEngine::NextPass()
 {
@@ -145,20 +148,20 @@ psEngine* psEngine::Instance()
 {
   return _instance;
 }
-bool psEngine::InsertPass(psPass& pass, unsigned short index)
+bool psEngine::InsertPass(psPass& pass, uint16_t index)
 {
   if(index>_passes.Capacity())
     return false;
   _passes.Insert(&pass, index);
   return true;
 }
-bool psEngine::RemovePass(unsigned short index)
+bool psEngine::RemovePass(uint16_t index)
 {
   if(!index || index>=_passes.Capacity()) return false;
   _passes.Remove(index);
   return true;
 }
-void psEngine::_onresize(unsigned int width, unsigned int height)
+void psEngine::_onresize(uint32_t width, uint32_t height)
 {
   if(_driver && _driver->GetBackBuffer())
     _driver->Resize(psVeciu(width, height), _driver->GetBackBuffer()->GetFormat(), -1);

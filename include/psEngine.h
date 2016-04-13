@@ -8,6 +8,7 @@
 #include "bss-util/cBitField.h"
 #include "bss-util/bss_log.h"
 #include "bss-util/cStr.h"
+#include "bss-util/cSerializer.h"
 #include "psGUIManager.h"
 #include "psDriver.h"
 
@@ -39,15 +40,29 @@ namespace planeshader {
     } mode;
     bool vsync;
     bool sRGB;
-    unsigned char antialias;
+    uint8_t antialias;
     std::ostream* errout;
     const char* mediapath;
+
+    template<typename Engine>
+    void Serialize(bss_util::cSerializer<Engine>& e)
+    {
+      e.EvaluateType<ubjsontest>(
+        GenPair("width", width),
+        GenPair("height", height),
+        GenPair("driver", (uint8_t&)driver),
+        GenPair("mode", (char&)mode),
+        GenPair("vsync", vsync),
+        GenPair("sRGB", sRGB),
+        GenPair("antialias", antialias)
+        );
+    }
   };
 
   // Core engine object
   class PS_DLLEXPORT psEngine : public psGUIManager, public bss_util::cLog, public psDriverHold
   {
-    static const unsigned char PSENGINE_QUIT = (1<<0);
+    static const uint8_t PSENGINE_QUIT = (1<<0);
 
   public:
     // Constructor
@@ -55,9 +70,9 @@ namespace planeshader {
     ~psEngine();
     // Begins a frame. Returns false if rendering should stop.
     bool Begin();
-    bool Begin(unsigned int clearcolor);
-    // Ends a frame
-    void End();
+    bool Begin(uint32_t clearcolor);
+    // Ends a frame, returning the number of nanoseconds between Begin() and End(), before the vsync happened.
+    uint64_t End();
     // Renders the next pass, returns false if there are no more passes to render.
     bool NextPass();
     // Begins and ends a frame, returning false if rendering should stop.
@@ -68,12 +83,12 @@ namespace planeshader {
       return true;
     }
     // Insert a pass 
-    bool InsertPass(psPass& pass, unsigned short index=-1);
+    bool InsertPass(psPass& pass, uint16_t index=-1);
     // Remove pass 
-    bool RemovePass(unsigned short index);
+    bool RemovePass(uint16_t index);
     // Gets a pass. The 0th pass always exists.
-    inline psPass* GetPass(unsigned short index=0) const { return index<_passes.Capacity()?_passes[index]:0; }
-    inline unsigned short NumPass() const { return _passes.Capacity(); }
+    inline psPass* GetPass(uint16_t index=0) const { return index<_passes.Capacity()?_passes[index]:0; }
+    inline uint16_t NumPass() const { return _passes.Capacity(); }
     // Get/Sets the quit value
     inline void Quit() { _flags+=PSENGINE_QUIT; }
     inline bool GetQuit() const { return _flags[PSENGINE_QUIT]; }
@@ -81,20 +96,21 @@ namespace planeshader {
     inline PSINIT::MODE GetMode() const { return _mode; }
     void Resize(psVeciu dim, PSINIT::MODE mode);
 
-    psPass& operator [](unsigned short index) { assert(index<_passes.Capacity()); return *_passes[index]; }
-    const psPass& operator [](unsigned short index) const { assert(index<_passes.Capacity()); return *_passes[index]; }
+    psPass& operator [](uint16_t index) { assert(index<_passes.Capacity()); return *_passes[index]; }
+    const psPass& operator [](uint16_t index) const { assert(index<_passes.Capacity()); return *_passes[index]; }
 
     static psEngine* Instance(); // Cannot be inline'd for DLL reasons.
 
   protected:
-    virtual void _onresize(unsigned int width, unsigned int height) override;
+    virtual void _onresize(uint32_t width, uint32_t height) override;
 
-    bss_util::cArray<psPass*, unsigned short> _passes;
-    bss_util::cBitField<unsigned char> _flags;
-    unsigned short _curpass;
+    bss_util::cArray<psPass*, uint16_t> _passes;
+    bss_util::cBitField<uint8_t> _flags;
+    uint16_t _curpass;
     psPass* _mainpass;
     cStr _mediapath;
     PSINIT::MODE _mode;
+    uint64_t _frameprofiler;
 
     static psEngine* _instance;
   };

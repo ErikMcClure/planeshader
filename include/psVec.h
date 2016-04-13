@@ -92,8 +92,8 @@ namespace planeshader {
   typedef bss_util::Vector<double, 2> psVecd;
   typedef bss_util::Vector<short, 2> psVecs;
   typedef bss_util::Vector<long, 2> psVecl;
-  typedef bss_util::Vector<unsigned int, 2> psVeciu;
-  typedef bss_util::Vector<unsigned short, 2> psVecsu;
+  typedef bss_util::Vector<uint32_t, 2> psVeciu;
+  typedef bss_util::Vector<uint16_t, 2> psVecsu;
   typedef bss_util::Vector<unsigned long, 2> psVeclu;
 
   static psVec const VEC_ZERO(0, 0);
@@ -107,8 +107,8 @@ namespace planeshader {
   typedef bss_util::Vector<double, 3> psVec3Dd;
   typedef bss_util::Vector<short, 3> psVec3Ds;
   typedef bss_util::Vector<long, 3> psVec3Dl;
-  typedef bss_util::Vector<unsigned int, 3> psVec3Diu;
-  typedef bss_util::Vector<unsigned short, 3> psVec3Dsu;
+  typedef bss_util::Vector<uint32_t, 3> psVec3Diu;
+  typedef bss_util::Vector<uint16_t, 3> psVec3Dsu;
   typedef bss_util::Vector<unsigned long, 3> psVec3Dlu;
 
   static psVec3D const VEC3D_ZERO(0, 0, 0);

@@ -12,7 +12,7 @@ using namespace planeshader;
 psRenderable::psRenderable(const psRenderable& copy) : _flags(copy._flags), _pass(0), _internalflags(copy._internalflags), _zorder(copy._zorder),
   _stateblock(copy._stateblock), _shader(psShader::CreateShader(copy._shader)), _rts(copy._rts)
 {
-  for(unsigned int i = 0; i < _rts.Capacity(); ++i)
+  for(uint32_t i = 0; i < _rts.Capacity(); ++i)
     _rts[i]->Grab();
   _llist.next=_llist.prev=0;
   SetPass(copy._pass);
@@ -67,27 +67,27 @@ void BSS_FASTCALL psRenderable::SetStateblock(psStateblock* stateblock)
 
 psFlag psRenderable::GetAllFlags() const { return GetFlags(); }
 psTex* const* psRenderable::GetTextures() const { return 0; } // these aren't inline because they're virtual
-unsigned char psRenderable::NumTextures() const { return 0; }
+uint8_t psRenderable::NumTextures() const { return 0; }
 inline psTex* const* psRenderable::GetRenderTargets() const
 {
   if(_rts.Capacity())
     return _rts;
   return !_pass ? 0 : _pass->GetRenderTarget();
 }
-inline unsigned char psRenderable::NumRT() const { return !_rts.Capacity() ? (_pass != 0 && _pass->GetRenderTarget()[0] != 0) : _rts.Capacity(); }
-void BSS_FASTCALL psRenderable::SetRenderTarget(psTex* rt, unsigned int index)
+inline uint8_t psRenderable::NumRT() const { return !_rts.Capacity() ? (_pass != 0 && _pass->GetRenderTarget()[0] != 0) : _rts.Capacity(); }
+void BSS_FASTCALL psRenderable::SetRenderTarget(psTex* rt, uint32_t index)
 {
-  unsigned int oldsize = _rts.Capacity();
+  uint32_t oldsize = _rts.Capacity();
   if(index >= oldsize)
     _rts.SetCapacity(index + 1);
-  for(unsigned int i = oldsize; i < index; ++i)
+  for(uint32_t i = oldsize; i < index; ++i)
     _rts[i] = 0;
   if(_rts[index]) _rts[index]->Drop();
   _rts[index] = rt;
   if(_rts[index]) _rts[index]->Grab();
 }
 void psRenderable::ClearRenderTargets() {
-  for(unsigned int i = 0; i < _rts.Capacity(); ++i)
+  for(uint32_t i = 0; i < _rts.Capacity(); ++i)
     _rts[i]->Drop();
   _rts.Clear();
 }
@@ -121,7 +121,7 @@ psRenderable& psRenderable::operator =(const psRenderable& right)
   _shader=psShader::CreateShader(right._shader);
   _rts = right._rts;
 
-  for(unsigned int i = 0; i < _rts.Capacity(); ++i)
+  for(uint32_t i = 0; i < _rts.Capacity(); ++i)
     _rts[i]->Grab();
 
   _llist.next=_llist.prev=0;

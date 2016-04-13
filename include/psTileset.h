@@ -15,7 +15,7 @@ namespace planeshader {
     uint32_t index;
     float rotate;
     psVec pivot;
-    unsigned int color;
+    uint32_t color;
   };
 
   class PS_DLLEXPORT psTileset : public psSolid, public psTextured, public psDriverHold
@@ -35,13 +35,13 @@ namespace planeshader {
     void SetTileDim(psVeci tiledim);
     uint32_t AutoGenDefs(psVec dim);
     uint32_t AddTileDef(psRect uv, psVec dim, psVec offset = VEC_ZERO);
-    bool SetTile(psVeci pos, uint32_t index, unsigned int color = 0xFFFFFFFF, float rotate = 0, psVec pivot = VEC_ZERO);
+    bool SetTile(psVeci pos, uint32_t index, uint32_t color = 0xFFFFFFFF, float rotate = 0, psVec pivot = VEC_ZERO);
     void SetTiles(psTile* tiles, uint32_t num, uint32_t pitch);
     inline psVeci GetDimIndex() const { return psVeci(_rowlength, _tiles.Length()/_rowlength); }
     void SetDimIndex(psVeci dim);
 
     virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
-    virtual unsigned char NumTextures() const override { return psTextured::NumTextures(); }
+    virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
 
     static inline uint32_t BSS_FASTCALL WangTile1D(uint32_t e1, uint32_t e2) {
       if(e1 < e2) return 2 * e1 + e2*e2;

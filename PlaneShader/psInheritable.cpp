@@ -15,15 +15,20 @@ psInheritable::psInheritable(const psInheritable& copy) : psRenderable(copy), ps
   for(psInheritable* cur = _children; cur != 0; cur = cur->_lchild.next)
     cur->Clone()->SetParent(this, true);
 }
-psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov)), psLocatable(std::move(mov)), _parent(0), _children(mov._children), _depth(0)
+psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov)), psLocatable(std::move(mov)), _parent(mov._parent), _children(mov._children), _depth(mov._depth), _lchild(mov._lchild)
 {
-  _lchild.next=_lchild.prev=0;
-  SetParent(mov._parent, mov._internalflags&INTERNALFLAG_OWNED);
-  mov._children=0;
-  mov.SetParent(0); // prevents parent from deleting this if it was owned
+  mov._parent = 0;
+  mov._children = 0;
+  mov._lchild.next= mov._lchild.prev=0;
+  mov._depth = 0;
+  
+  if(_lchild.next) _lchild.next->_lchild.prev = this; // Fix the linked list
+  if(_lchild.prev) _lchild.prev->_lchild.next = this;
+  else _parent->_children = this;
+
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->_parent=this;
-  SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor
+  SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor, so we call it again, which will fix up the passes for the children
 }
 psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent) :
   psRenderable(flags, zorder, stateblock, shader, pass), psLocatable(position, rotation, pivot), _parent(0), _children(0), _depth(0)
@@ -141,12 +146,12 @@ psInheritable& psInheritable::operator=(psInheritable&& mov)
 }
 void psInheritable::_sortchildren()
 {
-  unsigned int count = NumChildren();
+  uint32_t count = NumChildren();
   if(count > 0)
   {
     DYNARRAY(psInheritable*, buf, count);
 
-    unsigned int i = 0;
+    uint32_t i = 0;
     for(psInheritable* cur = _children; i < count && cur != 0; cur = cur->_lchild.next)
       buf[i++] = cur;
 
@@ -172,8 +177,8 @@ char BSS_FASTCALL psInheritable::_sort(psRenderable* r) const
   if(r->_getparent())
   {
     psInheritable* rt = static_cast<psInheritable*>(r); // If you have a parent, you MUST be a psInheritable.
-    unsigned int ld = _depth;
-    unsigned int rd = rt->_depth;
+    uint32_t ld = _depth;
+    uint32_t rd = rt->_depth;
     const psInheritable* lt = this;
 
     while(ld > rd) lt = lt->_parent;
@@ -200,9 +205,9 @@ char BSS_FASTCALL psInheritable::_sort(psRenderable* r) const
   return c;
 }
 
-unsigned int psInheritable::NumChildren() const
+uint32_t psInheritable::NumChildren() const
 {
-  unsigned int count = 0;
+  uint32_t count = 0;
   for(psInheritable* cur = _children; cur != 0; cur = cur->_lchild.next)
     ++count;
   return count;
@@ -215,7 +220,7 @@ inline psTex* const* psInheritable::GetRenderTargets() const
     return _parent->GetRenderTargets();
   return !_pass ? 0 : _pass->GetRenderTarget();
 }
-inline unsigned char psInheritable::NumRT() const
+inline uint8_t psInheritable::NumRT() const
 {
   if(_rts.Capacity())
     return _rts.Capacity();

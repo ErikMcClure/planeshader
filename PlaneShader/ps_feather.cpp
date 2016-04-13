@@ -28,13 +28,13 @@ using namespace planeshader;
 
 psRoot* psRoot::instance = 0;
 
-void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, unsigned int fontsize, float lineheight, float letterspacing)
+void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, float lineheight, float letterspacing)
 { 
   return psFont::Create(font, fontsize, lineheight, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS);
 }
 void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
 void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
-void* FG_FASTCALL fgDrawFont(void* font, const char* text, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
+void* FG_FASTCALL fgDrawFont(void* font, const char* text, uint32_t color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
 { 
   psFont* f = (psFont*)font;
   psRect rect = { area->left, area->top, area->right, area->bottom };
@@ -55,7 +55,7 @@ void FG_FASTCALL fgFontSize(void* font, const char* text, AbsRect* area, fgFlag 
 void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
 void* FG_FASTCALL fgCloneResource(void* res) { ((psTex*)res)->Grab(); return res; }
 void FG_FASTCALL fgDestroyResource(void* res) { ((psTex*)res)->Drop(); }
-void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags)
+void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, uint32_t color, uint32_t edge, FABS outline, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags)
 {
   psTex* tex = (psTex*)res;
   psRect uvresolve;
@@ -93,7 +93,7 @@ void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag 
   dim->x = uvresolve.right - uvresolve.left;
   dim->y = uvresolve.bottom - uvresolve.top;
 }
-void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, unsigned int color)
+void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
 {
   psDriver* driver = psRoot::Instance()->GetDriver();
   psBatchObj& obj = driver->DrawLinesStart(driver->library.LINE, 0, 0);
@@ -106,12 +106,12 @@ void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, unsigned int color)
   init(r, __VA_ARGS__); \
   ((fgChild*)r)->free = &free;
 
-fgChild* FG_FASTCALL fgResource_Create(void* res, const CRect* uv, unsigned int color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
+fgChild* FG_FASTCALL fgResource_Create(void* res, const CRect* uv, uint32_t color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
 {
   DEFAULT_CREATE(fgResource, fgResource_Init, res, uv, color, flags, parent, prev, element);
   return (fgChild*)r;
 }
-fgChild* FG_FASTCALL fgText_Create(char* text, void* font, unsigned int color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
+fgChild* FG_FASTCALL fgText_Create(char* text, void* font, uint32_t color, fgFlag flags, fgChild* BSS_RESTRICT parent, fgChild* BSS_RESTRICT prev, const fgElement* element)
 {
   DEFAULT_CREATE(fgText, fgText_Init, text, font, color, flags, parent, prev, element);
   return (fgChild*)r;
@@ -242,7 +242,7 @@ psRoot* psRoot::Instance()
 
 #include "bss-util\bss_win32_includes.h"
 
-void fgSetCursor(unsigned int type, void* custom)
+void fgSetCursor(uint32_t type, void* custom)
 {
   static HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
   static HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
@@ -274,7 +274,7 @@ void fgSetCursor(unsigned int type, void* custom)
   }
 }
 
-void fgClipboardCopy(unsigned int type, const void* data, size_t length)
+void fgClipboardCopy(uint32_t type, const void* data, size_t length)
 {
   OpenClipboard(psEngine::Instance()->GetWindow());
   if(EmptyClipboard() && data != 0 && length > 0)
@@ -312,7 +312,7 @@ void fgClipboardCopy(unsigned int type, const void* data, size_t length)
   CloseClipboard();
 }
 
-char fgClipboardExists(unsigned int type)
+char fgClipboardExists(uint32_t type)
 {
   switch(type)
   {
@@ -330,7 +330,7 @@ char fgClipboardExists(unsigned int type)
   return 0;
 }
 
-const void* fgClipboardPaste(unsigned int type, size_t* length)
+const void* fgClipboardPaste(uint32_t type, size_t* length)
 {
   OpenClipboard(psEngine::Instance()->GetWindow());
   UINT format = CF_PRIVATEFIRST;

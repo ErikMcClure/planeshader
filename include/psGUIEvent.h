@@ -8,7 +8,7 @@
 
 namespace planeshader {
   //The keycodes enumerator
-  enum KeyCodes : unsigned char
+  enum KeyCodes : uint8_t
   {
     KEY_NULL = 0, //because its possible to have _lastkey Set to this
     KEY_LBUTTON      = 0x01,
@@ -155,7 +155,7 @@ namespace planeshader {
   };
 
   //The joystick button enumerator
-  enum JoyButtons : unsigned short
+  enum JoyButtons : uint16_t
   {
     JOYBUTTON1=0,
     JOYBUTTON2=1,
@@ -213,7 +213,7 @@ namespace planeshader {
     JOYAXIS_V=5
   };
 
-  enum GUI_MOUSEBUTTONS : unsigned char
+  enum GUI_MOUSEBUTTONS : uint8_t
   {
     GUI_L_BUTTON=1,
     GUI_R_BUTTON=2,
@@ -223,7 +223,7 @@ namespace planeshader {
     GUI_NUM_BUTTONS=5
   };
 
-  enum GUI_EVENT : unsigned char
+  enum GUI_EVENT : uint8_t
   {
     GUI_MOUSEDOWN,
     GUI_MOUSEDBLCLICK,
@@ -245,19 +245,19 @@ namespace planeshader {
       struct {
         int x; int y; // Mouse events
         union {
-          struct { unsigned char button; unsigned char allbtn; };
+          struct { uint8_t button; uint8_t allbtn; };
           short scrolldelta;
         };
       };
       struct {  // Keys
         int keychar; //Only used by KEYCHAR, represents a utf32 character
-        unsigned char keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
+        uint8_t keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
         char sigkeys; // 1: shift, 2: ctrl, 4: alt, 8: held
       };
       struct { float joyvalue; short joyaxis; }; // JOYAXIS
       struct { char joydown; short joybutton; }; // JOYBUTTON
     };
-    unsigned char type;
+    uint8_t type;
     uint64_t time;
 
     bool IsPressed() const { return (button&allbtn)!=0; }

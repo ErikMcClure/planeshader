@@ -70,7 +70,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
   break;
   case WM_NCMOUSEMOVE:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam)); //This is a bit weird but it works because we get passed lParam by value, so this function actually ends up modifying lParam directly.
   case WM_MOUSEMOVE:
     if(!(self->_guiflags&PSGUIMANAGER_ISINSIDE))
@@ -83,7 +83,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCLBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONDOWN:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
@@ -91,7 +91,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCLBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONUP:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
@@ -102,7 +102,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCRBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONDOWN:
     SetCapture(hWnd);
@@ -110,7 +110,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCRBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONUP:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
@@ -121,7 +121,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCMBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONDOWN:
     SetCapture(hWnd);
@@ -129,7 +129,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCMBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONUP:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
@@ -140,14 +140,14 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     break;
   case WM_NCXBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONDOWN:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
     break;
   case WM_NCXBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
-    wpcopy = (unsigned int)-1;
+    wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONUP:
     psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
@@ -161,14 +161,14 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     //{
     //  BYTE allKeys[256]; 
     //GetKeyboardState(allKeys);
-    //  (cEngine::Instance()->*winhook_setkey)((unsigned char)wParam,0, 0, message==WM_SYSKEYDOWN, allKeys);
+    //  (cEngine::Instance()->*winhook_setkey)((uint8_t)wParam,0, 0, message==WM_SYSKEYDOWN, allKeys);
     //  return 0;
     //} //do not break to allow syskeys to drop down
   case WM_KEYUP:
   case WM_KEYDOWN:
   {
-    psEngine::Instance()->SetKey((unsigned char)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
-    //  BYTE allKeys[256]; //Note that the virtual key codes do not exceed 256, so we can actually convert wParam to unsigned char without data loss
+    psEngine::Instance()->SetKey((uint8_t)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
+    //  BYTE allKeys[256]; //Note that the virtual key codes do not exceed 256, so we can actually convert wParam to uint8_t without data loss
     //  WORD asciikey=0;
     //  wchar_t unicodekey[4];
     //GetKeyboardState(allKeys);
@@ -176,10 +176,10 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     //int retval = ToUnicode((UINT)wParam,(UINT)lParam,allKeys,unicodekey,4,0);
     //  
     //  if(retval<=0)
-    //    (cEngine::Instance()->*winhook_setkey)((unsigned char)wParam,(char)asciikey, (wchar_t)0, message==WM_KEYDOWN||message==WM_SYSKEYDOWN, allKeys);
+    //    (cEngine::Instance()->*winhook_setkey)((uint8_t)wParam,(char)asciikey, (wchar_t)0, message==WM_KEYDOWN||message==WM_SYSKEYDOWN, allKeys);
     //  else
     //    for(int i = 0; i < retval; ++i) //iterate through each key written and produce a seperate event for it
-    //      (cEngine::Instance()->*winhook_setkey)((unsigned char)wParam,(char)asciikey, (wchar_t)unicodekey[i], message==WM_KEYDOWN||message==WM_SYSKEYDOWN, allKeys);
+    //      (cEngine::Instance()->*winhook_setkey)((uint8_t)wParam,(char)asciikey, (wchar_t)unicodekey[i], message==WM_KEYDOWN||message==WM_SYSKEYDOWN, allKeys);
   }
   return 0;
   case WM_SYSCOMMAND:
@@ -358,7 +358,7 @@ psGUIManager::~psGUIManager()
 
   UnregisterClassW(L"PlaneShaderWindow", GetModuleHandle(0));
 }
-void psGUIManager::SetKey(unsigned char keycode, bool down, bool held, DWORD time)
+void psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
 {
   PROFILE_FUNC();
   GetKeyboardState(_allkeys);
@@ -401,7 +401,7 @@ void psGUIManager::SetChar(int key, DWORD time)
     _receiver(evt);
 }
 
-void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, DWORD time)
+void psGUIManager::SetMouse(POINTS* points, uint8_t click, size_t wparam, DWORD time)
 {
   PROFILE_FUNC();
   psGUIEvent evt;
@@ -421,7 +421,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned char click, size_t wparam, 
 
   if(wparam!=(size_t)-1) //if wparam is -1 it signals that it is invalid, so we simply leave our assignments at their last known value.
   {
-    unsigned char bt=0; //we must keep these bools accurate at all times
+    uint8_t bt=0; //we must keep these bools accurate at all times
     bt |= GUI_L_BUTTON&(-((wparam&MK_LBUTTON)!=0));
     bt |= GUI_R_BUTTON&(-((wparam&MK_RBUTTON)!=0));
     bt |= GUI_M_BUTTON&(-((wparam&MK_MBUTTON)!=0));
@@ -478,7 +478,7 @@ char psGUIManager::CaptureAllJoy(HWND__* hwnd)
   PROFILE_FUNC();
   char r=0;
   _alljoysticks=0;
-  for(unsigned short i = 0; i < _maxjoy; ++i)
+  for(uint16_t i = 0; i < _maxjoy; ++i)
   {
     if(joySetCapture(hwnd, i, 0, TRUE)==JOYERR_NOERROR)
     {
@@ -537,7 +537,7 @@ void psGUIManager::_joyupdateall()
   info.dwSize=sizeof(JOYINFOEX);
   info.dwFlags=JOY_RETURNBUTTONS|JOY_RETURNCENTERED|JOY_RETURNX|JOY_RETURNY|JOY_RETURNZ|JOY_RETURNR|JOY_RETURNU|JOY_RETURNV;
 
-  for(unsigned short i = 0; i < _maxjoy; ++i)
+  for(uint16_t i = 0; i < _maxjoy; ++i)
   {
     if(!(_alljoysticks & (1<<i))) continue;
     if(joyGetPosEx(i, &info)==JOYERR_NOERROR)
@@ -546,10 +546,10 @@ void psGUIManager::_joyupdateall()
       {
         psGUIEvent evt;
         evt.time=GetTickCount();
-        unsigned int old=_allbuttons[i];
+        uint32_t old=_allbuttons[i];
         _allbuttons[i]=info.dwButtons;
-        unsigned int diff=(old^info.dwButtons);
-        unsigned int k;
+        uint32_t diff=(old^info.dwButtons);
+        uint32_t k;
         if(!_receiver.IsEmpty()) //Only bother with events if we have something to send them to
         {
           for(int j = 0; j < 32; ++j) //go through the bits and generate BUTTONUP or BUTTONDOWN events
@@ -566,7 +566,7 @@ void psGUIManager::_joyupdateall()
         }
       }
 
-      unsigned char numaxes=_joydevs[i].numaxes;
+      uint8_t numaxes=_joydevs[i].numaxes;
       if(memcmp(&_alljoyaxis[i][JOYAXIS_X], &info.dwXpos, sizeof(unsigned long)*numaxes)!=0)
       {
         unsigned long old[NUMAXIS];
@@ -594,10 +594,10 @@ void psGUIManager::_joyupdateall()
   }
 }
 
-float psGUIManager::_translatejoyaxis(unsigned short axis) const
+float psGUIManager::_translatejoyaxis(uint16_t axis) const
 {
-  unsigned char ID = (axis>>8);
-  unsigned char a = (axis&0xFF);
+  uint8_t ID = (axis>>8);
+  uint8_t a = (axis&0xFF);
   return (((long)_alljoyaxis[ID][a])-_joydevs[ID].offset[a])/_joydevs[ID].range[a];
 }
 

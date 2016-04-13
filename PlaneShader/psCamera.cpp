@@ -70,7 +70,7 @@ void psCamera::SetViewPort(const psRect& vp)
 inline const psRect& psCamera::Apply() const
 {
   auto& vp = GetViewPort();
-  psRectiu realvp = { (unsigned int)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (unsigned int)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (unsigned int)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
+  psRectiu realvp = { (uint32_t)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (uint32_t)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (uint32_t)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (uint32_t)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
   psVec pivot = GetPivot()*psVec(_driver->rawscreendim);
   _driver->PushCamera(_relpos, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = _relpos.xy - pivot;

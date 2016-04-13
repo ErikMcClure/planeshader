@@ -37,10 +37,10 @@ namespace planeshader {
     inline const psStateblock* GetStateblock() const { return _stateblock; }
     void BSS_FASTCALL SetStateblock(psStateblock* stateblock);
     virtual psTex* const* GetTextures() const;
-    virtual unsigned char NumTextures() const;
+    virtual uint8_t NumTextures() const;
     virtual psTex* const* GetRenderTargets() const;
-    virtual unsigned char NumRT() const;
-    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, unsigned int index = 0);
+    virtual uint8_t NumRT() const;
+    virtual void BSS_FASTCALL SetRenderTarget(psTex* rt, uint32_t index = 0);
     void ClearRenderTargets();
     virtual psRenderable* Clone() const = 0;
 
@@ -58,15 +58,15 @@ namespace planeshader {
 
     bss_util::cBitField<psFlag> _flags;
     psPass* _pass; // Stores what pass we are in
-    unsigned char _internalflags;
+    uint8_t _internalflags;
     int _zorder;
     bss_util::cAutoRef<psStateblock> _stateblock;
     bss_util::cAutoRef<psShader> _shader;
     bss_util::LLBase<psRenderable> _llist;
     bss_util::TRB_Node<psRenderable*>* _psort;
-    bss_util::cArray<psTex*, unsigned char> _rts;
+    bss_util::cArray<psTex*, uint8_t> _rts;
 
-    enum INTERNALFLAGS : unsigned char
+    enum INTERNALFLAGS : uint8_t
     {
       INTERNALFLAG_ACTIVE = 0x80,
       INTERNALFLAG_SOLID = 0x40,
