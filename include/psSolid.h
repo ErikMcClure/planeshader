@@ -29,8 +29,6 @@ namespace planeshader {
     inline const psRectRotateZ& GetCollisionRectStatic() const { return _collisionrect; } //This does not update the collision rect
     // Returns boudning rect without updating it 
     inline const psRect& GetBoundingRectStatic() const { return _boundingrect; } //This does not update the bounding rect
-    // Overriden pass set 
-    virtual void BSS_FASTCALL SetPass(psPass* pass) override;
     // Gets the dimensions of the object 
     inline const psVec& GetDim() const { return _dim; }
     inline const psVec& GetUnscaledDim() const { return _realdim; }
@@ -53,7 +51,6 @@ namespace planeshader {
 
   protected:
     void BSS_FASTCALL SetDim(const psVec& dim);
-    void _treeremove();
 
     psVec _dim;
     psVec _realdim;

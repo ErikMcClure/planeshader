@@ -10,21 +10,19 @@ psSolid::psSolid(const psSolid& copy) : psInheritable(copy), _scale(copy._scale)
 psSolid::psSolid(psSolid&& mov) : psInheritable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _collisionrect(mov._collisionrect), _boundingrect(mov._boundingrect) { }
 
 psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, 0, 0), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
+  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
 {
-  _internalflags|=INTERNALFLAG_SOLID;
   psSolid::SetScale(scale);
   UpdateBoundingRect();
-  SetParent(parent);
-  SetPass(pass);
 }
 
 psSolid::~psSolid() { }
 void psSolid::Render()
 {
   psInheritable* cur = _prerender();
-  if(psPass::CurPass != 0)
-    if(!psPass::CurPass->GetCamera()->Cull(this))
+  psPass* pass = !_pass ? psPass::CurPass : _pass;
+  if(pass != 0)
+    if(!pass->GetCamera()->Cull(this))
       psRenderable::Render();
   for(; cur != 0; cur = cur->_lchild.next)
     cur->Render();
@@ -56,12 +54,6 @@ void psSolid::UpdateBoundingRect()
   _collisionrect.z=pos.z;
   _boundingrect=_collisionrect.BuildAABB();
   //_internalflags&=(~2);
-}
-
-void BSS_FASTCALL psSolid::SetPass(psPass* pass) 
-{
-  UpdateBoundingRect();
-  psInheritable::SetPass(pass);
 }
 
 void BSS_FASTCALL psSolid::SetDim(const psVec& dim) { _realdim = dim; _setdim(_scale*_realdim); }

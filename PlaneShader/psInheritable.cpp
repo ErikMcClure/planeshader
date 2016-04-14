@@ -17,7 +17,7 @@ psInheritable::psInheritable(const psInheritable& copy) : psRenderable(copy), ps
 }
 psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov)), psLocatable(std::move(mov)), _parent(mov._parent), _children(mov._children), _depth(mov._depth), _lchild(mov._lchild)
 {
-  mov._parent = 0;
+  mov._parent = 0; 
   mov._children = 0;
   mov._lchild.next= mov._lchild.prev=0;
   mov._depth = 0;
@@ -28,8 +28,7 @@ psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov))
 
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->_parent=this;
-  SetPass(_pass); // psRenderable won't have been able to resolve this virtual function in its constructor, so we call it again, which will fix up the passes for the children
-}
+} // Note: we do NOT call SetPass because all the children are already pointing at the correct pass!
 psInheritable::psInheritable(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent) :
   psRenderable(flags, zorder, stateblock, shader, pass), psLocatable(position, rotation, pivot), _parent(0), _children(0), _depth(0)
 {
@@ -50,12 +49,15 @@ psInheritable::~psInheritable()
 }
 psInheritable* psInheritable::_prerender()
 {
-  if(!(_internalflags&INTERNALFLAG_SORTED))
-    _sortchildren();
+  psInheritable* cur = 0;
+  if(!_pass) // We only render children if we DON'T have a pass
+  {
+    if(!(_internalflags&INTERNALFLAG_SORTED))
+      _sortchildren();
 
-  psInheritable* cur;
-  for(cur = _children; cur != 0 && cur->_zorder<0; cur = cur->_lchild.next)
-    cur->Render();
+    for(cur = _children; cur != 0 && cur->_zorder < 0; cur = cur->_lchild.next)
+      cur->Render();
+  }
   return cur;
 }
 void psInheritable::Render()

@@ -18,7 +18,7 @@ namespace planeshader {
     psCullGroup(psCullGroup&& mov);
     psCullGroup();
     ~psCullGroup();
-    // Inserts a solid that must not move relative to the other images in this culling group and removes it from any passes it belongs to.
+    // Inserts a solid that must not move relative to the other images in this culling group and removes it from the internal pass list
     void BSS_FASTCALL Insert(psSolid* img, bool recalc = false);
     // Removes a solid from this culling group and rebases the origin if necessary.
     void BSS_FASTCALL Remove(psSolid* img);
