@@ -50,7 +50,6 @@ namespace planeshader {
 
     const psCamera* _cam;
     psRenderable* _renderables;
-    psRenderable* _solids;
     psCullGroup* _cullgroups;
     psTex* _defaultrt;
     ALLOC _renderalloc;

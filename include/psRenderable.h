@@ -53,6 +53,7 @@ namespace planeshader {
   protected:
     void _destroy();
     void _invalidate();
+    void _copyinsert(const psRenderable& r);
     virtual psRenderable* BSS_FASTCALL _getparent() const;
     virtual char BSS_FASTCALL _sort(psRenderable* r) const;
 
@@ -69,9 +70,8 @@ namespace planeshader {
     enum INTERNALFLAGS : uint8_t
     {
       INTERNALFLAG_ACTIVE = 0x80,
-      INTERNALFLAG_SOLID = 0x40,
-      INTERNALFLAG_SORTED = 0x20,
-      INTERNALFLAG_OWNED = 0x10,
+      INTERNALFLAG_SORTED = 0x40,
+      INTERNALFLAG_OWNED = 0x20,
     };
   };
 }
