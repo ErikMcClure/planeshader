@@ -21,6 +21,31 @@ psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot,
 
 psTileset::~psTileset() {}
 
+psTileset& psTileset::operator=(const psTileset& copy)
+{
+  psSolid::operator=(copy);
+  psTextured::operator=(copy);
+
+  _rowlength = copy._rowlength;
+  _tiledim = copy._tiledim;
+  _defs = copy._defs;
+  _tiles = copy._tiles;
+  return *this;
+}
+psTileset& psTileset::operator=(psTileset&& mov)
+{
+  psSolid::operator=(std::move(mov));
+  psTextured::operator=(std::move(mov));
+
+  _rowlength = mov._rowlength;
+  _tiledim = mov._tiledim;
+  _defs = std::move(mov._defs);
+  _tiles = std::move(mov._tiles);
+  mov._tiledim = VEC_ZERO;
+  mov._rowlength = 0;
+  return *this;
+}
+
 uint32_t psTileset::AutoGenDefs(psVec dim)
 {
   _defs.Clear();

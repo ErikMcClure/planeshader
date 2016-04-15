@@ -161,8 +161,8 @@ void BSS_FASTCALL psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2
   AppendQuadraticCurve(psVec(P0), psVec(P1), psVec(P2), _thickness, _color.color, !_verts.Length() | (psVec(P2) == _p[3])*2);
 }
 
-psRoundedRect::psRoundedRect(const psRoundedRect& copy) : psSolid(copy), psColored(copy) {}
-psRoundedRect::psRoundedRect(psRoundedRect&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
+psRoundedRect::psRoundedRect(const psRoundedRect& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
+psRoundedRect::psRoundedRect(psRoundedRect&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
 psRoundedRect::psRoundedRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
   !shader?_driver->library.ROUNDRECT:shader, pass, parent, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
@@ -171,6 +171,24 @@ psRoundedRect::psRoundedRect(const psRectRotateZ& rect, psFlag flags, int zorder
 }
 psRoundedRect::~psRoundedRect(){}
 
+psRoundedRect& psRoundedRect::operator=(const psRoundedRect& copy)
+{
+  psSolid::operator=(copy);
+  psColored::operator=(copy);
+  _outline = copy._outline;
+  _edge = copy._edge;
+  _corners = copy._corners;
+  return *this;
+}
+psRoundedRect& psRoundedRect::operator=(psRoundedRect&& mov)
+{
+  psSolid::operator=(std::move(mov));
+  psColored::operator=(std::move(mov));
+  _outline = mov._outline;
+  _edge = mov._edge;
+  _corners = mov._corners;
+  return *this;
+}
 void psRoundedRect::DrawRoundedRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RRBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
@@ -193,8 +211,8 @@ void BSS_FASTCALL psRoundedRect::_render()
   DrawRoundedRect(GetShader(), _stateblock, GetCollisionRect(), _corners, GetAllFlags(), _color, _outline, _edge);
 }
 
-psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psColored(copy) {}
-psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
+psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _arcs(copy._arcs), _edge(copy._edge) {}
+psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _arcs(mov._arcs), _edge(mov._edge) {}
 psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
   psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, parent, scale),
   _outline(0), _edge(-1), _arcs(-PI, PI, -PI, PI)
@@ -203,6 +221,24 @@ psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag fla
 }
 psRenderCircle::~psRenderCircle() {}
 
+psRenderCircle& psRenderCircle::operator=(const psRenderCircle& copy)
+{
+  psSolid::operator=(copy);
+  psColored::operator=(copy);
+  _outline = copy._outline;
+  _edge = copy._edge;
+  _arcs = copy._arcs;
+  return *this;
+}
+psRenderCircle& psRenderCircle::operator=(psRenderCircle&& mov)
+{
+  psSolid::operator=(std::move(mov));
+  psColored::operator=(std::move(mov));
+  _outline = mov._outline;
+  _edge = mov._edge;
+  _arcs = mov._arcs;
+  return *this;
+}
 void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CIRCLEBUFSIZE, sizeof(CircleVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
