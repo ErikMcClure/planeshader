@@ -19,6 +19,31 @@ psText::psText(psTexFont* font, const char* text, const psVec3D& position, FNUM 
 {
 }
 psText::~psText() { }
+psText& psText::operator=(const psText& copy)
+{
+  psSolid::operator=(copy);
+  psColored::operator=(copy);
+  _text = copy._text;
+  _font = copy._font;
+  _textdim = copy._textdim;
+  _letterspacing = copy._letterspacing;
+  _drawflags = copy._drawflags;
+  _func = copy._func;
+  return *this;
+}
+psText& psText::operator=(psText&& mov)
+{
+  psSolid::operator=(std::move(mov));
+  psColored::operator=(std::move(mov));
+  _text = std::move(mov._text);
+  _font = std::move(mov._font);
+  _textdim = mov._textdim;
+  _letterspacing = mov._letterspacing;
+  _drawflags = mov._drawflags;
+  _func = mov._func;
+  return *this;
+}
+
 void psText::SetFont(psTexFont* font)
 { 
   _font = font;
