@@ -47,7 +47,7 @@ namespace planeshader {
     template<typename Engine>
     void Serialize(bss_util::cSerializer<Engine>& e)
     {
-      e.EvaluateType<ubjsontest>(
+      e.EvaluateType<PSINIT>(
         GenPair("width", width),
         GenPair("height", height),
         GenPair("driver", (uint8_t&)driver),

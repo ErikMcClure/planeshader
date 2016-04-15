@@ -24,7 +24,7 @@ psInheritable::psInheritable(psInheritable&& mov) : psRenderable(std::move(mov))
   
   if(_lchild.next) _lchild.next->_lchild.prev = this; // Fix the linked list
   if(_lchild.prev) _lchild.prev->_lchild.next = this;
-  else _parent->_children = this;
+  else if(_parent) _parent->_children = this;
 
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->_parent=this;
