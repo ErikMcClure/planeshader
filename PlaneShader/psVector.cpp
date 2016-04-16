@@ -239,10 +239,10 @@ psRenderCircle& psRenderCircle::operator=(psRenderCircle&& mov)
   _arcs = mov._arcs;
   return *this;
 }
-void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
+void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge, const float(&transform)[4][4])
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CIRCLEBUFSIZE, sizeof(CircleVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
+  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, transform, 1);
 
   uint32_t color;
   uint32_t outline;

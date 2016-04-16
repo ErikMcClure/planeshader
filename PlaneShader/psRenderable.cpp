@@ -10,7 +10,7 @@
 using namespace planeshader;
 
 psRenderable::psRenderable(const psRenderable& copy) : _flags(copy._flags), _pass(copy._pass), _internalflags(copy._internalflags), _zorder(copy._zorder),
-  _stateblock(copy._stateblock), _shader(psShader::CreateShader(copy._shader)), _rts(copy._rts)
+  _stateblock(copy._stateblock), _shader(psShader::CreateShader(copy._shader)), _rts(copy._rts), _psort(0)
 {
   for(uint32_t i = 0; i < _rts.Capacity(); ++i)
     _rts[i]->Grab();
@@ -18,13 +18,13 @@ psRenderable::psRenderable(const psRenderable& copy) : _flags(copy._flags), _pas
   _copyinsert(copy);
 }
 psRenderable::psRenderable(psRenderable&& mov) : _flags(mov._flags), _pass(mov._pass), _internalflags(mov._internalflags), _zorder(mov._zorder),
-  _stateblock(std::move(mov._stateblock)), _shader(std::move(mov._shader)), _rts(std::move(mov._rts))
+  _stateblock(std::move(mov._stateblock)), _shader(std::move(mov._shader)), _rts(std::move(mov._rts)), _psort(0)
 { 
   _llist.next=_llist.prev=0;
   _copyinsert(mov);
 
   if(mov._pass != 0) // We deliberately don't call SetPass(0), because we don't WANT to propagate this change down to mov's children - there's no point, because the children aren't being moved!
-    mov._pass->Remove(this);
+    mov._pass->Remove(&mov);
   mov._pass = 0;
 }
 
@@ -149,7 +149,7 @@ psRenderable& psRenderable::operator =(psRenderable&& right)
   _copyinsert(right);
 
   if(right._pass != 0) // We should have already removed right's children, but just in case we avoid calling SetPass anyway.
-    right._pass->Remove(this);
+    right._pass->Remove(&right);
   right._pass = 0;
   return *this;
 }
