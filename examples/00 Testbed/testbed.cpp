@@ -236,7 +236,8 @@ TESTDEF::RETPAIR test_psDirectX11()
     driver->DrawLines(obj, psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
 
     psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
-    driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
+    auto ptest1 = driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
+    auto ptest2 = driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, psVec3D(400,400,0), 0xFFFFFFFF, 0);
     engine->End();
     engine->FlushMessages();
     driver->PopCamera();
@@ -749,8 +750,8 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] ={
-    { "psTileset", &test_psTileset },
     { "psDirectX11", &test_psDirectX11 },
+    { "psTileset", &test_psTileset },
     { "ps_feather", &test_feather },
     { "psVector", &test_psVector },
     { "psFont", &test_psFont },

@@ -11,10 +11,11 @@ using namespace planeshader;
 psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
   uint32_t snapshot = GetSnapshot(); // Snapshot our driver state
-  if(_jobstack.Length() > 0 && !(flags&PSFLAG_DONOTBATCH))
+  if(_jobstack.Length() > 0)
   {
     auto& last = _jobstack.Back(); // Can this be batch rendered?
-    if(last.buffer.verts == verts &&
+    if(!(flags&PSFLAG_DONOTBATCH) && 
+      last.buffer.verts == verts &&
       last.buffer.indices == indices &&
       last.buffer.mode == rendermode &&
       last.snapshot == snapshot &&
