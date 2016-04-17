@@ -79,10 +79,9 @@ void psPass::Remove(psRenderable* r)
   PROFILE_FUNC();
   if(r->_pass == this)
   {
-    if(r->_llist.prev != 0 || _renderables == r) // It is possible for a renderable to not be in our renderlist
-      AltLLRemove<psRenderable, &psPass::GetRenderableAlt>(r, _renderables);
+    AltLLRemove<psRenderable, &psPass::GetRenderableAlt>(r, _renderables);
     r->_llist.prev = r->_llist.next = 0;
-    if(r->_psort != 0) _renderlist.Remove(r->_psort); // However, all renderables will be in our sorted list
+    if(r->_psort != 0) _renderlist.Remove(r->_psort);
     r->_psort = 0;
   }
 }
