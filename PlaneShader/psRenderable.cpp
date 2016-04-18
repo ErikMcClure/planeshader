@@ -55,7 +55,7 @@ void BSS_FASTCALL psRenderable::SetPass()
 void BSS_FASTCALL psRenderable::SetPass(psPass* pass)
 {
   PROFILE_FUNC();
-  if(pass == _pass) return;
+  if(pass == _pass || !psEngine::Instance()) return; // If a renderable is deleted after the engine is deleted, make sure we don't blow everything up
   if(_pass != 0)
     _pass->Remove(this);
   _pass = pass;

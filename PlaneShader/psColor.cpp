@@ -113,9 +113,6 @@ uint16_t psColor::BitsPerPixel(FORMATS format)
   return 0;
 }
 
-template<uint8_t TYPE, uint8_t BITS, uint16_t OFFSET>
-void BSS_FORCEINLINE _psColor_WriteComponent(float c, void* target);
-
 // Adapted from: http://stackoverflow.com/a/3542975
 uint16_t float_to_half(float f)
 {
@@ -149,6 +146,9 @@ uint16_t float_to_half(float f)
   return v.ui | sign;
 }
 
+template<uint8_t TYPE, uint8_t BITS, uint16_t OFFSET>
+void BSS_FORCEINLINE _psColor_WriteComponent(float c, void* target);
+
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 32, 0>(float c, void* target) { ((uint32_t*)target)[0] = bss_util::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint32_t>::max())); }
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 32, 0>(float c, void* target) { ((int32_t*)target)[0] = bss_util::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int32_t>::max())); }
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<2, 32, 0>(float c, void* target) { ((float*)target)[0] = c; }
@@ -160,7 +160,7 @@ template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 8, 0>(float c, void* 
 
 uint16_t psColor::WriteFormat(FORMATS format, void* target) const
 {
-  char* t = (char*)target;
+  uint8_t* t = reinterpret_cast<uint8_t*>(target);
   switch(format)
   {
   case FMT_R32G32B32A32F:
@@ -287,10 +287,9 @@ uint16_t psColor::WriteFormat(FORMATS format, void* target) const
 
 uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
 {
-  char* t = (char*)target;
-  float* f32 = (float*)target;
-  uint16_t* u16 = (uint16_t*)target;
-  uint8_t* u8 = (uint8_t*)target;
+  float* f32 = reinterpret_cast<float*>(target);
+  uint16_t* u16 = reinterpret_cast<uint16_t*>(target);
+  uint8_t* u8 = reinterpret_cast<uint8_t*>(target);
 
   switch(format)
   {
@@ -306,13 +305,13 @@ uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
     f32[2] = b;
     return 96;
   case FMT_R16G16B16A16F:
-    u16[0] = float_to_half(r);
-    u16[1] = float_to_half(g);
-    u16[2] = float_to_half(b);
-    u16[3] = float_to_half(a);
+    u16[0] = float_to_half(r / 255.0f);
+    u16[1] = float_to_half(g / 255.0f);
+    u16[2] = float_to_half(b / 255.0f);
+    u16[3] = float_to_half(a / 255.0f);
     return 64;
   case FMT_R16G16B16A16:
-    u16[0] = (r * 257);
+    u16[0] = (r * 257); // we multiply by 257, not 256, because multiplying 255 by 256 gives us 0b1111111100000000, not 0b1111111111111111. This works because 257 is 0b0000000100000001
     u16[1] = (g * 257);
     u16[2] = (b * 257);
     u16[3] = (a * 257);
@@ -328,7 +327,7 @@ uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
     f32[1] = g;
     return 64;
   case FMT_R8G8B8A8: // native storage format
-    ((uint32_t*)target)[0] = color;
+    reinterpret_cast<uint32_t*>(target)[0] = color;
     return 32;
   case FMT_U8V8W8Q8:
     u8[0] = r>>1;
@@ -337,8 +336,8 @@ uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
     u8[3] = a>>1;
     return 32;
   case FMT_R16G16F:
-    u16[0] = float_to_half(r);
-    u16[1] = float_to_half(g);
+    u16[0] = float_to_half(r / 255.0f);
+    u16[1] = float_to_half(g / 255.0f);
     return 32;
   case FMT_R16G16:
     u16[0] = (r * 257);
@@ -387,7 +386,7 @@ uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
     u8[1] = g >> 1;
     return 16;
   case FMT_R16F:
-    u16[0] = float_to_half(r);
+    u16[0] = float_to_half(r / 255.0f);
     return 16;
   case FMT_R16:
     u16[0] = (r * 257);
@@ -417,3 +416,269 @@ uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
 
   return 0;
 }
+
+uint16_t BSS_FASTCALL psColor::ReadFormat(FORMATS format, const void* target)
+{
+  const float* f32 = reinterpret_cast<const float*>(target);
+  const uint16_t* u16 = reinterpret_cast<const uint16_t*>(target);
+  const int16_t* i16 = reinterpret_cast<const int16_t*>(target);
+  const uint8_t* u8 = reinterpret_cast<const uint8_t*>(target);
+  const int8_t* i8 = reinterpret_cast<const int8_t*>(target);
+  switch(format)
+  {
+  case FMT_R32G32B32A32F:
+    r = f32[0];
+    g = f32[1];
+    b = f32[2];
+    a = f32[3];
+    return 128;
+  case FMT_R32G32B32F:
+    r = f32[0];
+    g = f32[1];
+    b = f32[2];
+    return 96;
+  //case FMT_R16G16B16A16F:
+  //  _psColor_WriteComponent<2, 16, 0>(r, t + 0);
+  //  _psColor_WriteComponent<2, 16, 0>(g, t + 2);
+  //  _psColor_WriteComponent<2, 16, 0>(b, t + 4);
+  //  _psColor_WriteComponent<2, 16, 0>(a, t + 6);
+  //  return 64;
+  case FMT_R16G16B16A16:
+    r = u16[0] / 65535.0f;
+    g = u16[1] / 65535.0f;
+    b = u16[2] / 65535.0f;
+    a = u16[3] / 65535.0f;
+    return 64;
+  case FMT_U16V16W16Q16:
+    r = i16[0] / 32767.0f; // Note: This technically only maps to approximately [-1.0,0.98]
+    g = i16[1] / 32767.0f;
+    b = i16[2] / 32767.0f;
+    a = i16[3] / 32767.0f;
+    return 64;
+  case FMT_R32G32F:
+    r = f32[0];
+    g = f32[1];
+    return 64;
+  case FMT_R8G8B8A8:
+    r = u8[0] / 255.0f;
+    g = u8[1] / 255.0f;
+    b = u8[2] / 255.0f;
+    a = u8[3] / 255.0f;
+    return 32;
+  case FMT_U8V8W8Q8:
+    r = i8[0] / 127.0f; // Note: This technically only maps to approximately [-1.0,0.98]
+    g = i8[1] / 127.0f;
+    b = i8[2] / 127.0f;
+    a = i8[3] / 127.0f;
+    return 32;
+  //case FMT_R16G16F:
+  //  _psColor_WriteComponent<0, 16, 0>(r, t + 0);
+  //  _psColor_WriteComponent<0, 16, 0>(g, t + 2);
+  //  return 32;
+  case FMT_R16G16:
+    r = u16[0] / 65535.0f;
+    g = u16[1] / 65535.0f;
+    return 32;
+  case FMT_U16V16:
+    r = i16[0] / 32767.0f;
+    g = i16[1] / 32767.0f;
+    return 32;
+  case FMT_R32F:
+    r = f32[0];
+    return 32;
+    //case FMT_R24X8:
+  case FMT_X24G8:
+    g = u16[2] / 255.0f;
+    return 32;
+  case FMT_R8G8_B8G8:
+    r = u16[0] / 255.0f;
+    g = u16[1] / 255.0f;
+    b = u16[2] / 255.0f;
+    g = u16[3] / 255.0f; // same value as above
+    return 32;
+  case FMT_G8R8_G8B8:
+    g = u16[0] / 255.0f;
+    r = u16[1] / 255.0f;
+    g = u16[2] / 255.0f; // we could just ignore this, it's supposed to be the same value as above
+    b = u16[3] / 255.0f;
+    return 32;
+  case FMT_B8G8R8A8:
+    b = u16[0] / 255.0f;
+    g = u16[1] / 255.0f;
+    r = u16[2] / 255.0f;
+    a = u16[3] / 255.0f;
+    return 32;
+  case FMT_B8G8R8X8:
+    b = u16[0] / 255.0f;
+    g = u16[1] / 255.0f;
+    r = u16[2] / 255.0f;
+    return 32;
+  case FMT_R8G8:
+    r = u16[0] / 255.0f;
+    g = u16[1] / 255.0f;
+    return 16;
+  case FMT_U8V8:
+    r = i8[0] / 127.0f;
+    g = i8[1] / 127.0f;
+    return 16;
+  //case FMT_R16F:
+  //  _psColor_WriteComponent<2, 16, 0>(r, t + 0);
+  //  return 16;
+  case FMT_R16:
+    r = u16[0] / 65535.0f;
+    return 16;
+  case FMT_U16:
+    r = i16[0] / 32767.0f;
+    return 16;
+    //case FMT_B5G6R5:
+    //case FMT_B5G5R5A1:
+    //case FMT_B4G4R4A4:
+    //return 16;
+  case FMT_R8:
+    r = u8[0] / 255.0f;
+    return 8;
+  case FMT_U8:
+    r = i8[0] / 127.0f;
+    return 8;
+  case FMT_A8:
+    a = u8[0] / 255.0f;
+    return 8;
+  }
+
+  return 0;
+}
+
+uint16_t BSS_FASTCALL psColor32::ReadFormat(FORMATS format, const void* target)
+{
+  const float* f32 = reinterpret_cast<const float*>(target);
+  const uint16_t* u16 = reinterpret_cast<const uint16_t*>(target);
+  const int16_t* i16 = reinterpret_cast<const int16_t*>(target);
+  const uint8_t* u8 = reinterpret_cast<const uint8_t*>(target);
+  const int8_t* i8 = reinterpret_cast<const int8_t*>(target);
+
+  switch(format)
+  {
+  case FMT_R32G32B32A32F:
+    _psColor_WriteComponent<0, 8, 0>(f32[0], &r);
+    _psColor_WriteComponent<0, 8, 0>(f32[1], &g);
+    _psColor_WriteComponent<0, 8, 0>(f32[2], &b);
+    _psColor_WriteComponent<0, 8, 0>(f32[3], &a);
+    return 128;
+  case FMT_R32G32B32F:
+    _psColor_WriteComponent<0, 8, 0>(f32[0], &r);
+    _psColor_WriteComponent<0, 8, 0>(f32[1], &g);
+    _psColor_WriteComponent<0, 8, 0>(f32[2], &b);
+    return 96;
+  //case FMT_R16G16B16A16F:
+    //u16[0] = float_to_half(r / 255.0f);
+    //u16[1] = float_to_half(g / 255.0f);
+    //u16[2] = float_to_half(b / 255.0f);
+    //u16[3] = float_to_half(a / 255.0f);
+    //return 64;
+  case FMT_R16G16B16A16:
+    r = u16[0] >> 8; // Division truncates, so dividing 65535/257 gives the same end result as 65535/256
+    g = u16[1] >> 8;
+    b = u16[2] >> 8;
+    a = u16[3] >> 8;
+    return 64;
+  case FMT_U16V16W16Q16:
+    r = (i16[0] >> 8) + 0x80; // shifts the range of the signed int into the unsigned int range
+    g = (i16[1] >> 8) + 0x80;
+    b = (i16[2] >> 8) + 0x80;
+    a = (i16[3] >> 8) + 0x80;
+    return 64;
+  case FMT_R32G32F:
+    _psColor_WriteComponent<0, 8, 0>(f32[0], &r);
+    _psColor_WriteComponent<0, 8, 0>(f32[1], &g);
+    return 64;
+  case FMT_R8G8B8A8: // native storage format
+    color = reinterpret_cast<const uint32_t*>(target)[0];
+    return 32;
+  case FMT_U8V8W8Q8:
+    r = i8[0] + 0x80;
+    g = i8[1] + 0x80;
+    b = i8[2] + 0x80;
+    a = i8[3] + 0x80;
+    return 32;
+  //case FMT_R16G16F:
+    //u16[0] = float_to_half(r / 255.0f);
+    //u16[1] = float_to_half(g / 255.0f);
+    //return 32;
+  case FMT_R16G16:
+    r = u16[0] >> 8;
+    g = u16[1] >> 8;
+    return 32;
+  case FMT_U16V16:
+    r = (i16[0] >> 8) + 0x80;
+    g = (i16[1] >> 8) + 0x80;
+    return 32;
+  case FMT_R32F:
+    _psColor_WriteComponent<0, 8, 0>(f32[0], &r);
+    return 32;
+    //case FMT_R24X8:
+  case FMT_X24G8:
+    g = u8[3];
+    return 32;
+  case FMT_R8G8_B8G8:
+    r = u8[0];
+    g = u8[1];
+    b = u8[2];
+    g = u8[3];
+    return 32;
+  case FMT_G8R8_G8B8:
+    g = u8[0];
+    r = u8[1];
+    g = u8[2];
+    b = u8[3];
+    return 32;
+  case FMT_B8G8R8A8:
+    b = u8[0];
+    g = u8[1];
+    r = u8[2];
+    a = u8[3];
+    return 32;
+  case FMT_B8G8R8X8:
+    b = u8[0];
+    g = u8[1];
+    r = u8[2];
+    return 32;
+  case FMT_R8G8:
+    r = u8[0];
+    g = u8[1];
+    return 16;
+  case FMT_U8V8:
+    r = i8[0] + 0x80;
+    g = i8[1] + 0x80;
+    return 16;
+  //case FMT_R16F:
+    //u16[0] = float_to_half(r / 255.0f);
+    //return 16;
+  case FMT_R16:
+    r = u16[0] >> 8;
+    return 16;
+  case FMT_U16:
+    r = (i16[0] >> 8) + 0x80;
+    return 16;
+  //case FMT_B5G6R5:
+  //  u16[0] = (b >> 3) | ((g >> 2) << 5) | ((r >> 3) << 11);
+  //  return 16;
+  //case FMT_B5G5R5A1:
+  //  u16[0] = (b >> 3) | ((g >> 3) << 5) | ((r >> 3) << 10) | ((a > 0) << 15);
+  //  return 16;
+  //case FMT_B4G4R4A4:
+  //  u16[0] = (b >> 4) | ((g >> 4) << 4) | ((r >> 4) << 8) | ((a >> 4) << 12);
+  //  return 16;
+  case FMT_R8:
+    r = u8[0];
+    return 8;
+  case FMT_U8:
+    r = i8[0] + 0x80;
+    return 8;
+  case FMT_A8:
+    a = u8[0];
+    return 8;
+  }
+
+  return 0;
+}
+
