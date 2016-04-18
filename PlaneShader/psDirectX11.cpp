@@ -1470,6 +1470,7 @@ bool BSS_FASTCALL psDirectX11::ShaderSupported(SHADER_VER profile) //With DX11 s
 void psDirectX11::SetDPI(psVeciu dpi)
 {
   _dpi = dpi;
+  //_resetscreendim();
 }
 psVeciu psDirectX11::GetDPI()
 {
