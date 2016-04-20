@@ -56,9 +56,11 @@ FG_EXTERN void FG_FASTCALL fgRoot_AddAction(fgRoot* self, fgDeferAction* action)
 FG_EXTERN void FG_FASTCALL fgRoot_RemoveAction(fgRoot* self, fgDeferAction* action); // Removes an action. Action must be in list.
 FG_EXTERN void FG_FASTCALL fgRoot_ModifyAction(fgRoot* self, fgDeferAction* action); // Moves action if it needs to be moved, or inserts it if it isn't already in the list.
 FG_EXTERN struct _FG_MONITOR* FG_FASTCALL fgRoot_GetMonitor(const fgRoot* self, const AbsRect* rect);
-FG_EXTERN void FG_FASTCALL fgStandardDraw(fgChild* self, AbsRect* area, size_t dpi);
+FG_EXTERN void FG_FASTCALL fgStandardDraw(fgChild* self, AbsRect* area, size_t dpi, char culled);
 FG_EXTERN void fgPushClipRect(AbsRect* clip);
+FG_EXTERN AbsRect fgPeekClipRect();
 FG_EXTERN void fgPopClipRect();
+FG_EXTERN void fgDirtyElement(fgElement* elem);
 FG_EXTERN void fgSetCursor(unsigned int type, void* custom); // What custom actually is depends on the implemention
 FG_EXTERN void fgClipboardCopy(unsigned int type, const void* data, size_t length); // passing in NULL will erase whatever what was in the clipboard.
 FG_EXTERN char fgClipboardExists(unsigned int type);

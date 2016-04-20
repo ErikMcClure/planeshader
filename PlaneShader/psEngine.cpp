@@ -42,8 +42,6 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   fSetRounding(true);
 
   GetStream() << "--- PLANESHADER v." << PS_VERSION_MAJOR << '.' << PS_VERSION_MINOR << '.' << PS_VERSION_REVISION << " LOG ---" << std::endl;
-  srand(GetTickCount());
-  rand();
 
   psVeciu dim = _create(psVeciu(init.width, init.height), init.mode, 0);
 

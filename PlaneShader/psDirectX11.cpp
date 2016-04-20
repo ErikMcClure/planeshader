@@ -343,15 +343,6 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
   {
     auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl");
 
-    ELEMENT_DESC desc[6] = {
-      { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
-      { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
-      { ELEMENT_TEXCOORD, 1, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
-      { ELEMENT_TEXCOORD, 2, FMT_R32F, 0, (uint32_t)-1 },
-      { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 },
-      { ELEMENT_COLOR, 1, FMT_R8G8B8A8, 0, (uint32_t)-1 }
-    };
-
     library.CIRCLE = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }

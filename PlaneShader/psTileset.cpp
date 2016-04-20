@@ -66,9 +66,9 @@ uint32_t psTileset::AutoGenDefs(psVec dim)
   return _defs.Length();
 }
 
-uint32_t psTileset::AddTileDef(psRect uv, psVec dim, psVec offset)
+uint32_t psTileset::AddTileDef(psRect uv, psVec dim, psVec offset, int level)
 {
-  psTileDef def = { uv, psRect(offset.x, offset.y, offset.x + dim.x, offset.y + dim.y) };
+  psTileDef def = { uv, psRect(offset.x, offset.y, offset.x + dim.x, offset.y + dim.y), level };
   return _defs.Add(def);
 }
 
@@ -129,16 +129,37 @@ void BSS_FASTCALL psTileset::_render()
       bss_util::fFastTruncate(r.bottom / _tiledim.y) + 1));
   }
 
-  for(uint32_t j = window.top; j < window.bottom; ++j)
-    for(uint32_t i = window.left; i < window.right; ++i)
-    {
-      uint32_t k = i + (j*_rowlength);
-      float x = i * _tiledim.x; //(k%_rowlength)
-      float y = j * _tiledim.y; //(k/_rowlength)
-      psTileDef& def = _defs[_tiles[k].index];
-      _driver->DrawRectBatch(obj,
-        psRectRotateZ(x + def.rect.left, y + def.rect.top, x + def.rect.right, y + def.rect.bottom, _tiles[k].rotate, _tiles[k].pivot, 0),
-        &def.uv, 
-        _tiles[k].color);
-    }
+  uint32_t skipped = 0;
+  uint32_t bytecount = T_NEXTMULTIPLE(_tiles.Length(), 7) >> 3;
+  DYNARRAY(uint8_t, drawn, bytecount);
+  memset(drawn, 0, bytecount);
+
+  do
+  {
+    for(uint32_t j = window.top; j < window.bottom; ++j)
+      for(uint32_t i = window.left; i < window.right; ++i)
+      {
+        uint32_t k = i + (j*_rowlength);
+        if(bss_util::bssGetBit(drawn, k))
+          continue; // if we drew this tile already don't draw it again
+
+        psTileDef& def = _defs[_tiles[k].index];
+        if(_drawcheck(drawn, k + 1, def.level) ||  // There are four tiles that we must check the levels of in case they need to render first
+          _drawcheck(drawn, k + _rowlength - 1, def.level) ||
+          _drawcheck(drawn, k + _rowlength + 0, def.level) ||
+          _drawcheck(drawn, k + _rowlength + 1, def.level))
+        {
+          ++skipped;
+          continue;
+        }
+
+        float x = i * _tiledim.x; //(k%_rowlength)
+        float y = j * _tiledim.y; //(k/_rowlength)
+        _driver->DrawRectBatch(obj,
+          psRectRotateZ(x + def.rect.left, y + def.rect.top, x + def.rect.right, y + def.rect.bottom, _tiles[k].rotate, _tiles[k].pivot, 0),
+          &def.uv,
+          _tiles[k].color);
+        drawn[k >> 3] |= (1 << (k % 8)); // mark tile as drawn
+      }
+  } while(skipped > 0);
 }
