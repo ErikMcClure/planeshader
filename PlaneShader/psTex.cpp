@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psPixelArray::psPixelArray(void* res, FORMATS format, uint8_t lockflags, uint8_t miplevel) : _res(res), _miplevel(miplevel)
+psPixelArray::psPixelArray(void* res, FORMATS format, uint8_t lockflags, uint8_t miplevel) : _res(res), _miplevel(miplevel), _fmt(format)
 {
   _mem = reinterpret_cast<uint8_t*>(_driver->LockTexture(_res, lockflags, _rowpitch, _miplevel));
 }

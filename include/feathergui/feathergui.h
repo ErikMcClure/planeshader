@@ -438,6 +438,7 @@ FG_EXTERN void FG_FASTCALL ToLongAbsRect(const AbsRect* r, long target[4]);
 FG_EXTERN char FG_FASTCALL MsgHitAbsRect(const FG_Msg* msg, const AbsRect* r);
 FG_EXTERN char* FG_FASTCALL fgCopyText(const char* text);
 FG_EXTERN void FG_FASTCALL fgUpdateMouseState(fgMouseState* state, const FG_Msg* msg);
+FG_EXTERN char FG_FASTCALL fgRectIntersect(const AbsRect* l, const AbsRect* r); // If l is completely contained within r, returns 1. If they intersect, returns 0. If l and r do not intersect, returns -1
 
 #ifdef  __cplusplus
 }

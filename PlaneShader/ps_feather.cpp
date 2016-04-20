@@ -170,9 +170,20 @@ void fgPushClipRect(AbsRect* clip)
   psRoot::Instance()->GetDriver()->MergeClipRect(rect);
 }
 
+AbsRect fgPeekClipRect()
+{
+  psRect c = psRoot::Instance()->GetDriver()->PeekClipRect();
+  return AbsRect { c.left, c.top, c.right, c.bottom };
+}
+
 void fgPopClipRect()
 {
   psRoot::Instance()->GetDriver()->PopClipRect();
+}
+
+void fgDirtyElement(fgElement* e)
+{
+
 }
 
 psRoot::psRoot() : _prev(0,0)
