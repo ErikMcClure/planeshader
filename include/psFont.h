@@ -18,6 +18,9 @@ namespace planeshader {
     // Iterates through the string and preloads all the glyphs that are used. This is useful for common characters that you know will be loaded eventually. Returns the number of characters successfully loaded 
     uint16_t PreloadGlyphs(const char* glyphs);
     uint16_t PreloadGlyphs(const int* glyphs);
+    int GetDPI() const { return _dpi; }
+    int GetPointSize() const { return _pointsize; }
+    const char* GetPath() const { return _path; }
 
     static FT_Library PTRLIB;
     enum FONT_ANTIALIAS : uint8_t {

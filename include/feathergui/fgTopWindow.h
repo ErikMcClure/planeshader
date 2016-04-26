@@ -32,20 +32,20 @@ struct _FG_BUTTON;
 
 // A top-level window is an actual window with a titlebar that can be dragged and resized.
 typedef struct {
-  fgWindow window;
+  fgControl control;
   fgText caption;
   fgButton controls[3]; // 0 is the close button, 1 is the maximize/restore button, 2 is the minimize button
   CRect prevrect; // Stores where the window was before being maximized
   AbsVec offset; // offset from the mouse cursor for movement
   char dragged; // 1 if currently being dragged by mouse
 #ifdef  __cplusplus
-  inline operator fgChild*() { return &window.element; }
-  inline fgChild* operator->() { return operator fgChild*(); }
+  inline operator fgElement*() { return &control.element; }
+  inline fgElement* operator->() { return operator fgElement*(); }
 #endif
 } fgTopWindow;
 
-FG_EXTERN fgChild* FG_FASTCALL fgTopWindow_Create(const char* caption, fgFlag flags, const fgElement* element);
-FG_EXTERN void FG_FASTCALL fgTopWindow_Init(fgTopWindow* self, fgFlag flags, const fgElement* element);
+FG_EXTERN fgElement* FG_FASTCALL fgTopWindow_Create(const char* caption, fgFlag flags, const fgTransform* transform);
+FG_EXTERN void FG_FASTCALL fgTopWindow_Init(fgTopWindow* self, fgFlag flags, const fgTransform* transform);
 FG_EXTERN void FG_FASTCALL fgTopWindow_Destroy(fgTopWindow* self);
 FG_EXTERN size_t FG_FASTCALL fgTopWindow_Message(fgTopWindow* self, const FG_Msg* msg);
 
