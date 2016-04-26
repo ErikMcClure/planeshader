@@ -28,26 +28,29 @@ using namespace planeshader;
 
 psRoot* psRoot::instance = 0;
 
-void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, float lineheight, float letterspacing)
+void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, unsigned int dpi)
 { 
-  return psFont::Create(font, fontsize, lineheight, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS);
+  return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, dpi);
 }
+void* FG_FASTCALL fgCloneFontDPI(void* font, unsigned int dpi) { ((psFont*)font)->Grab(); return font; }
 void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
 void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
-void* FG_FASTCALL fgDrawFont(void* font, const char* text, uint32_t color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
+void* FG_FASTCALL fgDrawFont(void* font, const char* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
 { 
   psFont* f = (psFont*)font;
   psRect rect = { area->left, area->top, area->right, area->bottom };
-  f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, rect, psRoot::GetDrawFlags(flags), 0, color, 0);
+  if(lineheight == 0.0f) lineheight = f->GetDefaultLineHeight();
+  f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, lineheight, rect, psRoot::GetDrawFlags(flags), 0, color, 0, VEC_ZERO, letterspacing);
   return 0;
 }
-void FG_FASTCALL fgFontSize(void* font, const char* text, AbsRect* area, fgFlag flags)
+void FG_FASTCALL fgFontSize(void* font, const char* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
 {
   psFont* f = (psFont*)font;
   psVec dim = { area->right - area->left, area->bottom - area->top };
   if(flags&FGCHILD_EXPANDX) dim.x = -1.0f;
   if(flags&FGCHILD_EXPANDY) dim.y = -1.0f;
-  f->CalcTextDim(cStrT<int>(text), dim, psRoot::GetDrawFlags(flags), 0.0f);
+  if(lineheight == 0.0f) lineheight = f->GetDefaultLineHeight();
+  f->CalcTextDim(cStrT<int>(text), dim, lineheight, psRoot::GetDrawFlags(flags), letterspacing);
   area->right = area->left + dim.x;
   area->bottom = area->top + dim.y;
 }

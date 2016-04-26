@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, const psRect& prearea, uint16_t drawflags, FNUM Z, uint32_t color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, float lineheight, const psRect& prearea, uint16_t drawflags, FNUM Z, uint32_t color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   float linewidth;
   float curwidth = 0.0f;
@@ -31,7 +31,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
     {
       linewidth = _getlinewidth(peek, maxdim.x, drawflags, letterspacing, curwidth);
       if(linewidth > dim.x) dim.x = linewidth;
-      dim.y += _lineheight;
+      dim.y += lineheight;
     }
   }
   if(maxdim.x == 0.0f) maxdim.x = dim.x;
@@ -93,7 +93,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
         if(g->texnum != i) { cur.x += g->width + letterspacing; continue; }
 
         rect.left = cur.x + g->advance;
-        rect.top= cur.y + g->ascender + _lineheight;
+        rect.top= cur.y + g->ascender + lineheight;
 
         if(flags&TDT_RTL) // implement right to left rendering by flipping over the middle axis
         {
@@ -113,7 +113,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
 
         cur.x += g->width + letterspacing;
       }
-      cur.y += _lineheight;
+      cur.y += lineheight;
     }
   }
 
@@ -123,17 +123,17 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   return dim;
 }
 
-psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const char* text, const psRect& area, uint16_t drawflags, FNUM Z, uint32_t color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const char* text, float lineheight, const psRect& area, uint16_t drawflags, FNUM Z, uint32_t color, psFlag flags, psVec dim, float letterspacing, DELEGATE d, const float(&transform)[4][4])
 {
   size_t len = strlen(text)+1;
   if(len < 1000000)
   {
     DYNARRAY(int, txt, len);
     UTF8toUTF32(text, txt, len);
-    return DrawText(shader, stateblock, txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
+    return DrawText(shader, stateblock, txt, lineheight, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
   }
   cStrT<int> txt(text);
-  return DrawText(shader, stateblock, txt, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
+  return DrawText(shader, stateblock, txt, lineheight, area, drawflags, Z, color, flags, dim, letterspacing, d, transform);
 }
 bool psTexFont::_isspace(int c) // We have to make our own isspace implementation because the standard isspace() explodes if you feed it unicode characters.
 {
@@ -175,10 +175,10 @@ psGlyph* psTexFont::_loadglyph(uint32_t codepoint)
   return 0;
 }
 
-void psTexFont::CalcTextDim(const int* text, psVec& dest, uint16_t drawflags, float letterspacing)
+void psTexFont::CalcTextDim(const int* text, psVec& dest, float lineheight, uint16_t drawflags, float letterspacing)
 {
   float cur = 0.0f;
-  float height = (!text || !text[0])?_lineheight:0.0f;
+  float height = (!text || !text[0])?lineheight:0.0f;
   psVec maxdim = dest;
   float width = 0.0f;
 
@@ -187,7 +187,7 @@ void psTexFont::CalcTextDim(const int* text, psVec& dest, uint16_t drawflags, fl
   {
     w = _getlinewidth(text, maxdim.x, drawflags, letterspacing, cur);
     if(w > width) width = w;
-    height += _lineheight;
+    height += lineheight;
   }
 
   if(maxdim.x < 0.0f) dest.x = width;
@@ -207,7 +207,7 @@ psTexFont* psTexFont::CreateTexFont(psTex* tex, float lineheight)
   return new psTexFont(tex, lineheight);
 }
 
-psTexFont::psTexFont(const psTexFont& copy) : _lineheight(copy._lineheight), _glyphs(copy._glyphs)
+psTexFont::psTexFont(const psTexFont& copy) : _glyphs(copy._glyphs)
 {
   for(int i = 0; i < copy._textures.Capacity(); ++i)
   {
@@ -215,7 +215,7 @@ psTexFont::psTexFont(const psTexFont& copy) : _lineheight(copy._lineheight), _gl
     _textures.Insert(copy._textures[i], _textures.Capacity());
   }
 }
-psTexFont::psTexFont(psTexFont&& mov) : _lineheight(mov._lineheight), _textures(std::move(mov._textures)), _glyphs(std::move(mov._glyphs)) {}
-psTexFont::psTexFont(psTex* tex, float lineheight) : _lineheight(lineheight), _textures(1) { _textures[0] = tex; if(_textures[0]) _textures[0]->Grab(); Grab(); }
-psTexFont::psTexFont(float lineheight) : _lineheight(lineheight) { Grab(); }
+psTexFont::psTexFont(psTexFont&& mov) : _textures(std::move(mov._textures)), _glyphs(std::move(mov._glyphs)), _defaultlineheight(mov._defaultlineheight) {}
+psTexFont::psTexFont(psTex* tex, float lineheight) : _textures(1), _defaultlineheight(lineheight) { _textures[0] = tex; if(_textures[0]) _textures[0]->Grab(); Grab(); }
+psTexFont::psTexFont() : _defaultlineheight(0) { Grab(); }
 psTexFont::~psTexFont() { for(uint32_t i = 0; i < _textures.Capacity(); ++i) _textures[i]->Drop(); }

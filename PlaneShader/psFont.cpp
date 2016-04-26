@@ -31,8 +31,8 @@ using namespace planeshader;
 FT_Library psFont::PTRLIB=0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
-psFont::psFont(const char* file, int psize, float lineheight, FONT_ANTIALIAS antialias) : psTexFont(lineheight), _path(file), _pointsize(psize), _curtex(0),
-  _curpos(VEC_ZERO), _ft2face(0), _buf(0)
+psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) : _path(file), _pointsize(psize), _curtex(0),
+  _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
@@ -92,13 +92,13 @@ uint16_t psFont::PreloadGlyphs(const int* glyphs)
   return retval;
 }
 
-psFont* psFont::Create(const char* file, int psize, float lineheight, FONT_ANTIALIAS antialias)
+psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi)
 {
   if(!_driver) return 0;
-  cStr str(cStrF("%s|%i|%i|%i", file, psize, lineheight, antialias));
+  cStr str(cStrF("%s|%i|%i", file, psize, antialias));
   psFont* r = _Fonts[str];
   if(r!=0) return r;
-  r = new psFont(file, psize, lineheight, antialias);
+  r = new psFont(file, psize, antialias, dpi);
   r->_hash = str;
   _Fonts.Insert(r->_hash, r);
   return r;
@@ -221,7 +221,7 @@ void psFont::_loadfont()
     //_height = _ft2face->size->metrics.height * FT_COEF;
   }
 
-  if(_lineheight==0) _lineheight = _ft2face->size->metrics.height * FT_COEF * _driver->GetInvDPIScale().y;
+  _defaultlineheight = _ft2face->size->metrics.height * FT_COEF * _driver->GetInvDPIScale().y;
 }
 
 psGlyph* psFont::_loadglyph(uint32_t codepoint)
