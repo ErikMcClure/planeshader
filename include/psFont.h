@@ -29,11 +29,11 @@ namespace planeshader {
       FAA_SDF //Antialiasing using a Signed Distance Field. Requires using a shader that takes an SDF as input!
     };
 
-    static psFont* Create(const char* file, int psize, float lineheight=0, FONT_ANTIALIAS antialias = FAA_ANTIALIAS);
+    static psFont* Create(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, int dpi = 0);
 
   protected:
     psFont(const psFont&) = delete;
-    psFont(const char* file, int psize, float lineheight=0, FONT_ANTIALIAS antialias = FAA_ANTIALIAS);
+    psFont(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, int dpi = 0);
     ~psFont();
     virtual psGlyph* _loadglyph(uint32_t codepoint) override;
     psGlyph* _renderglyph(uint32_t codepoint);
@@ -47,6 +47,7 @@ namespace planeshader {
 
     uint32_t _antialiased;
     int _pointsize;
+    int _dpi;
     uint8_t* _buf;
     FT_Face _ft2face;
     psVeciu _curpos;

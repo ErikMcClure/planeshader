@@ -15,3 +15,4 @@ examples/00 Testbed/Win32/
 media/*.ico
 media/*.png
 
+media/Thumbs.db

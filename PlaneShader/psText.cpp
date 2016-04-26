@@ -6,16 +6,16 @@
 using namespace planeshader;
 
 psText::psText(const psText& copy) : psSolid(copy), psColored(copy), _text(copy._text), _font(copy._font), _textdim(copy._textdim),
-  _letterspacing(copy._letterspacing), _drawflags(copy._drawflags), _func(copy._func)
+  _letterspacing(copy._letterspacing), _drawflags(copy._drawflags), _func(copy._func), _lineheight(copy._lineheight)
 { 
 }
 psText::psText(psText&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _text(std::move(mov._text)), _font(std::move(mov._font)), _textdim(mov._textdim),
-_letterspacing(mov._letterspacing), _drawflags(mov._drawflags), _func(mov._func)
+_letterspacing(mov._letterspacing), _drawflags(mov._drawflags), _func(mov._func), _lineheight(mov._lineheight)
 {
 }
-psText::psText(psTexFont* font, const char* text, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
+psText::psText(psTexFont* font, const char* text, float lineheight, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psColored(0xFFFFFFFF), _text(text), _font(font), _textdim(-1, -1),
-  _letterspacing(0), _drawflags(0), _func(0, 0)
+  _letterspacing(0), _drawflags(0), _func(0, 0), _lineheight((lineheight) == 0.0f ? (font ? font->GetDefaultLineHeight() : 0.0f) : lineheight)
 {
 }
 psText::~psText() { }
@@ -29,6 +29,7 @@ psText& psText::operator=(const psText& copy)
   _letterspacing = copy._letterspacing;
   _drawflags = copy._drawflags;
   _func = copy._func;
+  _lineheight = copy._lineheight;
   return *this;
 }
 psText& psText::operator=(psText&& mov)
@@ -41,6 +42,7 @@ psText& psText::operator=(psText&& mov)
   _letterspacing = mov._letterspacing;
   _drawflags = mov._drawflags;
   _func = mov._func;
+  _lineheight = mov._lineheight;
   return *this;
 }
 
@@ -59,7 +61,7 @@ void psText::_render()
     // This mimics assembling a scaling matrix and multiplying it with m, assuming we are using transposed matrices.
     sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
     sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];
-    _font->DrawText(GetShader(), _stateblock, _text.c_str(), psRect(VEC_ZERO, GetUnscaledDim()), _drawflags, 0, GetColor().color, GetAllFlags(), _textdim, _letterspacing, _func, m.v);
+    _font->DrawText(GetShader(), _stateblock, _text.c_str(), _lineheight, psRect(VEC_ZERO, GetUnscaledDim()), _drawflags, 0, GetColor().color, GetAllFlags(), _textdim, _letterspacing, _func, m.v);
   }
 }
 
@@ -67,6 +69,6 @@ void psText::_recalcdim()
 {
   psVec d(_textdim);
   if(_font)
-    _font->CalcTextDim(_text.c_str(), d, _drawflags, _letterspacing);
+    _font->CalcTextDim(_text.c_str(), d, _lineheight, _drawflags, _letterspacing);
   SetDim(d);
 }
