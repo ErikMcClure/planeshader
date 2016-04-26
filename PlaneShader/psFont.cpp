@@ -95,7 +95,7 @@ uint16_t psFont::PreloadGlyphs(const int* glyphs)
 psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi)
 {
   if(!_driver) return 0;
-  cStr str(cStrF("%s|%i|%i", file, psize, antialias));
+  cStr str(cStrF("%s|%i|%i|%i", file, psize, antialias, dpi));
   psFont* r = _Fonts[str];
   if(r!=0) return r;
   r = new psFont(file, psize, antialias, dpi);

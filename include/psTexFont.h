@@ -52,6 +52,8 @@ namespace planeshader {
     virtual void DestroyThis() override;
     // Gets the default line height calculated by the font itself
     inline float GetDefaultLineHeight() const noexcept { return _defaultlineheight; }
+    // Overrides the default line height
+    inline void SetDefaultLineHeight(float lineheight) noexcept { _defaultlineheight = lineheight; }
 
     static psTexFont* CreateTexFont(psTex* tex=0, float lineheight = 0.0f);
 
