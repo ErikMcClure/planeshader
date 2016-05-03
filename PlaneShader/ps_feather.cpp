@@ -12,6 +12,7 @@
 #include "feathergui\fgRadioButton.h"
 #include "feathergui\fgProgressbar.h"
 #include "feathergui\fgSlider.h"
+#include "feathergui\fgList.h"
 #include "ps_feather.h"
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
@@ -38,9 +39,12 @@ void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
 void* FG_FASTCALL fgDrawFont(void* font, const char* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
 { 
   psFont* f = (psFont*)font;
-  psRect rect = { area->left, area->top, area->right, area->bottom };
-  if(lineheight == 0.0f) lineheight = f->GetDefaultLineHeight();
-  f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, lineheight, rect, psRoot::GetDrawFlags(flags), 0, color, 0, VEC_ZERO, letterspacing);
+  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, 0, {0, 0}, 0 };
+  if(lineheight == 0.0f) lineheight = f->GetLineHeight();
+  if(f->GetAntialias() == psFont::FAA_LCD)
+    f->DrawText(psRoot::Instance()->GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+  else
+    f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   return 0;
 }
 void FG_FASTCALL fgFontSize(void* font, const char* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
@@ -49,7 +53,7 @@ void FG_FASTCALL fgFontSize(void* font, const char* text, float lineheight, floa
   psVec dim = { area->right - area->left, area->bottom - area->top };
   if(flags&FGELEMENT_EXPANDX) dim.x = -1.0f;
   if(flags&FGELEMENT_EXPANDY) dim.y = -1.0f;
-  if(lineheight == 0.0f) lineheight = f->GetDefaultLineHeight();
+  if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   f->CalcTextDim(cStrT<int>(text), dim, lineheight, psRoot::GetDrawFlags(flags), letterspacing);
   area->right = area->left + dim.x;
   area->bottom = area->top + dim.y;
@@ -109,19 +113,19 @@ void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
   init(r, __VA_ARGS__); \
   ((fgElement*)r)->free = &free;
 
-fgElement* FG_FASTCALL fgResource_Create(void* res, const CRect* uv, uint32_t color, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgResource_Create(void* res, const CRect* uv, uint32_t color, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgResource, fgResource_Init, res, uv, color, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgResource, fgResource_Init, res, uv, color, parent, prev, name, flags, transform);
   return (fgElement*)r;
 }
-fgElement* FG_FASTCALL fgText_Create(char* text, void* font, uint32_t color, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgText_Create(char* text, void* font, uint32_t color, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgText, fgText_Init, text, font, color, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgText, fgText_Init, text, font, color, parent, prev, name, flags, transform);
   return (fgElement*)r;
 }
-fgElement* FG_FASTCALL fgButton_Create(const char* text, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgButton_Create(const char* text, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgButton, fgButton_Init, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgButton, fgButton_Init, parent, prev, name, flags, transform);
   (*r)->SetText(text);
   return (fgElement*)r;
 }
@@ -134,27 +138,32 @@ fgElement* FG_FASTCALL fgWindow_Create(const char* caption, fgFlag flags, const 
   r->control.element.free = &free;
   return (fgElement*)r;
 }
-fgElement* FG_FASTCALL fgCheckbox_Create(const char* text, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgCheckbox_Create(const char* text, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgCheckbox, fgCheckbox_Init, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgCheckbox, fgCheckbox_Init, parent, prev, name, flags, transform);
   (*r)->SetText(text);
   return (fgElement*)r;
 }
-fgElement* FG_FASTCALL fgRadiobutton_Create(const char* text, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgRadiobutton_Create(const char* text, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgRadiobutton, fgRadiobutton_Init, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgRadiobutton, fgRadiobutton_Init, parent, prev, name, flags, transform);
   (*r)->SetText(text);
   return (fgElement*)r;
 }
-fgElement* FG_FASTCALL fgProgressbar_Create(FREL value, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgProgressbar_Create(FREL value, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgProgressbar, fgProgressbar_Init, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgProgressbar, fgProgressbar_Init, parent, prev, name, flags, transform);
   fgIntMessage((fgElement*)r, FG_SETSTATE, *reinterpret_cast<ptrdiff_t*>(&value), 0);
   return (fgElement*)r;
 }
-fgElement* FG_FASTCALL fgSlider_Create(size_t range, fgFlag flags, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const fgTransform* transform)
+fgElement* FG_FASTCALL fgSlider_Create(size_t range, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgSlider, fgSlider_Init, range, flags, parent, prev, transform);
+  DEFAULT_CREATE(fgSlider, fgSlider_Init, range, parent, prev, name, flags, transform);
+  return (fgElement*)r;
+}
+fgElement* FG_FASTCALL fgBox_Create(fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
+{
+  DEFAULT_CREATE(fgBox, fgBox_Init, parent, prev, name, flags, transform);
   return (fgElement*)r;
 }
 
@@ -241,11 +250,11 @@ void BSS_FASTCALL psRoot::_render()
 psFlag psRoot::GetDrawFlags(fgFlag flags)
 {
   psFlag flag = 0;
-  if(flags&FGTEXT_CHARWRAP) flag |= TDT_CHARBREAK;
-  if(flags&FGTEXT_WORDWRAP) flag |= TDT_WORDBREAK;
-  if(flags&FGTEXT_RTL) flag |= TDT_RTL;
-  if(flags&FGTEXT_RIGHTALIGN) flag |= TDT_RIGHT;
-  if(flags&FGTEXT_CENTER) flag |= TDT_CENTER;
+  if(flags&FGTEXT_CHARWRAP) flag |= PSFONT_CHARBREAK;
+  if(flags&FGTEXT_WORDWRAP) flag |= PSFONT_WORDBREAK;
+  if(flags&FGTEXT_RTL) flag |= PSFONT_RTL;
+  if(flags&FGTEXT_RIGHTALIGN) flag |= PSFONT_RIGHT;
+  if(flags&FGTEXT_CENTER) flag |= PSFONT_CENTER;
   return flag;
 }
 

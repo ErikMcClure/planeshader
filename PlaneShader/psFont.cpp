@@ -32,7 +32,7 @@ FT_Library psFont::PTRLIB=0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
 psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) : _path(file), _pointsize(psize), _curtex(0),
-  _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi)
+  _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(!dpi ? psDriver::BASE_DPI : dpi), _haskerning(false)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
@@ -128,6 +128,19 @@ void psFont::_adjustantialias(FONT_ANTIALIAS antialias)
   _enforceantialias();
 }
 
+psFont::FONT_ANTIALIAS psFont::GetAntialias() const
+{
+  switch(_antialiased)
+  {
+  default:
+  case FT_LOAD_TARGET_MONO: return FAA_NONE;
+  case FT_LOAD_TARGET_NORMAL: return FAA_ANTIALIAS;
+  case FT_LOAD_TARGET_LCD: return FAA_LCD;
+  case FT_LOAD_TARGET_LCD_V: return FAA_LCD_V;
+  case FT_LOAD_TARGET_LIGHT: return FAA_LIGHT;
+  }
+}
+
 void psFont::_enforceantialias()
 {
   switch(_antialiased)
@@ -189,7 +202,7 @@ void psFont::_loadfont()
   }
 
   FT_Pos psize=FT_F26Dot6(_pointsize*64);
-  if(FT_Set_Char_Size(_ft2face, psize, psize, _driver->GetDPI().x, _driver->GetDPI().y)!=0)
+  if(FT_Set_Char_Size(_ft2face, psize, psize, _dpi, _dpi)!=0)
   { //certain fonts can only be rendered at specific sizes, so we iterate through them until we hit the closest one and try to use that
     int bestdif=0x7FFFFFFF;
     int cur=0;
@@ -205,23 +218,25 @@ void psFont::_loadfont()
     }
   }
 
-  //if (_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
-  //{
-  //    //float x_scale = d_fontFace->size->metrics.x_scale * FT_POS_COEF * (1.0/65536.0);
-  //    float y_scale = _ft2face->size->metrics.y_scale * (1.0f / 65536.0f);
-  //    _ascender = _ft2face->ascender * y_scale;
-  //    _ascender *= (1.0f/64.0f);
-  //    _descender = _ft2face->descender * y_scale;
-  //    _height = _ft2face->height * y_scale;
-  //}
-  //else
+  float invdpiscale = (_dpi == psDriver::BASE_DPI ? 1.0f : (psDriver::BASE_DPI / (float)_dpi)); // y-axis DPI scaling
+
+  if (_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
   {
-    //_ascender = _ft2face->size->metrics.ascender * FT_COEF;
-    //_descender = _ft2face->size->metrics.descender * FT_COEF;
-    //_height = _ft2face->size->metrics.height * FT_COEF;
+      //float x_scale = d_fontFace->size->metrics.x_scale * FT_POS_COEF * (1.0/65536.0);
+      float y_scale = _ft2face->size->metrics.y_scale * (1.0f / 65536.0f);
+      _fontascender = floor(_ft2face->ascender * y_scale * FT_COEF * invdpiscale);
+      _fontdescender = floor(_ft2face->descender * y_scale * FT_COEF);
+      _fontlineheight = floor(_ft2face->height * y_scale * FT_COEF);
+  }
+  else
+  {
+    _fontascender = floor(_ft2face->size->metrics.ascender * FT_COEF * invdpiscale);
+    _fontdescender = floor(_ft2face->size->metrics.descender * FT_COEF * invdpiscale);
+    _fontlineheight = floor(_ft2face->size->metrics.height * FT_COEF * invdpiscale);
   }
 
-  _defaultlineheight = _ft2face->size->metrics.height * FT_COEF * _driver->GetInvDPIScale().y;
+
+  _haskerning = FT_HAS_KERNING(_ft2face);
 }
 
 psGlyph* psFont::_loadglyph(uint32_t codepoint)
@@ -235,6 +250,15 @@ psGlyph* psFont::_loadglyph(uint32_t codepoint)
   return _renderglyph(codepoint);
 }
 
+float psFont::_loadkerning(uint32_t prev, uint32_t cur)
+{
+  if(!_haskerning)
+    return 0.0f;
+
+  FT_Vector kerning;
+  FT_Get_Kerning(_ft2face, prev, cur, FT_KERNING_DEFAULT, &kerning);
+  return kerning.x; // this would return .y for vertical layouts
+}
 psGlyph* psFont::_renderglyph(uint32_t codepoint)
 {
   psGlyph* retval = _glyphs[codepoint];
@@ -290,12 +314,12 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
 
   if(!lockbytes) return retval;
 
-  psVec dpiscale = _driver->GetInvDPIScale();
+  psVec invdpiscale(_dpi == psDriver::BASE_DPI ? 1.0f : (psDriver::BASE_DPI / (float)_dpi));
   psVec dim=_staging[_curtex]->GetRawDim();
   retval->uv=psRect(_curpos.x/dim.x, _curpos.y/dim.y, (_curpos.x+width)/dim.x, (_curpos.y+height)/dim.y);
-  retval->width=(_ft2face->glyph->metrics.horiAdvance * FT_COEF * dpiscale.x);
-  retval->ascender=(-_ft2face->glyph->metrics.horiBearingY * FT_COEF * dpiscale.y);
-  retval->advance=(_ft2face->glyph->metrics.horiBearingX * FT_COEF * dpiscale.x);
+  retval->advance=(_ft2face->glyph->advance.x * FT_COEF * invdpiscale.x);
+  retval->bearingX=(_ft2face->glyph->metrics.horiBearingX * FT_COEF * invdpiscale.x);
+  retval->bearingY=(_ft2face->glyph->metrics.horiBearingY * FT_COEF * invdpiscale.y);
 
   _curpos.x+=width+1; //one pixel buffer
   if(_nexty<_curpos.y+height) _nexty = _curpos.y+height+1; //one pixel buffer
