@@ -193,12 +193,16 @@ enum FG_MSGTYPE
   FG_SETCOLOR,
   FG_SETOUTLINE,
   FG_SETFONT,
+  FG_SETLINEHEIGHT,
+  FG_SETLETTERSPACING,
   FG_SETTEXT,
   FG_GETRESOURCE,
   FG_GETUV,
   FG_GETCOLOR,
   FG_GETOUTLINE,
   FG_GETFONT,
+  FG_GETLINEHEIGHT,
+  FG_GETLETTERSPACING,
   FG_GETTEXT,
   FG_CUSTOMEVENT
 };
@@ -429,8 +433,7 @@ FG_EXTERN AbsVec FG_FASTCALL ResolveVec(const CVec* v, const AbsRect* last);
 FG_EXTERN char FG_FASTCALL CompareMargins(const AbsRect* l, const AbsRect* r); // Returns 0 if both are the same or a difference bitset otherwise.
 FG_EXTERN char FG_FASTCALL CompareCRects(const CRect* l, const CRect* r); // Returns 0 if both are the same or a difference bitset otherwise.
 FG_EXTERN char FG_FASTCALL CompareTransforms(const fgTransform* l, const fgTransform* r);
-FG_EXTERN void FG_FASTCALL MoveCRect(AbsVec v, CRect* r);
-FG_EXTERN void FG_FASTCALL MoveCRectInv(AbsVec v, CRect* r);
+FG_EXTERN void FG_FASTCALL MoveCRect(FABS x, FABS y, CRect* r);
 FG_EXTERN char FG_FASTCALL HitAbsRect(const AbsRect* r, FABS x, FABS y);
 //FG_EXTERN void FG_FASTCALL ToIntAbsRect(const AbsRect* r, int target[static 4]);
 FG_EXTERN void FG_FASTCALL ToIntAbsRect(const AbsRect* r, int target[4]);
@@ -439,6 +442,9 @@ FG_EXTERN char FG_FASTCALL MsgHitAbsRect(const FG_Msg* msg, const AbsRect* r);
 FG_EXTERN char* FG_FASTCALL fgCopyText(const char* text);
 FG_EXTERN void FG_FASTCALL fgUpdateMouseState(fgMouseState* state, const FG_Msg* msg);
 FG_EXTERN char FG_FASTCALL fgRectIntersect(const AbsRect* l, const AbsRect* r); // If l is completely contained within r, returns 1. If they intersect, returns 0. If l and r do not intersect, returns -1
+FG_EXTERN float FG_FASTCALL fgMakeFABS(float f);
+FG_EXTERN float FG_FASTCALL fgMakeFEM(float f);
+FG_EXTERN bool FG_FASTCALL fgIsFEM(float f);
 
 #ifdef  __cplusplus
 }

@@ -32,6 +32,7 @@ namespace planeshader {
       FAA_SDF //Antialiasing using a Signed Distance Field. Requires using a shader that takes an SDF as input!
     };
 
+    FONT_ANTIALIAS GetAntialias() const;
     static psFont* Create(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, int dpi = 0);
 
   protected:
@@ -39,6 +40,7 @@ namespace planeshader {
     psFont(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, int dpi = 0);
     ~psFont();
     virtual psGlyph* _loadglyph(uint32_t codepoint) override;
+    virtual float _loadkerning(uint32_t prev, uint32_t cur) override;
     psGlyph* _renderglyph(uint32_t codepoint);
     void _loadfont();
     void _cleanupfont();
@@ -59,6 +61,7 @@ namespace planeshader {
     cStr _path;
     cStr _hash;
     bss_util::cArray<psTex*, uint8_t> _staging;
+    bool _haskerning;
 
     static bss_util::cHash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.
   };
