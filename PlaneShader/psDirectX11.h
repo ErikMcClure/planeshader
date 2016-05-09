@@ -142,8 +142,8 @@ namespace planeshader {
     // Returns true if shader version is supported
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile) override;
     // Gets/Sets the effective DPI
-    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI)) override;
-    virtual psVeciu GetDPI() override;
+    virtual void SetDPIScale(psVec dpiscale = psVec(1.0f)) override;
+    virtual psVec GetDPIScale() override;
     // Returns an index to an internal state snapshot
     virtual uint32_t BSS_FASTCALL GetSnapshot() override;
 
@@ -197,7 +197,7 @@ namespace planeshader {
     psBufferObj _batchvertbuf;
     psBufferObj _batchindexbuf;
     psVec _extent;
-    psVeciu _dpi;
+    psVec _dpiscale;
     bool _zerocamrot;
     bool _vsync;
     bss_util::cStack<psRectl> _clipstack;

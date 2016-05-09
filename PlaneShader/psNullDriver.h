@@ -101,8 +101,8 @@ namespace planeshader {
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver() { RealDriver r; r.nul=this; r.type=RealDriver::DRIVERTYPE_NULL; return r; }
     // Gets/Sets the effective DPI
-    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI)) { }
-    virtual psVeciu GetDPI() { return psVeciu(0, 0); }
+    virtual void SetDPIScale(psVec dpiscale = psVec(1.0f)) {}
+    virtual psVec GetDPIScale() { return psVec(0); }
 
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="") { return 0; }

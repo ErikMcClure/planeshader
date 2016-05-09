@@ -81,8 +81,6 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 psEngine::~psEngine()
 {
   PROFILE_FUNC();
-  if(psRoot::Instance())
-    psRoot::Instance()->~psRoot();
 
   if(_driver)
     delete _driver;

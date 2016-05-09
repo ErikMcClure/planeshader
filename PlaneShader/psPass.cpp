@@ -6,6 +6,7 @@
 #include "psCullGroup.h"
 #include "psStateblock.h"
 #include "psShader.h"
+#include "psEngine.h"
 #include "bss-util/profiler.h"
 
 using namespace planeshader;
@@ -13,7 +14,8 @@ using namespace bss_util;
 
 psPass* psPass::CurPass = 0;
 
-psPass::psPass() : _cam(&psCamera::default_camera), _renderables(0), _defaultrt(0), _renderlist(&_renderalloc), _cullgroups(0), _clear(false), _clearcolor(0)
+psPass::psPass() : _cam(&psCamera::default_camera), _renderables(0), _defaultrt(0), _renderlist(&_renderalloc), _cullgroups(0), _clear(false),
+  _clearcolor(0), _dpi(0), _monitor(0)
 {
 
 }
@@ -27,6 +29,7 @@ void psPass::Begin()
 {
   PROFILE_FUNC();
   CurPass = this;
+  _driver->SetDPIScale(psVec(GetDPI()/(float)psGUIManager::BASE_DPI));
   const psRect& window = _cam->Apply();
 
   if(_clear)
@@ -64,6 +67,12 @@ void psPass::End()
   CurPass = 0;
   _driver->PopCamera();
   PROFILE_FUNC();
+}
+uint32_t psPass::GetDPI()
+{
+  if(!_dpi)
+    return !_monitor ? psEngine::Instance()->GetGUI().dpi : _monitor->dpi;
+  return _dpi;
 }
 
 void psPass::Insert(psRenderable* r)

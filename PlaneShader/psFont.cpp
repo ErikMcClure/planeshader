@@ -32,13 +32,13 @@ FT_Library psFont::PTRLIB=0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
 psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) : _path(file), _pointsize(psize), _curtex(0),
-  _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(!dpi ? psDriver::BASE_DPI : dpi), _haskerning(false)
+  _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(!dpi ? psGUIManager::BASE_DPI : dpi), _haskerning(false)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
-  psVeci scale(bss_util::fFastRound(_driver->GetDPI().x / (float)psDriver::BASE_DPI), bss_util::fFastRound(_driver->GetDPI().y / (float)psDriver::BASE_DPI));
-  _textures.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _driver->GetDPI()), 0);
-  _staging.Insert(new psTex(psVeciu(psize * 8 * scale.x, psize * 8 * scale.y), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _driver->GetDPI()), 0);
+  float scale = _dpi / (float)psGUIManager::BASE_DPI;
+  _textures.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, psVeciu(_dpi)), 0);
+  _staging.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, psVeciu(_dpi)), 0);
 
   if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
@@ -218,7 +218,7 @@ void psFont::_loadfont()
     }
   }
 
-  float invdpiscale = (_dpi == psDriver::BASE_DPI ? 1.0f : (psDriver::BASE_DPI / (float)_dpi)); // y-axis DPI scaling
+  float invdpiscale = (_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi)); // y-axis DPI scaling
 
   if (_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
   {
@@ -236,7 +236,7 @@ void psFont::_loadfont()
   }
 
 
-  _haskerning = FT_HAS_KERNING(_ft2face);
+  _haskerning = FT_HAS_KERNING(_ft2face) != 0;
 }
 
 psGlyph* psFont::_loadglyph(uint32_t codepoint)
@@ -257,7 +257,7 @@ float psFont::_loadkerning(uint32_t prev, uint32_t cur)
 
   FT_Vector kerning;
   FT_Get_Kerning(_ft2face, prev, cur, FT_KERNING_DEFAULT, &kerning);
-  return kerning.x; // this would return .y for vertical layouts
+  return kerning.x * (1.0f / 64.0f); // this would return .y for vertical layouts
 }
 psGlyph* psFont::_renderglyph(uint32_t codepoint)
 {
@@ -314,7 +314,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
 
   if(!lockbytes) return retval;
 
-  psVec invdpiscale(_dpi == psDriver::BASE_DPI ? 1.0f : (psDriver::BASE_DPI / (float)_dpi));
+  psVec invdpiscale(_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi));
   psVec dim=_staging[_curtex]->GetRawDim();
   retval->uv=psRect(_curpos.x/dim.x, _curpos.y/dim.y, (_curpos.x+width)/dim.x, (_curpos.y+height)/dim.y);
   retval->advance=(_ft2face->glyph->advance.x * FT_COEF * invdpiscale.x);

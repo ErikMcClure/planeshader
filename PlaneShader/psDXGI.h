@@ -20,7 +20,7 @@ namespace planeshader {
     static const char* BSS_FASTCALL GetDXGIError(HRESULT err);
 
   protected:
-    IDXGIAdapter* _createfactory(HWND hwnd, psVeciu& dpi, IDXGIOutput*& out);
+    IDXGIAdapter* _createfactory(HWND hwnd, IDXGIOutput*& out);
 
     IDXGIFactory* _factory;
     DXGI_SAMPLE_DESC _samples;

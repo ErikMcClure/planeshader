@@ -13,7 +13,7 @@ const char* psDXGI::shader_profiles[] = { "vs_1_1", "vs_2_0", "vs_2_a", "vs_3_0"
 
 DXGI_SAMPLE_DESC psDXGI::DEFAULT_SAMPLE_DESC = { 1, 0 };
 
-IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, psVeciu& dpi, IDXGIOutput*& out)
+IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, IDXGIOutput*& out)
 {
   HRESULT _lasterr;
   if(FAILED(_lasterr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&_factory))))
@@ -22,8 +22,6 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, psVeciu& dpi, IDXGIOutput*& out)
   if(FAILED(_lasterr = _factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER)))
     PSLOG(2) << "MakeWindowAssociation failed with error: " << GetDXGIError(_lasterr);
 
-  dpi = psGUIManager::GetMonitorDPI();
-  //dpi = psVeciu(192); // DEBUG
   bss_util::cDynArray<IDXGIAdapter*, uint8_t> _adapters;
   IDXGIAdapter* adapter = NULL;
   for(uint8_t i = 0; _factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)

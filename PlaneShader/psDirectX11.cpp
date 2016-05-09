@@ -51,7 +51,7 @@ using namespace bss_util;
 
 // Constructors
 psDirectX11::psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
-_backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
+_backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
 {
   PROFILE_FUNC();
   memset(&library, 0, sizeof(SHADER_LIBRARY));
@@ -72,7 +72,7 @@ _backbuffer(0), _dpi(BASE_DPI), _infoqueue(0), _lastdepth(0)
 #endif
 
   IDXGIOutput* output;
-  IDXGIAdapter* adapter = _createfactory(hwnd, _dpi, output);
+  IDXGIAdapter* adapter = _createfactory(hwnd, output);
 
   PSLOG(4) << "DEVICEFLAGS: " << DEVICEFLAGS << std::endl;
 
@@ -614,10 +614,10 @@ void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot
   // Cameras have an origin and rotational pivot in their center, so we have to adjust our effective pivot
   psVec adjust = pivot - (psVec(viewport.right, viewport.bottom) * 0.5f);
 
-  if(_dpi != psVeciu(BASE_DPI)) // Do we need to do DPI scaling?
+  if(_dpiscale != VEC_ONE) // Do we need to do DPI scaling?
   {
     Matrix<float, 4, 4> m;
-    Matrix<float, 4, 4>::AffineScaling(_dpi.x / (float)BASE_DPI, _dpi.y / (float)BASE_DPI, 1, m.v);
+    Matrix<float, 4, 4>::AffineScaling(_dpiscale.x, _dpiscale.y, 1, m.v);
     matProj *= m;
   }
 
@@ -965,7 +965,7 @@ void BSS_FASTCALL psDirectX11::PushClipRect(const psRect& rect)
 psRect psDirectX11::PeekClipRect()
 {
   if(!_clipstack.Length())
-    return psRect(VEC_ZERO, screendim);
+    return psRect(VEC_ZERO, psVec(rawscreendim)/GetDPIScale());
   return psRect(_clipstack.Peek());
 }
 
@@ -1349,7 +1349,7 @@ void psDirectX11::_resetscreendim()
 {
   _applyrendertargets();
   rawscreendim = _backbuffer->GetDim();
-  screendim = ((_dpi == psVeciu(BASE_DPI)) ? psVec(rawscreendim) : (psVec(rawscreendim) * (psVec(BASE_DPI) / psVec(_dpi))));
+  screendim = psVec(rawscreendim) * _dpiscale;
   _camstack.Clear();
   PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y), psCamera::default_extent);
 }
@@ -1458,14 +1458,13 @@ bool BSS_FASTCALL psDirectX11::ShaderSupported(SHADER_VER profile) //With DX11 s
   }
   return true;
 }
-void psDirectX11::SetDPI(psVeciu dpi)
+void psDirectX11::SetDPIScale(psVec dpiscale)
 {
-  _dpi = dpi;
-  //_resetscreendim();
+  _dpiscale = dpiscale;
 }
-psVeciu psDirectX11::GetDPI()
+psVec psDirectX11::GetDPIScale()
 {
-  return _dpi;
+  return _dpiscale;
 }
 
 bool psDirectX11::_checksnapshot(Snapshot& s)
