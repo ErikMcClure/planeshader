@@ -220,7 +220,6 @@
     <ClInclude Include="..\include\psEngine.h" />
     <ClInclude Include="..\include\psFont.h" />
     <ClInclude Include="..\include\psChart.h" />
-    <ClInclude Include="..\include\psGUIEvent.h" />
     <ClInclude Include="..\include\psGUIManager.h" />
     <ClInclude Include="..\include\psImage.h" />
     <ClInclude Include="..\include\psInheritable.h" />

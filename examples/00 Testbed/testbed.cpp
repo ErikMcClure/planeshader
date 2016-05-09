@@ -42,7 +42,7 @@ using namespace planeshader;
 using namespace bss_util;
 
 cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
-psEngine* engine=0;
+psEngine* engine = 0;
 psCamera globalcam;
 bool dirkeys[9] = { false }; // left right up down in out counterclockwise clockwise shift
 float dirspeeds[4] = { 300.0f, 300.0f, 2.0f, 1.0f }; // X Y Z R
@@ -91,18 +91,18 @@ struct TESTDEF
 template<class T, size_t SIZE, class F>
 void _ITERFUNC(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { for(uint32_t i = 0; i < SIZE; ++i) TEST(f(i)) }
 template<class T, size_t SIZE, class F>
-void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val=true; for(uint32_t i = 0; i < SIZE; ++i) __val=__val&&(f(i)); TEST(__val); }
+void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val = true; for(uint32_t i = 0; i < SIZE; ++i) __val = __val && (f(i)); TEST(__val); }
 
-bool comparevec(psVec a, psVec b, int diff=1)
+bool comparevec(psVec a, psVec b, int diff = 1)
 {
-  return b.x==0.0f?fsmall(a.x, FLT_EPS*4):fcompare(a.x, b.x, diff) && b.y==0.0f?fsmall(a.y, FLT_EPS*4):fcompare(a.y, b.y, diff);
+  return b.x == 0.0f ? fsmall(a.x, FLT_EPS * 4) : fcompare(a.x, b.x, diff) && b.y == 0.0f ? fsmall(a.y, FLT_EPS * 4) : fcompare(a.y, b.y, diff);
 }
-bool comparevec(psColor& a, psColor& b, int diff=1)
+bool comparevec(psColor& a, psColor& b, int diff = 1)
 {
-  return b.r==0.0f?fsmall(a.r):fcompare(a.r, b.r, diff) &&
-    b.g==0.0f?fsmall(a.g):fcompare(a.g, b.g, diff) &&
-    b.b==0.0f?fsmall(a.b):fcompare(a.b, b.b, diff) &&
-    b.a==0.0f?fsmall(a.a):fcompare(a.a, b.a, diff);
+  return b.r == 0.0f ? fsmall(a.r) : fcompare(a.r, b.r, diff) &&
+    b.g == 0.0f ? fsmall(a.g) : fcompare(a.g, b.g, diff) &&
+    b.b == 0.0f ? fsmall(a.b) : fcompare(a.b, b.b, diff) &&
+    b.a == 0.0f ? fsmall(a.a) : fcompare(a.a, b.a, diff);
 }
 cStr ReadFile(const char* path)
 {
@@ -112,7 +112,7 @@ cStr ReadFile(const char* path)
   cStr buf;
   fseek(f, 0, SEEK_END);
   long ln = ftell(f);
-  buf.resize(ln+1);
+  buf.resize(ln + 1);
   fseek(f, 0, SEEK_SET);
   fread(buf.UnsafeString(), 1, ln, f);
   return std::move(buf);
@@ -168,7 +168,7 @@ TESTDEF::RETPAIR test_psColor()
   psColor c(0xFF7F3F1F);
   TEST(comparevec(c, psColor(0.498039f, 0.2470588f, 0.121568f, 1.0f), 100));
   unsigned int ci = c;
-  TEST(ci==0xFF7F3F1F);
+  TEST(ci == 0xFF7F3F1F);
   TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 0) == 0xFF7F3F1F);
   TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 1.0f) == 0x103070F0);
   TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 0.5f) == 0x87575787);
@@ -198,7 +198,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   auto shader = psShader::CreateShader(0, 0, 2, &SHADER_INFO(shfile.c_str(), (const char*)"vs_main", VERTEX_SHADER_4_0),
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
   auto timer = cHighPrecisionTimer::OpenProfiler();
-  int fps=0;
+  int fps = 0;
   //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
   psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, false);
   const int NUMBATCH = 30;
@@ -227,7 +227,8 @@ TESTDEF::RETPAIR test_psDirectX11()
     driver->DrawRect(driver->library.IMAGE, 0, psRectRotateZ(500, 500, 500 + pslogo->GetDim().x, 500 + pslogo->GetDim().y, 0.0f, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 1, 0xFFFFFFFF, 0);
     {
       psBatchObj* obj = driver->DrawRectBatchBegin(driver->library.IMAGE, 0, 1, 0);
-      for(int i = 0; i < NUMBATCH; ++i) {
+      for(int i = 0; i < NUMBATCH; ++i)
+      {
         driver->DrawRectBatch(obj, psRectRotateZ(imgpos[i].x, imgpos[i].y, imgpos[i].x + pslogo->GetDim().x, imgpos[i].y + pslogo->GetDim().y, imgpos[i].z, pslogo->GetDim()*0.5f), &RECT_UNITRECT, 0xFFFFFFFF);
       }
     }
@@ -236,9 +237,9 @@ TESTDEF::RETPAIR test_psDirectX11()
     driver->DrawLines(obj, psLine(0, 0, 100, 200), 0, 0, 0xFFFFFFFF);
     driver->DrawLines(obj, psLine(50, 100, 1000, -2000), 0, 0, 0xFFFFFFFF);
 
-    psVec polygon[5] ={ { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
+    psVec polygon[5] = { { 200, 0 }, { 200, 100 }, { 100, 150 }, { 60, 60 }, { 90, 30 } };
     auto ptest1 = driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
-    auto ptest2 = driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, psVec3D(400,400,0), 0xFFFFFFFF, 0);
+    auto ptest2 = driver->DrawPolygon(driver->library.POLYGON, 0, polygon, 5, psVec3D(400, 400, 0), 0xFFFFFFFF, 0);
     engine->End();
     engine->FlushMessages();
     driver->PopCamera();
@@ -277,7 +278,7 @@ TESTDEF::RETPAIR test_psParticles()
   psTex* particle = psTex::Create("../media/particle.png");
   psVertex verts[5000];
   psVec velocities[5000];
-  memset(velocities, 0, sizeof(psVec)*5000);
+  memset(velocities, 0, sizeof(psVec) * 5000);
   psDriver* driver = engine->GetDriver();
 
   for(int i = 0; i < 5000; ++i)
@@ -328,7 +329,7 @@ TESTDEF::RETPAIR test_psPass()
 
   psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_PREMULTIPLY_SRGB, false));
   psImage image2(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_ALPHABOX, 0, FILTER_NONE, false));
-  psImage image3(psTex::Create("../media/blendtest.png", USAGE_SHADER_RESOURCE, FILTERS(FILTER_LINEAR|FILTER_SRGB_MIPMAP), 0, FILTER_NONE, false));
+  psImage image3(psTex::Create("../media/blendtest.png", USAGE_SHADER_RESOURCE, FILTERS(FILTER_LINEAR | FILTER_SRGB_MIPMAP), 0, FILTER_NONE, false));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
   //engine->GetPass(0)->Insert(&image2);
   engine->GetPass(0)->Insert(&image);
@@ -410,16 +411,16 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgSliderSkin = fgSkin_AddSkin(fgWindowSkin, "fgSlider");
   //fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "fgList");
 
-  auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags) -> fgStyleLayout* {
-    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", name, FGRESOURCE_ROUNDRECT | flags, &transform));
+  auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", name, FGRESOURCE_ROUNDRECT | flags, &transform, order));
     AddStyleMsgArg<FG_SETUV, CRect>(&layout->style, &uv);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
     AddStyleMsg<FG_SETOUTLINE, float>(&layout->style, outline);
     return layout;
   };
-  auto fnAddCircle = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags) -> fgStyleLayout* {
-    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", name, FGRESOURCE_CIRCLE | flags, &transform));
+  auto fnAddCircle = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", name, FGRESOURCE_CIRCLE | flags, &transform, order));
     AddStyleMsgArg<FG_SETUV, CRect>(&layout->style, &uv);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
@@ -484,36 +485,45 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsgArg<FG_SETMARGIN, AbsRect>(&topwindowcaption->style, &margin);
 
   // fgCheckbox
-  fnAddRect(fgCheckboxSkin, ":checkbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, fgTransform { { 5, 0, 0, 0.5, 20, 0, 15, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFFFFFFFF, 0xFF222222, 1.0f, FGELEMENT_BACKGROUND| FGELEMENT_SNAP);
+  fnAddRect(fgCheckboxSkin, ":checkbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, fgTransform { { 5, 0, 0, 0.5, 20, 0, 15, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFFFFFFFF, 0xFF222222, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_SNAP);
   //fnAddRect(fgCheckboxSkin, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, fgTransform { { 0, 0, 0, 0, 0, 1, 0, 1 }, 0, { 0, 0, 0, 0 } }, 0x99000000, 0, 0.0f, FGELEMENT_BACKGROUND);
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgCheckboxSkin->style, &AbsRect { 25,0,5,0 });
-  fgSkin* fgCheckedSkin = fgSkin_AddSkin(fgCheckboxSkin, "fgCheckbox:check");
-  //AddStyleMsgArg<FG_SETAREA, CRect>(&fgCheckedSkin->style, &CRect { 0,0,0,0,0,1,0,1 });
-  fnAddRect(fgCheckedSkin, 0, CRect { 2, 0, 2, 0, 2, 0, 2, 0 }, fgTransform { { 8, 0, 0, 0.5, 17, 0, 9, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFF000000, 0, 0, FGELEMENT_SNAP);
+  fnAddRect(fgCheckboxSkin, ":check", CRect { 2, 0, 2, 0, 2, 0, 2, 0 }, fgTransform { { 8, 0, 0, 0.5, 17, 0, 9, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFF000000, 0, 0, FGELEMENT_BACKGROUND | FGELEMENT_SNAP, 1);
+  fgSkin* fgCheckedSkin = fgSkin_AddSkin(fgCheckboxSkin, ":check");
 
   fgSkin* fgCheckboxSkinbg = fgSkin_AddSkin(fgCheckboxSkin, ":checkbg");
   bnuetral = fgSkin_AddStyle(fgCheckboxSkinbg, "nuetral");
   bactive = fgSkin_AddStyle(fgCheckboxSkinbg, "active");
   bhover = fgSkin_AddStyle(fgCheckboxSkinbg, "hover");
+  FG_UINT bdefault = fgSkin_AddStyle(fgCheckedSkin, "default");
+  FG_UINT bchecked = fgSkin_AddStyle(fgCheckedSkin, "checked");
+  FG_UINT bindeterminate = fgSkin_AddStyle(fgCheckedSkin, "indeterminate");
 
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bnuetral), 0xFFFFFFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bactive), 0xFFBBBBBB);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bhover), 0xFFDDDDDD);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgCheckedSkin, bdefault), FGELEMENT_HIDDEN, 1);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgCheckedSkin, bchecked), FGELEMENT_HIDDEN, 0);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgCheckedSkin, bindeterminate), FGELEMENT_HIDDEN, 1);
 
   // fgRadioButton
-  fnAddCircle(fgRadioButtonSkin, ":bg", CRect { 0, 0, PI_DOUBLEf, 0, 0, 0, PI_DOUBLEf, 0 }, fgTransform { { 5, 0, 0, 0.5, 20, 0, 15, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFFFFFFFF, 0xFF222222, 1.0f, FGELEMENT_BACKGROUND| FGELEMENT_SNAP);
+  fnAddCircle(fgRadioButtonSkin, ":bg", CRect { 0, 0, PI_DOUBLEf, 0, 0, 0, PI_DOUBLEf, 0 }, fgTransform { { 5, 0, 0, 0.5, 20, 0, 15, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFFFFFFFF, 0xFF222222, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_SNAP);
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgRadioButtonSkin->style, &AbsRect { 25,5,5,5 });
-  fgSkin* fgRadioSelectedSkin = fgSkin_AddSkin(fgRadioButtonSkin, "fgCheckbox:check");
-  fnAddCircle(fgRadioSelectedSkin, 0, CRect { 0, 0, PI_DOUBLEf, 0, 0, 0, PI_DOUBLEf, 0 }, fgTransform { { 8, 0, 0, 0.5, 17, 0, 9, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFF000000, 0, 0, FGELEMENT_BACKGROUND| FGELEMENT_SNAP);
+  fnAddCircle(fgRadioButtonSkin, ":check", CRect { 0, 0, PI_DOUBLEf, 0, 0, 0, PI_DOUBLEf, 0 }, fgTransform { { 8, 0, 0, 0.5, 17, 0, 9, 0.5 }, 0, { 0, 0, 0, 0.5 } }, 0xFF000000, 0, 0, FGELEMENT_BACKGROUND | FGELEMENT_SNAP, 1);
+  fgSkin* fgRadioSelectedSkin = fgSkin_AddSkin(fgRadioButtonSkin, ":check");
 
   fgSkin* fgRadioButtonSkinbg = fgSkin_AddSkin(fgRadioButtonSkin, ":bg");
   bnuetral = fgSkin_AddStyle(fgRadioButtonSkinbg, "nuetral");
   bactive = fgSkin_AddStyle(fgRadioButtonSkinbg, "active");
   bhover = fgSkin_AddStyle(fgRadioButtonSkinbg, "hover");
+  bdefault = fgSkin_AddStyle(fgRadioSelectedSkin, "default");
+  bchecked = fgSkin_AddStyle(fgRadioSelectedSkin, "checked");
 
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bnuetral), 0xFFFFFFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bactive), 0xFFBBBBBB);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bhover), 0xFFDDDDDD);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgRadioSelectedSkin, bdefault), FGELEMENT_HIDDEN, 1);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgRadioSelectedSkin, bchecked), FGELEMENT_HIDDEN, 0);
 
   // fgSlider
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgSliderSkin->style, &AbsRect { 5,0,5,0 });
@@ -537,7 +547,7 @@ TESTDEF::RETPAIR test_feather()
   fgElement* button = fgButton_Create(0, *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
   fgVoidMessage(button, FG_ADDITEM, res, 0);
   button->SetName("buttontest");
-    
+
   fgElement* topwindow = fgWindow_Create("test window", 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
   topwindow->SetColor(0xFFFFFFFF, 0);
   topwindow->SetFont(font);
@@ -547,7 +557,7 @@ TESTDEF::RETPAIR test_feather()
   FN_LISTENER listener = [](fgElement* self, const FG_Msg*) { self->SetText("Pressed!"); };
   buttontop->AddListener(FG_ACTION, listener);
 
-  fgElement* boxholder = fgBox_Create(topwindow, 0, 0, FGBOX_TILEY| FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* boxholder = fgBox_Create(topwindow, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
 
   fgCheckbox_Create("Check Test 3", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   fgCheckbox_Create("Check Test 22", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
@@ -556,17 +566,17 @@ TESTDEF::RETPAIR test_feather()
   fgRadiobutton_Create("Radio Test 1", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   fgRadiobutton_Create("Radio Test 2", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   fgRadiobutton_Create("Radio Test 3", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  
+
   fgElement* slider = fgSlider_Create(500, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 120, 0 }, 0, { 0, 0, 0, 0 } });
   slider->AddListener(FG_SETSTATE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
   fg_progbar = fgProgressbar_Create(0.0, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
-  
+
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
 
   while(!gotonext && engine->Begin())
   {
     engine->GetDriver()->Clear(0xFF000000);
-    psRoot::Instance()->Render();
+    engine->GetGUI().Render();
     engine->End();
     engine->FlushMessages();
     updatefpscount(timer, fps);
@@ -584,7 +594,7 @@ TESTDEF::RETPAIR test_psFont()
 
   psFont* font = psFont::Create("arial.ttf", 14, psFont::FAA_LCD);
 
-  int fps=0;
+  int fps = 0;
   auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
@@ -629,7 +639,7 @@ TESTDEF::RETPAIR test_psVector()
   //psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(793, 213), psVec(300), 4.25f);
   psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(927, 115), psVec(300), 4.25f);
   engine->GetPass(0)->Insert(&curve2);
-  
+
   psRoundedRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
   rect.SetCorners(psRect(30, 10, 30, 0));
   rect.SetColor(0xAAFFFFFF);
@@ -655,7 +665,7 @@ TESTDEF::RETPAIR test_psVector()
     updatefpscount(timer, fps);
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
     curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
-    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(time.GetTime()*0.001,PI_DOUBLE)));
+    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(time.GetTime()*0.001, PI_DOUBLE)));
   }
 
   ENDTEST;
@@ -663,27 +673,27 @@ TESTDEF::RETPAIR test_psVector()
 /*
 int figure_out_wang(int p) // brute force wang
 {
-  switch(p)
-  {
-  case 0b0001: return 0;
-  case 0b0011: return 1;
-  case 0b1011: return 2;
-  case 0b1001: return 3;
-  case 0b0101: return 4;
-  case 0b0111: return 5;
-  case 0b1111: return 6;
-  case 0b1101: return 7;
-  case 0b0100: return 8;
-  case 0b0110: return 9;
-  case 0b1110: return 10;
-  case 0b1100: return 11;
-  case 0b0000: return 12;
-  case 0b0010: return 13;
-  case 0b1010: return 14;
-  case 0b1000: return 15;
-  }
-  assert(false);
-  return 0;
+switch(p)
+{
+case 0b0001: return 0;
+case 0b0011: return 1;
+case 0b1011: return 2;
+case 0b1001: return 3;
+case 0b0101: return 4;
+case 0b0111: return 5;
+case 0b1111: return 6;
+case 0b1101: return 7;
+case 0b0100: return 8;
+case 0b0110: return 9;
+case 0b1110: return 10;
+case 0b1100: return 11;
+case 0b0000: return 12;
+case 0b0010: return 13;
+case 0b1010: return 14;
+case 0b1000: return 15;
+}
+assert(false);
+return 0;
 }*/
 
 int wang_indices(int l, int t, int r, int b) // wang using bitwise operations
@@ -706,7 +716,7 @@ TESTDEF::RETPAIR test_psTileset()
   const int dimx = 500;
   const int dimy = 500;
   char edges[dimy + 1][dimx + 1][2];
-  for(char* i = edges[0][0]; i - edges[0][0] < sizeof(edges)/sizeof(char); ++i)
+  for(char* i = edges[0][0]; i - edges[0][0] < sizeof(edges) / sizeof(char); ++i)
     *i = RANDBOOLGEN();
 
   psTile map[dimy][dimx];
@@ -757,7 +767,7 @@ int main(int argc, char** argv)
   freopen("CONOUT$", "wb", stderr);
   freopen("CONIN$", "rb", stdin);
 
-  TESTDEF tests[] ={
+  TESTDEF tests[] = {
     { "ps_feather", &test_feather },
     { "psFont", &test_psFont },
     { "psVector", &test_psVector },
@@ -772,18 +782,18 @@ int main(int argc, char** argv)
     { "psInheritable", &test_psInheritable },
   };
 
-  const size_t NUMTESTS=sizeof(tests)/sizeof(TESTDEF);
+  const size_t NUMTESTS = sizeof(tests) / sizeof(TESTDEF);
 
   std::cout << "Black Sphere Studios - PlaneShader v" << (uint32_t)PS_VERSION_MAJOR << '.' << (uint32_t)PS_VERSION_MINOR << '.' <<
     (uint32_t)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2015 Black Sphere Studios\n" << std::endl;
-  const int COLUMNS[3] ={ 24, 11, 8 };
+  const int COLUMNS[3] = { 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 
   std::vector<uint32_t> failures;
   PSINIT init;
-  init.driver=RealDriver::DRIVERTYPE_DX11;
-  init.width=640;
-  init.height=480;
+  init.driver = RealDriver::DRIVERTYPE_DX11;
+  init.width = 640;
+  init.height = 480;
   //init.mode = PSINIT::MODE_BORDERLESS;
   //init.antialias = 8;
   init.sRGB = false;
@@ -797,38 +807,37 @@ int main(int argc, char** argv)
     psCamera::default_extent.y = 100;
     globalcam.SetExtent(psCamera::default_extent);
 
-    std::function<bool(const psGUIEvent&)> guicallback =[&](const psGUIEvent& evt) -> bool
-    { 
-      if(evt.type == GUI_KEYDOWN || evt.type == GUI_KEYUP)
+    std::function<size_t(const FG_Msg&)> guicallback = [&](const FG_Msg& evt) -> size_t
+    {
+      if(evt.type == FG_KEYDOWN || evt.type == FG_KEYUP)
       {
-        bool isdown = evt.type == GUI_KEYDOWN;
+        bool isdown = evt.type == FG_KEYDOWN;
         dirkeys[8] = evt.IsShiftDown();
         switch(evt.keycode)
         {
-        case KEY_A: dirkeys[0] = isdown; break;
-        case KEY_D: dirkeys[1] = isdown; break;
-        case KEY_W: dirkeys[2] = isdown; break;
-        case KEY_S: dirkeys[3] = isdown; break;
-        case KEY_X:
-        case KEY_OEM_PLUS: dirkeys[4] = isdown; break;
-        case KEY_Z:
-        case KEY_OEM_MINUS: dirkeys[5] = isdown; break;
-        case KEY_Q: dirkeys[6] = isdown; break;
-        case KEY_E: dirkeys[7] = isdown; break;
-        case KEY_ESCAPE:
+        case FG_KEY_A: dirkeys[0] = isdown; break;
+        case FG_KEY_D: dirkeys[1] = isdown; break;
+        case FG_KEY_W: dirkeys[2] = isdown; break;
+        case FG_KEY_S: dirkeys[3] = isdown; break;
+        case FG_KEY_X:
+        case FG_KEY_OEM_PLUS: dirkeys[4] = isdown; break;
+        case FG_KEY_Z:
+        case FG_KEY_OEM_MINUS: dirkeys[5] = isdown; break;
+        case FG_KEY_Q: dirkeys[6] = isdown; break;
+        case FG_KEY_E: dirkeys[7] = isdown; break;
+        case FG_KEY_ESCAPE:
           if(isdown) ps.Quit();
           break;
-        case KEY_RETURN:
+        case FG_KEY_RETURN:
           if(isdown && !evt.IsAltDown()) gotonext = true;
           break;
         }
       }
-      return false;
+      return 0;
     };
-    ps.SetInputReceiver(guicallback);
-    fgInitialize();
+    ps.SetPreprocess(guicallback);
     //ps[0].SetClear(true, 0);
-    engine=&ps;
+    engine = &ps;
 
     TESTDEF::RETPAIR numpassed;
     for(uint32_t i = 0; i < NUMTESTS; ++i)
@@ -836,10 +845,10 @@ int main(int argc, char** argv)
       gotonext = false;
       globalcam.SetPosition(psVec3D(0, 0, -1));
       globalcam.SetRotation(0);
-      numpassed=tests[i].FUNC(); //First is total, second is succeeded
-      if(numpassed.first!=numpassed.second) failures.push_back(i);
+      numpassed = tests[i].FUNC(); //First is total, second is succeeded
+      if(numpassed.first != numpassed.second) failures.push_back(i);
 
-      printf("%-*s %*s %-*s\n", COLUMNS[0], tests[i].NAME, COLUMNS[1], cStrF("%u/%u", numpassed.second, numpassed.first).c_str(), COLUMNS[2], (numpassed.first==numpassed.second)?"PASS":"FAIL");
+      printf("%-*s %*s %-*s\n", COLUMNS[0], tests[i].NAME, COLUMNS[1], cStrF("%u/%u", numpassed.second, numpassed.first).c_str(), COLUMNS[2], (numpassed.first == numpassed.second) ? "PASS" : "FAIL");
     }
   }
 
@@ -859,7 +868,7 @@ int main(int argc, char** argv)
   fclose(stdin);
   FreeConsole();
 
-  PROFILE_OUTPUT("ps_profiler.txt", 1|4);
+  PROFILE_OUTPUT("ps_profiler.txt", 1 | 4);
   //end program
   return 0;
 }

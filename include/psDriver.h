@@ -394,14 +394,12 @@ namespace planeshader {
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver()=0;
     // Gets/Sets the effective DPI
-    virtual void SetDPI(psVeciu dpi = psVeciu(BASE_DPI))=0;
-    virtual psVeciu GetDPI() = 0;
-    inline psVec GetDPIScale() { psVeciu dpi = GetDPI(); return ((dpi == psVeciu(BASE_DPI)) ? psVec(1.0f) : (psVec(GetDPI()) / psVec((float)BASE_DPI))); }
-    inline psVec GetInvDPIScale() { psVeciu dpi = GetDPI(); return ((dpi == psVeciu(BASE_DPI)) ? psVec(1.0f) : (psVec((float)BASE_DPI) / psVec(GetDPI()))); }
+    virtual void SetDPIScale(psVec dpiscale = psVec(1.0f))=0;
+    virtual psVec GetDPIScale() = 0;
     // Snaps a coordinate to a pixel value that will correspond to a pixel after it gets scaled by DPI for rendering on the backbuffer
     inline psVec SnapToDPI(const psVec& p)
     { 
-      psVec s = (GetDPI() == psVeciu(BASE_DPI))?psVec(1.0f):(GetDPI() / psVec((float)BASE_DPI));
+      psVec s = GetDPIScale();
       psVec r = p*s; // Scale to actual destination coordinates
       r.x = roundf(r.x); // Round to nearest integer
       r.y = roundf(r.y);
@@ -452,7 +450,6 @@ namespace planeshader {
     BSS_FORCEINLINE static void BSS_FASTCALL _inversetransform(float(&mat)[4][4]) { mat[3][0]=(-mat[3][0]); mat[3][1]=(-mat[3][1]); }
     BSS_FORCEINLINE static void BSS_FASTCALL _inversetransformadd(float(&mat)[4][4], const float(&add)[4][4]) { mat[3][0]=add[3][0]-mat[3][0]; mat[3][1]=add[3][1]-mat[3][1]; mat[3][2]=add[3][2]; }
     static const float identity[4][4];
-    static const int BASE_DPI = 96;
 
     struct SHADER_LIBRARY
     {

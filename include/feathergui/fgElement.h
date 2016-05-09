@@ -91,9 +91,9 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL Clone(struct _FG_ELEMENT* from);
   FG_DLLEXPORT size_t FG_FASTCALL SetSkin(struct _FG_SKIN* skin, FN_MAPPING mapping);
   FG_DLLEXPORT struct _FG_SKIN* FG_FASTCALL GetSkin(struct _FG_ELEMENT* child);
-  FG_DLLEXPORT size_t FG_FASTCALL SetStyle(const char* name);
+  FG_DLLEXPORT size_t FG_FASTCALL SetStyle(const char* name, FG_UINT mask);
   FG_DLLEXPORT size_t FG_FASTCALL SetStyle(struct _FG_STYLE* style);
-  FG_DLLEXPORT size_t FG_FASTCALL SetStyle(size_t index);
+  FG_DLLEXPORT size_t FG_FASTCALL SetStyle(FG_UINT index, FG_UINT mask);
   FG_DLLEXPORT struct _FG_STYLE* GetStyle();
   FG_DLLEXPORT const char* GetClassName();
   FG_DLLEXPORT size_t FG_FASTCALL MouseDown(int x, int y, unsigned char button, unsigned char allbtn);
@@ -150,9 +150,6 @@ FG_EXTERN size_t FG_FASTCALL fgElement_Message(fgElement* self, const FG_Msg* ms
 FG_EXTERN fgElement* FG_FASTCALL fgElement_GetChildUnderMouse(fgElement* self, int x, int y, AbsRect* cache);
 FG_EXTERN void FG_FASTCALL fgElement_ClearListeners(fgElement* self);
 
-FG_EXTERN size_t FG_FASTCALL fgLayout_Default(fgElement* self, const FG_Msg* msg, CRect* area, AbsRect* parent);
-FG_EXTERN size_t FG_FASTCALL fgLayout_Distribute(fgElement* self, const FG_Msg* msg, char axis);
-FG_EXTERN size_t FG_FASTCALL fgLayout_Tile(fgElement* self, const FG_Msg* msg, char axes);
 FG_EXTERN size_t FG_FASTCALL fgIntMessage(fgElement* self, unsigned char type, ptrdiff_t data, size_t aux);
 FG_EXTERN size_t FG_FASTCALL fgVoidMessage(fgElement* self, unsigned char type, void* data, ptrdiff_t aux);
 FG_EXTERN size_t FG_FASTCALL fgPassMessage(fgElement* self, const FG_Msg* msg);

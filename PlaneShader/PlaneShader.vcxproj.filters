@@ -60,9 +60,6 @@
     <ClInclude Include="..\include\psGUIManager.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psGUIEvent.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="psNullDriver.h">
       <Filter>Header Files</Filter>
     </ClInclude>

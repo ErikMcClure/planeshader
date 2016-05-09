@@ -27,11 +27,14 @@
 
 using namespace planeshader;
 
-psRoot* psRoot::instance = 0;
-
 void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, unsigned int dpi)
 { 
   return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, dpi);
+}
+void* FG_FASTCALL fgCopyFont(void* font, unsigned int fontsize, unsigned int dpi)
+{ 
+  psFont* f = (psFont*)font;
+  return psFont::Create(f->GetPath(), fontsize, f->GetAntialias(), dpi);
 }
 void* FG_FASTCALL fgCloneFontDPI(void* font, unsigned int dpi) { ((psFont*)font)->Grab(); return font; }
 void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
@@ -42,9 +45,9 @@ void* FG_FASTCALL fgDrawFont(void* font, const char* text, float lineheight, flo
   psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, 0, {0, 0}, 0 };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   if(f->GetAntialias() == psFont::FAA_LCD)
-    f->DrawText(psRoot::Instance()->GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+    f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   else
-    f->DrawText(psRoot::Instance()->GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+    f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   return 0;
 }
 void FG_FASTCALL fgFontSize(void* font, const char* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
@@ -54,9 +57,16 @@ void FG_FASTCALL fgFontSize(void* font, const char* text, float lineheight, floa
   if(flags&FGELEMENT_EXPANDX) dim.x = -1.0f;
   if(flags&FGELEMENT_EXPANDY) dim.y = -1.0f;
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
-  f->CalcTextDim(cStrT<int>(text), dim, lineheight, psRoot::GetDrawFlags(flags), letterspacing);
+  f->CalcTextDim(cStrT<int>(text), dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
   area->right = area->left + dim.x;
   area->bottom = area->top + dim.y;
+}
+void FG_FASTCALL fgFontGet(void* font, float* lineheight, unsigned int* size, unsigned int* dpi)
+{
+  psFont* f = (psFont*)font;
+  if(lineheight) *lineheight = f->GetLineHeight();
+  if(size) *size = f->GetPointSize();
+  if(dpi) *dpi = f->GetDPI();
 }
 
 void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
@@ -76,11 +86,11 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, uint32_t color, uint
   else
     uvresolve = psRect { uv->left.abs, uv->top.abs, uv->right.abs, uv->bottom.abs };
 
-  psDriver* driver = psRoot::Instance()->GetDriver();
+  psDriver* driver = psDriverHold::GetDriver();
   if(tex)
     driver->SetTextures(&tex, 1);
 
-  psRect hold = psRoot::Instance()->GetDriver()->PeekClipRect();
+  psRect hold = psDriverHold::GetDriver()->PeekClipRect();
   psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
 
   if(flags&FGRESOURCE_ROUNDRECT)
@@ -102,7 +112,7 @@ void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag 
 }
 void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
 {
-  psDriver* driver = psRoot::Instance()->GetDriver();
+  psDriver* driver = psDriverHold::GetDriver();
   psBatchObj* obj = driver->DrawLinesStart(driver->library.LINE, 0, 0);
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
@@ -170,7 +180,6 @@ fgElement* FG_FASTCALL fgBox_Create(fgElement* BSS_RESTRICT parent, fgElement* B
 
 fgRoot* FG_FASTCALL fgInitialize()
 {
-  new psRoot();
   return fgSingleton();
 }
 
@@ -179,18 +188,18 @@ char FG_FASTCALL fgLoadExtension(void* fg, const char* extname) { return -1; }
 void fgPushClipRect(AbsRect* clip)
 { 
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
-  psRoot::Instance()->GetDriver()->MergeClipRect(rect);
+  psDriverHold::GetDriver()->MergeClipRect(rect);
 }
 
 AbsRect fgPeekClipRect()
 {
-  psRect c = psRoot::Instance()->GetDriver()->PeekClipRect();
+  psRect c = psDriverHold::GetDriver()->PeekClipRect();
   return AbsRect { c.left, c.top, c.right, c.bottom };
 }
 
 void fgPopClipRect()
 {
-  psRoot::Instance()->GetDriver()->PopClipRect();
+  psDriverHold::GetDriver()->PopClipRect();
 }
 
 void fgDirtyElement(fgTransform* e)
@@ -198,54 +207,22 @@ void fgDirtyElement(fgTransform* e)
 
 }
 
-psRoot::psRoot() : _prev(0,0)
+psRoot::psRoot()
 {
-  if(instance)
-    delete instance;
-  fgRoot_Init(&_root, &AbsRect { 0, 0, _driver->screendim.x, _driver->screendim.y }, _driver->GetDPI().x);
-  instance = this;
-  _prev = psEngine::Instance()->GetInputReceiver();
-  psEngine::Instance()->SetInputReceiver(bss_util::delegate<bool, const psGUIEvent&>::From<psRoot, &psRoot::ProcessGUI>(this));
+  fgRoot_Init(this, &AbsRect { 0, 0, 1, 1 }, psGUIManager::BASE_DPI);
 }
 psRoot::~psRoot()
 {
-  fgRoot_Destroy(&_root);
-  psEngine::Instance()->SetInputReceiver(_prev);
-  instance = 0;
-}
-bool psRoot::ProcessGUI(const psGUIEvent& evt)
-{
-  FG_Msg msg;
-  memcpy(&msg, &evt, sizeof(FG_Msg));
-
-  switch(evt.type)
-  {
-  case GUI_MOUSEDOWN: msg.type = FG_MOUSEDOWN; break;
-  case GUI_MOUSEDBLCLICK: msg.type = FG_MOUSEDBLCLICK; break;
-  case GUI_MOUSEUP: msg.type = FG_MOUSEUP; break;
-  case GUI_MOUSEMOVE: msg.type = FG_MOUSEMOVE; break;
-  case GUI_MOUSESCROLL: msg.type = FG_MOUSESCROLL; break;
-  case GUI_MOUSELEAVE: msg.type = FG_MOUSELEAVE; break;
-  case GUI_KEYUP: msg.type = FG_KEYUP; break;
-  case GUI_KEYDOWN: msg.type = FG_KEYDOWN; break;
-  case GUI_KEYCHAR: msg.type = FG_KEYCHAR; break;
-  case GUI_JOYBUTTONDOWN: msg.type = FG_JOYBUTTONDOWN; break;
-  case GUI_JOYBUTTONUP: msg.type = FG_JOYBUTTONUP; break;
-  case GUI_JOYAXIS: msg.type = FG_JOYAXIS; break;
-  }
-
-  if(!fgRoot_Inject(&_root, &msg))
-    return !_prev.IsEmpty() ? _prev(evt) : false;
-  return true;
+  fgRoot_Destroy(this);
 }
 
 void BSS_FASTCALL psRoot::_render()
 {
-  CRect area = _root.gui.element.transform.area;
+  CRect area = gui.element.transform.area;
   area.right.abs = _driver->screendim.x;
   area.bottom.abs = _driver->screendim.y;
-  _root.gui->SetArea(area);
-  _root.gui->Draw(0, 0);
+  gui->SetArea(area);
+  gui->Draw(0, 0);
 }
 psFlag psRoot::GetDrawFlags(fgFlag flags)
 {
@@ -256,11 +233,6 @@ psFlag psRoot::GetDrawFlags(fgFlag flags)
   if(flags&FGTEXT_RIGHTALIGN) flag |= PSFONT_RIGHT;
   if(flags&FGTEXT_CENTER) flag |= PSFONT_CENTER;
   return flag;
-}
-
-psRoot* psRoot::Instance()
-{
-  return instance;
 }
 
 #include "bss-util\bss_win32_includes.h"

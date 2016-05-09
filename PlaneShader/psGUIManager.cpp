@@ -16,7 +16,7 @@ using namespace bss_util;
 
 void psGUIManager::_lockcursor(HWND hWnd, bool lock)
 {
-  if(!lock || GetActiveWindow()!=hWnd)
+  if(!lock || GetActiveWindow() != hWnd)
     ClipCursor(0);
   else
   {
@@ -25,32 +25,32 @@ void psGUIManager::_lockcursor(HWND hWnd, bool lock)
     AdjustWindowRect(&holdrect, GetWindowLong(hWnd, GWL_STYLE), FALSE);
     RECT winrect;
     GetWindowRect(hWnd, &winrect);
-    winrect.left-=holdrect.left;
-    winrect.top-=holdrect.top;
-    winrect.right-=holdrect.right;
-    winrect.bottom-=holdrect.bottom;
+    winrect.left -= holdrect.left;
+    winrect.top -= holdrect.top;
+    winrect.right -= holdrect.right;
+    winrect.bottom -= holdrect.bottom;
     ClipCursor(&winrect);
   }
 }
 
 POINTS* __stdcall psGUIManager::_STCpoints(HWND hWnd, POINTS* target)
 {
-  POINT pp={ target->x, target->y };
+  POINT pp = { target->x, target->y };
   ScreenToClient(hWnd, &pp);
-  target->x=(SHORT)pp.x;
-  target->y=(SHORT)pp.y;
+  target->x = (SHORT)pp.x;
+  target->y = (SHORT)pp.y;
   return target;
 }
 
 LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   PROFILE_FUNC();
-  static tagTRACKMOUSEEVENT _trackingstruct ={ sizeof(tagTRACKMOUSEEVENT), TME_LEAVE, 0, 0 };
-  WPARAM wpcopy=wParam;
-  psGUIManager* self = psEngine::Instance();
+  static tagTRACKMOUSEEVENT _trackingstruct = { sizeof(tagTRACKMOUSEEVENT), TME_LEAVE, 0, 0 };
+  WPARAM wpcopy = wParam;
+  psGUIManager* self = reinterpret_cast<psGUIManager*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
   if(!self)
     return DefWindowProcW(hWnd, message, wParam, lParam);
-  
+
   switch(message)
   {
     //case WM_PAINT:
@@ -58,14 +58,14 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     //return 0;
     //break;
   case WM_DESTROY:
-    psEngine::Instance()->Quit();
+    self->Quit();
     PostQuitMessage(0);
     break;
   case WM_MOUSEWHEEL:
   {
     POINTS pointstemp;
     pointstemp.x = GET_WHEEL_DELTA_WPARAM(wpcopy);
-    psEngine::Instance()->SetMouse(&pointstemp, GUI_MOUSESCROLL, wpcopy, GetMessageTime());
+    self->SetMouse(&pointstemp, FG_MOUSESCROLL, 0, wpcopy, GetMessageTime());
   }
   break;
   case WM_NCMOUSEMOVE:
@@ -79,14 +79,14 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
       BOOL result = TrackMouseEvent(&_trackingstruct);
       self->_guiflags += PSGUIMANAGER_ISINSIDE;
     }
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEMOVE, wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEMOVE, 0, wpcopy, GetMessageTime());
     break;
   case WM_NCLBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
     wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONDOWN:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDOWN, FG_MOUSELBUTTON, wpcopy, GetMessageTime());
     SetCapture(hWnd);
     break;
   case WM_NCLBUTTONUP:
@@ -94,11 +94,11 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, FG_MOUSELBUTTON, wpcopy, GetMessageTime());
     ReleaseCapture();
     break;
   case WM_LBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GUI_L_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDBLCLICK, FG_MOUSELBUTTON, wpcopy, GetMessageTime());
     break;
   case WM_NCRBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
@@ -106,18 +106,18 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONDOWN:
     SetCapture(hWnd);
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDOWN, FG_MOUSERBUTTON, wpcopy, GetMessageTime());
     break;
   case WM_NCRBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
     wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, FG_MOUSERBUTTON, wpcopy, GetMessageTime());
     ReleaseCapture();
     break;
   case WM_RBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GUI_R_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDBLCLICK, FG_MOUSERBUTTON, wpcopy, GetMessageTime());
     break;
   case WM_NCMBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
@@ -125,35 +125,35 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONDOWN:
     SetCapture(hWnd);
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDOWN, FG_MOUSEMBUTTON, wpcopy, GetMessageTime());
     break;
   case WM_NCMBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
     wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, FG_MOUSEMBUTTON, wpcopy, GetMessageTime());
     ReleaseCapture();
     break;
   case WM_MBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GUI_M_BUTTON << 4), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDBLCLICK, FG_MOUSEMBUTTON, wpcopy, GetMessageTime());
     break;
   case WM_NCXBUTTONDOWN:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
     wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONDOWN:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDOWN | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDOWN, (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? FG_MOUSEXBUTTON1 : FG_MOUSEXBUTTON2), wpcopy, GetMessageTime());
     break;
   case WM_NCXBUTTONUP:
     if(!(self->_guiflags&PSGUIMANAGER_HOOKNC)) break;
     wpcopy = (uint32_t)-1;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONUP:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEUP | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? FG_MOUSEXBUTTON1 : FG_MOUSEXBUTTON2), wpcopy, GetMessageTime());
     break;
   case WM_XBUTTONDBLCLK:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSEDBLCLICK | (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? (GUI_X_BUTTON1 << 4) : (GUI_X_BUTTON2 << 4)), wpcopy, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDBLCLICK, (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? FG_MOUSEXBUTTON1 : FG_MOUSEXBUTTON2), wpcopy, GetMessageTime());
     break;
   case WM_SYSKEYUP:
   case WM_SYSKEYDOWN:
@@ -167,7 +167,7 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
   case WM_KEYUP:
   case WM_KEYDOWN:
   {
-    psEngine::Instance()->SetKey((uint8_t)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
+    self->SetKey((uint8_t)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
     //  BYTE allKeys[256]; //Note that the virtual key codes do not exceed 256, so we can actually convert wParam to uint8_t without data loss
     //  WORD asciikey=0;
     //  wchar_t unicodekey[4];
@@ -187,13 +187,14 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
       return 0; //No screensavers!
     break;
   case WM_MOUSELEAVE:
-    psEngine::Instance()->SetMouse(MAKELPPOINTS(lParam), GUI_MOUSELEAVE, 0, GetMessageTime());
+    self->SetMouse(MAKELPPOINTS(lParam), FG_MOUSELEAVE, 0, 0, GetMessageTime());
     self->_guiflags -= PSGUIMANAGER_ISINSIDE;
     break;
   case WM_ACTIVATE:
     if(self->_guiflags&PSGUIMANAGER_AUTOMINIMIZE && LOWORD(wParam) == WA_INACTIVE)
       ShowWindow(hWnd, SW_SHOWMINIMIZED);
-    if(self->_guiflags&PSGUIMANAGER_LOCKCURSOR) {
+    if(self->_guiflags&PSGUIMANAGER_LOCKCURSOR)
+    {
       switch(LOWORD(wParam))
       {
       case WA_ACTIVE:
@@ -210,9 +211,9 @@ LRESULT __stdcall psGUIManager::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     if(self->_guiflags&PSGUIMANAGER_OVERRIDEHITTEST) return HTCAPTION;
     break;
   case WM_UNICHAR:
-    if(wParam==UNICODE_NOCHAR) return TRUE;
+    if(wParam == UNICODE_NOCHAR) return TRUE;
   case WM_CHAR:
-    psEngine::Instance()->SetChar((int)wParam, GetMessageTime());
+    self->SetChar((int)wParam, GetMessageTime());
     return 0;
     //case 124:
     //case 125:
@@ -254,7 +255,7 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
     hInstance = instance;
 
   //Register class
-  WNDCLASSEXW wcex    ={ sizeof(WNDCLASSEXW),              // cbSize
+  WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW),              // cbSize
     CS_HREDRAW | CS_VREDRAW, //| CS_DBLCLKS, // Double clicking usually just causes problems
     (WNDPROC)WndProc,                      // lpfnWndProc
     NULL,                            // cbClsExtra
@@ -285,7 +286,7 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
     style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
   if(mode >= PSINIT::MODE_BORDERLESS)
     style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
-  
+
   AdjustWindowRect(&rsize, style, FALSE);
   int rwidth = rsize.right - rsize.left;
   int rheight = rsize.bottom - rsize.top;
@@ -297,7 +298,7 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
 
   HWND hWnd;
   if(mode >= PSINIT::MODE_COMPOSITE)
-    hWnd = CreateWindowExW((clickthrough || opaqueclick)?WS_EX_TRANSPARENT|WS_EX_COMPOSITED|WS_EX_LAYERED: WS_EX_COMPOSITED,
+    hWnd = CreateWindowExW((clickthrough || opaqueclick) ? WS_EX_TRANSPARENT | WS_EX_COMPOSITED | WS_EX_LAYERED : WS_EX_COMPOSITED,
       L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
   else
     hWnd = CreateWindowW(L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
@@ -306,8 +307,8 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
   {
     //MARGINS margins = { -1,-1,-1,-1 };
     //(*dwmextend)(hWnd, &margins); //extends glass effect
-    HRGN region = CreateRectRgn(-1,-1,0,0);
-    DWM_BLURBEHIND blurbehind = { DWM_BB_ENABLE|DWM_BB_BLURREGION|DWM_BB_TRANSITIONONMAXIMIZED, TRUE, region, FALSE };
+    HRGN region = CreateRectRgn(-1, -1, 0, 0);
+    DWM_BLURBEHIND blurbehind = { DWM_BB_ENABLE | DWM_BB_BLURREGION | DWM_BB_TRANSITIONONMAXIMIZED, TRUE, region, FALSE };
     (*dwmblurbehind)(hWnd, &blurbehind);
   }
 
@@ -321,9 +322,9 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
   case PSINIT::MODE_FULLSCREEN: top = HWND_TOP; break;
   }
 
-  ShowWindow(hWnd, clickthrough?SW_SHOWNOACTIVATE:SW_SHOW);
+  ShowWindow(hWnd, clickthrough ? SW_SHOWNOACTIVATE : SW_SHOW);
   UpdateWindow(hWnd);
-  SetWindowPos(hWnd, top, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), SWP_NOCOPYBITS|SWP_NOMOVE|SWP_NOACTIVATE);
+  SetWindowPos(hWnd, top, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
 
   if(clickthrough || opaqueclick) SetLayeredWindowAttributes(hWnd, 0, 0xFF, LWA_ALPHA);
   else
@@ -332,13 +333,13 @@ HWND psGUIManager::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const w
     SetForegroundWindow(hWnd);
   }
   SetCursor(LoadCursor(NULL, IDC_ARROW));
+  SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 
   return hWnd;
 }
 
-psGUIManager::psGUIManager() : _receiver(0,0), _firstjoystick(0), _alljoysticks(0), _maxjoy(JOYSTICK_ID16), _window(0)
+psGUIManager::psGUIManager() : _preprocess(0, 0), _postprocess(0, 0), _firstjoystick(0), _alljoysticks(0), _maxjoy((uint8_t)FG_JOYSTICK_ID16), _window(0)
 {
-  _mousedata.scrolldelta = 0;
   GetKeyboardState(_allkeys);
   memset(&_allbuttons, 0, sizeof(uint32_t)*NUMJOY);
   memset(&_alljoyaxis, 0, sizeof(unsigned long)*NUMJOY*NUMAXIS);
@@ -363,129 +364,125 @@ void psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
   PROFILE_FUNC();
   GetKeyboardState(_allkeys);
   //bool held=down && _getkey(keycode);
-  _allkeys[keycode]=down?(_allkeys[keycode]|0x08):(_allkeys[keycode]&(~0x08)); //For sanity, ensure this matches what we just got.
+  _allkeys[keycode] = down ? (_allkeys[keycode] | 0x08) : (_allkeys[keycode] & (~0x08)); //For sanity, ensure this matches what we just got.
 
-  psGUIEvent evt;
-  evt.type = down?GUI_KEYDOWN:GUI_KEYUP;
-  evt.time=time;
+  FG_Msg evt = { 0 };
+  evt.type = down ? FG_KEYDOWN : FG_KEYUP;
+  _lastmsgtime = time;
   evt.keycode = keycode;
   evt.sigkeys = 0;
-  if(GetKey(KEY_SHIFT)) evt.sigkeys = evt.sigkeys|1; //VK_SHIFT
-  if(GetKey(KEY_CONTROL)) evt.sigkeys = evt.sigkeys|2; //VK_CONTROL
-  if(GetKey(KEY_MENU)) evt.sigkeys = evt.sigkeys|4; //VK_MENU
-  if(held) evt.sigkeys = evt.sigkeys|8;
+  if(GetKey(FG_KEY_SHIFT)) evt.sigkeys = evt.sigkeys | 1; //VK_SHIFT
+  if(GetKey(FG_KEY_CONTROL)) evt.sigkeys = evt.sigkeys | 2; //VK_CONTROL
+  if(GetKey(FG_KEY_MENU)) evt.sigkeys = evt.sigkeys | 4; //VK_MENU
+  if(held) evt.sigkeys = evt.sigkeys | 8;
   //_root->OnEventTrigger(evt);
 
-  if(!_receiver.IsEmpty())
-    _receiver(evt);
+  _process(evt);
 }
 void psGUIManager::SetChar(int key, DWORD time)
 {
   PROFILE_FUNC();
   GetKeyboardState(_allkeys);
 
-  psGUIEvent evt;
-  evt.type = GUI_KEYCHAR;
-  evt.time=time;
+  FG_Msg evt = { 0 };
+  evt.type = FG_KEYCHAR;
+  _lastmsgtime = time;
   evt.keychar = key;
   evt.sigkeys = 0;
 
-  if(GetKey(KEY_SHIFT)) evt.sigkeys = evt.sigkeys|1; //VK_SHIFT
-  if(GetKey(KEY_CONTROL)) evt.sigkeys = evt.sigkeys|2; //VK_CONTROL
-  if(GetKey(KEY_MENU)) evt.sigkeys = evt.sigkeys|4; //VK_MENU
-  //if(held) evt.sigkeys = evt.sigkeys|8;
+  if(GetKey(FG_KEY_SHIFT)) evt.sigkeys = evt.sigkeys | 1; //VK_SHIFT
+  if(GetKey(FG_KEY_CONTROL)) evt.sigkeys = evt.sigkeys | 2; //VK_CONTROL
+  if(GetKey(FG_KEY_MENU)) evt.sigkeys = evt.sigkeys | 4; //VK_MENU
+                                                         //if(held) evt.sigkeys = evt.sigkeys|8;
 
-  //_root->OnEventTrigger(evt);
+                                                         //_root->OnEventTrigger(evt);
 
-  if(!_receiver.IsEmpty())
-    _receiver(evt);
+  _process(evt);
 }
 
-void psGUIManager::SetMouse(POINTS* points, uint8_t click, size_t wparam, DWORD time)
+void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char button, size_t wparam, DWORD time)
 {
   PROFILE_FUNC();
-  psGUIEvent evt;
-  evt.time=time;
-  evt.type = (GUI_EVENT)(click&15);
-  evt.button = (GUI_EVENT)(click>>4);
-  evt.x = _mousedata.relcoord.x; // Set these up here for any mouse events that don't contain coordinates.
-  evt.y = _mousedata.relcoord.y;
+  FG_Msg evt = { 0 };
+  _lastmsgtime = time;
+  evt.type = type;
+  evt.button = button;
+  evt.x = _root.mouse.x; // Set these up here for any mouse events that don't contain coordinates.
+  evt.y = _root.mouse.y;
 
-  if(click==GUI_MOUSELEAVE)
+  if(type == FG_MOUSELEAVE)
   {
     //_root->LeftWindow();
-    if(!_receiver.IsEmpty())
-      _receiver(evt);
+    _process(evt);
     return;
   }
 
-  if(wparam!=(size_t)-1) //if wparam is -1 it signals that it is invalid, so we simply leave our assignments at their last known value.
+  if(wparam != (size_t)-1) //if wparam is -1 it signals that it is invalid, so we simply leave our assignments at their last known value.
   {
-    uint8_t bt=0; //we must keep these bools accurate at all times
-    bt |= GUI_L_BUTTON&(-((wparam&MK_LBUTTON)!=0));
-    bt |= GUI_R_BUTTON&(-((wparam&MK_RBUTTON)!=0));
-    bt |= GUI_M_BUTTON&(-((wparam&MK_MBUTTON)!=0));
-    bt |= GUI_X_BUTTON1&(-((wparam&MK_XBUTTON1)!=0));
-    bt |= GUI_X_BUTTON2&(-((wparam&MK_XBUTTON2)!=0));
-    _mousedata.button=bt;
-    _allkeys[KEY_LBUTTON]=_mousedata.button[GUI_L_BUTTON]*0x80;
-    _allkeys[KEY_RBUTTON]=_mousedata.button[GUI_R_BUTTON]*0x80;
-    _allkeys[KEY_MBUTTON]=_mousedata.button[GUI_M_BUTTON]*0x80;
-    _allkeys[KEY_XBUTTON1]=_mousedata.button[GUI_X_BUTTON1]*0x80;
-    _allkeys[KEY_XBUTTON2]=_mousedata.button[GUI_X_BUTTON2]*0x80;
+    uint8_t bt = 0; //we must keep these bools accurate at all times
+    bt |= FG_MOUSELBUTTON&(-((wparam&MK_LBUTTON) != 0));
+    bt |= FG_MOUSERBUTTON&(-((wparam&MK_RBUTTON) != 0));
+    bt |= FG_MOUSEMBUTTON&(-((wparam&MK_MBUTTON) != 0));
+    bt |= FG_MOUSEXBUTTON1&(-((wparam&MK_XBUTTON1) != 0));
+    bt |= FG_MOUSEXBUTTON2&(-((wparam&MK_XBUTTON2) != 0));
+    _root.mouse.buttons = bt;
+    _allkeys[FG_KEY_LBUTTON] = ((_root.mouse.buttons&FG_MOUSELBUTTON) != 0) * 0x80;
+    _allkeys[FG_KEY_RBUTTON] = ((_root.mouse.buttons&FG_KEY_RBUTTON) != 0) * 0x80;
+    _allkeys[FG_KEY_MBUTTON] = ((_root.mouse.buttons&FG_KEY_MBUTTON) != 0) * 0x80;
+    _allkeys[FG_KEY_XBUTTON1] = ((_root.mouse.buttons&FG_KEY_XBUTTON1) != 0) * 0x80;
+    _allkeys[FG_KEY_XBUTTON2] = ((_root.mouse.buttons&FG_KEY_XBUTTON2) != 0) * 0x80;
   }
 
-  if(click != GUI_MOUSESCROLL) //The WM_MOUSEWHEEL event does not send mousecoord data
+  if(type != FG_MOUSESCROLL) //The WM_MOUSEWHEEL event does not send mousecoord data
   {
-    evt.x=points->x;
-    evt.y=points->y;
-    evt.allbtn=_mousedata.button;
-    _mousedata.relcoord.x = points->x;
-    _mousedata.relcoord.y = points->y;
+    evt.x = points->x;
+    evt.y = points->y;
+    evt.allbtn = _root.mouse.buttons;
+    _root.mouse.x = points->x;
+    _root.mouse.y = points->y;
   }
 
-  switch(click)
+  switch(type)
   {
-  case GUI_MOUSESCROLL:
+  case FG_MOUSESCROLL:
     evt.scrolldelta = ((((wparam) >> 16) & 0xffff)); //HIWORD()
     break;
-  case GUI_MOUSEDOWN: //L down
+  case FG_MOUSEDOWN: //L down
     evt.allbtn |= evt.button; // Ensure the correct button position is reflected in the allbtn parameter regardless of the current state of the mouse
     break;
-  case GUI_MOUSEUP: //L up
+  case FG_MOUSEUP: //L up
     evt.allbtn &= ~evt.button;
     break;
   }
 
-  if(!_receiver.IsEmpty())
-    _receiver(evt);
+  _process(evt);
 }
 // Locks the cursor
 void psGUIManager::LockCursor(bool lock)
 {
   PROFILE_FUNC();
-  _guiflags[PSGUIMANAGER_LOCKCURSOR]=lock;
+  _guiflags[PSGUIMANAGER_LOCKCURSOR] = lock;
   _lockcursor(_window, lock);
 }
 // Shows/hides the hardware cursor
 void psGUIManager::ShowCursor(bool show)
 {
-  ::ShowCursor(show?1:0);
+  ::ShowCursor(show ? 1 : 0);
 }
 
 char psGUIManager::CaptureAllJoy(HWND__* hwnd)
 {
   PROFILE_FUNC();
-  char r=0;
-  _alljoysticks=0;
+  char r = 0;
+  _alljoysticks = 0;
   for(uint16_t i = 0; i < _maxjoy; ++i)
   {
-    if(joySetCapture(hwnd, i, 0, TRUE)==JOYERR_NOERROR)
+    if(joySetCapture(hwnd, i, 0, TRUE) == JOYERR_NOERROR)
     {
       ++r;
-      _alljoysticks|=(1<<i);
-      if(_firstjoystick==JOYSTICK_INVALID)
-        _firstjoystick=(i<<8);
+      _alljoysticks |= (1 << i);
+      if(_firstjoystick == FG_JOYSTICK_INVALID)
+        _firstjoystick = (i << 8);
     }
   }
   return r;
@@ -503,7 +500,7 @@ void psGUIManager::FlushMessages()
 
     if(msg.message == WM_QUIT)
     {
-      psEngine::Instance()->Quit();
+      Quit();
       PSLOGV(3, "Quit message recieved, setting _quit to true");
       return;
     }
@@ -534,92 +531,94 @@ void psGUIManager::_joyupdateall()
 {
   PROFILE_FUNC();
   JOYINFOEX info;
-  info.dwSize=sizeof(JOYINFOEX);
-  info.dwFlags=JOY_RETURNBUTTONS|JOY_RETURNCENTERED|JOY_RETURNX|JOY_RETURNY|JOY_RETURNZ|JOY_RETURNR|JOY_RETURNU|JOY_RETURNV;
+  info.dwSize = sizeof(JOYINFOEX);
+  info.dwFlags = JOY_RETURNBUTTONS | JOY_RETURNCENTERED | JOY_RETURNX | JOY_RETURNY | JOY_RETURNZ | JOY_RETURNR | JOY_RETURNU | JOY_RETURNV;
 
   for(uint16_t i = 0; i < _maxjoy; ++i)
   {
-    if(!(_alljoysticks & (1<<i))) continue;
-    if(joyGetPosEx(i, &info)==JOYERR_NOERROR)
+    if(!(_alljoysticks & (1 << i))) continue;
+    if(joyGetPosEx(i, &info) == JOYERR_NOERROR)
     {
-      if(_allbuttons[i]!=info.dwButtons)
+      if(_allbuttons[i] != info.dwButtons)
       {
-        psGUIEvent evt;
-        evt.time=GetTickCount();
-        uint32_t old=_allbuttons[i];
-        _allbuttons[i]=info.dwButtons;
-        uint32_t diff=(old^info.dwButtons);
+        FG_Msg evt = { 0 };
+        _lastmsgtime = GetTickCount();
+        uint32_t old = _allbuttons[i];
+        _allbuttons[i] = info.dwButtons;
+        uint32_t diff = (old^info.dwButtons);
         uint32_t k;
-        if(!_receiver.IsEmpty()) //Only bother with events if we have something to send them to
+        for(int j = 0; j < 32; ++j) //go through the bits and generate BUTTONUP or BUTTONDOWN events
         {
-          for(int j = 0; j < 32; ++j) //go through the bits and generate BUTTONUP or BUTTONDOWN events
+          k = (1 << j);
+          if((diff&k) != 0)
           {
-            k=(1<<j);
-            if((diff&k)!=0)
-            {
-              evt.joydown=(info.dwButtons&k)!=0;
-              evt.type=(evt.joydown!=0)?GUI_JOYBUTTONDOWN:GUI_JOYBUTTONUP;
-              evt.joybutton=(i<<8)|j;
-              _receiver(evt);
-            }
+            evt.joydown = (info.dwButtons&k) != 0;
+            evt.type = (evt.joydown != 0) ? FG_JOYBUTTONDOWN : FG_JOYBUTTONUP;
+            evt.joybutton = (i << 8) | j;
+            _process(evt);
           }
         }
       }
 
-      uint8_t numaxes=_joydevs[i].numaxes;
-      if(memcmp(&_alljoyaxis[i][JOYAXIS_X], &info.dwXpos, sizeof(unsigned long)*numaxes)!=0)
+      uint8_t numaxes = _joydevs[i].numaxes;
+      if(memcmp(&_alljoyaxis[i][FG_JOYAXIS_X], &info.dwXpos, sizeof(unsigned long)*numaxes) != 0)
       {
         unsigned long old[NUMAXIS];
-        memcpy(old, &_alljoyaxis[i][JOYAXIS_X], sizeof(unsigned long)*numaxes);
-        memcpy(&_alljoyaxis[i][JOYAXIS_X], &info.dwXpos, sizeof(unsigned long)*numaxes);
+        memcpy(old, &_alljoyaxis[i][FG_JOYAXIS_X], sizeof(unsigned long)*numaxes);
+        memcpy(&_alljoyaxis[i][FG_JOYAXIS_X], &info.dwXpos, sizeof(unsigned long)*numaxes);
 
-        if(!_receiver.IsEmpty()) //Only bother with events if we have something to send them to
+        for(int j = 0; j < numaxes; ++j)
         {
-          for(int j = 0; j < numaxes; ++j)
+          if(old[j] != _alljoyaxis[i][j])
           {
-            if(old[j]!=_alljoyaxis[i][j])
-            {
-              psGUIEvent evt;
-              evt.time=GetTickCount();
-              evt.type=GUI_JOYAXIS;
-              evt.joyaxis=(i<<8)|j;
-              evt.joyvalue=_translatejoyaxis(evt.joyaxis);
-              _receiver(evt);
-            }
+            FG_Msg evt = { 0 };
+            _lastmsgtime = GetTickCount();
+            evt.type = FG_JOYAXIS;
+            evt.joyaxis = (i << 8) | j;
+            evt.joyvalue = _translatejoyaxis(evt.joyaxis);
+            _process(evt);
           }
         }
       }
-    } else
-      _alljoysticks &= (~(1<<i)); // If it failed, remove joystick from active list
+    }
+    else
+      _alljoysticks &= (~(1 << i)); // If it failed, remove joystick from active list
   }
 }
 
 float psGUIManager::_translatejoyaxis(uint16_t axis) const
 {
-  uint8_t ID = (axis>>8);
-  uint8_t a = (axis&0xFF);
-  return (((long)_alljoyaxis[ID][a])-_joydevs[ID].offset[a])/_joydevs[ID].range[a];
+  uint8_t ID = (axis >> 8);
+  uint8_t a = (axis & 0xFF);
+  return (((long)_alljoyaxis[ID][a]) - _joydevs[ID].offset[a]) / _joydevs[ID].range[a];
 }
-
+void psGUIManager::_process(FG_Msg& m)
+{
+  if(_preprocess.IsEmpty() || !_preprocess(m))
+    if(!fgRoot_Inject(&_root, &m))
+      if(!_postprocess.IsEmpty())
+        _postprocess(m);
+}
 psVeciu psGUIManager::_create(psVeciu dim, char mode, HWND window)
 {
   PROFILE_FUNC();
   // Check for desktop composition
-  HMODULE dwm=LoadLibraryW(L"dwmapi.dll");
+  HMODULE dwm = LoadLibraryW(L"dwmapi.dll");
   if(dwm)
   {
     DWMCOMPENABLE dwmcomp = (DWMCOMPENABLE)GetProcAddress(dwm, "DwmIsCompositionEnabled");
-    if(!dwmcomp) { FreeLibrary(dwm); dwm=0; } else
+    if(!dwmcomp) { FreeLibrary(dwm); dwm = 0; }
+    else
     {
       BOOL res;
       (*dwmcomp)(&res);
-      if(res==FALSE) { FreeLibrary(dwm); dwm=0; } //fail
+      if(res == FALSE) { FreeLibrary(dwm); dwm = 0; } //fail
     }
     dwmextend = (DWMEXTENDFRAME)GetProcAddress(dwm, "DwmExtendFrameIntoClientArea");
     dwmblurbehind = (DWMBLURBEHIND)GetProcAddress(dwm, "DwmEnableBlurBehindWindow");
 
     if(!dwmextend || !dwmblurbehind)
-    { 
+    {
       FreeLibrary(dwm);
       dwm = 0;
       dwmextend = 0;
@@ -630,9 +629,11 @@ psVeciu psGUIManager::_create(psVeciu dim, char mode, HWND window)
   if(!dwm && mode >= PSINIT::MODE_COMPOSITE) mode = PSINIT::MODE_WINDOWED; //can't do composite if its not supported
   _guiflags[PSGUIMANAGER_AUTOMINIMIZE] = mode == PSINIT::MODE_BORDERLESS_TOPMOST || mode == PSINIT::MODE_FULLSCREEN;
   _guiflags[PSGUIMANAGER_LOCKCURSOR] = mode == PSINIT::MODE_BORDERLESS || mode == PSINIT::MODE_BORDERLESS_TOPMOST || mode == PSINIT::MODE_FULLSCREEN;
-  _window=window;
+  _window = window;
   psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
   dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
+  _root.gui.element.transform.area.right.abs = dim.x;
+  _root.gui.element.transform.area.bottom.abs = dim.y;
   if(!_window) _window = WndCreate(0, mode == PSINIT::MODE_BORDERLESS ? screen : dim, mode, 0, 0);
 
   return dim;
@@ -645,14 +646,14 @@ void psGUIManager::_exactmousecalc()
   //GetCursorPos(&p); //This fails for large addresses
   {
     CURSORINFO ci;
-    ci.cbSize=sizeof(CURSORINFO);
+    ci.cbSize = sizeof(CURSORINFO);
     GetCursorInfo(&ci);
-    p=ci.ptScreenPos;
+    p = ci.ptScreenPos;
   }
 
   ScreenToClient(_window, &p);
-  _mousedata.relcoord.x = p.x;
-  _mousedata.relcoord.y = p.y;
+  _root.mouse.x = p.x;
+  _root.mouse.y = p.y;
 }
 
 psVeciu psGUIManager::_resizewindow(psVeciu dim, char mode)
@@ -701,6 +702,8 @@ psVeciu psGUIManager::_resizewindow(psVeciu dim, char mode)
     SetWindowPos(_window, top, INT(rect.left), INT(rect.top), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS);
   }
 
+  _root.gui.element.transform.area.right.abs = rwidth;
+  _root.gui.element.transform.area.bottom.abs = rheight;
   _lockcursor(_window, (_guiflags&PSGUIMANAGER_LOCKCURSOR) != 0);
   return dim;
 }

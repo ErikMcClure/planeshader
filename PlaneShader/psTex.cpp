@@ -57,6 +57,7 @@ void BSS_FASTCALL psTex::_applydesc(TEXTURE_DESC& desc)
   _miplevels = desc.miplevels;
 }
 
+
 psTex* BSS_FASTCALL psTex::Create(const char* file, uint32_t usage, FILTERS mipfilter, uint8_t miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
 {
   void* view = 0;

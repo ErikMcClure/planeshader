@@ -62,8 +62,6 @@ namespace planeshader {
   // Core engine object
   class PS_DLLEXPORT psEngine : public psGUIManager, public bss_util::cLog, public psDriverHold
   {
-    static const uint8_t PSENGINE_QUIT = (1<<0);
-
   public:
     // Constructor
     psEngine(const PSINIT& init);
@@ -89,9 +87,6 @@ namespace planeshader {
     // Gets a pass. The 0th pass always exists.
     inline psPass* GetPass(uint16_t index=0) const { return index<_passes.Capacity()?_passes[index]:0; }
     inline uint16_t NumPass() const { return _passes.Capacity(); }
-    // Get/Sets the quit value
-    inline void Quit() { _flags+=PSENGINE_QUIT; }
-    inline bool GetQuit() const { return _flags[PSENGINE_QUIT]; }
     inline const char* GetMediaPath() const { return _mediapath.c_str(); }
     inline PSINIT::MODE GetMode() const { return _mode; }
     void Resize(psVeciu dim, PSINIT::MODE mode);
@@ -105,7 +100,6 @@ namespace planeshader {
     virtual void _onresize(uint32_t width, uint32_t height) override;
 
     bss_util::cArray<psPass*, uint16_t> _passes;
-    bss_util::cBitField<uint8_t> _flags;
     uint16_t _curpass;
     psPass* _mainpass;
     cStr _mediapath;
