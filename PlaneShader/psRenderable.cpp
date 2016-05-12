@@ -75,9 +75,10 @@ inline psTex* const* psRenderable::GetRenderTargets() const
 {
   if(_rts.Capacity())
     return _rts;
-  return !_pass ? 0 : _pass->GetRenderTarget();
+  psPass* pass = !_pass ? psPass::CurPass : _pass;
+  return !pass ? 0 : pass->GetRenderTarget();
 }
-inline uint8_t psRenderable::NumRT() const { return !_rts.Capacity() ? (_pass != 0 && _pass->GetRenderTarget()[0] != 0) : _rts.Capacity(); }
+inline uint8_t psRenderable::NumRT() const { return !_rts.Capacity() ? (GetRenderTargets() != 0) : _rts.Capacity(); }
 void BSS_FASTCALL psRenderable::SetRenderTarget(psTex* rt, uint32_t index)
 {
   uint32_t oldsize = _rts.Capacity();

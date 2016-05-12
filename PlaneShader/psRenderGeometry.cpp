@@ -88,7 +88,7 @@ psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov){}
 psFullScreenQuad::psFullScreenQuad(){}
 void BSS_FASTCALL psFullScreenQuad::_render()
 {
-  psVec dim = !NumRT() ? _driver->screendim : GetRenderTargets()[0]->GetDim();
+  psVec dim = GetRenderTargets()[0]->GetDim();
   _driver->PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, dim.x, dim.y), psCamera::default_extent);
   _driver->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
   _driver->DrawFullScreenQuad();

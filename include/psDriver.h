@@ -309,7 +309,7 @@ namespace planeshader {
   class PS_DLLEXPORT psDriver
   {
   protected:
-    psDriver(const psVeciu& Screendim) : rawscreendim(Screendim) {}
+    psDriver() {}
 
   public:
     virtual ~psDriver() {}
@@ -344,7 +344,7 @@ namespace planeshader {
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     virtual psVec3D BSS_FASTCALL TransformPoint(const psVec3D& point) const=0;
     virtual psVec3D BSS_FASTCALL ReversePoint(const psVec3D& point) const=0;
-    psVec3D BSS_FASTCALL FromScreenSpace(const psVec& point, float z = 0.0f) const { psVec pt = (point - (rawscreendim/2u)) * (-ReversePoint(VEC3D_ZERO).z+z); return ReversePoint(psVec3D(pt.x, pt.y, 1.0f+z)); }
+    psVec3D BSS_FASTCALL FromScreenSpace(const psVec& point, float z = 0.0f) const;
     // Draws a fullscreen quad
     virtual void DrawFullScreenQuad()=0;
     // Creates a vertex or index buffer
@@ -390,12 +390,12 @@ namespace planeshader {
     // Clears everything to a specified color
     virtual void BSS_FASTCALL Clear(uint32_t color)=0;
     // Gets the backbuffer texture
-    virtual psTex* GetBackBuffer()=0;
+    virtual psTex* GetBackBuffer() const=0;
     // Gets a pointer to the driver implementation
-    virtual RealDriver GetRealDriver()=0;
+    virtual RealDriver GetRealDriver() =0;
     // Gets/Sets the effective DPI
     virtual void SetDPIScale(psVec dpiscale = psVec(1.0f))=0;
-    virtual psVec GetDPIScale() = 0;
+    virtual psVec GetDPIScale() const = 0;
     // Snaps a coordinate to a pixel value that will correspond to a pixel after it gets scaled by DPI for rendering on the backbuffer
     inline psVec SnapToDPI(const psVec& p)
     { 
@@ -469,9 +469,6 @@ namespace planeshader {
       psShader* CURVE;
       psShader* ROUNDRECT;
     } library;
-
-    psVec screendim; // DPI scaled screen dimensions, which can theoretically be fractional due to 1.5x DPI scaling
-    psVeciu rawscreendim;
 
   protected:
     bss_util::cDynArray<psBatchObj> _jobstack;

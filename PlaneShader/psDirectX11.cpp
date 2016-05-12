@@ -11,6 +11,7 @@
 #include "bss-util/profiler.h"
 #include "psColor.h"
 #include "psCamera.h"
+#include "ps_feather.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -50,7 +51,7 @@ using namespace bss_util;
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
 
 // Constructors
-psDirectX11::psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd) : psDriver(dim), _device(0), _vsync(vsync), _lasterr(0),
+psDirectX11::psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor) : psDriver(), _device(0), _vsync(vsync), _lasterr(0),
 _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
 {
   PROFILE_FUNC();
@@ -72,7 +73,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
 #endif
 
   IDXGIOutput* output;
-  IDXGIAdapter* adapter = _createfactory(hwnd, output);
+  IDXGIAdapter* adapter = _createfactory(monitor->GetWindow(), output);
 
   PSLOG(4) << "DEVICEFLAGS: " << DEVICEFLAGS << std::endl;
 
@@ -132,7 +133,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     _samples,
     DXGI_USAGE_RENDER_TARGET_OUTPUT,
     1,
-    hwnd,
+    monitor->GetWindow(),
     !fullscreen,
     DXGI_SWAP_EFFECT_DISCARD,
     0
@@ -157,7 +158,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     swapdesc.Flags).c_str() << std::endl;
 
   LOGFAILURE(_factory->CreateSwapChain(_device, &swapdesc, &_swapchain), "CreateSwapChain failed with error: ", _geterror(_lasterr));
-  _factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
+  _factory->MakeWindowAssociation(monitor->GetWindow(), DXGI_MWA_NO_ALT_ENTER);
 
   _cam_def = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
   _cam_usr = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
@@ -365,6 +366,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _defaultSS = (ID3D11SamplerState*)CreateTexblock(0, 0);
   SetStateblock(NULL);
   Clear(0x00000000);
+  monitor->SetBackBuffer(_backbuffer);
   _swapchain->Present(0, 0);
 }
 psDirectX11::~psDirectX11()
@@ -965,7 +967,7 @@ void BSS_FASTCALL psDirectX11::PushClipRect(const psRect& rect)
 psRect psDirectX11::PeekClipRect()
 {
   if(!_clipstack.Length())
-    return psRect(VEC_ZERO, psVec(rawscreendim)/GetDPIScale());
+    return psRect(VEC_ZERO, psVec(_backbuffer->GetRawDim())/GetDPIScale());
   return psRect(_clipstack.Peek());
 }
 
@@ -1307,7 +1309,7 @@ void BSS_FASTCALL psDirectX11::CopyResource(void* dest, void* src, RESOURCE_TYPE
 void BSS_FASTCALL psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
 {
   PROFILE_FUNC();
-  if(rawscreendim != dim || _backbuffer->GetFormat() != format)
+  if(_backbuffer->GetRawDim() != dim || _backbuffer->GetFormat() != format)
   {
     if(_backbuffer)
       _backbuffer->~psTex();
@@ -1334,24 +1336,27 @@ void psDirectX11::_getbackbufferref()
       psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
       DXGItoFMT(backbuffer_desc.Format),
       (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags, backbuffer_desc.SampleDesc.Count == 1),
-      backbuffer_desc.MipLevels);
+      backbuffer_desc.MipLevels,
+      0,
+      psVeciu(psGUIManager::BASE_DPI));
   else
     new(_backbuffer) psTex(0,
       _creatertview(backbuffer),
       psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
       DXGItoFMT(backbuffer_desc.Format),
       (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags,backbuffer_desc.SampleDesc.Count == 1),
-      backbuffer_desc.MipLevels);
+      backbuffer_desc.MipLevels,
+      0,
+      psVeciu(psGUIManager::BASE_DPI));
 
   backbuffer->Release();
+  SetDPIScale(_dpiscale); // Resets the backbuffer dpi, just in case.
 }
 void psDirectX11::_resetscreendim()
 {
   _applyrendertargets();
-  rawscreendim = _backbuffer->GetDim();
-  screendim = psVec(rawscreendim) * _dpiscale;
   _camstack.Clear();
-  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, rawscreendim.x, rawscreendim.y), psCamera::default_extent);
+  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, _backbuffer->GetRawDim().x, _backbuffer->GetRawDim().y), psCamera::default_extent);
 }
 void psDirectX11::_applyrendertargets()
 {
@@ -1461,8 +1466,10 @@ bool BSS_FASTCALL psDirectX11::ShaderSupported(SHADER_VER profile) //With DX11 s
 void psDirectX11::SetDPIScale(psVec dpiscale)
 {
   _dpiscale = dpiscale;
+  psVec dpi = psVec(psGUIManager::BASE_DPI) * dpiscale;
+  _backbuffer->SetDPI(psVeciu(fFastTruncate(dpi.x), fFastTruncate(dpi.y)));
 }
-psVec psDirectX11::GetDPIScale()
+psVec psDirectX11::GetDPIScale() const
 {
   return _dpiscale;
 }

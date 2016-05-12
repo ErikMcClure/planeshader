@@ -119,8 +119,9 @@ void BSS_FASTCALL psTileset::_render()
   if(GetCollisionRectStatic().rotation == 0.0f)
   {
     psRect r = GetBoundingRectStatic();
-    psVec3D lt = _driver->FromScreenSpace(VEC_ZERO, GetCollisionRectStatic().z);
-    psVec3D rb = _driver->FromScreenSpace(_driver->screendim, GetCollisionRectStatic().z);
+    psRect c = _driver->PeekClipRect();
+    psVec3D lt = _driver->FromScreenSpace(c.topleft, GetCollisionRectStatic().z);
+    psVec3D rb = _driver->FromScreenSpace(c.bottomright, GetCollisionRectStatic().z);
     r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
     window = window.GenerateIntersection(psRecti(
       bss_util::fFastTruncate(r.left / _tiledim.x), 
@@ -136,8 +137,8 @@ void BSS_FASTCALL psTileset::_render()
 
   do
   {
-    for(uint32_t j = window.top; j < window.bottom; ++j)
-      for(uint32_t i = window.left; i < window.right; ++i)
+    for(uint32_t j = window.top; j < (uint32_t)window.bottom; ++j)
+      for(uint32_t i = window.left; i < (uint32_t)window.right; ++i)
       {
         uint32_t k = i + (j*_rowlength);
         if(bss_util::bssGetBit(drawn, k))

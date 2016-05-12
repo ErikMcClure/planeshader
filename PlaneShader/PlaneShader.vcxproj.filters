@@ -221,6 +221,9 @@
     <ClCompile Include="psChart.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="psMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="fsquadVS.hlsl">

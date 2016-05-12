@@ -43,7 +43,8 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
 
   GetStream() << "--- PLANESHADER v." << PS_VERSION_MAJOR << '.' << PS_VERSION_MINOR << '.' << PS_VERSION_REVISION << " LOG ---" << std::endl;
 
-  psVeciu dim = _create(psVeciu(init.width, init.height), init.mode, 0);
+  psVeciu dim(init.width, init.height);
+  AddMonitor(dim, init.mode, 0);
 
   switch(init.driver)
   {
@@ -53,12 +54,12 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
     break;
   case RealDriver::DRIVERTYPE_DX10:
     //PSLOG(4) << "Initializing DirectX10 Driver" << std::endl;
-    //new psDirectX10(dim, init.antialias, init.vsync, init.mode == PSINIT::MODE_FULLSCREEN, _window);
+    //new psDirectX10(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, _window);
     //if(((psDirectX10*)_driver)->GetLastError()!=0) { delete _driver; _driver=0; }
     //break;
   case RealDriver::DRIVERTYPE_DX11:
     PSLOG(4) << "Initializing DirectX11 Driver" << std::endl;
-    new psDirectX11(dim, init.antialias, init.vsync, init.mode == PSINIT::MODE_FULLSCREEN, init.sRGB, _window);
+    new psDirectX11(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
     if(((psDirectX11*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   }
@@ -73,9 +74,9 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   psStateblock::DEFAULT = psStateblock::Create(0, 0);
   _driver->SetStateblock(psStateblock::DEFAULT->GetSB());
   
-  if(_guiflags&PSGUIMANAGER_LOCKCURSOR) // Ensure the mouse cursor is actually locked
-    _dolockcursor(_window);
-  _mainpass = new psPass();
+  //if(_guiflags&PSMONITOR_LOCKCURSOR) // Ensure the mouse cursor is actually locked
+  //  _dolockcursor(_window);
+  _mainpass = new psPass(&_monitors[0]);
   _passes[0] = _mainpass;
 }
 psEngine::~psEngine()
@@ -156,15 +157,4 @@ bool psEngine::RemovePass(uint16_t index)
   if(!index || index>=_passes.Capacity()) return false;
   _passes.Remove(index);
   return true;
-}
-void psEngine::_onresize(uint32_t width, uint32_t height)
-{
-  if(_driver && _driver->GetBackBuffer())
-    _driver->Resize(psVeciu(width, height), _driver->GetBackBuffer()->GetFormat(), -1);
-}
-void psEngine::Resize(psVeciu dim, PSINIT::MODE mode)
-{
-  _mode = mode;
-  dim = _resizewindow(dim, _mode);
-  _driver->Resize(dim, _driver->GetBackBuffer()->GetFormat(), _mode == PSINIT::MODE_FULLSCREEN);
 }

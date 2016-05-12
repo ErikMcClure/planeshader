@@ -5,8 +5,15 @@
 #include "psShader.h"
 #include "psStateblock.h"
 #include "psRenderable.h"
+#include "psTex.h"
 
 using namespace planeshader;
+
+psVec3D BSS_FASTCALL psDriver::FromScreenSpace(const psVec& point, float z) const
+{ 
+  psVec pt = (point - (GetBackBuffer()->GetRawDim() / 2u)) * (-ReversePoint(VEC3D_ZERO).z + z);
+  return ReversePoint(psVec3D(pt.x, pt.y, 1.0f + z));
+}
 
 psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
