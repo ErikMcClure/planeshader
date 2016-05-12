@@ -100,6 +100,7 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, uint32_t color, uint
   else
     driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
 }
+
 void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
 {
   psTex* tex = (psTex*)res;
@@ -110,6 +111,7 @@ void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag 
   dim->x = uvresolve.right - uvresolve.left;
   dim->y = uvresolve.bottom - uvresolve.top;
 }
+
 void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
 {
   psDriver* driver = psDriverHold::GetDriver();
@@ -118,6 +120,7 @@ void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
   driver->DrawLines(obj, psLine(p1.x, p1.y, p2.x, p2.y), 0, 0, vertexcolor);
 }
+
 #define DEFAULT_CREATE(type, init, ...) \
   type* r = (type*)malloc(sizeof(type)); \
   init(r, __VA_ARGS__); \
@@ -177,6 +180,7 @@ fgElement* FG_FASTCALL fgBox_Create(fgElement* BSS_RESTRICT parent, fgElement* B
   return (fgElement*)r;
 }
 
+#include "bss-util\bss_win32_includes.h"
 
 fgRoot* FG_FASTCALL fgInitialize()
 {
@@ -206,36 +210,6 @@ void fgDirtyElement(fgTransform* e)
 {
 
 }
-
-psRoot::psRoot()
-{
-  fgRoot_Init(this, &AbsRect { 0, 0, 1, 1 }, psGUIManager::BASE_DPI);
-}
-psRoot::~psRoot()
-{
-  fgRoot_Destroy(this);
-}
-
-void BSS_FASTCALL psRoot::_render()
-{
-  CRect area = gui.element.transform.area;
-  area.right.abs = _driver->screendim.x;
-  area.bottom.abs = _driver->screendim.y;
-  gui->SetArea(area);
-  gui->Draw(0, 0);
-}
-psFlag psRoot::GetDrawFlags(fgFlag flags)
-{
-  psFlag flag = 0;
-  if(flags&FGTEXT_CHARWRAP) flag |= PSFONT_CHARBREAK;
-  if(flags&FGTEXT_WORDWRAP) flag |= PSFONT_WORDBREAK;
-  if(flags&FGTEXT_RTL) flag |= PSFONT_RTL;
-  if(flags&FGTEXT_RIGHTALIGN) flag |= PSFONT_RIGHT;
-  if(flags&FGTEXT_CENTER) flag |= PSFONT_CENTER;
-  return flag;
-}
-
-#include "bss-util\bss_win32_includes.h"
 
 void fgSetCursor(uint32_t type, void* custom)
 {
@@ -271,7 +245,7 @@ void fgSetCursor(uint32_t type, void* custom)
 
 void fgClipboardCopy(uint32_t type, const void* data, size_t length)
 {
-  OpenClipboard(psEngine::Instance()->GetWindow());
+  OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   if(EmptyClipboard() && data != 0 && length > 0)
   {
     HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, length);
@@ -327,7 +301,7 @@ char fgClipboardExists(uint32_t type)
 
 const void* fgClipboardPaste(uint32_t type, size_t* length)
 {
-  OpenClipboard(psEngine::Instance()->GetWindow());
+  OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   UINT format = CF_PRIVATEFIRST;
   switch(type)
   {
@@ -366,4 +340,33 @@ const void* fgClipboardPaste(uint32_t type, size_t* length)
 void fgClipboardFree(const void* mem)
 {
   free(const_cast<void*>(mem));
+}
+
+psRoot::psRoot()
+{
+  fgRoot_Init(this, &AbsRect { 0, 0, 1, 1 }, psGUIManager::BASE_DPI);
+}
+psRoot::~psRoot()
+{
+  fgRoot_Destroy(this);
+}
+
+void BSS_FASTCALL psRoot::_render()
+{
+  CRect area = gui.element.transform.area;
+  psTex* t = GetRenderTargets()[0];
+  area.right.abs = t->GetDim().x;
+  area.bottom.abs = t->GetDim().y;
+  gui->SetArea(area);
+  gui->Draw(0, 0);
+}
+psFlag psRoot::GetDrawFlags(fgFlag flags)
+{
+  psFlag flag = 0;
+  if(flags&FGTEXT_CHARWRAP) flag |= PSFONT_CHARBREAK;
+  if(flags&FGTEXT_WORDWRAP) flag |= PSFONT_WORDBREAK;
+  if(flags&FGTEXT_RTL) flag |= PSFONT_RTL;
+  if(flags&FGTEXT_RIGHTALIGN) flag |= PSFONT_RIGHT;
+  if(flags&FGTEXT_CENTER) flag |= PSFONT_CENTER;
+  return flag;
 }

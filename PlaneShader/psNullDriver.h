@@ -10,7 +10,7 @@ namespace planeshader {
   class BSS_COMPILER_DLLEXPORT psNullDriver : public psDriver, public psDriverHold
   {
   public:
-    inline psNullDriver() : psDriver(VEC_ZERO)
+    inline psNullDriver()
     {
       _driver = this;
       psShader* nullshader = psShader::CreateShader(0, 0, 0, 0);
@@ -97,12 +97,12 @@ namespace planeshader {
     virtual void BSS_FASTCALL GrabResource(void* p, psDriver::RESOURCE_TYPE t) { }
     virtual void BSS_FASTCALL CopyResource(void* dest, void* src, psDriver::RESOURCE_TYPE t) { }
     virtual void BSS_FASTCALL Resize(psVeciu dim, FORMATS format, char fullscreen) { }
-    virtual psTex* GetBackBuffer() { return 0; }
+    virtual psTex* GetBackBuffer() const { return 0; }
     // Gets a pointer to the driver implementation
     virtual RealDriver GetRealDriver() { RealDriver r; r.nul=this; r.type=RealDriver::DRIVERTYPE_NULL; return r; }
     // Gets/Sets the effective DPI
     virtual void SetDPIScale(psVec dpiscale = psVec(1.0f)) {}
-    virtual psVec GetDPIScale() { return psVec(0); }
+    virtual psVec GetDPIScale() const { return psVec(0); }
 
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint="") { return 0; }

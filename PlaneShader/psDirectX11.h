@@ -14,6 +14,8 @@
 #include <array>
 
 namespace planeshader {
+  class psMonitor;
+
   // Vertex input to geometry shader for rect rendering (UV coordinates are added in batches of 4 floats after the end)
   struct DX11_rectvert
   {
@@ -59,7 +61,7 @@ namespace planeshader {
   {
   public:
     // Constructors
-    psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, HWND hwnd);
+    psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor);
     ~psDirectX11();
     // Begins a scene
     virtual bool Begin() override;
@@ -131,7 +133,7 @@ namespace planeshader {
     virtual void BSS_FASTCALL Clear(uint32_t color) override;
     // Gets a pointer to the driver implementation
     inline virtual RealDriver GetRealDriver() override { RealDriver d; d.dx11 = this; d.type = RealDriver::DRIVERTYPE_DX11; return d; }
-    inline virtual psTex* GetBackBuffer() override { return _backbuffer; }
+    inline virtual psTex* GetBackBuffer() const override { return _backbuffer; }
     // Compile a shader from a string
     virtual void* BSS_FASTCALL CompileShader(const char* source, SHADER_VER profile, const char* entrypoint = "") override;
     // Create an actual shader object from compiled shader source (either precompiled or from CompileShader())
@@ -143,7 +145,7 @@ namespace planeshader {
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile) override;
     // Gets/Sets the effective DPI
     virtual void SetDPIScale(psVec dpiscale = psVec(1.0f)) override;
-    virtual psVec GetDPIScale() override;
+    virtual psVec GetDPIScale() const override;
     // Returns an index to an internal state snapshot
     virtual uint32_t BSS_FASTCALL GetSnapshot() override;
 

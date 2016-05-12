@@ -18,13 +18,13 @@ namespace planeshader {
   class PS_DLLEXPORT psPass : public psDriverHold
   {
   public:
-    psPass();
+    explicit psPass(psMonitor* monitor = 0);
     ~psPass();
     void Begin();
     void End();
     inline void BSS_FASTCALL SetCamera(const psCamera* camera) { _cam=!camera?&psCamera::default_camera:camera; }
     inline const psCamera* GetCamera() const { return _cam; }
-    inline psTex* const* GetRenderTarget() const { return &_defaultrt; }
+    psTex* const* GetRenderTarget();
     inline void SetRenderTarget(psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);

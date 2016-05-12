@@ -185,7 +185,7 @@ void updatefpscount(uint64_t& timer, int& fps)
     timer = cHighPrecisionTimer::OpenProfiler();
     char text[10] = { 0,0,0,0,0,0,0,0,0,0 };
     _itoa_r(fps, text, 10);
-    engine->SetWindowTitle(text);
+    engine->GetMonitor()->SetWindowTitle(text);
     fps = 0;
   }
   ++fps;
@@ -207,17 +207,17 @@ TESTDEF::RETPAIR test_psDirectX11()
   globalcam.SetPivotAbs(psVec(300, 300));
 
   psVec3D imgpos[NUMBATCH];
-  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->rawscreendim.x), RANDINTGEN(0, driver->rawscreendim.y), RANDFLOATGEN(0, PI_DOUBLEf));
+  for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->GetBackBuffer()->GetRawDim().x), RANDINTGEN(0, driver->GetBackBuffer()->GetRawDim().y), RANDFLOATGEN(0, PI_DOUBLEf));
 
   while(!gotonext && engine->Begin())
   {
     processGUI();
     driver->Clear(0);
-    //driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
-    globalcam.Apply();
+    //driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->GetBackBuffer()->GetRawDim()), psCamera::default_extent);
+    globalcam.Apply(*engine->GetPass(0)->GetRenderTarget());
     driver->SetTextures(&pslogo, 1);
 
-    //psVec pt = psVec(engine->GetMouse() - (driver->rawscreendim / 2u)) * (-driver->ReversePoint(VEC3D_ZERO).z);
+    //psVec pt = psVec(engine->GetMouse() - (driver->GetBackBuffer()->GetRawDim() / 2u)) * (-driver->ReversePoint(VEC3D_ZERO).z);
     //psVec3D point = driver->ReversePoint(psVec3D(pt.x, pt.y, 1));
     psVec3D point = driver->FromScreenSpace(engine->GetMouse());
     //psVec3D point = driver->FromScreenSpace(VEC_ZERO);
@@ -283,8 +283,8 @@ TESTDEF::RETPAIR test_psParticles()
 
   for(int i = 0; i < 5000; ++i)
   {
-    verts[i].x = bssrandreal(0, driver->screendim.x);
-    verts[i].y = bssrandreal(0, driver->screendim.y);
+    verts[i].x = bssrandreal(0, driver->GetBackBuffer()->GetDim().x);
+    verts[i].y = bssrandreal(0, driver->GetBackBuffer()->GetDim().y);
     verts[i].z = 0;
     verts[i].w = bssrandreal(8, 32);
     verts[i].color = 0x88FFFFFF;
@@ -294,16 +294,16 @@ TESTDEF::RETPAIR test_psParticles()
   {
     processGUI();
     driver->Clear(0);
-    driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->rawscreendim), psCamera::default_extent);
+    driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->GetBackBuffer()->GetRawDim()), psCamera::default_extent);
 
     for(int i = 0; i < 5000; ++i)
     {
       verts[i].x += velocities[i].x;
       verts[i].y += velocities[i].y;
-      double s = dist(verts[i].x, verts[i].y, driver->screendim.x / 2, driver->screendim.y / 2) / 2000.0; // This gets the distance from the center, scaling the outer boundary at 2000 to 1.0
+      double s = dist(verts[i].x, verts[i].y, driver->GetBackBuffer()->GetDim().x / 2, driver->GetBackBuffer()->GetDim().y / 2) / 2000.0; // This gets the distance from the center, scaling the outer boundary at 2000 to 1.0
       double d = bssrandreal(-1.0, 1.0);
       d = std::pow(abs(d), 1.0 + s*s) * ((d < 0.0) ? -1.0 : 1.0); // This causes the distribution of d to tend towards zero at a higher rate the farther away a particle is from the center. This allows particles to move freely near the center, but get dragged towards it farther away.
-      velocities[i] += psVec::FromPolar(0.004, bssfmod<double>(d*PI - atan2(verts[i].y - driver->screendim.y / 2, -verts[i].x + driver->screendim.x / 2), PI_DOUBLE)); // At d = 0, the velocity will always point towards the center.
+      velocities[i] += psVec::FromPolar(0.004, bssfmod<double>(d*PI - atan2(verts[i].y - driver->GetBackBuffer()->GetDim().y / 2, -verts[i].x + driver->GetBackBuffer()->GetDim().x / 2), PI_DOUBLE)); // At d = 0, the velocity will always point towards the center.
     }
 
     driver->SetTextures(&particle, 1);
@@ -367,7 +367,7 @@ TESTDEF::RETPAIR test_psEffect()
   auto timer = cHighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  psTex* gamma = psTex::Create(driver->screendim, FMT_R8G8B8A8_SRGB, USAGE_RENDERTARGET | USAGE_SHADER_RESOURCE, 1);
+  psTex* gamma = psTex::Create(driver->GetBackBuffer()->GetDim(), FMT_R8G8B8A8_SRGB, USAGE_RENDERTARGET | USAGE_SHADER_RESOURCE, 1);
   engine->GetPass(0)->SetRenderTarget(gamma);
 
   while(!gotonext && engine->Begin(0))

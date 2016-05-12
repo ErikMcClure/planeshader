@@ -65,6 +65,8 @@ namespace planeshader {
     inline void* Lock(uint32_t& rowpitch, psVeciu offset, uint8_t lockflags = LOCK_WRITE_DISCARD, uint8_t miplevel=0);
     inline void Unlock(uint8_t miplevel=0);
     inline psPixelArray LockPixels(uint8_t lockflags = LOCK_WRITE_DISCARD, uint8_t miplevel = 0) { return psPixelArray(_res, _format, lockflags, miplevel); }
+    inline void SetDPI(psVeciu dpi) { _dpi = dpi; }
+    inline psVeciu GetDPI() const { return _dpi; }
 
     // Attempts to resize the texture using the given method. Returns false if the attempt failed - if the attempt failed, the texture will not have been modified.
     enum RESIZE { RESIZE_DISCARD, RESIZE_CLIP, RESIZE_STRETCH };

@@ -5,6 +5,7 @@
 #include "psEngine.h"
 #include "bss-util/profiler.h"
 #include "psSolid.h"
+#include "psTex.h"
 
 using namespace planeshader;
 using namespace bss_util;
@@ -39,10 +40,12 @@ psCamera::psCamera(const psVec3D& position, FNUM rotation, const psVec& pivot, c
 psCamera::~psCamera() {}
 
 // Gets the absolute mouse coordinates with respect to this camera.
-psVec psCamera::GetMouseAbsolute() const
+psVec psCamera::GetMouseAbsolute(const psTex* rt) const
 {
+  if(!rt) rt = _driver->GetBackBuffer();
+
   // We have to adjust the mouse coordinates for the vanishing point in the center of the screen - this adjustment has nothing to do with the camera pivot or the pivot shift.
-  psVec dim = _viewport.bottomright*_driver->rawscreendim;
+  psVec dim = _viewport.bottomright*rt->GetRawDim();
   Vector<float, 4> p(psEngine::Instance()->GetMouse().x - dim.x, psEngine::Instance()->GetMouse().y - dim.y, 0, 1);
 
   BSS_ALIGN(16) Matrix<float, 4, 4> cam;
@@ -50,9 +53,10 @@ psVec psCamera::GetMouseAbsolute() const
   p = p*cam.Inverse();
   return psVec(p.x*p.z + dim.x, p.y*p.z + dim.y);
 }
-void BSS_FASTCALL psCamera::SetPivotAbs(const psVec& pivot)
+void BSS_FASTCALL psCamera::SetPivotAbs(const psVec& pivot, const psTex* rt)
 {
-  SetPivot((pivot / _driver->screendim) * _viewport.bottomright);
+  if(!rt) rt = _driver->GetBackBuffer();
+  SetPivot((pivot / rt->GetDim()) * _viewport.GetDimensions());
 }
 
 // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
@@ -60,18 +64,20 @@ const psRectRotate psCamera::GetScreenRect(psFlag flags) const
 {
   return psRectRotate(0, 0, 0, 0, 0);
 }
-void psCamera::SetViewPort(const psRect& vp)
+void psCamera::SetViewPortAbs(const psRect& vp, const psTex* rt)
 {
   PROFILE_FUNC();
-  const psVec& dim = _driver->screendim;
+  if(!rt) rt = _driver->GetBackBuffer();
+  const psVec& dim = rt->GetDim();
   _viewport.topleft = vp.topleft/dim;
   _viewport.bottomright = (vp.bottomright-vp.topleft)/dim;
 }
-inline const psRect& psCamera::Apply() const
+inline const psRect& psCamera::Apply(const psTex* rt) const
 {
+  psVeciu dim = rt->GetRawDim();
   auto& vp = GetViewPort();
-  psRectiu realvp = { (uint32_t)bss_util::fFastRound(vp.left*_driver->rawscreendim.x), (uint32_t)bss_util::fFastRound(vp.top*_driver->rawscreendim.y), (uint32_t)bss_util::fFastRound(vp.right*_driver->rawscreendim.x), (uint32_t)bss_util::fFastRound(vp.bottom*_driver->rawscreendim.y) };
-  psVec pivot = GetPivot()*psVec(_driver->rawscreendim);
+  psRectiu realvp = { (uint32_t)bss_util::fFastRound(vp.left*dim.x), (uint32_t)bss_util::fFastRound(vp.top*dim.y), (uint32_t)bss_util::fFastRound(vp.right*dim.x), (uint32_t)bss_util::fFastRound(vp.bottom*dim.y) };
+  psVec pivot = GetPivot()*psVec(dim);
   _driver->PushCamera(_relpos, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = _relpos.xy - pivot;
   _cache.window = psRectRotate(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot).BuildAABB();

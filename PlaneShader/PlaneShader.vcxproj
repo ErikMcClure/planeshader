@@ -265,6 +265,7 @@
     <ClCompile Include="psImage.cpp" />
     <ClCompile Include="psInheritable.cpp" />
     <ClCompile Include="psLocatable.cpp" />
+    <ClCompile Include="psMonitor.cpp" />
     <ClCompile Include="psPass.cpp" />
     <ClCompile Include="psRenderable.cpp" />
     <ClCompile Include="psRenderGeometry.cpp" />
