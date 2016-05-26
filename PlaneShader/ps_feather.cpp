@@ -39,7 +39,7 @@ void* FG_FASTCALL fgCopyFont(void* font, unsigned int fontsize, unsigned int dpi
 void* FG_FASTCALL fgCloneFontDPI(void* font, unsigned int dpi) { ((psFont*)font)->Grab(); return font; }
 void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
 void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
-void* FG_FASTCALL fgDrawFont(void* font, const char* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
+void* FG_FASTCALL fgDrawFont(void* font, const int* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, AbsVec* center, fgFlag flags, void* cache)
 { 
   psFont* f = (psFont*)font;
   psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, 0, {0, 0}, 0 };
@@ -50,14 +50,14 @@ void* FG_FASTCALL fgDrawFont(void* font, const char* text, float lineheight, flo
     f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   return 0;
 }
-void FG_FASTCALL fgFontSize(void* font, const char* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
+void FG_FASTCALL fgFontSize(void* font, const int* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
 {
   psFont* f = (psFont*)font;
   psVec dim = { area->right - area->left, area->bottom - area->top };
   if(flags&FGELEMENT_EXPANDX) dim.x = -1.0f;
   if(flags&FGELEMENT_EXPANDY) dim.y = -1.0f;
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
-  f->CalcTextDim(cStrT<int>(text), dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
+  f->CalcTextDim(text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
   area->right = area->left + dim.x;
   area->bottom = area->top + dim.y;
 }
@@ -93,9 +93,9 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, uint32_t color, uint
   psRect hold = psDriverHold::GetDriver()->PeekClipRect();
   psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
 
-  if(flags&FGRESOURCE_ROUNDRECT)
+  if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_ROUNDRECT)
     psRoundedRect::DrawRoundedRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
-  else if(flags&FGRESOURCE_CIRCLE)
+  else if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_CIRCLE)
     psRenderCircle::DrawCircle(driver->library.CIRCLE, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
   else
     driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
@@ -121,63 +121,9 @@ void FG_FASTCALL fgDrawLine(AbsVec p1, AbsVec p2, uint32_t color)
   driver->DrawLines(obj, psLine(p1.x, p1.y, p2.x, p2.y), 0, 0, vertexcolor);
 }
 
-#define DEFAULT_CREATE(type, init, ...) \
-  type* r = (type*)malloc(sizeof(type)); \
-  init(r, __VA_ARGS__); \
-  ((fgElement*)r)->free = &free;
-
-fgElement* FG_FASTCALL fgResource_Create(void* res, const CRect* uv, uint32_t color, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
+fgElement* FG_FASTCALL fgCreate(const char* type, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform)
 {
-  DEFAULT_CREATE(fgResource, fgResource_Init, res, uv, color, parent, prev, name, flags, transform);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgText_Create(char* text, void* font, uint32_t color, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgText, fgText_Init, text, font, color, parent, prev, name, flags, transform);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgButton_Create(const char* text, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgButton, fgButton_Init, parent, prev, name, flags, transform);
-  (*r)->SetText(text);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgWindow_Create(const char* caption, fgFlag flags, const fgTransform* transform)
-{
-  fgWindow* r = (fgWindow*)malloc(sizeof(fgWindow));
-  fgWindow_Init(r, flags, transform);
-  (*r)->SetParent(*fgSingleton(), 0);
-  (*r)->SetText(caption);
-  r->control.element.free = &free;
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgCheckbox_Create(const char* text, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgCheckbox, fgCheckbox_Init, parent, prev, name, flags, transform);
-  (*r)->SetText(text);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgRadiobutton_Create(const char* text, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgRadiobutton, fgRadiobutton_Init, parent, prev, name, flags, transform);
-  (*r)->SetText(text);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgProgressbar_Create(FREL value, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgProgressbar, fgProgressbar_Init, parent, prev, name, flags, transform);
-  fgIntMessage((fgElement*)r, FG_SETSTATE, *reinterpret_cast<ptrdiff_t*>(&value), 0);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgSlider_Create(size_t range, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgSlider, fgSlider_Init, range, parent, prev, name, flags, transform);
-  return (fgElement*)r;
-}
-fgElement* FG_FASTCALL fgBox_Create(fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT prev, const char* name, fgFlag flags, const fgTransform* transform)
-{
-  DEFAULT_CREATE(fgBox, fgBox_Init, parent, prev, name, flags, transform);
-  return (fgElement*)r;
+  return fgCreateDefault(type, parent, next, name, flags, transform);
 }
 
 #include "bss-util\bss_win32_includes.h"
@@ -248,34 +194,43 @@ void fgClipboardCopy(uint32_t type, const void* data, size_t length)
   OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   if(EmptyClipboard() && data != 0 && length > 0)
   {
-    HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, length);
-    if(gmem)
+    if(type == FGCLIPBOARD_TEXT)
     {
-      void* mem = GlobalLock(gmem);
-      MEMCPY(mem, length, data, length);
-      GlobalUnlock(gmem);
-      UINT format = CF_PRIVATEFIRST;
-      switch(type)
+      size_t len = UTF32toUTF8((const int*)data, 0, 0);
+      size_t unilen = UTF32toUTF16((const int*)data, 0, 0);
+      HGLOBAL unimem = GlobalAlloc(GMEM_MOVEABLE, unilen * sizeof(wchar_t));
+      if(unimem)
       {
-      case FGCLIPBOARD_TEXT: 
+        wchar_t* uni = (wchar_t*)GlobalLock(unimem);
+        UTF32toUTF16((const int*)data, uni, unilen);
+        GlobalUnlock(unimem);
+        SetClipboardData(CF_UNICODETEXT, unimem);
+      }
+      HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, len * sizeof(char));
+      if(gmem)
       {
-        format = CF_TEXT; // While our format is always CF_TEXT, because we use utf8, CF_UNICODE is also set for the benefit of other programs (windows assumes CF_TEXT is ascii, and so will not correctly translate it to unicode).
-        cStrW text((const char*)data);
-        size_t len = (text.length() + 1)*sizeof(wchar_t); // add one for null terminator
-        HGLOBAL unimem = GlobalAlloc(GMEM_MOVEABLE, len);
-        if(unimem)
+        char* mem = (char*)GlobalLock(gmem);
+        UTF32toUTF8((const int*)data, mem, len);
+        GlobalUnlock(gmem);
+        SetClipboardData(CF_TEXT, gmem);
+      }
+    }
+    else
+    {
+      HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, length);
+      if(gmem)
+      {
+        void* mem = GlobalLock(gmem);
+        MEMCPY(mem, length, data, length);
+        GlobalUnlock(gmem);
+        UINT format = CF_PRIVATEFIRST;
+        switch(type)
         {
-          void* uni = GlobalLock(unimem);
-          MEMCPY(uni, len, text.c_str(), len);
-          GlobalUnlock(unimem);
-          SetClipboardData(CF_UNICODETEXT, unimem);
+        case FGCLIPBOARD_WAVE: format = CF_WAVE; break;
+        case FGCLIPBOARD_BITMAP: format = CF_BITMAP; break;
         }
+        SetClipboardData(format, gmem);
       }
-        break; 
-      case FGCLIPBOARD_WAVE: format = CF_WAVE; break;
-      case FGCLIPBOARD_BITMAP: format = CF_BITMAP; break;
-      }
-      SetClipboardData(format, gmem);
     }
   }
   CloseClipboard();
@@ -310,20 +265,36 @@ const void* fgClipboardPaste(uint32_t type, size_t* length)
     {
       HANDLE gdata = GetClipboardData(CF_UNICODETEXT);
       const wchar_t* str = (const wchar_t*)GlobalLock(gdata);
-      SIZE_T size = GlobalSize(gdata)/2;
+      SIZE_T size = GlobalSize(gdata) / 2;
       if(!str[size - 1]) // Do not read text that is not null terminated.
       {
-        cStr s(str);
-        size = s.length() + 1;
-        void* ret = malloc(size);
-        MEMCPY(ret, size, s.c_str(), size);
+        size = UTF16toUTF32(str, 0, 0);
+        int* ret = bss_util::bssmalloc<int>(size);
+        UTF16toUTF32(str, ret, size);
         GlobalUnlock(gdata);
         CloseClipboard();
         return ret;
       }
+      else
+        GlobalUnlock(gdata);
     }
-    format = CF_TEXT; // otherwise if unicode isn't available directly paste from the ascii buffer.
-    break;
+    {
+      HANDLE gdata = GetClipboardData(CF_TEXT);
+      const char* str = (const char*)GlobalLock(gdata);
+      SIZE_T size = GlobalSize(gdata);
+      if(!str[size - 1]) // Do not read text that is not null terminated.
+      {
+        size = UTF8toUTF32(str, 0, 0);
+        int* ret = bss_util::bssmalloc<int>(size);
+        size = UTF8toUTF32(str, ret, size);
+        GlobalUnlock(gdata);
+        CloseClipboard();
+        return ret;
+      }
+      else
+        GlobalUnlock(gdata);
+    }
+    return 0;
   case FGCLIPBOARD_WAVE: format = CF_WAVE; break;
   case FGCLIPBOARD_BITMAP: format = CF_BITMAP; break;
   }
