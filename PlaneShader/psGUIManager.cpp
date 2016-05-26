@@ -117,7 +117,8 @@ void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char b
   switch(type)
   {
   case FG_MOUSESCROLL:
-    evt.scrolldelta = ((((wparam) >> 16) & 0xffff)); //HIWORD()
+    evt.scrolldelta = points->y;
+    evt.scrollhdelta = points->x;
     break;
   case FG_MOUSEDOWN: //L down
     evt.allbtn |= evt.button; // Ensure the correct button position is reflected in the allbtn parameter regardless of the current state of the mouse

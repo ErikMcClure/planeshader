@@ -544,30 +544,34 @@ TESTDEF::RETPAIR test_feather()
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
   fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
-  fgElement* button = fgButton_Create(0, *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
+  fgElement* button = fgCreate("fgButton", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
   fgVoidMessage(button, FG_ADDITEM, res, 0);
   button->SetName("buttontest");
 
-  fgElement* topwindow = fgWindow_Create("test window", 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
+  fgElement* topwindow = fgCreate("fgWindow", *fgSingleton(), 0, 0, 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
+  topwindow->SetText("test window");
   topwindow->SetColor(0xFFFFFFFF, 0);
   topwindow->SetFont(font);
   topwindow->SetPadding(AbsRect { 10,22,10,10 });
 
-  fgElement* buttontop = fgButton_Create("Not Pressed", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 10, 0, 40, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* buttontop = fgCreate("fgButton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 10, 0, 40, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  buttontop->SetText("Not Pressed");
   FN_LISTENER listener = [](fgElement* self, const FG_Msg*) { self->SetText("Pressed!"); };
   buttontop->AddListener(FG_ACTION, listener);
 
-  fgElement* boxholder = fgBox_Create(topwindow, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* boxholder = fgCreate("fgBox", topwindow, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
+  boxholder->SetMaxDim(-1, 50);
 
-  fgCheckbox_Create("Check Test 3", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCheckbox_Create("Check Test 22", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCheckbox_Create("Check Test 1", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 3");
+  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 22");
+  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 1");
 
-  fgRadiobutton_Create("Radio Test 1", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgRadiobutton_Create("Radio Test 2", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgRadiobutton_Create("Radio Test 3", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("fgRadiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 1");
+  fgCreate("fgRadiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 2");
+  fgCreate("fgRadiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 170, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 3");
 
-  fgElement* slider = fgSlider_Create(500, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 120, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* slider = fgCreate("fgSlider", topwindow, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 120, 0 }, 0, { 0, 0, 0, 0 } });
+  slider->SetState(500, 1);
   slider->AddListener(FG_SETSTATE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
   fg_progbar = fgProgressbar_Create(0.0, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
 
@@ -829,7 +833,7 @@ int main(int argc, char** argv)
           if(isdown) ps.Quit();
           break;
         case FG_KEY_RETURN:
-          if(isdown && !evt.IsAltDown()) gotonext = true;
+        //  if(isdown && !evt.IsAltDown()) gotonext = true;
           break;
         }
       }

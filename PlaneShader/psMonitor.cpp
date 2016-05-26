@@ -155,7 +155,7 @@ HWND psMonitor::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const wcha
 
   //Register class
   WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW),              // cbSize
-    CS_HREDRAW | CS_VREDRAW, //| CS_DBLCLKS, // Double clicking usually just causes problems
+    CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
     (WNDPROC)WndProc,                      // lpfnWndProc
     NULL,                            // cbClsExtra
     NULL,                            // cbWndExtra
@@ -286,7 +286,14 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_MOUSEWHEEL:
   {
-    POINTS pointstemp;
+    POINTS pointstemp = { 0 };
+    pointstemp.y = GET_WHEEL_DELTA_WPARAM(wpcopy);
+    gui->SetMouse(&pointstemp, FG_MOUSESCROLL, 0, wpcopy, GetMessageTime());
+  }
+  break;
+  case 0x020E: // WM_MOUSEHWHEEL - this is only sent on vista machines, but our minimum version is XP, so we manually look for the message anyway and process it if it happens to get sent to us.
+  {
+    POINTS pointstemp = { 0 };
     pointstemp.x = GET_WHEEL_DELTA_WPARAM(wpcopy);
     gui->SetMouse(&pointstemp, FG_MOUSESCROLL, 0, wpcopy, GetMessageTime());
   }
