@@ -20,7 +20,7 @@ psGUIManager::psGUIManager() : _preprocess(0, 0), _postprocess(0, 0), _firstjoys
   memset(&_alljoyaxis, 0, sizeof(unsigned long)*NUMJOY*NUMAXIS);
   memset(&_joydevs, 0, sizeof(JOY_DEVCAPS)*NUMJOY);
 
-  _root.gui.element.message = (FN_MESSAGE)&Message;
+  _root.gui.element.message = (fgMessage)&Message;
   _joyupdateall();
 }
 psGUIManager::~psGUIManager()

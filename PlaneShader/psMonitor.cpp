@@ -56,7 +56,7 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
   AbsRect r = { 0, 0, rect.right - rect.left, rect.bottom - rect.top };
   fgMonitor_Init(this, 0, &manager->GetGUI(), 0, &r, psGUIManager::GetMonitorDPI(0).y);
   _manager->_updaterootarea();
-  this->element.message = (FN_MESSAGE)&Message;
+  this->element.message = (fgMessage)&Message;
 }
 psMonitor::~psMonitor()
 {

@@ -30,8 +30,8 @@ enum FGELEMENT_FLAGS
   FGELEMENT_LAYOUTRESET = 6, // Called when something invalidates the entire layout (like adding an EXPAND flag)
 };
 
-typedef void (FG_FASTCALL *FN_DESTROY)(void*);
-typedef size_t(FG_FASTCALL *FN_MESSAGE)(void*, const FG_Msg*);
+typedef void (FG_FASTCALL *fgDestroy)(void*);
+typedef size_t(FG_FASTCALL *fgMessage)(void*, const FG_Msg*);
 struct _FG_ELEMENT;
 struct _FG_STYLE;
 struct _FG_SKIN;
@@ -39,13 +39,13 @@ struct _FG_LAYOUT;
 struct __kh_fgUserdata_t;
 typedef fgDeclareVector(struct _FG_ELEMENT*, Element) fgVectorElement;
 
-typedef void(FG_FASTCALL *FN_LISTENER)(struct _FG_ELEMENT*, const FG_Msg*);
+typedef void(FG_FASTCALL *fgListener)(struct _FG_ELEMENT*, const FG_Msg*);
 
 typedef struct _FG_ELEMENT {
   fgTransform transform;
-  FN_DESTROY destroy;
+  fgDestroy destroy;
   void (*free)(void* self); // pointer to deallocation function
-  FN_MESSAGE message;
+  fgMessage message;
   struct _FG_ELEMENT* parent;
   struct _FG_ELEMENT* root; // children list root
   struct _FG_ELEMENT* last; // children list last
@@ -79,7 +79,7 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT void FG_FASTCALL SetFlags(fgFlag flags);
   FG_DLLEXPORT size_t FG_FASTCALL SetMargin(const AbsRect& margin);
   FG_DLLEXPORT size_t FG_FASTCALL SetPadding(const AbsRect& padding);
-  FG_DLLEXPORT void FG_FASTCALL SetParent(struct _FG_ELEMENT* parent, struct _FG_ELEMENT* prev);
+  FG_DLLEXPORT void FG_FASTCALL SetParent(struct _FG_ELEMENT* parent, struct _FG_ELEMENT* next);
   FG_DLLEXPORT  size_t FG_FASTCALL AddChild(struct _FG_ELEMENT* child);
   FG_DLLEXPORT size_t FG_FASTCALL RemoveChild(struct _FG_ELEMENT* child);
   FG_DLLEXPORT size_t FG_FASTCALL LayoutFunction(const FG_Msg& msg, const CRect& area);
@@ -89,6 +89,7 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT size_t Dragging(int x, int y);
   FG_DLLEXPORT size_t Drop(struct _FG_ELEMENT* target);
   FG_DLLEXPORT void Draw(AbsRect* area, int dpi);
+  FG_DLLEXPORT size_t FG_FASTCALL Inject(const FG_Msg* msg, const AbsRect* area);
   FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL Clone(struct _FG_ELEMENT* from);
   FG_DLLEXPORT size_t FG_FASTCALL SetSkin(struct _FG_SKIN* skin);
   FG_DLLEXPORT struct _FG_SKIN* FG_FASTCALL GetSkin(struct _FG_ELEMENT* child);
@@ -144,7 +145,7 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT float GetLineHeight();
   FG_DLLEXPORT float GetLetterSpacing();
   FG_DLLEXPORT const int* GetText();
-  FG_DLLEXPORT void AddListener(unsigned short type, FN_LISTENER listener);
+  FG_DLLEXPORT void AddListener(unsigned short type, fgListener listener);
 #endif
 } fgElement;
 
@@ -170,7 +171,7 @@ FG_EXTERN void FG_FASTCALL LList_InsertAll(fgElement* BSS_RESTRICT self, fgEleme
 FG_EXTERN void FG_FASTCALL VirtualFreeChild(fgElement* self);
 FG_EXTERN void FG_FASTCALL fgElement_Clear(fgElement* self);
 FG_EXTERN void FG_FASTCALL fgElement_MouseMoveCheck(fgElement* self);
-FG_EXTERN void FG_FASTCALL fgElement_AddListener(fgElement* self, unsigned short type, FN_LISTENER listener);
+FG_EXTERN void FG_FASTCALL fgElement_AddListener(fgElement* self, unsigned short type, fgListener listener);
 
 #ifdef  __cplusplus
 }

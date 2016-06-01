@@ -136,7 +136,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   if(len < 100000)
   {
     DYNARRAY(int, txt, len);
-    UTF8toUTF32(text, txt, len);
+    UTF8toUTF32(text, len, txt, len);
     return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d, transform);
   }
   cStrT<int> txt(text);
