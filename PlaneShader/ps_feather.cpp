@@ -68,6 +68,20 @@ void FG_FASTCALL fgFontGet(void* font, float* lineheight, unsigned int* size, un
   if(size) *size = f->GetPointSize();
   if(dpi) *dpi = f->GetDPI();
 }
+size_t FG_FASTCALL fgFontIndex(void* font, const int* text, float lineheight, float letterspacing, AbsVec pos, size_t last, AbsVec* cache)
+{
+  psFont* f = (psFont*)font;
+  auto r = f->GetIndex(text, lineheight, letterspacing, psVec(pos.x, pos.y), std::pair<size_t, psVec>(last, psVec(cache->x, cache->y)));
+  cache->x = r.second.x;
+  cache->y = r.second.y;
+  return r.first;
+}
+AbsVec FG_FASTCALL fgFontPos(void* font, const int* text, float lineheight, float letterspacing, size_t index, size_t last, AbsVec cache)
+{
+  psFont* f = (psFont*)font;
+  auto r = f->GetPos(text, lineheight, letterspacing, index, std::pair<size_t, psVec>(last, psVec(cache.x, cache.y)));
+  return AbsVec { r.second.x, r.second.y };
+}
 
 void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
 void* FG_FASTCALL fgCloneResource(void* res) { ((psTex*)res)->Grab(); return res; }
@@ -196,13 +210,13 @@ void fgClipboardCopy(uint32_t type, const void* data, size_t length)
   {
     if(type == FGCLIPBOARD_TEXT)
     {
-      size_t len = UTF32toUTF8((const int*)data, 0, 0);
-      size_t unilen = UTF32toUTF16((const int*)data, 0, 0);
+      size_t len = UTF32toUTF8((const int*)data, length / sizeof(int), 0, 0);
+      size_t unilen = UTF32toUTF16((const int*)data, length / sizeof(int), 0, 0);
       HGLOBAL unimem = GlobalAlloc(GMEM_MOVEABLE, unilen * sizeof(wchar_t));
       if(unimem)
       {
         wchar_t* uni = (wchar_t*)GlobalLock(unimem);
-        UTF32toUTF16((const int*)data, uni, unilen);
+        UTF32toUTF16((const int*)data, length / sizeof(int), uni, unilen);
         GlobalUnlock(unimem);
         SetClipboardData(CF_UNICODETEXT, unimem);
       }
@@ -210,7 +224,7 @@ void fgClipboardCopy(uint32_t type, const void* data, size_t length)
       if(gmem)
       {
         char* mem = (char*)GlobalLock(gmem);
-        UTF32toUTF8((const int*)data, mem, len);
+        UTF32toUTF8((const int*)data, length / sizeof(int), mem, len);
         GlobalUnlock(gmem);
         SetClipboardData(CF_TEXT, gmem);
       }
@@ -266,33 +280,23 @@ const void* fgClipboardPaste(uint32_t type, size_t* length)
       HANDLE gdata = GetClipboardData(CF_UNICODETEXT);
       const wchar_t* str = (const wchar_t*)GlobalLock(gdata);
       SIZE_T size = GlobalSize(gdata) / 2;
-      if(!str[size - 1]) // Do not read text that is not null terminated.
-      {
-        size = UTF16toUTF32(str, 0, 0);
-        int* ret = bss_util::bssmalloc<int>(size);
-        UTF16toUTF32(str, ret, size);
-        GlobalUnlock(gdata);
-        CloseClipboard();
-        return ret;
-      }
-      else
-        GlobalUnlock(gdata);
+      SIZE_T len = UTF16toUTF32(str, size, 0, 0);
+      int* ret = bss_util::bssmalloc<int>(len);
+      UTF16toUTF32(str, size, ret, len);
+      GlobalUnlock(gdata);
+      CloseClipboard();
+      return ret;
     }
     {
       HANDLE gdata = GetClipboardData(CF_TEXT);
       const char* str = (const char*)GlobalLock(gdata);
       SIZE_T size = GlobalSize(gdata);
-      if(!str[size - 1]) // Do not read text that is not null terminated.
-      {
-        size = UTF8toUTF32(str, 0, 0);
-        int* ret = bss_util::bssmalloc<int>(size);
-        size = UTF8toUTF32(str, ret, size);
-        GlobalUnlock(gdata);
-        CloseClipboard();
-        return ret;
-      }
-      else
-        GlobalUnlock(gdata);
+      SIZE_T len = UTF8toUTF32(str, size, 0, 0);
+      int* ret = bss_util::bssmalloc<int>(len);
+      UTF8toUTF32(str, size, ret, len);
+      GlobalUnlock(gdata);
+      CloseClipboard();
+      return ret;
     }
     return 0;
   case FGCLIPBOARD_WAVE: format = CF_WAVE; break;

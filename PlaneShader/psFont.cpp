@@ -378,3 +378,21 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   _stage();
   return retval;
 }
+std::pair<size_t, psVec> psFont::GetIndex(const int* text, float lineheight, float letterspacing, psVec pos, std::pair<size_t, psVec> cache)
+{
+
+  return cache;
+}
+std::pair<size_t, psVec> psFont::GetPos(const int* text, float lineheight, float letterspacing, size_t index, std::pair<size_t, psVec> cache)
+{
+  while(cache.first < index)
+  {
+    
+  }
+  while(cache.first > index)
+  {
+
+  }
+ 
+ return cache;
+}
