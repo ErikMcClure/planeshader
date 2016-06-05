@@ -17,6 +17,7 @@ namespace planeshader {
     psRect uv; //uv coordinates to glyph on texture
     float bearingX; // This is added to the current cursor position for rendering
     float bearingY; // This is added to the current baseline
+    float width; // This is the width of the glyph itself.
     float advance; // The cursor position is incremented by this much after rendering
     uint8_t texnum;
   };

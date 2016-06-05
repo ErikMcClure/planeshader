@@ -94,8 +94,11 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
         g = _glyphs[c];
         if(!g) { ++pos; continue; } // note: we don't bother attempting to load glyphs here because they should've already been loaded by _getlinewidth
 
+        float gdimx = (g->uv.right - g->uv.left)*texdim.x;
+        float gdimy = (g->uv.bottom - g->uv.top)*texdim.y;
+
         pen.x += _getkerning(last, c); // We add the kerning amount to the pen position for this character pair first, before doing anything else.
-        if(begin != pos && (pen.x + g->advance + letterspacing) > linewidth) break; // Force all lines to have at least one character
+        if(begin != pos && (pen.x + g->bearingX + gdimx + letterspacing) > linewidth + 0.01) break; // Force all lines to have at least one character
         ++pos;
         if(g->texnum != i) { pen.x += g->advance + letterspacing; continue; }
 
@@ -104,7 +107,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
 
         if(flags&PSFONT_RTL) // implement right to left rendering by flipping over the middle axis
         {
-          rect.left = linewidth - (rect.left - linestart) - (g->uv.right-g->uv.left)*texdim.x;
+          rect.left = linewidth - (rect.left - linestart) - gdimx;
         }
         if(flags&PSFONT_PIXELSNAP)
         {
@@ -112,8 +115,8 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
           rect.top = (float)bss_util::fFastRound(rect.top);
         }
 
-        rect.right = rect.left + (g->uv.right-g->uv.left)*texdim.x;
-        rect.bottom = rect.top + (g->uv.bottom-g->uv.top)*texdim.y;
+        rect.right = rect.left + gdimx;
+        rect.bottom = rect.top + gdimy;
 
         if(!d.IsEmpty()) d(ipos, rect, color);
         _driver->DrawRectBatch(obj, rect, &g->uv, color);
@@ -152,7 +155,10 @@ float psTexFont::_getlinewidth(const int*& text, float maxwidth, psFlag flags, f
   float width = cur;
   int c = 0;
   int last = 0;
-  float advance;
+  float lastadvance = 0;
+  float gwidth = 0;
+  float advance = 0;
+  float kerning = 0;
   const psGlyph* g;
 
   while(*text)
@@ -165,22 +171,27 @@ float psTexFont::_getlinewidth(const int*& text, float maxwidth, psFlag flags, f
       g = _loadglyph(c);
       if(!g) continue; // Note: Bad glyphs usually just have 0 width, so we don't have to check for them.
     }
-    advance = (c != '\n' && c != '\r') ? g->advance + letterspacing + _getkerning(last, c) : 0.0f;
-    if(c == '\n' || (dobreak && (cur + advance) > maxwidth)) // We use >= here instead of > due to nasty precision issues at high DPI levels
+    kerning = _getkerning(last, c);
+    gwidth = (c != '\n' && c != '\r') ? g->bearingX + kerning + g->width : 0.0f;
+    if(c == '\n' || (dobreak && (cur + gwidth) > maxwidth))
     {
-      cur -= width;
+      cur = lastadvance;
       if(c != '\n')
         cur += advance;
       ++text;
-      return width + 0.01f;
+      return width;
     }
+    advance = g->advance + letterspacing + kerning;
     if(!(flags&PSFONT_WORDBREAK) || _isspace(c))
-      width = cur + advance;
+    {
+      width = cur + gwidth;
+      lastadvance = cur + advance;
+    }
     cur += advance;
 
     ++text;
   }
-  return cur;
+  return cur - advance + gwidth;
 }
 psGlyph* psTexFont::_loadglyph(uint32_t codepoint)
 {

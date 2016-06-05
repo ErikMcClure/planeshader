@@ -15,6 +15,8 @@ psVec3D BSS_FASTCALL psDriver::FromScreenSpace(const psVec& point, float z) cons
   return ReversePoint(psVec3D(pt.x, pt.y, 1.0f + z));
 }
 
+#include "psEngine.h"
+
 psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
   uint32_t snapshot = GetSnapshot(); // Snapshot our driver state
@@ -34,13 +36,17 @@ psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateb
       if((last.buffer.vert + last.buffer.nvert + reserve)*verts->element <= verts->capacity)
         return &last; // If we can handle the necessary buffer reserve, batch render with this
       Flush(); // Otherwise, we have to flush everything and then create an entirely new buffer
+      snapshot = GetSnapshot(); // Flush invalidates all snapshots
     }
     else
       last.buffer.verts->length += last.buffer.nvert; // we don't manage the index buffer length because it's often managed seperately
   }
 
   if((verts->length + reserve)*verts->element > verts->capacity) // even if we didn't try to batch render we still have to check if the buffer itself might be overrun.
+  {
     Flush();
+    snapshot = GetSnapshot(); // Flush invalidates all snapshots
+  }
   assert(reserve*verts->element <= verts->capacity);
 
   _jobstack.AddConstruct(transform);
