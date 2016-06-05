@@ -189,6 +189,9 @@ psRoundedRect& psRoundedRect::operator=(psRoundedRect&& mov)
   _corners = mov._corners;
   return *this;
 }
+
+#include "psEngine.h"
+
 void psRoundedRect::DrawRoundedRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RRBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);

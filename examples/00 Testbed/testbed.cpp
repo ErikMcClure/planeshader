@@ -26,6 +26,7 @@
 #include "feathergui/fgList.h"
 #include "feathergui/fgSkin.h"
 #include "feathergui/fgRoot.h"
+#include "feathergui/fgDebug.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/cHighPrecisionTimer.h"
 #include "bss-util/lockless.h"
@@ -410,6 +411,7 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgProgressbarSkin = fgSkin_AddSkin(fgWindowSkin, "fgProgressbar");
   fgSkin* fgSliderSkin = fgSkin_AddSkin(fgWindowSkin, "fgSlider");
   fgSkin* fgTextboxSkin = fgSkin_AddSkin(fgWindowSkin, "fgTextbox");
+  fgSkin* fgTreeViewSkin = fgSkin_AddSkin(&skin, "fgTreeView");
   //fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "fgList");
 
   auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
@@ -446,7 +448,9 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bhover), "Hover");
 
   void* font = fgCreateFont(FGTEXT_SUBPIXEL, "arial.ttf", 14, 96);
+  void* smfont = fgCreateFont(FGTEXT_SUBPIXEL, "arial.ttf", 10, 96);
   ((psFont*)font)->SetLineHeight(16);
+  ((psFont*)smfont)->SetLineHeight(12);
 
   FG_Msg msg = { 0 };
   msg.type = FG_SETCOLOR;
@@ -549,16 +553,16 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgScrollbarSkinBGy = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:vertbg");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBGx->style, &CRect { 0, 0, -20, 1, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBGy->style, &CRect { -20, 1, 0, 0, 0, 1, 0, 1 });
-  fnAddRect(fgScrollbarSkinBGx, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinBGy, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinBGx, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgScrollbarSkinBGy, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fgSkin* fgScrollbarSkinBarx = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollhorz");
   fgSkin* fgScrollbarSkinBary = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollvert");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBarx->style, &CRect { 0, 0, 0, 0, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBary->style, &CRect { 0, 0, 0, 0, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETMARGIN, AbsRect>(&fgScrollbarSkinBarx->style, &AbsRect { 10, 0, 10, 0 });
   AddStyleMsgArg<FG_SETMARGIN, AbsRect>(&fgScrollbarSkinBary->style, &AbsRect { 0, 20, 0, 20 });
-  fnAddRect(fgScrollbarSkinBarx, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinBary, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinBarx, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgScrollbarSkinBary, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fgSkin* fgScrollbarSkinLeft = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollleft");
   fgSkin* fgScrollbarSkinTop = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrolltop");
   fgSkin* fgScrollbarSkinRight = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollright");
@@ -573,7 +577,30 @@ TESTDEF::RETPAIR test_feather()
   //fnAddRect(fgScrollbarSkinBottom, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
 
   // fgTextbox
-  fnAddRect(fgTextboxSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgTextboxSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+
+  // fgTreeView
+  fnAddRect(fgTreeViewSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgSkin* fgTreeViewTextSkin = fgSkin_AddSkin(fgTreeViewSkin, "fgText");
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&fgTreeViewTextSkin->style, 0xFFFFFFFF);
+  AddStyleMsg<FG_SETFONT, void*>(&fgTreeViewTextSkin->style, smfont);
+  fgSkin* fgTreeItemSkin = fgSkin_AddSkin(fgTreeViewSkin, "fgTreeItem");
+  fnAddRect(fgTreeItemSkin, ":bga", CRect { 2, 0, 2, 0, 2, 0, 2, 0 }, FILL_TRANSFORM, 0x99AA6666, 0xAAFFAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgTreeItemSkin->style, &AbsRect { 20, 0, 0, 0 });
+  fgSkin* fgTreeItemArrowSkin = fgSkin_AddSkin(fgTreeItemSkin, "fgTreeItem:arrow");
+  AddStyleMsgArg<FG_SETTRANSFORM, fgTransform>(&fgTreeItemArrowSkin->style, &fgTransform { {4, 0, 1, 0, 16, 0, 13, 0 }, 0, { 0, 0, 0, 0 } });
+  fnAddRect(fgTreeItemArrowSkin, ":bg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0, 0xFFDDDDDD, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgTreeItemArrowSkin, ":bgv", CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, fgTransform { { -1, 0.5, 2, 0, 1, 0.5, -2, 1 }, 0, { 0, 0, 0, 0 } }, 0xFFDDDDDD, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgTreeItemArrowSkin, ":bgh", CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, fgTransform { { 2, 0, -1, 0.5, -2, 1, 1, 0.5 }, 0, { 0, 0, 0, 0 } }, 0xFFDDDDDD, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  
+  fgSkin* fgTreeItemArrowSkinbg = fgSkin_AddSkin(fgTreeItemArrowSkin, ":bgv");
+  size_t shidden = fgSkin_AddStyle(fgTreeItemArrowSkinbg, "hidden");
+  size_t svisible = fgSkin_AddStyle(fgTreeItemArrowSkinbg, "visible");
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemArrowSkinbg, shidden), FGELEMENT_HIDDEN, 0);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemArrowSkinbg, svisible), FGELEMENT_HIDDEN, 1);
+  //size_t sfocus = fgSkin_AddStyle(fgTreeItemArrowSkinbg, "focused");
+  //size_t sunfocus = fgSkin_AddStyle(fgTreeItemArrowSkinbg, "unfocused");
+
 
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
@@ -582,7 +609,7 @@ TESTDEF::RETPAIR test_feather()
   fgElement* button = fgCreate("fgButton", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
   fgVoidMessage(button, FG_ADDITEM, res, 0);
   button->SetName("buttontest");
-
+  
   fgElement* topwindow = fgCreate("fgWindow", *fgSingleton(), 0, 0, 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
   topwindow->SetText("test window");
   topwindow->SetColor(0xFFFFFFFF, 0);
@@ -612,8 +639,10 @@ TESTDEF::RETPAIR test_feather()
   slider->SetState(500, 1);
   slider->AddListener(FG_SETSTATE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
   fg_progbar = fgProgressbar_Create(0.0, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
-
-  fgCreate("fgTextbox", topwindow, 0, 0, 0, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  
+  //fgCreate("fgTextbox", topwindow, 0, 0, 0, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  //auto debugview = fgCreate("fgTreeView", *fgSingleton(), 0, 0, 0, &fgTransform { { 190, 0, 160, 0, 450, 0, 300, 0 }, 0, { 0, 0, 0, 0 } });
+  //fgRoot_DebugTree(debugview);
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
 
@@ -875,6 +904,14 @@ int main(int argc, char** argv)
         case FG_KEY_RETURN:
         //  if(isdown && !evt.IsAltDown()) gotonext = true;
           break;
+        case FG_KEY_F11:
+          if(isdown)
+          {
+            if(fgDebug_Get() != 0 && !(fgDebug_Get()->element.flags&FGELEMENT_HIDDEN))
+              fgDebug_Hide();
+            else
+              fgDebug_Show(200, 200);
+          }
         }
       }
       return 0;

@@ -436,6 +436,7 @@ char psDirectX11::End()
   }
   return 0;
 }
+
 void BSS_FASTCALL psDirectX11::Flush()
 {
   for(uint32_t i = 0; i < _jobstack.Length(); ++i)

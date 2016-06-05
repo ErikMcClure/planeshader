@@ -28,11 +28,11 @@
 
 using namespace planeshader;
 
-FT_Library psFont::PTRLIB=0;
+FT_Library psFont::PTRLIB = 0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
 psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) : _path(file), _pointsize(psize), _curtex(0),
-  _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(!dpi ? psGUIManager::BASE_DPI : dpi), _haskerning(false)
+_curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(!dpi ? psGUIManager::BASE_DPI : dpi), _haskerning(false)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
@@ -44,13 +44,13 @@ psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) :
   {
     _path.ReplaceChar('\\', '/');
     const char* file = strrchr(_path, '/');
-    if(!file || !(*file)) file=_path;
+    if(!file || !(*file)) file = _path;
     else
-      file+=1;
+      file += 1;
 
     wchar_t buf[MAX_PATH];
     HRESULT res = SHGetFolderPathW(0, CSIDL_FONTS, 0, SHGFP_TYPE_CURRENT, buf);
-    if(res==E_FAIL) return;
+    if(res == E_FAIL) return;
 
     //const wchar_t* ext=wcsrchr(_path,'.'); //This doesn't work for some reason
     //if(!ext) //no extension, so the app wants us to find it
@@ -61,7 +61,7 @@ psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) :
     //  const wchar_t* nothing=filedat.cFileName;
     //}
     //else
-    _path=cStrF("%s\\%s", cStr(buf).c_str(), file);
+    _path = cStrF("%s\\%s", cStr(buf).c_str(), file);
   }
 
   _adjustantialias(antialias);
@@ -81,13 +81,13 @@ uint16_t psFont::PreloadGlyphs(const char* glyphs)
 
 uint16_t psFont::PreloadGlyphs(const int* glyphs)
 {
-  const uint32_t* text=(const uint32_t*)glyphs;
-  uint16_t retval=0;
+  const uint32_t* text = (const uint32_t*)glyphs;
+  uint16_t retval = 0;
   psGlyph* g;
   for(; *text; ++text)
   {
     g = _loadglyph(*text);
-    retval += (g!=0 && g->texnum != -1);
+    retval += (g != 0 && g->texnum != -1);
   }
   return retval;
 }
@@ -97,7 +97,7 @@ psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, in
   if(!_driver) return 0;
   cStr str(cStrF("%s|%i|%i|%i", file, psize, antialias, dpi));
   psFont* r = _Fonts[str];
-  if(r!=0) return r;
+  if(r != 0) return r;
   r = new psFont(file, psize, antialias, dpi);
   r->_hash = str;
   _Fonts.Insert(r->_hash, r);
@@ -110,19 +110,19 @@ void psFont::_adjustantialias(FONT_ANTIALIAS antialias)
   {
   default:
   case FAA_NONE:
-    _antialiased=FT_LOAD_TARGET_MONO;
+    _antialiased = FT_LOAD_TARGET_MONO;
     break;
   case FAA_ANTIALIAS:
-    _antialiased=FT_LOAD_TARGET_NORMAL;
+    _antialiased = FT_LOAD_TARGET_NORMAL;
     break;
   case FAA_LCD:
-    _antialiased=FT_LOAD_TARGET_LCD;
+    _antialiased = FT_LOAD_TARGET_LCD;
     break;
   case FAA_LCD_V:
-    _antialiased=FT_LOAD_TARGET_LCD_V;
+    _antialiased = FT_LOAD_TARGET_LCD_V;
     break;
   case FAA_LIGHT:
-    _antialiased=FT_LOAD_TARGET_LIGHT;
+    _antialiased = FT_LOAD_TARGET_LIGHT;
     break;
   }
   _enforceantialias();
@@ -171,47 +171,51 @@ void psFont::_stage()
 
 void psFont::_loadfont()
 {
-  const float FT_COEF = (1.0f/64.0f);
+  const float FT_COEF = (1.0f / 64.0f);
   _curtex = 0;
-  _curpos = psVeciu(1,1);
+  _curpos = psVeciu(1, 1);
   _nexty = 0;
   FILE* f;
   WFOPEN(f, cStrW(_path), L"rb"); //load font into memory
-  if(!f) {
+  if(!f)
+  {
     PSLOG(2) << "Font face " << _path << " does not exist." << std::endl;
     return;
   }
   fseek(f, 0, SEEK_END);
-  long length=ftell(f);
+  long length = ftell(f);
   fseek(f, 0, SEEK_SET);
   if(_buf) delete[] _buf;
-  _buf=new uint8_t[length];
+  _buf = new uint8_t[length];
   fread(_buf, 1, length, f);
   fclose(f);
 
   FT_Error err; //use FT to load face from font
-  if((err=FT_New_Memory_Face(PTRLIB, _buf, length, 0, &_ft2face))!=0 || !_ft2face) {
+  if((err = FT_New_Memory_Face(PTRLIB, _buf, length, 0, &_ft2face)) != 0 || !_ft2face)
+  {
     PSLOG(2) << "Font face " << _path << " failed to be created (" << err << ")" << std::endl;
     return;
   }
 
-  if(!_ft2face->charmap) {
+  if(!_ft2face->charmap)
+  {
     PSLOG(2) << "Font face " << _path << " does not have a unicode character map." << std::endl;
     _cleanupfont();
     return;
   }
 
-  FT_Pos psize=FT_F26Dot6(_pointsize*64);
-  if(FT_Set_Char_Size(_ft2face, psize, psize, _dpi, _dpi)!=0)
+  FT_Pos psize = FT_F26Dot6(_pointsize * 64);
+  if(FT_Set_Char_Size(_ft2face, psize, psize, _dpi, _dpi) != 0)
   { //certain fonts can only be rendered at specific sizes, so we iterate through them until we hit the closest one and try to use that
-    int bestdif=0x7FFFFFFF;
-    int cur=0;
+    int bestdif = 0x7FFFFFFF;
+    int cur = 0;
     for(int i = 0; i < _ft2face->num_fixed_sizes; ++i)
     {
-      cur=abs(_ft2face->available_sizes[i].size-psize);
-      if(cur<bestdif) bestdif=cur;
+      cur = abs(_ft2face->available_sizes[i].size - psize);
+      if(cur<bestdif) bestdif = cur;
     }
-    if(FT_Set_Char_Size(_ft2face, 0, cur, 0, 0)!=0) {
+    if(FT_Set_Char_Size(_ft2face, 0, cur, 0, 0) != 0)
+    {
       PSLOG(2) << "Font face " << _path << " can't be rendered at size " << _pointsize << std::endl;
       _cleanupfont();
       return;
@@ -220,13 +224,13 @@ void psFont::_loadfont()
 
   float invdpiscale = (_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi)); // y-axis DPI scaling
 
-  if (_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
+  if(_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
   {
-      //float x_scale = d_fontFace->size->metrics.x_scale * FT_POS_COEF * (1.0/65536.0);
-      float y_scale = _ft2face->size->metrics.y_scale * (1.0f / 65536.0f);
-      _fontascender = floor(_ft2face->ascender * y_scale * FT_COEF * invdpiscale);
-      _fontdescender = floor(_ft2face->descender * y_scale * FT_COEF);
-      _fontlineheight = floor(_ft2face->height * y_scale * FT_COEF);
+    //float x_scale = d_fontFace->size->metrics.x_scale * FT_POS_COEF * (1.0/65536.0);
+    float y_scale = _ft2face->size->metrics.y_scale * (1.0f / 65536.0f);
+    _fontascender = floor(_ft2face->ascender * y_scale * FT_COEF * invdpiscale);
+    _fontdescender = floor(_ft2face->descender * y_scale * FT_COEF);
+    _fontlineheight = floor(_ft2face->height * y_scale * FT_COEF);
   }
   else
   {
@@ -245,7 +249,7 @@ psGlyph* psFont::_loadglyph(uint32_t codepoint)
   if(retval != 0)
     return retval;
 
-  psGlyph g ={ RECT_ZERO, 0, 0, 0, (uint8_t)-1 };
+  psGlyph g = { RECT_ZERO, 0, 0, 0, (uint8_t)-1 };
   _glyphs.Insert(codepoint, g);
   return _renderglyph(codepoint);
 }
@@ -265,24 +269,24 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   if(!retval) return 0;
 
   _enforceantialias();
-  if(FT_Load_Char(_ft2face, codepoint, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | _antialiased)!=0) //if this throws an error, remove it as a possible renderable codepoint
+  if(FT_Load_Char(_ft2face, codepoint, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | _antialiased) != 0) //if this throws an error, remove it as a possible renderable codepoint
   {
     PSLOG(1) << "Codepoint " << codepoint << " in font " << _path << " failed to load" << std::endl;
     return retval;
   }
 
   FT_Bitmap& gbmp = _ft2face->glyph->bitmap;
-  const float FT_COEF = (1.0f/64.0f);
-  uint32_t width = (gbmp.pixel_mode==FT_PIXEL_MODE_LCD)?(gbmp.width/3):gbmp.width;
-  uint32_t height=gbmp.rows;
-  if(_curpos.x+width+1>_staging[_curtex]->GetRawDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
+  const float FT_COEF = (1.0f / 64.0f);
+  uint32_t width = (gbmp.pixel_mode == FT_PIXEL_MODE_LCD) ? (gbmp.width / 3) : gbmp.width;
+  uint32_t height = gbmp.rows;
+  if(_curpos.x + width + 1>_staging[_curtex]->GetRawDim().x) //if true we ran past the edge (+1 for one pixel buffer on edges
   {
-    _curpos.x=1;
-    _curpos.y=_nexty;
+    _curpos.x = 1;
+    _curpos.y = _nexty;
   }
-  if(_curpos.y+height+1>_staging[_curtex]->GetRawDim().y) //if true we ran off the bottom of the texture, so we attempt a resize
+  if(_curpos.y + height + 1>_staging[_curtex]->GetRawDim().y) //if true we ran off the bottom of the texture, so we attempt a resize
   {
-    psVeciu ndim = _staging[_curtex]->GetRawDim()*2u;
+    psVeciu ndim = _staging[_curtex]->GetRawDim() * 2u;
     if(!_textures[_curtex]->Resize(ndim, psTex::RESIZE_CLIP) ||
       !_staging[_curtex]->Resize(ndim, psTex::RESIZE_CLIP)) //if this fails we make a new texture
     {
@@ -290,20 +294,20 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
         !_staging[_curtex]->Resize(ndim, psTex::RESIZE_DISCARD)) //first we try to just replace our old one with a bigger texture.
       {
         //TODO implement multiple texture buffers
-      } 
-      else 
+      }
+      else
       { // Success, so we trigger a re-render of all codepoints
-        for(auto it = _glyphs.begin(); it!=_glyphs.end(); ++it)
+        for(auto it = _glyphs.begin(); it != _glyphs.end(); ++it)
           _renderglyph(_glyphs.GetKey(*it));
         return retval; // that re-render included us, so return.
       }
     }
     else
     {
-      for(auto it = _glyphs.begin(); it!=_glyphs.end(); ++it)
+      for(auto it = _glyphs.begin(); it != _glyphs.end(); ++it)
       {
-        _glyphs.GetValue(*it)->uv.topleft*=psVec(0.5f);
-        _glyphs.GetValue(*it)->uv.bottomright*=psVec(0.5f);
+        _glyphs.GetValue(*it)->uv.topleft *= psVec(0.5f);
+        _glyphs.GetValue(*it)->uv.bottomright *= psVec(0.5f);
       }
     }
   }
@@ -315,14 +319,15 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   if(!lockbytes) return retval;
 
   psVec invdpiscale(_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi));
-  psVec dim=_staging[_curtex]->GetRawDim();
-  retval->uv=psRect(_curpos.x/dim.x, _curpos.y/dim.y, (_curpos.x+width)/dim.x, (_curpos.y+height)/dim.y);
-  retval->advance=(_ft2face->glyph->advance.x * FT_COEF * invdpiscale.x);
-  retval->bearingX=(_ft2face->glyph->metrics.horiBearingX * FT_COEF * invdpiscale.x);
-  retval->bearingY=(_ft2face->glyph->metrics.horiBearingY * FT_COEF * invdpiscale.y);
+  psVec dim = _staging[_curtex]->GetRawDim();
+  retval->uv = psRect(_curpos.x / dim.x, _curpos.y / dim.y, (_curpos.x + width) / dim.x, (_curpos.y + height) / dim.y);
+  retval->advance = (_ft2face->glyph->advance.x * FT_COEF * invdpiscale.x);
+  retval->bearingX = (_ft2face->glyph->metrics.horiBearingX * FT_COEF * invdpiscale.x);
+  retval->bearingY = (_ft2face->glyph->metrics.horiBearingY * FT_COEF * invdpiscale.y);
+  retval->width = (float)width;
 
-  _curpos.x+=width+1; //one pixel buffer
-  if(_nexty<_curpos.y+height) _nexty = _curpos.y+height+1; //one pixel buffer
+  _curpos.x += width + 1; //one pixel buffer
+  if(_nexty<_curpos.y + height) _nexty = _curpos.y + height + 1; //one pixel buffer
 
   switch(gbmp.pixel_mode) //Now we render the glyph to our next available buffer
   {
@@ -338,7 +343,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
         src += 3;
         dst += 4;
       }
-      *((uint8_t**)&lockbytes)+=lockpitch;
+      *((uint8_t**)&lockbytes) += lockpitch;
     }
 
     break;
@@ -354,7 +359,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
         *dst++ = 0xFF;
         *dst++ = *src++;
       }
-      *((uint8_t**)&lockbytes)+=lockpitch;
+      *((uint8_t**)&lockbytes) += lockpitch;
     }
     break;
   case FT_PIXEL_MODE_MONO:
@@ -365,7 +370,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
 
       for(uint32_t j = 0; j < gbmp.width; ++j)
         dst[j] = (src[j / 8] & (0x80 >> (j & 7))) ? 0xFFFFFFFF : 0x00000000;
-      *((uint8_t**)&lockbytes)+=lockpitch;
+      *((uint8_t**)&lockbytes) += lockpitch;
     }
     break;
   default:
@@ -373,7 +378,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
     return retval;
   }
 
-  retval->texnum=_curtex;
+  retval->texnum = _curtex;
   _staging[_curtex]->Unlock(0);
   _stage();
   return retval;
@@ -387,12 +392,12 @@ std::pair<size_t, psVec> psFont::GetPos(const int* text, float lineheight, float
 {
   while(cache.first < index)
   {
-    
+
   }
   while(cache.first > index)
   {
 
   }
- 
- return cache;
+
+  return cache;
 }
