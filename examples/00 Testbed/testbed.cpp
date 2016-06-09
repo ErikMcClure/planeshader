@@ -403,19 +403,19 @@ TESTDEF::RETPAIR test_feather()
   fgSkin skin;
   fgSkin_Init(&skin);
   fgSkin* fgButtonTestSkin = fgSkin_AddSkin(&skin, "buttontest");
-  fgSkin* fgWindowSkin = fgSkin_AddSkin(&skin, "fgWindow");
-  fgSkin* fgButtonSkin = fgSkin_AddSkin(fgWindowSkin, "fgButton");
-  fgSkin* fgResourceSkin = fgSkin_AddSkin(fgButtonTestSkin, "fgResource");
-  fgSkin* fgCheckboxSkin = fgSkin_AddSkin(fgWindowSkin, "fgCheckbox");
-  fgSkin* fgRadioButtonSkin = fgSkin_AddSkin(fgWindowSkin, "fgRadioButton");
-  fgSkin* fgProgressbarSkin = fgSkin_AddSkin(fgWindowSkin, "fgProgressbar");
-  fgSkin* fgSliderSkin = fgSkin_AddSkin(fgWindowSkin, "fgSlider");
-  fgSkin* fgTextboxSkin = fgSkin_AddSkin(fgWindowSkin, "fgTextbox");
-  fgSkin* fgTreeViewSkin = fgSkin_AddSkin(&skin, "fgTreeView");
-  //fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "fgList");
+  fgSkin* fgWindowSkin = fgSkin_AddSkin(&skin, "Window");
+  fgSkin* fgButtonSkin = fgSkin_AddSkin(fgWindowSkin, "Button");
+  fgSkin* fgResourceSkin = fgSkin_AddSkin(fgButtonTestSkin, "Resource");
+  fgSkin* fgCheckboxSkin = fgSkin_AddSkin(fgWindowSkin, "Checkbox");
+  fgSkin* fgRadioButtonSkin = fgSkin_AddSkin(fgWindowSkin, "RadioButton");
+  fgSkin* fgProgressbarSkin = fgSkin_AddSkin(fgWindowSkin, "Progressbar");
+  fgSkin* fgSliderSkin = fgSkin_AddSkin(fgWindowSkin, "Slider");
+  fgSkin* fgTextboxSkin = fgSkin_AddSkin(fgWindowSkin, "Textbox");
+  fgSkin* fgTreeViewSkin = fgSkin_AddSkin(&skin, "TreeView");
+  //fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "List");
 
   auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
-    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", name, FGRESOURCE_ROUNDRECT | flags, &transform, order));
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "Resource", name, FGRESOURCE_ROUNDRECT | flags, &transform, order));
     AddStyleMsgArg<FG_SETUV, CRect>(&layout->style, &uv);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
@@ -423,7 +423,7 @@ TESTDEF::RETPAIR test_feather()
     return layout;
   };
   auto fnAddCircle = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
-    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "fgResource", name, FGRESOURCE_CIRCLE | flags, &transform, order));
+    fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "Resource", name, FGRESOURCE_CIRCLE | flags, &transform, order));
     AddStyleMsgArg<FG_SETUV, CRect>(&layout->style, &uv);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, color);
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&layout->style, edge, 1);
@@ -487,7 +487,7 @@ TESTDEF::RETPAIR test_feather()
   // fgWindow
   fnAddRect(fgWindowSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND);
 
-  fgSkin* topwindowcaption = fgSkin_AddSkin(fgWindowSkin, "fgWindow:text");
+  fgSkin* topwindowcaption = fgSkin_AddSkin(fgWindowSkin, "Window:text");
   AbsRect margin = { 4, 4, 0, 0 };
   AddStyleMsgArg<FG_SETMARGIN, AbsRect>(&topwindowcaption->style, &margin);
 
@@ -535,64 +535,81 @@ TESTDEF::RETPAIR test_feather()
   // fgSlider
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgSliderSkin->style, &AbsRect { 5,0,5,0 });
   {
-    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "fgResource", 0, FGRESOURCE_LINE, &fgTransform { { 0, 0, 0.5, 0.5, 0, 1.0, 1.5, 0.5 }, 0, { 0, 0, 0, 0 } }));
+    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Resource", 0, FGRESOURCE_LINE, &fgTransform { { 0, 0, 0.5, 0.5, 0, 1.0, 1.5, 0.5 }, 0, { 0, 0, 0, 0 } }));
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
   }
-  fgSkin* fgSliderDragSkin = fgSkin_AddSkin(fgSliderSkin, "fgSlider:slider");
+  fgSkin* fgSliderDragSkin = fgSkin_AddSkin(fgSliderSkin, "Slider:slider");
   fnAddRect(fgSliderDragSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, fgTransform { { 0, 0, 0, 0, 10, 0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0xFFFFFFFF, 0xFF666666, 1.0f, FGELEMENT_NOCLIP);
 
   // fgProgressbar
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgProgressbarSkin->style, &AbsRect { 0,0,0,0 });
   fnAddRect(fgProgressbarSkin, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFFDDDDDD, 3.0f, FGELEMENT_BACKGROUND);
-  fgSkin* fgProgressSkin = fgSkin_AddSkin(fgProgressbarSkin, "fgProgressbar:bar");
+  fgSkin* fgProgressSkin = fgSkin_AddSkin(fgProgressbarSkin, "Progressbar:bar");
   fnAddRect(fgProgressSkin, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0xFF333333, 0, 3.0f, 0);
 
   // fgBox
-  fgSkin* fgBoxSkin = fgSkin_AddSkin(fgWindowSkin, "fgBox");
-  fgSkin* fgScrollbarSkinBGx = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:horzbg");
-  fgSkin* fgScrollbarSkinBGy = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:vertbg");
+  fgSkin* fgBoxSkin = fgSkin_AddSkin(fgWindowSkin, "Box");
+  fgSkin* fgScrollbarSkinBGx = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:horzbg");
+  fgSkin* fgScrollbarSkinBGy = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:vertbg");
+  fgSkin* fgScrollbarSkinBG = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:corner");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBGx->style, &CRect { 0, 0, -20, 1, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBGy->style, &CRect { -20, 1, 0, 0, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgScrollbarSkinBGx->style, &AbsRect { 20, 0, 20, 0 });
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgScrollbarSkinBGy->style, &AbsRect { 0, 20, 0, 20 });
   fnAddRect(fgScrollbarSkinBGx, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fnAddRect(fgScrollbarSkinBGy, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fgSkin* fgScrollbarSkinBarx = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollhorz");
-  fgSkin* fgScrollbarSkinBary = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollvert");
+  fnAddRect(fgScrollbarSkinBG, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgSkin* fgScrollbarSkinBarx = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollhorz");
+  fgSkin* fgScrollbarSkinBary = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollvert");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBarx->style, &CRect { 0, 0, 0, 0, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBary->style, &CRect { 0, 0, 0, 0, 0, 1, 0, 1 });
-  fnAddRect(fgScrollbarSkinBarx, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fnAddRect(fgScrollbarSkinBary, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fgSkin* fgScrollbarSkinLeft = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollleft");
-  fgSkin* fgScrollbarSkinTop = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrolltop");
-  fgSkin* fgScrollbarSkinRight = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollright");
-  fgSkin* fgScrollbarSkinBottom = fgSkin_AddSkin(fgBoxSkin, "fgScrollbar:scrollbottom");
+  fnAddRect(fgScrollbarSkinBarx, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgScrollbarSkinBary, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgSkin* fgScrollbarSkinLeft = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollleft");
+  fgSkin* fgScrollbarSkinTop = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrolltop");
+  fgSkin* fgScrollbarSkinRight = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollright");
+  fgSkin* fgScrollbarSkinBottom = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollbottom");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinLeft->style, &CRect { 0, 0, 0, 0, 20, 0, 20, 0 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinTop->style, &CRect { 0, 0, 0, 0, 20, 0, 20, 0 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinRight->style, &CRect { -20, 1, 0, 0, 0, 1, 20, 0 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBottom->style, &CRect { 0, 0, -20, 1, 20, 0, 0, 1 });
-  fnAddRect(fgScrollbarSkinLeft, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinTop, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinRight, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinBottom, 0, CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinLeft, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinTop, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinRight, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinBottom, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+
+  auto disabledskin = [](fgSkin* parent, const char* name, uint32_t nuetral, uint32_t disabled) {
+    fgSkin* s = fgSkin_AddSkin(parent, name);
+    size_t sdisabled = fgSkin_AddStyle(s, "disabled");
+    size_t snuetral = fgSkin_AddStyle(s, "nuetral");
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(fgSkin_GetStyle(s, sdisabled), disabled, 1);
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(fgSkin_GetStyle(s, snuetral), nuetral, 1);
+  };
+
+  disabledskin(fgScrollbarSkinLeft, ":bg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinTop, ":bg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinRight, ":bg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinBottom, ":bg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinBarx, ":bg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinBary, ":bg", 0xFF0000FF, 0xFF999999);
 
   // fgTextbox
   fnAddRect(fgTextboxSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
 
   // fgTreeView
   fnAddRect(fgTreeViewSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fgSkin* fgTreeViewTextSkin = fgSkin_AddSkin(fgTreeViewSkin, "fgText");
+  fgSkin* fgTreeViewTextSkin = fgSkin_AddSkin(fgTreeViewSkin, "Text");
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&fgTreeViewTextSkin->style, 0xFFFFFFFF);
   AddStyleMsg<FG_SETFONT, void*>(&fgTreeViewTextSkin->style, smfont);
-  fgSkin* fgTreeItemSkin = fgSkin_AddSkin(fgTreeViewSkin, "fgTreeItem");
+  fgSkin* fgTreeItemSkin = fgSkin_AddSkin(fgTreeViewSkin, "TreeItem");
   fnAddRect(fgTreeItemSkin, ":bg", CRect { 2, 0, 2, 0, 2, 0, 2, 0 }, FILL_TRANSFORM, 0x99AA6666, 0xAAFFAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgTreeItemSkin->style, &AbsRect { 20, 0, 0, 0 });
-  fgSkin* fgTreeItemArrowSkin = fgSkin_AddSkin(fgTreeItemSkin, "fgTreeItem:arrow");
-  AddStyleMsgArg<FG_SETTRANSFORM, fgTransform>(&fgTreeItemArrowSkin->style, &fgTransform { {4, 0, 1, 0, 16, 0, 13, 0 }, 0, { 0, 0, 0, 0 } });
+  fgSkin* fgTreeItemArrowSkin = fgSkin_AddSkin(fgTreeItemSkin, "TreeItem:arrow");
+  AddStyleMsgArg<FG_SETTRANSFORM, fgTransform>(&fgTreeItemArrowSkin->style, &fgTransform { { 4, 0, 1, 0, 16, 0, 13, 0 }, 0, { 0, 0, 0, 0 } });
   fnAddRect(fgTreeItemArrowSkin, ":bg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0, 0xFFDDDDDD, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fnAddRect(fgTreeItemArrowSkin, ":bgv", CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, fgTransform { { -1, 0.5, 2, 0, 1, 0.5, -2, 1 }, 0, { 0, 0, 0, 0 } }, 0xFFDDDDDD, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fnAddRect(fgTreeItemArrowSkin, ":bgh", CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, fgTransform { { 2, 0, -1, 0.5, -2, 1, 1, 0.5 }, 0, { 0, 0, 0, 0 } }, 0xFFDDDDDD, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  
+
   fgSkin* fgTreeItemArrowSkinbg = fgSkin_AddSkin(fgTreeItemArrowSkin, ":bgv");
   size_t shidden = fgSkin_AddStyle(fgTreeItemArrowSkinbg, "hidden");
   size_t svisible = fgSkin_AddStyle(fgTreeItemArrowSkinbg, "visible");
@@ -610,43 +627,43 @@ TESTDEF::RETPAIR test_feather()
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
   fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
-  fgElement* button = fgCreate("fgButton", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
+  fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
   fgVoidMessage(button, FG_ADDITEM, res, 0);
   button->SetName("buttontest");
-  
-  fgElement* topwindow = fgCreate("fgWindow", *fgSingleton(), 0, 0, 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
+
+  fgElement* topwindow = fgCreate("Window", *fgSingleton(), 0, 0, 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
   topwindow->SetText("test window");
   topwindow->SetColor(0xFFFFFFFF, 0);
   topwindow->SetFont(font);
   topwindow->SetPadding(AbsRect { 10,22,10,10 });
 
-  fgElement* buttontop = fgCreate("fgButton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 10, 0, 40, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* buttontop = fgCreate("Button", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 10, 0, 40, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   buttontop->SetText("Not Pressed");
   fgListener listener = [](fgElement* self, const FG_Msg*) { self->SetText("Pressed!"); };
   buttontop->AddListener(FG_ACTION, listener);
 
-  fgElement* boxholder = fgCreate("fgBox", topwindow, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* boxholder = fgCreate("Box", topwindow, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
   fgScrollbar* test = (fgScrollbar*)boxholder;
   boxholder->SetDim(100, -1);
   //boxholder->SetDim(-1, 100);
 
-  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 1");
-  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 22");
-  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 3");
-  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 4");
-  fgCreate("fgCheckbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 5");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 1");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 22");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 3");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 4");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 5");
 
-  fgCreate("fgRadiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 1");
-  fgCreate("fgRadiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 2");
-  fgCreate("fgRadiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 3");
+  fgCreate("Radiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 1");
+  fgCreate("Radiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 2");
+  fgCreate("Radiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 3");
 
-  fgElement* slider = fgCreate("fgSlider", topwindow, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 120, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* slider = fgCreate("Slider", topwindow, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 120, 0 }, 0, { 0, 0, 0, 0 } });
   slider->SetState(500, 1);
   slider->AddListener(FG_SETSTATE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
   fg_progbar = fgProgressbar_Create(0.0, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
-  
-  //fgCreate("fgTextbox", topwindow, 0, 0, 0, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
-  //auto debugview = fgCreate("fgTreeView", *fgSingleton(), 0, 0, 0, &fgTransform { { 190, 0, 160, 0, 450, 0, 300, 0 }, 0, { 0, 0, 0, 0 } });
+
+  //fgCreate("Textbox", topwindow, 0, 0, 0, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  //auto debugview = fgCreate("TreeView", *fgSingleton(), 0, 0, 0, &fgTransform { { 190, 0, 160, 0, 450, 0, 300, 0 }, 0, { 0, 0, 0, 0 } });
   //fgDebug_BuildTree(debugview);
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
@@ -907,7 +924,7 @@ int main(int argc, char** argv)
           if(isdown) ps.Quit();
           break;
         case FG_KEY_RETURN:
-        //  if(isdown && !evt.IsAltDown()) gotonext = true;
+          //  if(isdown && !evt.IsAltDown()) gotonext = true;
           break;
         case FG_KEY_F11:
           if(isdown)
