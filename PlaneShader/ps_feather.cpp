@@ -140,6 +140,11 @@ fgElement* FG_FASTCALL fgCreate(const char* type, fgElement* BSS_RESTRICT parent
   return fgCreateDefault(type, parent, next, name, flags, transform);
 }
 
+short FG_FASTCALL fgMessageMap(const char* name)
+{
+  return fgMessageMapDefault(name);
+}
+
 #include "bss-util\bss_win32_includes.h"
 
 fgRoot* FG_FASTCALL fgInitialize()
