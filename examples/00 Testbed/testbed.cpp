@@ -595,6 +595,7 @@ TESTDEF::RETPAIR test_feather()
 
   // fgTextbox
   fnAddRect(fgTextboxSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  AddStyleMsg<FG_SETLINEHEIGHT, float>(&fgTextboxSkin->style, 16.0f);
 
   // fgTreeView
   fnAddRect(fgTreeViewSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
@@ -662,9 +663,7 @@ TESTDEF::RETPAIR test_feather()
   slider->AddListener(FG_SETSTATE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
   fg_progbar = fgProgressbar_Create(0.0, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
 
-  //fgCreate("Textbox", topwindow, 0, 0, 0, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
-  //auto debugview = fgCreate("TreeView", *fgSingleton(), 0, 0, 0, &fgTransform { { 190, 0, 160, 0, 450, 0, 300, 0 }, 0, { 0, 0, 0, 0 } });
-  //fgDebug_BuildTree(debugview);
+  fgElement* textbox = fgCreate("Textbox", topwindow, 0, 0, 0, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
 
