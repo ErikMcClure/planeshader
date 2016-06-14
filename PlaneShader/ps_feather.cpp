@@ -324,7 +324,8 @@ void fgClipboardFree(const void* mem)
 
 psRoot::psRoot()
 {
-  fgRoot_Init(this, &AbsRect { 0, 0, 1, 1 }, psGUIManager::BASE_DPI);
+  AbsRect area = { 0, 0, 1, 1 };
+  fgRoot_Init(this, &area, psGUIManager::BASE_DPI);
 }
 psRoot::~psRoot()
 {
