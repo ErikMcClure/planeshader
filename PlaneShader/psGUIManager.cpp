@@ -35,7 +35,7 @@ psMonitor* psGUIManager::AddMonitor(psVeciu& dim, psMonitor::MODE mode, HWND__* 
   return &_monitors.Back();
 }
 
-void psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
+size_t psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
 {
   PROFILE_FUNC();
   GetKeyboardState(_allkeys);
@@ -52,7 +52,7 @@ void psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
   if(GetKey(FG_KEY_MENU)) evt.sigkeys = evt.sigkeys | 4; //VK_MENU
   if(held) evt.sigkeys = evt.sigkeys | 8;
 
-  _process(evt);
+  return _process(evt);
 }
 void psGUIManager::SetChar(int key, DWORD time)
 {
@@ -183,14 +183,23 @@ void psGUIManager::FlushMessages()
 
   while(PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
   {
-    TranslateMessage(&msg);
-    DispatchMessageW(&msg);
+    LRESULT r = DispatchMessageW(&msg);
 
-    if(msg.message == WM_QUIT)
+    switch(msg.message)
     {
-      Quit();
-      PSLOGV(3, "Quit message recieved, setting _quit to true");
-      return;
+      case WM_SYSKEYUP:
+      case WM_SYSKEYDOWN:
+      case WM_KEYUP:
+      case WM_KEYDOWN:
+        if(!r) // if the return value is zero, we already processed the keydown message successfully, so DON'T turn it into a character.
+          break;
+      default:
+        TranslateMessage(&msg);
+        break;
+      case WM_QUIT:
+        Quit();
+        PSLOGV(3, "Quit message recieved, setting _quit to true");
+        return;
     }
   }
 
@@ -274,12 +283,18 @@ float psGUIManager::_translatejoyaxis(uint16_t axis) const
   uint8_t a = (axis & 0xFF);
   return (((long)_alljoyaxis[ID][a]) - _joydevs[ID].offset[a]) / _joydevs[ID].range[a];
 }
-void psGUIManager::_process(FG_Msg& m)
+size_t psGUIManager::_process(FG_Msg& m)
 {
-  if(_preprocess.IsEmpty() || !_preprocess(m))
-    if(!fgRoot_Inject(&_root, &m))
-      if(!_postprocess.IsEmpty())
-        _postprocess(m);
+  if(!_preprocess.IsEmpty() && _preprocess(m) != 0)
+    return FG_ACCEPT;
+
+  if(fgRoot_Inject(&_root, &m))
+    return FG_ACCEPT;
+
+  if(!_postprocess.IsEmpty() && _postprocess(m) != 0)
+    return FG_ACCEPT;
+
+  return 0;
 }
 
 void psGUIManager::_exactmousecalc()

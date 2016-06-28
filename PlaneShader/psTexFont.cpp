@@ -9,11 +9,10 @@ using namespace planeshader;
 
 psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, float lineheight, float letterspacing, const psRectRotateZ& prearea, uint32_t color, psFlag flags, DELEGATE d, const float(&transform)[4][4])
 {
+  if(!text) return VEC_ZERO;
   float linewidth;
   float curwidth = 0.0f;
-  float linestart;
   psVec pen;
-  int c;
   const psGlyph* g;
   const int* pos;
   const int* peek = text;
@@ -51,27 +50,61 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   }
 
   // TODO: Skip forward based on the position of the scissor rect as queried by PeekClipRect, regardless of whether PSFONT_CLIP is specified or not.
-  const int* begin;
 
   for(uint8_t i = 0; i < svar; ++i)
   {
     pos = text;
     peek = text;
+    pen = VEC_ZERO;
+    psVec topleft;
 
     if(flags&PSFONT_BOTTOM)
-      pen.y = area.bottom - dim.y;
+      topleft.y = area.bottom - dim.y;
     else if(flags&PSFONT_VCENTER)
-      pen.y = area.top + (maxdim.y - dim.y)*0.5f;
+      topleft.y = area.top + (maxdim.y - dim.y)*0.5f;
     else
-      pen.y = area.top;
+      topleft.y = area.top;
 
-    pen.y += (lineheight / _fontlineheight) * _fontascender; // move our top y coordinate position to the actual baseline.
+    topleft.y += (lineheight / _fontlineheight) * _fontascender; // move our top y coordinate position to the actual baseline.
     curwidth = 0.0f;
     _driver->SetTextures(&_textures[i], 1);
     psBatchObj* obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags, transform);
     texdim = _textures[i]->GetDim();
 
+    topleft.x = area.left;
+    psRect box;
+    int last = 0;
+    float lastadvance = 0;
     while(*pos)
+    {
+      ptrdiff_t ipos = pos - text;
+      bool dobreak = false;
+      g = _getchar(pos++, maxdim.x, flags, lineheight, letterspacing, pen, box, last, lastadvance, dobreak);
+      if(!g || g->texnum != i) continue;
+
+      float gdimx = (g->uv.right - g->uv.left)*texdim.x;
+      float gdimy = (g->uv.bottom - g->uv.top)*texdim.y;
+
+      rect.left = topleft.x + pen.x + g->bearingX;
+      rect.top = topleft.y + pen.y - g->bearingY;
+
+      //if(flags&PSFONT_RTL) // implement right to left rendering by flipping over the middle axis
+      //{
+      //  rect.left = linewidth - (rect.left - linestart) - gdimx;
+      //}
+      if(flags&PSFONT_PIXELSNAP)
+      {
+        rect.left = (float)bss_util::fFastRound(rect.left);
+        rect.top = (float)bss_util::fFastRound(rect.top);
+      }
+
+      rect.right = rect.left + gdimx;
+      rect.bottom = rect.top + gdimy;
+
+      if(!d.IsEmpty()) d(ipos, rect, color);
+      _driver->DrawRectBatch(obj, rect, &g->uv, color);
+    }
+    /*while(*pos)
     {
       begin = pos;
       linewidth = _getlinewidth(peek, maxdim.x, flags, letterspacing, curwidth) + area.left;
@@ -124,7 +157,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
         pen.x += g->advance + letterspacing;
       }
       pen.y += lineheight;
-    }
+    }*/
   }
 
   if(flags&PSFONT_CLIP)
@@ -149,49 +182,79 @@ bool psTexFont::_isspace(int c) // We have to make our own isspace implementatio
 {
   return c == ' ' || c == '\t' ||c == '\n' ||c == '\r' ||c == '\v' ||c == '\f';
 }
+
+psGlyph* psTexFont::_getchar(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec& cursor, psRect& box, int& last, float& lastadvance, bool& dobreak)
+{
+  cursor.x += lastadvance;
+  int c = *text;
+  psGlyph* g = _glyphs[c];
+  if(!g && c != '\n' && c != '\r')
+  {
+    g = _loadglyph(c);
+    if(!g)
+    {
+      lastadvance = 0;
+      last = c;
+      return 0; // Note: Bad glyphs usually just have 0 width, so we don't have to check for them.
+    }
+  }
+  float advance = 0.0f;
+  box.topleft = cursor;
+  box.bottomright = cursor;
+
+  if(c != '\n' && c != '\r')
+  {
+    advance = g->advance + letterspacing + _getkerning(last, c);
+    box.left += g->bearingX;
+    box.top -= g->bearingY;
+    box.right = box.left + g->width;
+    box.bottom = box.top + g->height;
+  }
+
+  dobreak = c == '\n';
+  if(!dobreak && flags&(PSFONT_CHARBREAK|PSFONT_WORDBREAK) && box.right > maxwidth)
+    dobreak = true;
+  if(!dobreak && flags&PSFONT_WORDBREAK && _isspace(last) && !_isspace(c))
+  {
+    float right = cursor.x + advance;
+    const int* cur = ++text; // we can increment cur by one, because if our current character had been over the end, it would have been handled above.
+    while(*cur != 0 && !isspace(*cur))
+    {
+      psGlyph* gword = _glyphs[*cur];
+      if(gword)
+      {
+        if(right + gword->bearingX + gword->width > maxwidth)
+        {
+          dobreak = true;
+          break;
+        }
+        right += gword->advance + letterspacing + _getkerning(cur[-1], cur[0]); // cur[-1] is safe here because we incremented cur before entering this loop.
+      }
+      ++cur;
+    }
+  }
+
+  if(dobreak)
+  {
+    cursor.x = 0;
+    cursor.y += lineheight;
+  }
+
+  lastadvance = advance;
+  last = c;
+  return g;
+}
 float psTexFont::_getlinewidth(const int*& text, float maxwidth, psFlag flags, float letterspacing, float& cur)
 {
-  bool dobreak = maxwidth > 0 && (flags&PSFONT_CHARBREAK || flags&PSFONT_WORDBREAK);
-  float width = cur;
-  int c = 0;
+  bool dobreak = false;
   int last = 0;
   float lastadvance = 0;
-  float gwidth = 0;
-  float advance = 0;
-  float kerning = 0;
-  const psGlyph* g;
-
-  while(*text)
-  {
-    last = c;
-    c = *text;
-    g = _glyphs[c];
-    if(!g && c != '\n' && c != '\r')
-    {
-      g = _loadglyph(c);
-      if(!g) continue; // Note: Bad glyphs usually just have 0 width, so we don't have to check for them.
-    }
-    kerning = _getkerning(last, c);
-    gwidth = (c != '\n' && c != '\r') ? g->bearingX + kerning + g->width : 0.0f;
-    if(c == '\n' || (dobreak && (cur + gwidth) > maxwidth))
-    {
-      cur = lastadvance;
-      if(c != '\n')
-        cur += advance;
-      ++text;
-      return width;
-    }
-    advance = g->advance + letterspacing + kerning;
-    if(!(flags&PSFONT_WORDBREAK) || _isspace(c))
-    {
-      width = cur + gwidth;
-      lastadvance = cur + advance;
-    }
-    cur += advance;
-
-    ++text;
-  }
-  return cur - advance + gwidth;
+  psRect box = { 0, 0, 0, 0 };
+  psVec cursor = { 0,0 };
+  float width = 0.0f;
+  while(*text != 0 && !dobreak)
+    _getchar(text++, maxwidth, flags, 0.0f, letterspacing, cursor, box, last, lastadvance, dobreak);
+  return box.right;
 }
 psGlyph* psTexFont::_loadglyph(uint32_t codepoint)
 {
@@ -203,10 +266,10 @@ float psTexFont::_loadkerning(uint32_t prev, uint32_t cur)
 }
 float psTexFont::_getkerning(uint32_t prev, uint32_t c)
 {
-  if(!prev) return 0;
+  if(!prev || c == '\n' || c == '\r' || prev == '\n' && prev == '\r') return 0;
   uint64_t key = uint64_t(c) | (uint64_t(prev) << 32);
   khiter_t iter = _kerning.Iterator(key);
-  if(!_kerning.ExistsIter(iter) && c != '\n' && c != '\r')
+  if(!_kerning.ExistsIter(iter))
   {
     _kerning.Insert(key, _loadkerning(prev, c));
     iter = _kerning.Iterator(key);
@@ -274,3 +337,39 @@ psTexFont::psTexFont(psTex* tex, float lineheight, float ascender, float descend
 }
 psTexFont::psTexFont() : _fontlineheight(0), _fontascender(0), _fontdescender(0) { Grab(); }
 psTexFont::~psTexFont() { for(uint32_t i = 0; i < _textures.Capacity(); ++i) _textures[i]->Drop(); }
+
+std::pair<size_t, psVec> psTexFont::GetIndex(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec pos)
+{
+  std::pair<size_t, psVec> cache = { 0, { 0, 0 } };
+  if(!text) return cache;
+  bool dobreak = false;
+  int last = 0;
+  float lastadvance = 0;
+  psRect box = { 0, 0, 0, 0 };
+  psGlyph* g = 0;
+  for(cache.first = 0; text[cache.first] != 0; ++cache.first)
+  {
+    std::pair<size_t, psVec> lastcache = cache;
+    lastcache.second.x += lastadvance;
+    g = _getchar(text + cache.first, maxwidth, flags, lineheight, letterspacing, cache.second, box, last, lastadvance, dobreak);
+    if(pos.y <= cache.second.y + lineheight && pos.x < cache.second.x + (g ? g->bearingX + (g->width*0.5f) : 0.0f))
+      return cache; // we immediately terminate and return, WITHOUT adding the lastadvance on.
+    if(pos.y <= cache.second.y) // Too far! return our previous cache.
+      return lastcache;
+  }
+  cache.second.x += lastadvance; // We have to add the lastadvance on here because we left the loop at the end of the string.
+  return cache;
+}
+std::pair<size_t, psVec> psTexFont::GetPos(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, size_t index)
+{
+  std::pair<size_t, psVec> cache = { 0, { 0, 0 } };
+  if(!text) return cache;
+  bool dobreak = false;
+  int last = 0;
+  float lastadvance = 0;
+  psRect box = { 0, 0, 0, 0 };
+  for(cache.first = 0; cache.first < index && text[cache.first] != 0; ++cache.first)
+    _getchar(text + cache.first, maxwidth, flags, lineheight, letterspacing, cache.second, box, last, lastadvance, dobreak);
+  cache.second.x += lastadvance;
+  return cache;
+}

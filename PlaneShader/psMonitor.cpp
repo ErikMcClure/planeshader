@@ -387,19 +387,14 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_SYSKEYUP:
   case WM_SYSKEYDOWN:
-    //if(wParam==VK_MENU) //if we don't handle the alt key press, it freezes our program :C
-    //{
-    //  BYTE allKeys[256]; 
-    //GetKeyboardState(allKeys);
-    //  (cEngine::Instance()->*winhook_setkey)((uint8_t)wParam,0, 0, message==WM_SYSKEYDOWN, allKeys);
-    //  return 0;
-    //} //do not break to allow syskeys to drop down
   case WM_KEYUP:
-  case WM_KEYDOWN:
-  {
-    gui->SetKey((uint8_t)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
-  }
-  return 0;
+  case WM_KEYDOWN: // Windows return codes are the opposite of feathergui's - returning 0 means we accept, anything else rejects, so we invert the return code here.
+    return !gui->SetKey((uint8_t)wParam, message == WM_KEYDOWN || message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
+  case WM_UNICHAR:
+    if(wParam == UNICODE_NOCHAR) return TRUE;
+  case WM_CHAR:
+    gui->SetChar((int)wParam, GetMessageTime());
+    return 0;
   case WM_SYSCOMMAND:
     if((wParam & 0xFFF0) == SC_SCREENSAVE || (wParam & 0xFFF0) == SC_MONITORPOWER)
       return 0; //No screensavers!
@@ -428,11 +423,6 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
   case WM_NCHITTEST:
     if(self->_guiflags&PSMONITOR_OVERRIDEHITTEST) return HTCAPTION;
     break;
-  case WM_UNICHAR:
-    if(wParam == UNICODE_NOCHAR) return TRUE;
-  case WM_CHAR:
-    gui->SetChar((int)wParam, GetMessageTime());
-    return 0;
     //case 124:
     //case 125:
     //case 127:

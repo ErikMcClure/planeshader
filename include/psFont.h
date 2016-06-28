@@ -21,8 +21,6 @@ namespace planeshader {
     int GetDPI() const { return _dpi; }
     int GetPointSize() const { return _pointsize; }
     const char* GetPath() const { return _path; }
-    std::pair<size_t, psVec> GetIndex(const int* text, float lineheight, float letterspacing, psVec pos, std::pair<size_t, psVec> cache);
-    std::pair<size_t, psVec> GetPos(const int* text, float lineheight, float letterspacing, size_t index, std::pair<size_t, psVec> cache);
 
     static FT_Library PTRLIB;
     enum FONT_ANTIALIAS : uint8_t {
