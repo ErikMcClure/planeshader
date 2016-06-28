@@ -105,7 +105,7 @@ inline bool psTex::Resize(psVeciu dim, RESIZE resize)
 {
   if(dim == _dim) return true; //nothing to do
   if(resize == RESIZE_STRETCH) return false; // Not supported
-  void* view;
+  void* view = 0;
   void* res = _driver->CreateTexture(dim, _format, _usage, _miplevels, 0, &view, _texblock);
   if(!res) // If this failed then view couldn't have been created either.
     return false;

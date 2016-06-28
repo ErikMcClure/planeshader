@@ -73,9 +73,9 @@ namespace planeshader {
     static const uint32_t BASE_DPI = 96;
 
   protected:
-    void _process(FG_Msg& m);
+    size_t _process(FG_Msg& m);
     // Creates the window and actually sets everything up (otherwise we get pointer problems)
-    void SetKey(uint8_t keycode, bool down, bool held, unsigned long time);
+    size_t SetKey(uint8_t keycode, bool down, bool held, unsigned long time);
     void SetChar(int key, unsigned long time);
     void SetMouse(tagPOINTS* points, unsigned short type, unsigned char button, size_t wparam, unsigned long time);
     // Updates values for all plugged in joysticks 

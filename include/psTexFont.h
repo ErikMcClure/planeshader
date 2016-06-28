@@ -18,6 +18,7 @@ namespace planeshader {
     float bearingX; // This is added to the current cursor position for rendering
     float bearingY; // This is added to the current baseline
     float width; // This is the width of the glyph itself.
+    float height; // This is the height of the glyph itself.
     float advance; // The cursor position is incremented by this much after rendering
     uint8_t texnum;
   };
@@ -59,6 +60,8 @@ namespace planeshader {
     inline float GetLineHeight() const noexcept { return _fontlineheight; }
     // Overrides the default line height
     inline void SetLineHeight(float lineheight) noexcept { _fontlineheight = lineheight; }
+    std::pair<size_t, psVec> GetIndex(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec pos);
+    std::pair<size_t, psVec> GetPos(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, size_t index);
 
     static psTexFont* CreateTexFont(psTex* tex=0, float lineheight = 0.0f, float ascender = 0.0f, float descender = 0.0f);
 
@@ -69,6 +72,7 @@ namespace planeshader {
     psTexFont();
     virtual ~psTexFont();
     float _getlinewidth(const int*& text, float maxwidth, psFlag flags, float letterspacing, float& cur);
+    BSS_FORCEINLINE psGlyph* _getchar(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec& cursor, psRect& box, int& last, float& lastadvance, bool& dobreak);
     virtual psGlyph* _loadglyph(uint32_t codepoint);
     virtual float _loadkerning(uint32_t prev, uint32_t cur);
     float _getkerning(uint32_t prev, uint32_t cur);

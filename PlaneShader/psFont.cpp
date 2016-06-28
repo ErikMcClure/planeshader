@@ -325,6 +325,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   retval->bearingX = (_ft2face->glyph->metrics.horiBearingX * FT_COEF * invdpiscale.x);
   retval->bearingY = (_ft2face->glyph->metrics.horiBearingY * FT_COEF * invdpiscale.y);
   retval->width = (float)width;
+  retval->height = (float)height;
 
   _curpos.x += width + 1; //one pixel buffer
   if(_nexty<_curpos.y + height) _nexty = _curpos.y + height + 1; //one pixel buffer
@@ -382,55 +383,4 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   _staging[_curtex]->Unlock(0);
   _stage();
   return retval;
-}
-std::pair<size_t, psVec> psFont::GetIndex(const int* text, float lineheight, float letterspacing, psVec pos, std::pair<size_t, psVec> cache)
-{
-  cache.first = 0;
-  cache.second = VEC_ZERO;
-  if(!text) return cache;
-
-  while(cache.second.y + lineheight < pos.y && text[cache.first] != 0)
-  {
-    if(text[cache.first] == '\n')
-      cache.second.y += lineheight;
-    ++cache.first;
-  }
-
-  psGlyph* g = _glyphs[text[cache.first]];
-  while(text[cache.first] != 0 && (!g || cache.second.x + g->bearingX + g->width*0.5f < pos.x))
-  {
-    cache.second.x += g->advance + letterspacing;
-    g = _glyphs[text[++cache.first]];
-  }
-
-  return cache;
-}
-std::pair<size_t, psVec> psFont::GetPos(const int* text, float lineheight, float letterspacing, size_t index, std::pair<size_t, psVec> cache)
-{
-  cache.first = index;
-  cache.second = VEC_ZERO;
-  if(!text) return cache;
-  size_t curline = 0;
-
-  for(size_t i = 0; i < index && text[i] != 0; ++i)
-  {
-    if(text[i] == '\n')
-    {
-      curline = i + 1;
-      cache.second.y += lineheight;
-    }
-  }
-
-  psGlyph* g = 0;
-  for(size_t i = curline; i < index && text[i] != 0; ++i)
-  {
-    g = _glyphs[text[i]];
-    if(!g)
-      continue;
-    cache.second.x += g->advance + letterspacing;
-  }
-  if(g) // provided the index we're on exists, replace the advance amount with the actual glyph width.
-    cache.second.x = cache.second.x - g->advance - letterspacing + g->bearingX + g->width;
-
-  return cache;
 }

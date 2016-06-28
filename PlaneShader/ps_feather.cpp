@@ -68,18 +68,18 @@ void FG_FASTCALL fgFontGet(void* font, float* lineheight, unsigned int* size, un
   if(size) *size = f->GetPointSize();
   if(dpi) *dpi = f->GetDPI();
 }
-size_t FG_FASTCALL fgFontIndex(void* font, const int* text, float lineheight, float letterspacing, AbsVec pos, size_t last, AbsVec* cache)
+size_t FG_FASTCALL fgFontIndex(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* cache)
 {
   psFont* f = (psFont*)font;
-  auto r = f->GetIndex(text, lineheight, letterspacing, psVec(pos.x, pos.y), std::pair<size_t, psVec>(last, psVec(cache->x, cache->y)));
-  cache->x = r.second.x;
-  cache->y = r.second.y;
+  auto r = f->GetIndex(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
+  cursor->x = r.second.x;
+  cursor->y = r.second.y;
   return r.first;
 }
-AbsVec FG_FASTCALL fgFontPos(void* font, const int* text, float lineheight, float letterspacing, size_t index, size_t last, AbsVec cache)
+AbsVec FG_FASTCALL fgFontPos(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* cache)
 {
   psFont* f = (psFont*)font;
-  auto r = f->GetPos(text, lineheight, letterspacing, index, std::pair<size_t, psVec>(last, psVec(cache.x, cache.y)));
+  auto r = f->GetPos(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
   return AbsVec { r.second.x, r.second.y };
 }
 
@@ -145,7 +145,8 @@ short FG_FASTCALL fgMessageMap(const char* name)
   return fgMessageMapDefault(name);
 }
 
-#include "bss-util\bss_win32_includes.h"
+#include "bss-util/bss_win32_includes.h"
+#include "bss-util/os.h"
 
 fgRoot* FG_FASTCALL fgInitialize()
 {
@@ -326,6 +327,15 @@ psRoot::psRoot()
 {
   AbsRect area = { 0, 0, 1, 1 };
   fgRoot_Init(this, &area, psGUIManager::BASE_DPI);
+  DWORD blinkrate = 0;
+  int64_t sz = bss_util::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
+  if(sz > 0)
+  {
+    DYNARRAY(wchar_t, buf, sz / 2);
+    sz = bss_util::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", (unsigned char*)buf, sz);
+    if(sz > 0)
+      cursorblink = atoi(cStr(buf, sz / 2)) / 1000.0;
+  }
 }
 psRoot::~psRoot()
 {

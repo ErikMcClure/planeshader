@@ -190,9 +190,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="testbed.cpp" />
+    <ClCompile Include="test_feather.cpp" />
+    <ClCompile Include="test_psDirectX11.cpp" />
+    <ClCompile Include="test_psEffect.cpp" />
+    <ClCompile Include="test_psFont.cpp" />
+    <ClCompile Include="test_psPass.cpp" />
+    <ClCompile Include="test_psTileset.cpp" />
+    <ClCompile Include="test_psVector.cpp" />
+    <ClCompile Include="text_psParticles.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\media\blank.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="testbed.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

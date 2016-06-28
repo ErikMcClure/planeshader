@@ -589,8 +589,8 @@ void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, flo
   o = _checkflush(o, 2);
 
   DX11_simplevert* linebuf = (DX11_simplevert*)o->buffer.get();
-  linebuf[0] = { line.x1, line.y1, Z1, 1, vertexcolor };
-  linebuf[1] = { line.x2, line.y2, Z2, 1, vertexcolor };
+  linebuf[0] = { line.x1 + 0.5f, line.y1 + 0.5f, Z1, 1, vertexcolor }; // DirectX renders lines in a REALLY WEIRD way. This is as close as we can get to a pixel perfect line.
+  linebuf[1] = { line.x2 + 0.5f, line.y2 + 0.5f, Z2, 1, vertexcolor };
   o->buffer.nvert += 2;
 }
 void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
