@@ -39,7 +39,8 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgSliderSkin = fgSkin_AddSkin(fgWindowSkin, "Slider");
   fgSkin* fgTextboxSkin = fgSkin_AddSkin(fgWindowSkin, "Textbox");
   fgSkin* fgTreeViewSkin = fgSkin_AddSkin(&skin, "TreeView");
-  //fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "List");
+  fgSkin* fgScrollbarSkin = fgSkin_AddSkin(&skin, "Scrollbar");
+  fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "List");
 
   auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
     fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "Resource", name, FGRESOURCE_ROUNDRECT | flags, &transform, order));
@@ -176,9 +177,10 @@ TESTDEF::RETPAIR test_feather()
 
   // fgBox
   fgSkin* fgBoxSkin = fgSkin_AddSkin(fgWindowSkin, "Box");
-  fgSkin* fgScrollbarSkinBGx = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:horzbg");
-  fgSkin* fgScrollbarSkinBGy = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:vertbg");
-  fgSkin* fgScrollbarSkinBG = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:corner");
+  fgBoxSkin->inherit = fgScrollbarSkin;
+  fgSkin* fgScrollbarSkinBGx = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:horzbg");
+  fgSkin* fgScrollbarSkinBGy = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:vertbg");
+  fgSkin* fgScrollbarSkinBG = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:corner");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBGx->style, &CRect { 0, 0, -20, 1, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBGy->style, &CRect { -20, 1, 0, 0, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgScrollbarSkinBGx->style, &AbsRect { 20, 0, 20, 0 });
@@ -186,24 +188,24 @@ TESTDEF::RETPAIR test_feather()
   fnAddRect(fgScrollbarSkinBGx, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fnAddRect(fgScrollbarSkinBGy, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   fnAddRect(fgScrollbarSkinBG, 0, CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x66000000, 0, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fgSkin* fgScrollbarSkinBarx = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollhorz");
-  fgSkin* fgScrollbarSkinBary = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollvert");
+  fgSkin* fgScrollbarSkinBarx = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:scrollhorz");
+  fgSkin* fgScrollbarSkinBary = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:scrollvert");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBarx->style, &CRect { 0, 0, 0, 0, 0, 1, 0, 1 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBary->style, &CRect { 0, 0, 0, 0, 0, 1, 0, 1 });
-  fnAddRect(fgScrollbarSkinBarx, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fnAddRect(fgScrollbarSkinBary, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fgSkin* fgScrollbarSkinLeft = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollleft");
-  fgSkin* fgScrollbarSkinTop = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrolltop");
-  fgSkin* fgScrollbarSkinRight = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollright");
-  fgSkin* fgScrollbarSkinBottom = fgSkin_AddSkin(fgBoxSkin, "Scrollbar:scrollbottom");
+  fnAddRect(fgScrollbarSkinBarx, ":scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgScrollbarSkinBary, ":scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0x660000FF, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgSkin* fgScrollbarSkinLeft = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:scrollleft");
+  fgSkin* fgScrollbarSkinTop = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:scrolltop");
+  fgSkin* fgScrollbarSkinRight = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:scrollright");
+  fgSkin* fgScrollbarSkinBottom = fgSkin_AddSkin(fgScrollbarSkin, "Scrollbar:scrollbottom");
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinLeft->style, &CRect { 0, 0, 0, 0, 20, 0, 20, 0 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinTop->style, &CRect { 0, 0, 0, 0, 20, 0, 20, 0 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinRight->style, &CRect { -20, 1, 0, 0, 0, 1, 20, 0 });
   AddStyleMsgArg<FG_SETAREA, CRect>(&fgScrollbarSkinBottom->style, &CRect { 0, 0, -20, 1, 20, 0, 0, 1 });
-  fnAddRect(fgScrollbarSkinLeft, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinTop, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinRight, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
-  fnAddRect(fgScrollbarSkinBottom, ":bg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinLeft, ":scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinTop, ":scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinRight, ":scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgScrollbarSkinBottom, ":scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
 
   auto disabledskin = [](fgSkin* parent, const char* name, uint32_t nuetral, uint32_t disabled) {
     fgSkin* s = fgSkin_AddSkin(parent, name);
@@ -213,15 +215,16 @@ TESTDEF::RETPAIR test_feather()
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(fgSkin_GetStyle(s, snuetral), nuetral, 1);
   };
 
-  disabledskin(fgScrollbarSkinLeft, ":bg", 0xFF0000FF, 0xFF999999);
-  disabledskin(fgScrollbarSkinTop, ":bg", 0xFF0000FF, 0xFF999999);
-  disabledskin(fgScrollbarSkinRight, ":bg", 0xFF0000FF, 0xFF999999);
-  disabledskin(fgScrollbarSkinBottom, ":bg", 0xFF0000FF, 0xFF999999);
-  disabledskin(fgScrollbarSkinBarx, ":bg", 0xFF0000FF, 0xFF999999);
-  disabledskin(fgScrollbarSkinBary, ":bg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinLeft, ":scrollbg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinTop, ":scrollbg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinRight, ":scrollbg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinBottom, ":scrollbg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinBarx, ":scrollbg", 0xFF0000FF, 0xFF999999);
+  disabledskin(fgScrollbarSkinBary, ":scrollbg", 0xFF0000FF, 0xFF999999);
 
   // fgTextbox
-  fnAddRect(fgTextboxSkin, 0, CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgTextboxSkin->inherit = fgScrollbarSkin;
+  fnAddRect(fgTextboxSkin, ":textbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
   AddStyleMsg<FG_SETLINEHEIGHT, float>(&fgTextboxSkin->style, 16.0f);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&fgTextboxSkin->style, 0x88FFFFFF, 1);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t, size_t>(&fgTextboxSkin->style, 0xFFFFFFFF, 2);
@@ -254,15 +257,27 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, sfocus), FGELEMENT_HIDDEN, 0);
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, sunfocus), FGELEMENT_HIDDEN, 1);
 
+  // fgList
+  fnAddRect(fgListSkin, ":listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+
+  // Hovertest
+  fgSkin* hovertestskin = fgSkin_AddSkin(&skin, "hovertest");
+  fnAddRect(hovertestskin, ":listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99009999, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgSkin* hovertestbgskin = fgSkin_AddSkin(hovertestskin, ":listbg");
+
+  bhover = fgSkin_AddStyle(hovertestbgskin, "hover");
+  FG_UINT bselected = fgSkin_AddStyle(hovertestbgskin, "selected");
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(hovertestbgskin, bhover), 0x99990099);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(hovertestbgskin, bselected), 0x99999900);
 
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
-  fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
+  /*fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
   fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
   fgVoidMessage(button, FG_ADDITEM, res, 0);
   button->SetName("buttontest");
-
+  
   fgElement* topwindow = fgCreate("Window", *fgSingleton(), 0, 0, 0, &fgTransform { { 0, 0.2f, 0, 0.2f, 0, 0.8f, 0, 0.8f }, 0, { 0, 0, 0, 0 } });
   topwindow->SetText("test window");
   topwindow->SetColor(0xFFFFFFFF, 0);
@@ -284,7 +299,7 @@ TESTDEF::RETPAIR test_feather()
   fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 3");
   fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 4");
   fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 5");
-
+  
   fgCreate("Radiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 1");
   fgCreate("Radiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 2");
   fgCreate("Radiobutton", topwindow, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 220, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 3");
@@ -294,9 +309,20 @@ TESTDEF::RETPAIR test_feather()
   slider->AddListener(FG_SETSTATE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetStatef(self->GetState(0) / (float)self->GetState(1), 0); fg_progbar->SetText(cStrF("%i", self->GetState(0))); });
   fg_progbar = fgProgressbar_Create(0.0, topwindow, 0, 0, 0, &fgTransform { { 10, 0, 130, 0, 150, 0, 155, 0 }, 0, { 0, 0, 0, 0 } });
 
-  fgElement* textbox = fgCreate("Textbox", topwindow, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 190, 0, 30, 0, 250, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* textbox = fgCreate("Textbox", topwindow, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 170, 0, 30, 0, 240, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
   textbox->SetText("placeholder", FGSETTEXT_PLACEHOLDER_UTF8);
+  */
+  fgElement* list = fgCreate("List", *fgSingleton(), 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY, &fgTransform { { 250, 0, 30, 0, 350, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  
+
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
   cHighPrecisionTimer time;
 

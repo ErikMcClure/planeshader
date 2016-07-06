@@ -5,6 +5,7 @@
 #include "psPass.h"
 #include "psTex.h"
 #include "psDirectX11.h"
+#include "psVulkan.h"
 #include "psNullDriver.h"
 #include "psStateblock.h"
 #include "bss-util/profiler.h"
@@ -50,17 +51,17 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   {
   case RealDriver::DRIVERTYPE_NULL:
     PSLOG(4) << "Initializing Null Driver" << std::endl;
-    //new psNullDriver();
+    new psNullDriver();
     break;
-  case RealDriver::DRIVERTYPE_DX10:
-    //PSLOG(4) << "Initializing DirectX10 Driver" << std::endl;
-    //new psDirectX10(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, _window);
-    //if(((psDirectX10*)_driver)->GetLastError()!=0) { delete _driver; _driver=0; }
-    //break;
+  case RealDriver::DRIVERTYPE_VULKAN:
+    PSLOG(4) << "Initializing Vulkan Driver" << std::endl;
+    new psVulkan(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
+    //if(((psVulkan*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
+    break;
   case RealDriver::DRIVERTYPE_DX11:
     PSLOG(4) << "Initializing DirectX11 Driver" << std::endl;
     new psDirectX11(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
-    if(((psDirectX11*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
+    if(_driver->GetRealDriver().dx11->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   }
   if(!_driver)

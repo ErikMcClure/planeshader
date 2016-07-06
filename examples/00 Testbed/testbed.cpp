@@ -198,9 +198,11 @@ int main(int argc, char** argv)
   std::vector<uint32_t> failures;
   PSINIT init;
   init.driver = RealDriver::DRIVERTYPE_DX11;
+  //init.driver = RealDriver::DRIVERTYPE_VULKAN;
   init.width = 640;
   init.height = 480;
   //init.mode = psMonitor::MODE_BORDERLESS;
+  //init.mode = psMonitor::MODE_COMPOSITE;
   //init.antialias = 8;
   init.sRGB = false;
   init.mediapath = "../media";

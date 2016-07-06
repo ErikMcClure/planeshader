@@ -54,8 +54,6 @@ void FG_FASTCALL fgFontSize(void* font, const int* text, float lineheight, float
 {
   psFont* f = (psFont*)font;
   psVec dim = { area->right - area->left, area->bottom - area->top };
-  if(flags&FGELEMENT_EXPANDX) dim.x = -1.0f;
-  if(flags&FGELEMENT_EXPANDY) dim.y = -1.0f;
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   f->CalcTextDim(text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
   area->right = area->left + dim.x;
@@ -155,7 +153,7 @@ fgRoot* FG_FASTCALL fgInitialize()
 
 char FG_FASTCALL fgLoadExtension(void* fg, const char* extname) { return -1; }
 
-void fgPushClipRect(AbsRect* clip)
+void fgPushClipRect(const AbsRect* clip)
 { 
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
   psDriverHold::GetDriver()->MergeClipRect(rect);
@@ -172,7 +170,7 @@ void fgPopClipRect()
   psDriverHold::GetDriver()->PopClipRect();
 }
 
-void fgDirtyElement(fgTransform* e)
+void fgDirtyElement(fgElement* e)
 {
 
 }
@@ -345,9 +343,12 @@ psRoot::~psRoot()
 void BSS_FASTCALL psRoot::_render()
 {
   CRect area = gui.element.transform.area;
-  psTex* t = GetRenderTargets()[0];
-  area.right.abs = t->GetDim().x;
-  area.bottom.abs = t->GetDim().y;
+  psTex* const* t = GetRenderTargets();
+  if(t)
+  {
+    area.right.abs = t[0]->GetDim().x;
+    area.bottom.abs = t[0]->GetDim().y;
+  }
   gui->SetArea(area);
   gui->Draw(0, 0);
 }

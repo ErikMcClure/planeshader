@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fg:Layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fg="featherGUI" xsi:schemaLocation="featherGUI feather.xsd" skin="feather_skin.xml">
+  <Button name="buttontest" flags="EXPAND">
+    <Resource resource="../media/circle.png" color="0xFFFFFFFF" flags="EXPAND|IGNORE" />
+  </Button>
+  <Window area=":0.2,:0.2,:0.8,:0.8" text="test window" color="0xFFFFFFFF" font="arial;14" padding="10,22,10,10">
+    <Button area="10:, 40:, 0:, 0:" flags="EXPAND" text="Not Pressed" onaction="makepressed" />
+    <Box flags="TILEY|EXPANDX" max-width="100">
+      <Checkbox text="Check test 1" />
+      <Checkbox text="Check test 22" />
+      <Checkbox text="Check test 3" />
+      <Checkbox text="Check test 4" />
+      <Checkbox text="Check test 5" />
+    </Box>
+    <RadioButton area="190:, 160:, 0:, 0:" text="Radio Test 1" flags="EXPAND" />
+    <RadioButton area="190:, 190:, 0:, 0:" text="Radio Test 2" flags="EXPAND" />
+    <RadioButton area="190:, 220:, 0:, 0:" text="Radio Test 3" flags="EXPAND" />
+    <Slider area="10:, 100:, 150:, 120:" state="0" range="500" onstate="statelistener" />
+    <Progressbar state="0.0" area="10:, 130:, 150:, 155:" />
+    <Textbox area="190:, 30:, 250:, 150:" flags="WORDWRAP" placeholder="placeholder" />
+  </Window>  
+</fg:Layout>
