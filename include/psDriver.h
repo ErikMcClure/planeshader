@@ -12,6 +12,7 @@ namespace planeshader {
   class psDirectX9;
   class psDirectX11;
   class psOpenGL1;
+  class psVulkan;
   class psNullDriver;
   struct STATEINFO;
   class psShader;
@@ -25,6 +26,7 @@ namespace planeshader {
       psDirectX9* dx9;
       psDirectX11* dx11;
       psOpenGL1* ogl1;
+      psVulkan* vk;
       psNullDriver* nul;
     };
     enum DRIVERTYPE : uint8_t

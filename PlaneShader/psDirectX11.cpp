@@ -171,22 +171,8 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
 
   _fsquadVS = (ID3D11VertexShader*)CreateShader(fsquadVS_main, sizeof(fsquadVS_main), VERTEX_SHADER_4_0);
 
-  auto fnload = [](const char* file) -> std::unique_ptr<char[]>
   {
-    FILE* f = 0;
-    FOPEN(f, file, "rb");
-    fseek(f, 0, SEEK_END);
-    long ln = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    std::unique_ptr<char[]> a(new char[ln + 1]);
-    fread(a.get(), 1, ln, f);
-    fclose(f);
-    a[ln] = 0;
-    return a;
-  };
-
-  {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl").first;
 
     ELEMENT_DESC desc[4] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -202,7 +188,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl").first;
 
     ELEMENT_DESC desc[3] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -217,7 +203,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl").first;
 
     ELEMENT_DESC desc[5] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -234,7 +220,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl").first;
 
     ELEMENT_DESC desc[6] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -252,35 +238,35 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fstext.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fstext.hlsl").first;
 
     library.TEXT1 = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl").first;
 
     library.DEBUG = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsalphabox.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsalphabox.hlsl").first;
 
     _alphaboxfilter = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fspremultiply.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fspremultiply.hlsl").first;
 
     _premultiplyfilter = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl").first;
 
     ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -294,7 +280,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl").first;
 
     ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -308,7 +294,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl").first;
 
     ELEMENT_DESC desc[5] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -324,7 +310,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fsrectround.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsrectround.hlsl").first;
 
     ELEMENT_DESC desc[6] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -342,7 +328,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = fnload(cStr(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl");
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl").first;
 
     library.CIRCLE = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));

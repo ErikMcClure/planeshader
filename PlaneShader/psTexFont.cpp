@@ -26,13 +26,8 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   if((flags&PSFONT_BOTTOM || flags&PSFONT_VCENTER || flags&PSFONT_CLIP) ||
     (flags&PSFONT_RIGHT || flags&PSFONT_CENTER || flags&PSFONT_CLIP))
   {
-    dim.y = -lineheight + _fontascender - _fontdescender;
-    while(*peek)
-    {
-      linewidth = _getlinewidth(peek, maxdim.x, flags, letterspacing, curwidth);
-      if(linewidth > dim.x) dim.x = linewidth;
-      dim.y += lineheight;
-    }
+    dim = maxdim;
+    CalcTextDim(peek, dim, lineheight, letterspacing, flags);
   }
   if(maxdim.x == 0.0f) maxdim.x = dim.x;
   if(maxdim.y == 0.0f) maxdim.y = dim.y;
@@ -55,7 +50,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   {
     pos = text;
     peek = text;
-    pen = VEC_ZERO;
+    pen = { 0, (lineheight / _fontlineheight) * _fontascender }; // calculate starting baseline
     psVec topleft;
 
     if(flags&PSFONT_BOTTOM)
@@ -65,7 +60,6 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
     else
       topleft.y = area.top;
 
-    topleft.y += (lineheight / _fontlineheight) * _fontascender; // move our top y coordinate position to the actual baseline.
     curwidth = 0.0f;
     _driver->SetTextures(&_textures[i], 1);
     psBatchObj* obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags, transform);
@@ -212,9 +206,9 @@ psGlyph* psTexFont::_getchar(const int* text, float maxwidth, psFlag flags, floa
   }
 
   dobreak = c == '\n';
-  if(!dobreak && flags&(PSFONT_CHARBREAK|PSFONT_WORDBREAK) && box.right > maxwidth)
+  if(!dobreak && flags&(PSFONT_CHARBREAK|PSFONT_WORDBREAK) && maxwidth >= 0.0f && box.right > maxwidth)
     dobreak = true;
-  if(!dobreak && flags&PSFONT_WORDBREAK && _isspace(last) && !_isspace(c))
+  if(!dobreak && flags&PSFONT_WORDBREAK && _isspace(last) && !_isspace(c) && maxwidth >= 0.0f)
   {
     float right = cursor.x + advance;
     const int* cur = ++text; // we can increment cur by one, because if our current character had been over the end, it would have been handled above.
@@ -236,6 +230,10 @@ psGlyph* psTexFont::_getchar(const int* text, float maxwidth, psFlag flags, floa
 
   if(dobreak)
   {
+    box.left -= cursor.x;
+    box.right -= cursor.x;
+    box.top += lineheight;
+    box.bottom += lineheight;
     cursor.x = 0;
     cursor.y += lineheight;
   }
@@ -280,23 +278,23 @@ float psTexFont::_getkerning(uint32_t prev, uint32_t c)
 
 void psTexFont::CalcTextDim(const int* text, psVec& dest, float lineheight, float letterspacing, psFlag flags)
 {
-  float cur = 0.0f;
   psVec maxdim = dest;
+  dest.x = 0;
+  dest.y = 0;
+  bool dobreak = false;
+  int last = 0;
+  float lastadvance = 0;
+  psRect box = { 0, 0, 0, 0 };
+  psVec cursor = { 0, (lineheight / _fontlineheight) * _fontascender };
+
   float width = 0.0f;
-  int lines = -1; // Line height calculations are only valid if there are two or more lines, so we start the line count at -1
-
-  float w;
-  while(*text)
+  while(*text != 0)
   {
-    w = _getlinewidth(text, maxdim.x, flags, letterspacing, cur);
-    if(w > width) width = w;
-    ++lines;
+    _getchar(text++, maxdim.x, flags, lineheight, letterspacing, cursor, box, last, lastadvance, dobreak);
+    if(box.right > dest.x)
+      dest.x = box.right;
   }
-
-  if(maxdim.x < 0.0f)
-    dest.x = width;
-  if(maxdim.y < 0.0f)
-    dest.y = _fontascender - _fontdescender + ((lines > 0) ? (lineheight*lines) : 0.0f);
+  dest.y = cursor.y - _fontdescender;
 }
 
 void psTexFont::AddGlyph(int character, const psGlyph& glyph)
