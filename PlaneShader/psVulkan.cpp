@@ -176,7 +176,6 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
 
   // DEBUG ONLY
 
-
   psShader* nullshader = psShader::CreateShader(0, 0, 0, 0);
   _backbuffer = new psTex(psVeciu(0, 0), FMT_UNKNOWN, 0, 0, 0, psVeciu(0, 0));
   library.IMAGE0 = nullshader;

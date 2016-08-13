@@ -68,8 +68,10 @@ cStr ReadFile(const char* path)
   fread(buf.UnsafeString(), 1, ln, f);
   return std::move(buf);
 }
+
 void processGUI()
 {
+  //Sleep(10); // For some reason, limiting framerate can reduce jitter in windowed mode.
   static cHighPrecisionTimer delta;
   delta.Update();
   double secdelta = delta.GetDeltaNS() / 1000000000.0;
@@ -90,6 +92,7 @@ void processGUI()
     globalcam.SetRotation(globalcam.GetRotation() + dirspeeds[3] * secdelta * scale);
   if(dirkeys[7])
     globalcam.SetRotation(globalcam.GetRotation() - dirspeeds[3] * secdelta * scale);
+
 }
 
 void updatefpscount(uint64_t& timer, int& fps)
@@ -99,7 +102,7 @@ void updatefpscount(uint64_t& timer, int& fps)
     timer = cHighPrecisionTimer::OpenProfiler();
     char text[10] = { 0,0,0,0,0,0,0,0,0,0 };
     _itoa_r(fps, text, 10);
-    engine->GetMonitor()->SetWindowTitle(text);
+    engine->GetMonitor()->element.SetText(text);
     fps = 0;
   }
   ++fps;
@@ -201,6 +204,8 @@ int main(int argc, char** argv)
   //init.driver = RealDriver::DRIVERTYPE_VULKAN;
   init.width = 640;
   init.height = 480;
+  //init.vsync = true;
+  //init.mode = psMonitor::MODE_FULLSCREEN;
   //init.mode = psMonitor::MODE_BORDERLESS;
   //init.mode = psMonitor::MODE_COMPOSITE;
   //init.antialias = 8;
@@ -237,7 +242,7 @@ int main(int argc, char** argv)
           if(isdown) ps.Quit();
           break;
         case FG_KEY_RETURN:
-          //  if(isdown && !evt.IsAltDown()) gotonext = true;
+          if(isdown && !evt.IsAltDown()) gotonext = true;
           break;
         case FG_KEY_F11:
           if(isdown)

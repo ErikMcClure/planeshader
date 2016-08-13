@@ -58,6 +58,8 @@ namespace planeshader {
     // Draws lines
     virtual psBatchObj* BSS_FASTCALL DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) { return 0; }
     virtual void BSS_FASTCALL DrawLines(psBatchObj*& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) {}
+    virtual psBatchObj* BSS_FASTCALL DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) { return 0; }
+    virtual psBatchObj* BSS_FASTCALL DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num) override { return 0; }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void BSS_FASTCALL PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) {}
     virtual void BSS_FASTCALL PushCamera3D(const float(&m)[4][4], const psRectiu& viewport){}

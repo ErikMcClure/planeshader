@@ -163,8 +163,8 @@ TESTDEF::RETPAIR test_feather()
   // fgSlider
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgSliderSkin->style, &AbsRect { 5,0,5,0 });
   {
-    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Resource", 0, FGRESOURCE_LINE, &fgTransform { { 0, 0, 0.5, 0.5, 0, 1.0, 1.5, 0.5 }, 0, { 0, 0, 0, 0 } }));
-    AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
+    //fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Resource", 0, FGRESOURCE_LINE, &fgTransform { { 0, 0, 0.5, 0.5, 0, 1.0, 1.5, 0.5 }, 0, { 0, 0, 0, 0 } }));
+    //AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
   }
   fgSkin* fgSliderDragSkin = fgSkin_AddSkin(fgSliderSkin, "Slider:slider");
   fnAddRect(fgSliderDragSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, fgTransform { { 0, 0, 0, 0, 10, 0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0xFFFFFFFF, 0xFF666666, 1.0f, FGELEMENT_NOCLIP);
@@ -260,15 +260,17 @@ TESTDEF::RETPAIR test_feather()
   // fgList
   fnAddRect(fgListSkin, ":listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
 
-  // Hovertest
-  fgSkin* hovertestskin = fgSkin_AddSkin(&skin, "hovertest");
-  fnAddRect(hovertestskin, ":listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99009999, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
-  fgSkin* hovertestbgskin = fgSkin_AddSkin(hovertestskin, ":listbg");
+  // ListItem
+  fgSkin* listitemskin = fgSkin_AddSkin(&skin, "listitem");
+  fnAddRect(listitemskin, ":listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99009999, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fgSkin* listitembgskin = fgSkin_AddSkin(listitemskin, ":listbg");
 
-  bhover = fgSkin_AddStyle(hovertestbgskin, "hover");
-  FG_UINT bselected = fgSkin_AddStyle(hovertestbgskin, "selected");
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(hovertestbgskin, bhover), 0x99990099);
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(hovertestbgskin, bselected), 0x99999900);
+  bhover = fgSkin_AddStyle(listitembgskin, "hover");
+  bnuetral = fgSkin_AddStyle(listitembgskin, "nuetral");
+  FG_UINT bselected = fgSkin_AddStyle(listitembgskin, "selected");
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bnuetral), 0x99009900);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bhover), 0x99990099);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bselected), 0x99999900);
 
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
@@ -313,19 +315,19 @@ TESTDEF::RETPAIR test_feather()
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
   textbox->SetText("placeholder", FGSETTEXT_PLACEHOLDER_UTF8);
   */
-  fgElement* list = fgCreate("List", *fgSingleton(), 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY, &fgTransform { { 250, 0, 30, 0, 350, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Element", list, 0, "hovertest", 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* list = fgCreate("List", *fgSingleton(), 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 1");
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 2");
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 3");
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 4");
+  fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 5");
   
-
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
   cHighPrecisionTimer time;
 
+  //engine->GetMonitor()->element.SetFlags(FGWINDOW_RESIZABLE);
   while(!gotonext && engine->Begin())
   {
     engine->GetDriver()->Clear(0xFF000000);
