@@ -4,6 +4,7 @@
 #include "psGUIManager.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/cStr.h"
+#include "feathergui/fgWindow.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
@@ -45,13 +46,19 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
   }
 
   if(!dwm && mode >= MODE_COMPOSITE) mode = MODE_WINDOWED; //can't do composite if its not supported
-  _guiflags[PSMONITOR_AUTOMINIMIZE] = mode == MODE_BORDERLESS_TOPMOST || mode == MODE_FULLSCREEN;
-  _guiflags[PSMONITOR_LOCKCURSOR] = mode == MODE_BORDERLESS || mode == MODE_BORDERLESS_TOPMOST || mode == MODE_FULLSCREEN;
   psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
   dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
-  if(!_window) _window = WndCreate(0, mode == MODE_BORDERLESS ? screen : dim, mode, 0, 0);
-
+  WndRegister(0, 0, 0);
   RECT rect;
+  if(!_window)
+  {
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = mode == MODE_BORDERLESS ? screen.x : dim.x;
+    rect.bottom = mode == MODE_BORDERLESS ? screen.y : dim.y;
+    _window = WndCreate(0, rect, mode, FGWINDOW_MINIMIZABLE | FGWINDOW_MAXIMIZABLE | ((mode == MODE_WINDOWED) ? FGWINDOW_RESIZABLE : 0), 0);
+  }
+
   GetClientRect(_window, &rect);
   AbsRect r = { 0, 0, rect.right - rect.left, rect.bottom - rect.top };
   fgMonitor_Init(this, 0, &manager->GetGUI(), 0, &r, psGUIManager::GetMonitorDPI(0).y);
@@ -68,6 +75,8 @@ psMonitor::~psMonitor()
 size_t FG_FASTCALL psMonitor::Message(fgMonitor* s, const FG_Msg* m)
 {
   psMonitor* self = static_cast<psMonitor*>(s);
+  ptrdiff_t otherint = m->otherint;
+  fgFlag flags = self->element.flags;
 
   switch(m->type)
   {
@@ -75,8 +84,20 @@ size_t FG_FASTCALL psMonitor::Message(fgMonitor* s, const FG_Msg* m)
     self->_manager->_updaterootarea();
     break;
   case FG_SETTEXT:
-    self->SetWindowTitle((const char*)m->other);
+    SetWindowTextW(self->_window, cStrW((const char*)m->other).c_str());
     return 1;
+  case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
+    otherint = T_SETBIT(flags, otherint, m->otheraux);
+  case FG_SETFLAGS:
+    if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOTITLEBAR | FGWINDOW_NOBORDER))
+    { // handle a layout flag change
+      size_t r = fgMonitor_Message(s, m); // we have to actually set the flags first before updating the window
+      RECT rect;
+      GetClientRect(self->_window, &rect);
+      self->WndCreate(0, rect, self->_mode, 0, self->_window);
+      return r;
+    }
+    break;
   }
 
   return fgMonitor_Message(s, m);
@@ -89,13 +110,7 @@ void psMonitor::LockCursor(bool lock)
   _lockcursor(_window, lock);
 }
 
-// Set window title
-void psMonitor::SetWindowTitle(const char* caption)
-{
-  SetWindowTextW(_window, cStrW(caption).c_str());
-}
-
-psVeciu psMonitor::_resizewindow(psVeciu dim, char mode)
+void psMonitor::Resize(psVeciu dim, MODE mode)
 {
   psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
   dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
@@ -104,59 +119,17 @@ psVeciu psMonitor::_resizewindow(psVeciu dim, char mode)
   rect.right = rect.left + ((mode == MODE_BORDERLESS) ? screen.x : dim.x);
   rect.bottom = rect.top + ((mode == MODE_BORDERLESS) ? screen.y : dim.y);
 
-  unsigned long style = WS_POPUP;
-  if(mode == MODE_WINDOWED)
-    style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
-  if(mode >= MODE_BORDERLESS)
-    style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
-
-  AdjustWindowRect(&rect, style, FALSE);
-  int rwidth = rect.right - rect.left;
-  int rheight = rect.bottom - rect.top;
-
-  _guiflags[PSMONITOR_AUTOMINIMIZE] = mode == MODE_BORDERLESS_TOPMOST || MODE_FULLSCREEN;
-  _guiflags[PSMONITOR_LOCKCURSOR] = mode == MODE_BORDERLESS || mode == MODE_BORDERLESS_TOPMOST || mode == MODE_FULLSCREEN;
-  SetWindowLong(_window, GWL_STYLE, style); //if we don't have the right style, we'll either get a borderless window or a fullscreen app with screwed up coordinates
-  bool clickthrough = mode == MODE_COMPOSITE_CLICKTHROUGH;
-  bool nomove = mode == MODE_COMPOSITE_NOMOVE;
-
-  HWND top = HWND_TOP;
-  switch(mode)
-  {
-  case MODE_BORDERLESS: top = HWND_NOTOPMOST; break;
-  case MODE_COMPOSITE_CLICKTHROUGH:
-  case MODE_COMPOSITE_NOMOVE:
-  case MODE_BORDERLESS_TOPMOST: top = HWND_TOPMOST; break;
-  case MODE_FULLSCREEN: top = HWND_TOP; break;
-  }
-
-  if(mode == MODE_BORDERLESS || mode == MODE_BORDERLESS_TOPMOST || mode == MODE_FULLSCREEN) //if its windowed, the screen resolution has now been reset so we move the window back
-    SetWindowPos(_window, top, INT(0), INT(0), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS);
-  else
-  {
-    rect.left = (GetSystemMetrics(SM_CXSCREEN) - rwidth) / 2;
-    rect.top = (GetSystemMetrics(SM_CYSCREEN) - rheight) / 2;
-
-    SetWindowPos(_window, top, INT(rect.left), INT(rect.top), INT(rwidth), INT(rheight), SWP_NOZORDER | SWP_SHOWWINDOW | SWP_NOCOPYBITS);
-  }
-
-  GetClientRect(_window, &rect);
-  element.SetArea(CRect { 0, 0, 0, 0, FABS(rect.right - rect.left), 0, FABS(rect.bottom - rect.top), 0 });
-  _lockcursor(_window, (_guiflags&PSMONITOR_LOCKCURSOR) != 0);
-  return dim;
+  WndCreate(0, rect, mode, element.flags, _window);
 }
 
-HWND psMonitor::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const wchar_t* icon, HICON iconrc)
+void psMonitor::WndRegister(HINSTANCE instance, const wchar_t* icon, HICON iconrc)
 {
-  HINSTANCE hInstance = GetModuleHandleW(0);
-
-  if(instance)
-    hInstance = instance;
+  HINSTANCE hInstance = !instance ? GetModuleHandleW(0) : instance;
 
   //Register class
   WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW),              // cbSize
     CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
-    (WNDPROC)WndProc,                      // lpfnWndProc
+    (WNDPROC)psMonitor::WndProc,                      // lpfnWndProc
     NULL,                            // cbClsExtra
     NULL,                            // cbWndExtra
     hInstance,                       // hInstance
@@ -171,20 +144,26 @@ HWND psMonitor::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const wcha
     wcex.hIcon = (HICON)LoadImageW(hInstance, icon, IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
 
   RegisterClassExW(&wcex);
+}
 
-  //Get size
-  RECT rsize;
-  rsize.top = 0;
-  rsize.left = 0;
-  rsize.right = dim.x;
-  rsize.bottom = dim.y;
-
+HWND psMonitor::WndCreate(HINSTANCE instance, RECT& rsize, MODE mode, fgFlag flags, HWND hWnd)
+{
+  HINSTANCE hInstance = !instance ? GetModuleHandleW(0) : instance;
   unsigned long style = WS_POPUP;
+  _mode = mode;
 
   if(mode == MODE_WINDOWED)
-    style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_MINIMIZEBOX;
+  {
+    style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+    if(!(flags & FGWINDOW_NOTITLEBAR)) style |= WS_CAPTION | WS_SYSMENU;
+    if(!(flags & FGWINDOW_NOBORDER)) style |= WS_BORDER;
+  }
   if(mode >= MODE_BORDERLESS)
     style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
+
+  if(flags & FGWINDOW_MINIMIZABLE) style |= WS_MINIMIZEBOX;
+  if(flags & FGWINDOW_MAXIMIZABLE) style |= WS_MAXIMIZEBOX;
+  if(flags & FGWINDOW_RESIZABLE) style |= WS_SIZEBOX;
 
   AdjustWindowRect(&rsize, style, FALSE);
   int rwidth = rsize.right - rsize.left;
@@ -194,13 +173,18 @@ HWND psMonitor::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const wcha
   bool clickthrough = mode == MODE_COMPOSITE_CLICKTHROUGH;
   bool nomove = mode == MODE_COMPOSITE_NOMOVE;
   bool opaqueclick = mode == MODE_COMPOSITE_OPAQUE_CLICK;
+  bool created = !hWnd;
 
-  HWND hWnd;
-  if(mode >= MODE_COMPOSITE)
-    hWnd = CreateWindowExW((clickthrough || opaqueclick) ? WS_EX_TRANSPARENT | WS_EX_COMPOSITED | WS_EX_LAYERED : WS_EX_COMPOSITED,
-      L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
+  if(!hWnd)
+  {
+    if(mode >= MODE_COMPOSITE)
+      hWnd = CreateWindowExW((clickthrough || opaqueclick) ? WS_EX_TRANSPARENT | WS_EX_COMPOSITED | WS_EX_LAYERED : WS_EX_COMPOSITED,
+        L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
+    else
+      hWnd = CreateWindowW(L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
+  }
   else
-    hWnd = CreateWindowW(L"PlaneShaderWindow", L"", style, INT(wleft), INT(wtop), INT(rwidth), INT(rheight), NULL, NULL, hInstance, NULL);
+    SetWindowLong(hWnd, GWL_STYLE, style);
 
   if(mode >= MODE_COMPOSITE)
   {
@@ -233,7 +217,7 @@ HWND psMonitor::WndCreate(HINSTANCE instance, psVeciu dim, char mode, const wcha
   }
   SetCursor(LoadCursor(NULL, IDC_ARROW));
   SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
-
+  _lockcursor(_window, (_guiflags&PSMONITOR_LOCKCURSOR) != 0);
   return hWnd;
 }
 
@@ -276,10 +260,6 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
   switch(message)
   {
-    //case WM_PAINT:
-    //cEngine::Instance()->Render();
-    //return 0;
-    //break;
   case WM_DESTROY:
     gui->Quit();
     PostQuitMessage(0);
@@ -435,9 +415,14 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     //  message=message;
     //  break;
   case WM_SIZE:
+  {
     if(self->_guiflags&PSMONITOR_LOCKCURSOR)
       _lockcursor(hWnd, GetActiveWindow() == hWnd);
-    //self->_onresize(LOWORD(lParam), HIWORD(lParam));
+    RECT rect;
+    GetClientRect(self->_window, &rect);
+    fgSendSubMsg<FG_SETAREA, void*>(&self->element, 1, &AbsRect { (FABS)rect.left, (FABS)rect.top, (FABS)rect.right, (FABS)rect.bottom });
+    self->_manager->_onresize(psVeciu(rect.right - rect.left, rect.bottom - rect.top), self->_mode == MODE_FULLSCREEN);
+  }
     break;
   }
 

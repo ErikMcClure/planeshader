@@ -159,3 +159,8 @@ bool psEngine::RemovePass(uint16_t index)
   _passes.Remove(index);
   return true;
 }
+void psEngine::_onresize(psVeciu dim, bool fullscreen)
+{
+  if(_driver != 0 && _driver->GetBackBuffer() != 0)
+    _driver->Resize(dim, _driver->GetBackBuffer()->GetFormat(), fullscreen);
+}

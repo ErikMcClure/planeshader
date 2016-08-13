@@ -84,6 +84,7 @@ namespace planeshader {
     float _translatejoyaxis(uint16_t axis) const;
     void _exactmousecalc();
     void _updaterootarea();
+    virtual void _onresize(psVeciu dim, bool fullscreen) = 0;
 
     static size_t FG_FASTCALL Message(fgRoot* self, const FG_Msg* m);
 

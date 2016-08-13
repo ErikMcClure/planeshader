@@ -64,6 +64,9 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _fsquadVS = 0;
   _defaultSB = 0;
   _defaultSS = 0;
+  _lastGS = 0;
+  _lastVS = 0;
+  _lastPS = 0;
   _driver = this;
 
 #ifdef BSS_DEBUG
@@ -136,7 +139,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     monitor->GetWindow(),
     !fullscreen,
     DXGI_SWAP_EFFECT_DISCARD,
-    0
+    0,
   };
 
   PSLOG(4) << cStrF("Creating swap chain with: { { %i, %i, { %i, %i }, %i, %i, %i }, { %i, %i }, %i, %i, %p, ",
@@ -469,7 +472,7 @@ void BSS_FASTCALL psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&t
   PROFILE_FUNC();
   uint32_t offset = 0;
 
-  //if(buf->verts->buffer != lastvert)
+  //if(buf->verts->buffer != lastvert) // NOTE: This might need to be reset when Resize() is called
     _context->IASetVertexBuffers(0, 1, &(lastvert = (ID3D11Buffer*)buf->verts->buffer), &buf->verts->element, &offset);
   _context->IASetPrimitiveTopology(_getdx11topology(buf->mode));
 
@@ -579,6 +582,34 @@ void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, flo
   linebuf[1] = { line.x2 + 0.5f, line.y2 + 0.5f, Z2, 1, vertexcolor };
   o->buffer.nvert += 2;
 }
+psBatchObj* BSS_FASTCALL psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
+{
+  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINESTRIP, xform);
+}
+psBatchObj* BSS_FASTCALL psDirectX11::DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num)
+{
+  assert(sizeof(DX11_simplevert) == _batchvertbuf.element);
+  uint32_t n;
+
+  while(num > (n = (o->buffer.verts->capacity - o->buffer.vert - o->buffer.nvert) / o->buffer.verts->element))
+  {
+    if(n > 1)
+    {
+      memcpy((DX11_simplevert*)o->buffer.get(), curve, n * sizeof(DX11_simplevert));
+      o->buffer.nvert += n;
+      num -= (n - 1); // n - 1 is used here so the last point of this section is where we start with the next section of the curve.
+      curve += (n - 1);
+    }
+    o = FlushPreserve();
+  }
+
+  memcpy((DX11_simplevert*)o->buffer.get(), curve, num * sizeof(DX11_simplevert));
+  o->buffer.nvert += num;
+  return o;
+}
+
+
+
 void BSS_FASTCALL psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
 {
   PROFILE_FUNC();
@@ -1299,12 +1330,26 @@ void BSS_FASTCALL psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscre
   if(_backbuffer->GetRawDim() != dim || _backbuffer->GetFormat() != format)
   {
     if(_backbuffer)
+    {
+      ID3D11RenderTargetView* prev = (ID3D11RenderTargetView*)_backbuffer->GetView();
+      for(uint32_t i = 0; i < _lastrt.Length(); ++i)
+        if(_lastrt[i] == prev)
+          _lastrt[i] = 0;
       _backbuffer->~psTex();
+    }
     _context->OMSetRenderTargets(0, 0, 0);
     _context->ClearState();
     LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
     _getbackbufferref();
+    for(uint32_t i = 0; i < _lastrt.Length(); ++i)
+      if(!_lastrt[i])
+        _lastrt[i] = (ID3D11RenderTargetView*)_backbuffer->GetView();
+
     _resetscreendim();
+    SetStateblock(NULL);
+    _context->VSSetShader(_lastVS, 0, 0);
+    _context->PSSetShader(_lastPS, 0, 0);
+    _context->GSSetShader(_lastGS, 0, 0);
   }
 
   if(fullscreen >= 0)
@@ -1318,23 +1363,16 @@ void psDirectX11::_getbackbufferref()
   D3D11_TEXTURE2D_DESC backbuffer_desc;
   backbuffer->GetDesc(&backbuffer_desc);
   if(!_backbuffer)
-    _backbuffer = new psTex(0,
-      _creatertview(backbuffer),
-      psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
-      DXGItoFMT(backbuffer_desc.Format),
-      (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags, backbuffer_desc.SampleDesc.Count == 1),
-      backbuffer_desc.MipLevels,
-      0,
-      psVeciu(psGUIManager::BASE_DPI));
-  else
-    new(_backbuffer) psTex(0,
-      _creatertview(backbuffer),
-      psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
-      DXGItoFMT(backbuffer_desc.Format),
-      (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags,backbuffer_desc.SampleDesc.Count == 1),
-      backbuffer_desc.MipLevels,
-      0,
-      psVeciu(psGUIManager::BASE_DPI));
+    _backbuffer = (psTex*)new char[sizeof(psTex)];
+
+  new(_backbuffer) psTex(0,
+    _creatertview(backbuffer),
+    psVeciu(backbuffer_desc.Width, backbuffer_desc.Height),
+    DXGItoFMT(backbuffer_desc.Format),
+    (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags,backbuffer_desc.SampleDesc.Count == 1),
+    backbuffer_desc.MipLevels,
+    0,
+    psVeciu(psGUIManager::BASE_DPI));
 
   backbuffer->Release();
   SetDPIScale(_dpiscale); // Resets the backbuffer dpi, just in case.
