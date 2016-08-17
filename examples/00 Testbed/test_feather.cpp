@@ -252,10 +252,10 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemArrowSkinbg, svisible), FGELEMENT_HIDDEN, 1);
 
   fgSkin* fgTreeItemSkinbg = fgSkin_AddSkin(fgTreeItemSkin, ":bg");
-  size_t sfocus = fgSkin_AddStyle(fgTreeItemSkinbg, "focused");
-  size_t sunfocus = fgSkin_AddStyle(fgTreeItemSkinbg, "unfocused");
+  size_t sfocus = fgSkin_AddStyle(fgTreeItemSkinbg, "nuetral+focused");
+  bnuetral = fgSkin_AddStyle(fgTreeItemSkinbg, "nuetral");
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, sfocus), FGELEMENT_HIDDEN, 0);
-  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, sunfocus), FGELEMENT_HIDDEN, 1);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, bnuetral), FGELEMENT_HIDDEN, 1);
 
   // fgList
   fnAddRect(fgListSkin, ":listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
@@ -267,10 +267,10 @@ TESTDEF::RETPAIR test_feather()
 
   bhover = fgSkin_AddStyle(listitembgskin, "hover");
   bnuetral = fgSkin_AddStyle(listitembgskin, "nuetral");
-  FG_UINT bselected = fgSkin_AddStyle(listitembgskin, "selected");
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bnuetral), 0x99009900);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bhover), 0x99990099);
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bselected), 0x99999900);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, fgSkin_AddStyle(listitembgskin, "nuetral+selected")), 0x99999900);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, fgSkin_AddStyle(listitembgskin, "hover+selected")), 0xCC999900);
 
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
