@@ -419,6 +419,8 @@ namespace planeshader {
     virtual bool BSS_FASTCALL ShaderSupported(SHADER_VER profile)=0;
     // Returns an index to an internal state snapshot
     virtual uint32_t BSS_FASTCALL GetSnapshot() = 0;
+    // Pushes a matrix on to the matrix stack. This stack gets cleared once Flush is called.
+    inline float (*PushMatrix())[4][4] { size_t l = _matrixstack.Length(); _matrixstack.SetLength(l + 1); return _matrixstack.begin() + l; }
 
     BSS_FORCEINLINE static FORMATS ToSRGBFormat(FORMATS format)
     {
@@ -476,6 +478,7 @@ namespace planeshader {
 
   protected:
     bss_util::cDynArray<psBatchObj> _jobstack;
+    bss_util::cDynArray<float[4][4]> _matrixstack;
   };
 
   struct PS_DLLEXPORT psDriverHold

@@ -130,15 +130,23 @@ extern "C" {
     psDriver* driver = psDriverHold::GetDriver();
     unsigned long vertexcolor;
     psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
-
-    DYNARRAY(psVertex, verts, n);
-    for(uint32_t i = 0; i < n; ++i)
-      verts[i] = { p[i].x, p[i].y, 0, 1, vertexcolor };
-
-    bss_util::Matrix<float, 4, 4> m;
+    float (&m)[4][4] = *driver->PushMatrix();
     bss_util::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
-    psBatchObj* o = driver->DrawCurveStart(driver->library.LINE, 0, 0, m.v);
-    driver->DrawCurve(o, verts, n);
+
+    if(n == 2)
+    {
+      psBatchObj* o = driver->DrawLinesStart(driver->library.LINE, 0, 0, m);
+      driver->DrawLines(o, psLine { p[0].x, p[0].y, p[1].x, p[1].y }, 0, 0, vertexcolor);
+    }
+    else
+    {
+      DYNARRAY(psVertex, verts, n);
+      for(uint32_t i = 0; i < n; ++i)
+        verts[i] = { p[i].x, p[i].y, 0, 1, vertexcolor };
+
+      psBatchObj* o = driver->DrawCurveStart(driver->library.LINE, 0, 0, m);
+      driver->DrawCurve(o, verts, n);
+    }
   }
 
   fgElement* FG_FASTCALL fgCreate(const char* type, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform)
@@ -190,7 +198,7 @@ void fgSetCursor(uint32_t type, void* custom)
   static HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
   static HCURSOR hCross = LoadCursor(NULL, IDC_CROSS);
   static HCURSOR hWait = LoadCursor(NULL, IDC_WAIT);
-  //static HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
+  static HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
   static HCURSOR hSizeNS = LoadCursor(NULL, IDC_SIZENS);
   static HCURSOR hSizeWE = LoadCursor(NULL, IDC_SIZEWE);
   static HCURSOR hSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
@@ -198,6 +206,7 @@ void fgSetCursor(uint32_t type, void* custom)
   static HCURSOR hSizeAll = LoadCursor(NULL, IDC_SIZEALL);
   static HCURSOR hNo = LoadCursor(NULL, IDC_NO);
   static HCURSOR hHelp = LoadCursor(NULL, IDC_HELP);
+  static HCURSOR hDrag = hSizeAll;
 
   switch(type)
   {
@@ -205,7 +214,7 @@ void fgSetCursor(uint32_t type, void* custom)
   case FGCURSOR_IBEAM: SetCursor(hIBeam); break;
   case FGCURSOR_CROSS: SetCursor(hCross); break;
   case FGCURSOR_WAIT: SetCursor(hWait); break;
-  //case FGCURSOR_HAND: SetCursor(hHand); break;
+  case FGCURSOR_HAND: SetCursor(hHand); break;
   case FGCURSOR_RESIZENS: SetCursor(hSizeNS); break;
   case FGCURSOR_RESIZEWE: SetCursor(hSizeWE); break;
   case FGCURSOR_RESIZENWSE: SetCursor(hSizeNWSE); break;
@@ -213,6 +222,7 @@ void fgSetCursor(uint32_t type, void* custom)
   case FGCURSOR_RESIZEALL: SetCursor(hSizeAll); break;
   case FGCURSOR_NO: SetCursor(hNo); break;
   case FGCURSOR_HELP: SetCursor(hHelp); break;
+  case FGCURSOR_DRAG: SetCursor(hDrag); break;
   }
 }
 
@@ -362,4 +372,13 @@ psFlag psRoot::GetDrawFlags(fgFlag flags)
   if(flags&FGTEXT_RIGHTALIGN) flag |= PSFONT_RIGHT;
   if(flags&FGTEXT_CENTER) flag |= PSFONT_CENTER;
   return flag;
+}
+
+void fgDragStart(char type, void* data, fgElement* draw)
+{
+  fgRoot* root = fgSingleton();
+  root->dragtype = type;
+  root->dragdata = data;
+  root->dragdraw = draw;
+  fgCaptureWindow = 0;
 }
