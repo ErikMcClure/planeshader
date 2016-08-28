@@ -5,6 +5,7 @@
 #include "psFont.h"
 #include "feathergui/fgButton.h"
 #include "feathergui/fgResource.h"
+#include "feathergui/fgCurve.h"
 #include "feathergui/fgWindow.h"
 #include "feathergui/fgRadioButton.h"
 #include "feathergui/fgProgressbar.h"
@@ -41,6 +42,7 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgTreeViewSkin = fgSkin_AddSkin(&skin, "TreeView");
   fgSkin* fgScrollbarSkin = fgSkin_AddSkin(&skin, "Scrollbar");
   fgSkin* fgListSkin = fgSkin_AddSkin(&skin, "List");
+  fgSkin* fgTextSkin = fgSkin_AddSkin(&skin, "Text");
 
   auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
     fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "Resource", name, FGRESOURCE_ROUNDRECT | flags, &transform, order));
@@ -89,6 +91,8 @@ TESTDEF::RETPAIR test_feather()
   fgStyle_AddStyleMsg(&fgRadioButtonSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgProgressbarSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgTextboxSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgTextSkin->style, &msg, 0, 0, 0, 0);
+  
   msg.type = FG_SETFONT;
   msg.other = font;
   fgStyle_AddStyleMsg(&fgButtonSkin->style, &msg, 0, 0, 0, 0);
@@ -97,6 +101,7 @@ TESTDEF::RETPAIR test_feather()
   fgStyle_AddStyleMsg(&fgRadioButtonSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgProgressbarSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgTextboxSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgTextSkin->style, &msg, 0, 0, 0, 0);
 
   AbsRect buttonpadding = { 5, 5, 5, 5 };
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgButtonSkin->style, &buttonpadding);
@@ -163,8 +168,8 @@ TESTDEF::RETPAIR test_feather()
   // fgSlider
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgSliderSkin->style, &AbsRect { 5,0,5,0 });
   {
-    //fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Resource", 0, FGRESOURCE_LINE, &fgTransform { { 0, 0, 0.5, 0.5, 0, 1.0, 1.5, 0.5 }, 0, { 0, 0, 0, 0 } }));
-    //AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
+    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Curve", 0, FGCURVE_LINE, &fgTransform { { 0, 0, 0, 0.5, 0, 1.0, 1.0, 0.5 }, 0, { 0, 0, 0, 0 } }));
+    AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
   }
   fgSkin* fgSliderDragSkin = fgSkin_AddSkin(fgSliderSkin, "Slider:slider");
   fnAddRect(fgSliderDragSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, fgTransform { { 0, 0, 0, 0, 10, 0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0xFFFFFFFF, 0xFF666666, 1.0f, FGELEMENT_NOCLIP);
@@ -275,7 +280,7 @@ TESTDEF::RETPAIR test_feather()
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
-  /*fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
+  fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
   fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
   fgVoidMessage(button, FG_ADDITEM, res, 0);
   button->SetName("buttontest");
@@ -314,7 +319,7 @@ TESTDEF::RETPAIR test_feather()
   fgElement* textbox = fgCreate("Textbox", topwindow, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 170, 0, 30, 0, 240, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
   textbox->SetText("placeholder", FGSETTEXT_PLACEHOLDER_UTF8);
-  */
+  
   fgElement* list = fgCreate("List", *fgSingleton(), 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 1");

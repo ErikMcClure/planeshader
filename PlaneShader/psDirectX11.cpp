@@ -453,6 +453,7 @@ void BSS_FASTCALL psDirectX11::Flush()
   }
 
   _jobstack.Clear();
+  _matrixstack.Clear();
   _snapshotstack.Clear();
   _texstack.Clear();
 }
@@ -584,7 +585,12 @@ void BSS_FASTCALL psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, flo
 }
 psBatchObj* BSS_FASTCALL psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
 {
-  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINESTRIP, xform);
+  float(&m)[4][4] = *PushMatrix();
+  Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
+  if(xform != identity)
+    MatrixMultiply(xform, m, m);
+
+  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINESTRIP, m);
 }
 psBatchObj* BSS_FASTCALL psDirectX11::DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num)
 {
