@@ -332,6 +332,37 @@ TESTDEF::RETPAIR test_feather()
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
   cHighPrecisionTimer time;
 
+  /*std::function<size_t(const FG_Msg&)> guicallback = [&](const FG_Msg& evt) -> size_t
+  {
+    if(evt.type == FG_KEYDOWN || evt.type == FG_KEYUP)
+    {
+      bool isdown = evt.type == FG_KEYDOWN;
+      switch(evt.keycode)
+      {
+      case FG_KEY_DOWN:
+        fgSendSubMsg<FG_ACTION, float, float>(boxholder, FGSCROLLBAR_CHANGE, 0.0, -1.0);
+        break;
+      case FG_KEY_ESCAPE:
+        if(isdown) engine->Quit();
+        break;
+      case FG_KEY_RETURN:
+        if(isdown && !evt.IsAltDown()) gotonext = true;
+        break;
+      case FG_KEY_F11:
+        if(isdown)
+        {
+          if(fgDebug_Get() != 0 && !(fgDebug_Get()->element.flags&FGELEMENT_HIDDEN))
+            fgDebug_Hide();
+          else
+            fgDebug_Show(200, 200);
+        }
+      }
+    }
+    return 0;
+  };
+
+  engine->SetPreprocess(guicallback);*/
+  
   //engine->GetMonitor()->element.SetFlags(FGWINDOW_RESIZABLE);
   while(!gotonext && engine->Begin())
   {

@@ -83,7 +83,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char b
   evt.x = _root.mouse.x; // Set these up here for any mouse events that don't contain coordinates.
   evt.y = _root.mouse.y;
 
-  if(type == FG_MOUSELEAVE)
+  if(type == FG_MOUSEOFF || type == FG_MOUSEON)
   {
     _process(evt);
     return;
