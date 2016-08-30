@@ -288,6 +288,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
       _trackingstruct.hwndTrack = hWnd;
       BOOL result = TrackMouseEvent(&_trackingstruct);
       self->_guiflags += PSMONITOR_ISINSIDE;
+      gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEON, 0, wpcopy, GetMessageTime());
     }
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEMOVE, 0, wpcopy, GetMessageTime());
     break;
@@ -380,7 +381,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
       return 0; //No screensavers!
     break;
   case WM_MOUSELEAVE:
-    gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSELEAVE, 0, 0, GetMessageTime());
+    gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEOFF, 0, 0, GetMessageTime());
     self->_guiflags -= PSMONITOR_ISINSIDE;
     break;
   case WM_ACTIVATE:
