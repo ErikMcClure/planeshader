@@ -1,8 +1,8 @@
 // Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
-#ifndef _FG_ROOT_H__
-#define _FG_ROOT_H__
+#ifndef __FG_ROOT_H__
+#define __FG_ROOT_H__
 
 #include "fgControl.h"
 
@@ -32,6 +32,7 @@ typedef struct _FG_ROOT {
   struct __kh_fgFunctionMap_t* functionhash;
   size_t dpi;
   float lineheight;
+  float fontscale;
   double time; // In seconds
   double cursorblink; // In seconds
   fgMouseState mouse;
@@ -44,6 +45,7 @@ typedef struct _FG_ROOT {
   char dragtype; // FG_CLIPBOARD
   void* dragdata;
   fgElement* dragdraw;
+  fgElement* topmost;
   unsigned int keys[8]; // 8*4*8 = 256
 #ifdef  __cplusplus
   inline bool GetKey(unsigned char key) const { return (keys[key / 32] & (1 << (key % 32))) != 0; }
@@ -87,6 +89,7 @@ FG_EXTERN const void* fgClipboardPaste(unsigned int type, size_t* length); // Th
 FG_EXTERN void fgClipboardFree(const void* mem);
 FG_EXTERN fgElement* FG_FASTCALL fgCreateDefault(const char* type, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform);
 FG_EXTERN short FG_FASTCALL fgMessageMapDefault(const char* name);
+FG_EXTERN void BSS_FORCEINLINE fgStandardApplyClipping(fgElement* hold, const AbsRect* area, bool& clipping);
 
 #ifdef  __cplusplus
 }

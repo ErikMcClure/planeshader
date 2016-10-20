@@ -42,6 +42,9 @@
     <ClCompile Include="test_psTileset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="test_PBR_System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\media\blank.rc">

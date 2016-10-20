@@ -145,6 +145,9 @@ TESTDEF::RETPAIR test_psColor()
   ENDTEST;
 }
 
+#include "psTex.h"
+#include "bss-util/cAliasTable.h"
+
 TESTDEF::RETPAIR test_psOpenGL4()
 {
   BEGINTEST;
@@ -163,7 +166,6 @@ TESTDEF::RETPAIR test_psInheritable()
   ENDTEST;
 }
 
-
 // Main program function
 int main(int argc, char** argv)
 {
@@ -177,6 +179,7 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] = {
+    //{ "PBR_System", &test_PBR_System },
     { "ps_feather", &test_feather },
     { "psFont", &test_psFont },
     { "psDirectX11", &test_psDirectX11 },
