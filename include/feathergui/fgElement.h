@@ -1,8 +1,8 @@
 // Copyright ©2016 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in "feathergui.h"
 
-#ifndef _FG_ELEMENT_H__
-#define _FG_ELEMENT_H__
+#ifndef __FG_ELEMENT_H__
+#define __FG_ELEMENT_H__
 
 #include "feathergui.h"
 
@@ -41,6 +41,7 @@ typedef fgDeclareVector(struct _FG_ELEMENT*, Element) fgVectorElement;
 
 typedef void(FG_FASTCALL *fgListener)(struct _FG_ELEMENT*, const FG_Msg*);
 
+// Defines the base GUI element
 typedef struct _FG_ELEMENT {
   fgTransform transform;
   fgDestroy destroy;
@@ -128,14 +129,16 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT void Action();
   FG_DLLEXPORT void FG_FASTCALL SetDim(float x, float y, FGDIM type = FGDIM_MAX);
   FG_DLLEXPORT const AbsVec* GetDim(FGDIM type = FGDIM_MAX);
-  FG_DLLEXPORT struct _FG_ELEMENT* GetSelectedItem();
-  FG_DLLEXPORT size_t GetState(ptrdiff_t aux);
-  FG_DLLEXPORT float GetStatef(ptrdiff_t aux);
-  FG_DLLEXPORT size_t SetState(ptrdiff_t state, size_t aux);
-  FG_DLLEXPORT size_t SetStatef(float state, size_t aux);
+  FG_DLLEXPORT struct _FG_ELEMENT* GetSelectedItem(ptrdiff_t index = 0);
+  FG_DLLEXPORT size_t GetValue(ptrdiff_t aux = 0);
+  FG_DLLEXPORT float GetValueF(ptrdiff_t aux = 0);
+  FG_DLLEXPORT void* GetValueP(ptrdiff_t aux = 0);
+  FG_DLLEXPORT size_t SetValue(ptrdiff_t value, size_t aux = 0);
+  FG_DLLEXPORT size_t SetValueF(float value, size_t aux = 0);
+  FG_DLLEXPORT size_t SetValueP(void* ptr, size_t aux = 0);
   FG_DLLEXPORT size_t FG_FASTCALL SetResource(void* res);
   FG_DLLEXPORT size_t FG_FASTCALL SetUV(const CRect& uv);
-  FG_DLLEXPORT size_t FG_FASTCALL SetColor(unsigned int color, int index);
+  FG_DLLEXPORT size_t FG_FASTCALL SetColor(unsigned int color, FGSETCOLOR index);
   FG_DLLEXPORT size_t FG_FASTCALL SetOutline(float outline);
   FG_DLLEXPORT size_t FG_FASTCALL SetFont(void* font);
   FG_DLLEXPORT size_t FG_FASTCALL SetLineHeight(float lineheight);
@@ -143,7 +146,7 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT size_t FG_FASTCALL SetText(const char* text, FGSETTEXT mode = FGSETTEXT_UTF8);
   FG_DLLEXPORT void* GetResource();
   FG_DLLEXPORT const CRect* GetUV();
-  FG_DLLEXPORT unsigned int FG_FASTCALL GetColor(int index);
+  FG_DLLEXPORT unsigned int FG_FASTCALL GetColor(FGSETCOLOR index);
   FG_DLLEXPORT float GetOutline();
   FG_DLLEXPORT void* GetFont();
   FG_DLLEXPORT float GetLineHeight();

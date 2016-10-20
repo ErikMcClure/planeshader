@@ -191,6 +191,7 @@
   <ItemGroup>
     <ClCompile Include="testbed.cpp" />
     <ClCompile Include="test_feather.cpp" />
+    <ClCompile Include="test_PBR_System.cpp" />
     <ClCompile Include="test_psDirectX11.cpp" />
     <ClCompile Include="test_psEffect.cpp" />
     <ClCompile Include="test_psFont.cpp" />
