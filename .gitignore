@@ -14,5 +14,5 @@ examples/00 Testbed/x64/
 examples/00 Testbed/Win32/
 media/*.ico
 media/*.png
-
+media/test
 media/Thumbs.db

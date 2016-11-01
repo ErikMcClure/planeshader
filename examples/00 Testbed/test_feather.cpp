@@ -31,6 +31,7 @@ TESTDEF::RETPAIR test_feather()
 
   fgSkin skin;
   fgSkin_Init(&skin);
+  fgSkin* fgDebugSkin = fgSkinBase_AddSkin(&skin.base, "Debug");
   fgSkin* fgButtonTestSkin = fgSkinBase_AddSkin(&skin.base, "buttontest");
   fgSkin* fgWindowSkin = fgSkinBase_AddSkin(&skin.base, "Window");
   fgSkin* fgButtonSkin = fgSkinBase_AddSkin(&fgWindowSkin->base, "Button");
@@ -46,6 +47,8 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgTabControlSkin = fgSkinBase_AddSkin(&skin.base, "TabControl");
   fgSkin* fgListSkin = fgSkinBase_AddSkin(&skin.base, "List");
   fgSkin* fgTextSkin = fgSkinBase_AddSkin(&skin.base, "Text");
+  fgSkin* fgMenuSkin = fgSkinBase_AddSkin(&skin.base, "Menu");
+  fgSkin* fgSubmenuSkin = fgSkinBase_AddSkin(&skin.base, "Submenu");
 
   auto fnAddRect = [](fgSkin* target, const char* name, const CRect& uv, const fgTransform& transform, unsigned int color, unsigned int edge, float outline, fgFlag flags, int order = 0) -> fgStyleLayout* {
     fgStyleLayout* layout = fgSkin_GetChild(target, fgSkin_AddChild(target, "Resource", name, FGRESOURCE_ROUNDRECT | flags, &transform, order));
@@ -95,6 +98,7 @@ TESTDEF::RETPAIR test_feather()
   fgStyle_AddStyleMsg(&fgProgressbarSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgTextboxSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgTextSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgDebugSkin->style, &msg, 0, 0, 0, 0);
   
   msg.type = FG_SETFONT;
   msg.other = font;
@@ -105,6 +109,7 @@ TESTDEF::RETPAIR test_feather()
   fgStyle_AddStyleMsg(&fgProgressbarSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgTextboxSkin->style, &msg, 0, 0, 0, 0);
   fgStyle_AddStyleMsg(&fgTextSkin->style, &msg, 0, 0, 0, 0);
+  fgStyle_AddStyleMsg(&fgDebugSkin->style, &msg, 0, 0, 0, 0);
 
   AbsRect buttonpadding = { 5, 5, 5, 5 };
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgButtonSkin->style, &buttonpadding);
@@ -300,6 +305,10 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(tabcontroltoggleskin, bdefault), 0xBBFFFFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(tabcontroltoggleskin, bchecked), 0xFFFFFFFF);
 
+  // fgMenu
+  fnAddRect(fgMenuSkin, "#menubg", CRect { 0, 0, 0, 0, 0, 0, 0, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 0.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+  fnAddRect(fgSubmenuSkin, "#submenubg", CRect { 0, 0, 0, 3, 0, 3, 0, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
+
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
@@ -350,8 +359,28 @@ TESTDEF::RETPAIR test_feather()
   fgElement* textbox = fgCreate("Textbox", tab2, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 140, 0, 30, 0, 210, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
   textbox->SetText("placeholder", FGSETTEXT_PLACEHOLDER_UTF8);
-  
-  fgElement* list = fgCreate("List", *fgSingleton(), 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+
+  fgElement* dropdown = fgCreate("Dropdown", tab3, 0, 0, FGBOX_TILEY, &fgTransform { { 10, 0, 60, 0, 150, 0, 90, 0 }, 0, { 0, 0, 0, 0 } });
+  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 1");
+  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 2");
+  fgCreate("Text", dropdown, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 3");
+  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 4");
+  dropdown->SetDim(-1, 60);
+
+  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, FGELEMENT_EXPANDY | FGBOX_TILEX, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* fileitem = menu->AddItemText("File");
+  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  menu->AddItemText("Edit");
+  menu->AddItemText("Options");
+  menu->AddItemText("Help");
+
+  filemenu->AddItemText("New");
+  filemenu->AddItemText("Open");
+  filemenu->AddItemText("Save");
+  filemenu->AddItemText("Save As...");
+  filemenu->AddItemText("Quit");
+
+  fgElement* list = fgCreate("List", tab2, 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 1");
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 2");
@@ -359,13 +388,6 @@ TESTDEF::RETPAIR test_feather()
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 4");
   fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 5");
-  
-  fgElement* dropdown = fgCreate("Dropdown", tab3, 0, 0, FGBOX_TILEY, &fgTransform { { 10, 0, 260, 0, 150, 0, 290, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 1");
-  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 2");
-  fgCreate("Text", dropdown, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 3");
-  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 4");
-  dropdown->SetDim(-1, 60);
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
   cHighPrecisionTimer time;
