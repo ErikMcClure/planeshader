@@ -126,7 +126,7 @@ TESTDEF::RETPAIR test_feather()
   fnAddRect(fgButtonSkin, "#bg", CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND);
 
   // fgWindow
-  fnAddRect(fgWindowSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND);
+  fnAddRect(fgWindowSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND|FGWINDOW_RESIZABLE);
 
   fgSkin* topwindowcaption = fgSkinBase_AddSkin(&fgWindowSkin->base, "Window$text");
   AbsRect margin = { 4, 4, 0, 0 };
@@ -360,25 +360,12 @@ TESTDEF::RETPAIR test_feather()
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
   textbox->SetText("placeholder", FGSETTEXT_PLACEHOLDER_UTF8);
 
-  fgElement* dropdown = fgCreate("Dropdown", tab3, 0, 0, FGBOX_TILEY, &fgTransform { { 10, 0, 60, 0, 150, 0, 90, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* dropdown = fgCreate("Dropdown", tab2, 0, 0, FGBOX_TILEY, &fgTransform { { 10, 0, 200, 0, 150, 0, 230, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 1");
   fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 2");
   fgCreate("Text", dropdown, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 3");
   fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 4");
   dropdown->SetDim(-1, 60);
-
-  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, FGELEMENT_EXPANDY | FGBOX_TILEX, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgElement* fileitem = menu->AddItemText("File");
-  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  menu->AddItemText("Edit");
-  menu->AddItemText("Options");
-  menu->AddItemText("Help");
-
-  filemenu->AddItemText("New");
-  filemenu->AddItemText("Open");
-  filemenu->AddItemText("Save");
-  filemenu->AddItemText("Save As...");
-  filemenu->AddItemText("Quit");
 
   fgElement* list = fgCreate("List", tab2, 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
@@ -388,6 +375,40 @@ TESTDEF::RETPAIR test_feather()
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 4");
   fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 5");
+
+  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, FGELEMENT_EXPANDY | FGBOX_TILEX, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* fileitem = menu->AddItemText("File");
+  fgElement* edititem = menu->AddItemText("Edit");
+  menu->AddItemText("Options");
+  fgElement* helpitem = menu->AddItemText("Help");
+
+  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 0, 0, 1.0, 0, 0, 0, 1.0 }, 0, { 0, 0, 0, 0 } });
+  filemenu->AddItemText("New");
+  filemenu->AddItemText("Open");
+  filemenu->AddItemText("Save");
+  filemenu->AddItemText("Save As...");
+  filemenu->AddItemText(0);
+  filemenu->AddItemText("Quit");
+
+  fgElement* editmenu = fgCreate("Submenu", edititem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 0, 0, 1.0, 0, 0, 0, 1.0 }, 0, { 0, 0, 0, 0 } });
+  editmenu->AddItemText("Cut");
+  editmenu->AddItemText("Copy");
+  editmenu->AddItemText("Paste");
+  filemenu->AddItemText(0);
+  fgElement* editsubitem = editmenu->AddItemText("Transform");
+
+  fgElement* editsubmenu = fgCreate("Submenu", editsubitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 1, 0, 0, 0, 1, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* editsubsubitem = editsubmenu->AddItemText("Free Transform");
+  filemenu->AddItemText(0);
+  editsubmenu->AddItemText("Rotate");
+  editsubmenu->AddItemText("Skew");
+  editsubmenu->AddItemText("Resize");
+
+  fgElement* editsubsubmenu = fgCreate("Submenu", editsubsubitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 1, 0, 0, 0, 1, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  editsubsubmenu->AddItemText("Apply");
+
+  fgElement* helpmenu = fgCreate("Submenu", helpitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 0, 0, 1.0, 0, 0, 0, 1.0 }, 0, { 0, 0, 0, 0 } });
+  helpmenu->AddItemText("About");
 
   fgSingleton()->behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
   cHighPrecisionTimer time;

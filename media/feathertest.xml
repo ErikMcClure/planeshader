@@ -1,22 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fg:Layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fg="featherGUI" xsi:schemaLocation="featherGUI feather.xsd" skin="feather_skin.xml">
+<fg:Layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fg="featherGUI" xsi:schemaLocation="featherGUI feather.xsd">
   <Button name="buttontest" flags="EXPAND">
     <Resource resource="../media/circle.png" color="0xFFFFFFFF" flags="EXPAND|IGNORE" />
   </Button>
-  <Window area=":0.2,:0.2,:0.8,:0.8" text="test window" color="0xFFFFFFFF" font="arial;14" padding="10,22,10,10">
-    <Button area="10:, 40:, 0:, 0:" flags="EXPAND" text="Not Pressed" onaction="makepressed" />
-    <Box flags="TILEY|EXPANDX" max-width="100">
-      <Checkbox text="Check test 1" />
-      <Checkbox text="Check test 22" />
-      <Checkbox text="Check test 3" />
-      <Checkbox text="Check test 4" />
-      <Checkbox text="Check test 5" />
-    </Box>
-    <RadioButton area="190:, 160:, 0:, 0:" text="Radio Test 1" flags="EXPAND" />
-    <RadioButton area="190:, 190:, 0:, 0:" text="Radio Test 2" flags="EXPAND" />
-    <RadioButton area="190:, 220:, 0:, 0:" text="Radio Test 3" flags="EXPAND" />
-    <Slider area="10:, 100:, 150:, 120:" state="0" range="500" onstate="statelistener" />
-    <Progressbar state="0.0" area="10:, 130:, 150:, 155:" />
-    <Textbox area="190:, 30:, 250:, 150:" flags="WORDWRAP" placeholder="placeholder" />
+  <Window area="130 100 510 420" text="test window" color="0xFFFFFFFF" font="arial;14" padding="10,22,10,10">
+    <TabControl area="0 0 100% 100%">
+      <Tab text="Tab 1">
+        <Button area="10, 10, 0, 0" flags="EXPAND" text="Not Pressed" onaction="makepressed" />
+        <Box area="10, 160, 150, 240" flags="TILEY|EXPANDX" max-width="100">
+          <Checkbox text="Check test 1" flags="EXPAND" />
+          <Checkbox text="Check test 22" flags="EXPAND" />
+          <Checkbox text="Check test 3" flags="EXPAND" />
+          <Checkbox text="Check test 4" flags="EXPAND" />
+          <Checkbox text="Check test 5" flags="EXPAND" />
+        </Box>
+        <RadioButton area="190, 130, 0, 0" text="Radio Test 1" flags="EXPAND" />
+        <RadioButton area="190, 160, 0, 0" text="Radio Test 2" flags="EXPAND" />
+        <RadioButton area="190, 190, 0, 0" text="Radio Test 3" flags="EXPAND" />
+        <Slider area="10, 70, 150, 90" value="0" range="500" onvalue="statelistener" />
+        <Progressbar value="0.0" area="10, 100, 150, 125" />
+      </Tab>
+      <Tab text="Long Name Tab">
+        <Textbox area="140, 30, 210, 150" flags="WORDWRAP" placeholder="placeholder" />
+        <Dropdown area="10, 200, 150, 230" flags="TILEY" max-height="60">
+          <Text area="0, 0, 100%, 20" text="Drop 1" />
+          <Text area="0, 0, 100%, 20" text="Drop 2" />
+          <Text flags="EXPAND" text="Drop 3" />
+          <Text area="0, 0, 100%, 20" text="Drop 4" />
+        </Dropdown>
+        <List>
+          <ListItem area="0, 0, 100%, 20" />
+          <Text area="0, 0, 100%, 20" text="List 1" />
+          <Text area="0, 0, 100%, 20" text="List 2" />
+          <Text area="0, 0, 100%, 20" text="List 3" />
+          <Text area="0, 0, 100%, 20" text="List 4" />
+          <ListItem area="0, 0, 100%, 20" />
+          <Text area="0, 0, 100%, 20" text="List 5" />
+        </List>
+      </Tab>
+      <Tab text="Tab 3"></Tab>
+      <Tab text="Tab 4"></Tab>
+    </TabControl>
+    <Menu right="100%" flags="EXPANDY|TILEX">
+      <MenuItem text="File">
+        <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+          <MenuItem text="New" />
+          <MenuItem text="Open" />
+          <MenuItem text="Save" />
+          <MenuItem text="Save As..." />
+          <MenuItem />
+          <MenuItem text="Quit" />
+        </Menu>
+      </MenuItem>
+      <MenuItem text="Edit">
+        <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+          <MenuItem text="Cut" />
+          <MenuItem text="Copy" />
+          <MenuItem text="Paste" />
+          <MenuItem />
+          <MenuItem text="Transform" >
+            <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+              <MenuItem text="Free Transform" >
+                <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+                  <MenuItem text="Apply" />
+                </Menu>
+              </MenuItem>
+              <MenuItem />
+              <MenuItem text="Rotate" />
+              <MenuItem text="Skew" />
+              <MenuItem text="Resize" />
+            </Menu>
+          </MenuItem>
+        </Menu>
+      </MenuItem>
+      <MenuItem text="Options" />
+      <MenuItem text="Help">
+        <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+          <MenuItem text="About" />
+        </Menu>
+      </MenuItem>
+    </Menu>
   </Window>  
 </fg:Layout>
