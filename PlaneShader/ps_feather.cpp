@@ -27,136 +27,124 @@
 
 using namespace planeshader;
 
-extern "C" {
-  void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, unsigned int dpi)
-  {
-    return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, dpi);
-  }
-  void* FG_FASTCALL fgCopyFont(void* font, unsigned int fontsize, unsigned int dpi)
-  {
-    psFont* f = (psFont*)font;
-    return psFont::Create(f->GetPath(), fontsize, f->GetAntialias(), dpi);
-  }
-  void* FG_FASTCALL fgCloneFontDPI(void* font, unsigned int dpi) { ((psFont*)font)->Grab(); return font; }
-  void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
-  void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
-  void* FG_FASTCALL fgDrawFont(void* font, const int* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, void* cache)
-  {
-    psFont* f = (psFont*)font;
-    psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, 0, {0, 0}, 0 };
-    if(lineheight == 0.0f) lineheight = f->GetLineHeight();
-    if(f->GetAntialias() == psFont::FAA_LCD)
-      f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
-    else
-      f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
-    return 0;
-  }
-  void FG_FASTCALL fgFontSize(void* font, const int* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
-  {
-    psFont* f = (psFont*)font;
-    psVec dim = { area->right - area->left, area->bottom - area->top };
-    if(lineheight == 0.0f) lineheight = f->GetLineHeight();
-    f->CalcTextDim(text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
-    area->right = area->left + dim.x;
-    area->bottom = area->top + dim.y;
-  }
-  void FG_FASTCALL fgFontGet(void* font, float* lineheight, unsigned int* size, unsigned int* dpi)
-  {
-    psFont* f = (psFont*)font;
-    if(lineheight) *lineheight = f->GetLineHeight();
-    if(size) *size = f->GetPointSize();
-    if(dpi) *dpi = f->GetDPI();
-  }
-  size_t FG_FASTCALL fgFontIndex(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* cache)
-  {
-    psFont* f = (psFont*)font;
-    auto r = f->GetIndex(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
-    cursor->x = r.second.x;
-    cursor->y = r.second.y;
-    return r.first;
-  }
-  AbsVec FG_FASTCALL fgFontPos(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* cache)
-  {
-    psFont* f = (psFont*)font;
-    auto r = f->GetPos(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
-    return AbsVec { r.second.x, r.second.y };
-  }
+void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, unsigned int dpi)
+{
+  return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, dpi);
+}
+void* FG_FASTCALL fgCopyFont(void* font, unsigned int fontsize, unsigned int dpi)
+{
+  psFont* f = (psFont*)font;
+  return psFont::Create(f->GetPath(), fontsize, f->GetAntialias(), dpi);
+}
+void* FG_FASTCALL fgCloneFontDPI(void* font, unsigned int dpi) { ((psFont*)font)->Grab(); return font; }
+void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
+void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
+void* FG_FASTCALL fgDrawFont(void* font, const int* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, void* cache)
+{
+  psFont* f = (psFont*)font;
+  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, 0, {0, 0}, 0 };
+  if(lineheight == 0.0f) lineheight = f->GetLineHeight();
+  if(f->GetAntialias() == psFont::FAA_LCD)
+    f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+  else
+    f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+  return 0;
+}
+void FG_FASTCALL fgFontSize(void* font, const int* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
+{
+  psFont* f = (psFont*)font;
+  psVec dim = { area->right - area->left, area->bottom - area->top };
+  if(lineheight == 0.0f) lineheight = f->GetLineHeight();
+  f->CalcTextDim(text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
+  area->right = area->left + dim.x;
+  area->bottom = area->top + dim.y;
+}
+void FG_FASTCALL fgFontGet(void* font, float* lineheight, unsigned int* size, unsigned int* dpi)
+{
+  psFont* f = (psFont*)font;
+  if(lineheight) *lineheight = f->GetLineHeight();
+  if(size) *size = f->GetPointSize();
+  if(dpi) *dpi = f->GetDPI();
+}
+size_t FG_FASTCALL fgFontIndex(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* cache)
+{
+  psFont* f = (psFont*)font;
+  auto r = f->GetIndex(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
+  cursor->x = r.second.x;
+  cursor->y = r.second.y;
+  return r.first;
+}
+AbsVec FG_FASTCALL fgFontPos(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* cache)
+{
+  psFont* f = (psFont*)font;
+  auto r = f->GetPos(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
+  return AbsVec { r.second.x, r.second.y };
+}
 
-  void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
-  void* FG_FASTCALL fgCloneResource(void* res) { ((psTex*)res)->Grab(); return res; }
-  void FG_FASTCALL fgDestroyResource(void* res) { ((psTex*)res)->Drop(); }
-  void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags)
+void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
+void* FG_FASTCALL fgCloneResource(void* res) { ((psTex*)res)->Grab(); return res; }
+void FG_FASTCALL fgDestroyResource(void* res) { ((psTex*)res)->Drop(); }
+void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags)
+{
+  psTex* tex = (psTex*)res;
+  psRect uvresolve;
+  if(tex)
   {
-    psTex* tex = (psTex*)res;
-    psRect uvresolve;
-    if(tex)
-    {
-      uvresolve = psRect { uv->left.rel + (uv->left.abs / tex->GetDim().x),
-        uv->top.rel + (uv->top.abs / tex->GetDim().y),
-        uv->right.rel + (uv->right.abs / tex->GetDim().x),
-        uv->bottom.rel + (uv->bottom.abs / tex->GetDim().y) };
-    }
-    else
-      uvresolve = psRect { uv->left.abs, uv->top.abs, uv->right.abs, uv->bottom.abs };
-
-    psDriver* driver = psDriverHold::GetDriver();
-    if(tex)
-      driver->SetTextures(&tex, 1);
-
-    psRect hold = psDriverHold::GetDriver()->PeekClipRect();
-    psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
-
-    if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_ROUNDRECT)
-      psRoundedRect::DrawRoundedRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
-    else if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_CIRCLE)
-      psRenderCircle::DrawCircle(driver->library.CIRCLE, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
-    else
-      driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
+    uvresolve = psRect { uv->left.rel + (uv->left.abs / tex->GetDim().x),
+      uv->top.rel + (uv->top.abs / tex->GetDim().y),
+      uv->right.rel + (uv->right.abs / tex->GetDim().x),
+      uv->bottom.rel + (uv->bottom.abs / tex->GetDim().y) };
   }
+  else
+    uvresolve = psRect { uv->left.abs, uv->top.abs, uv->right.abs, uv->bottom.abs };
 
-  void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
+  psDriver* driver = psDriverHold::GetDriver();
+  if(tex)
+    driver->SetTextures(&tex, 1);
+
+  psRect hold = psDriverHold::GetDriver()->PeekClipRect();
+  psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
+
+  if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_ROUNDRECT)
+    psRoundedRect::DrawRoundedRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
+  else if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_CIRCLE)
+    psRenderCircle::DrawCircle(driver->library.CIRCLE, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
+  else
+    driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
+}
+
+void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
+{
+  psTex* tex = (psTex*)res;
+  psRect uvresolve = { (uv->left.rel*tex->GetDim().x) + uv->left.abs,
+    (uv->top.rel*tex->GetDim().y) + uv->top.abs,
+    (uv->right.rel*tex->GetDim().x) + uv->right.abs,
+    (uv->bottom.rel*tex->GetDim().y) + uv->bottom.abs };
+  dim->x = uvresolve.right - uvresolve.left;
+  dim->y = uvresolve.bottom - uvresolve.top;
+}
+
+void FG_FASTCALL fgDrawLines(const AbsVec* p, size_t n, unsigned int color, const AbsVec* translate, const AbsVec* scale, FABS rotation, const AbsVec* center)
+{
+  psDriver* driver = psDriverHold::GetDriver();
+  unsigned long vertexcolor;
+  psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
+  float (&m)[4][4] = *driver->PushMatrix();
+  bss_util::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
+
+  if(n == 2)
   {
-    psTex* tex = (psTex*)res;
-    psRect uvresolve = { (uv->left.rel*tex->GetDim().x) + uv->left.abs,
-      (uv->top.rel*tex->GetDim().y) + uv->top.abs,
-      (uv->right.rel*tex->GetDim().x) + uv->right.abs,
-      (uv->bottom.rel*tex->GetDim().y) + uv->bottom.abs };
-    dim->x = uvresolve.right - uvresolve.left;
-    dim->y = uvresolve.bottom - uvresolve.top;
+    psBatchObj* o = driver->DrawLinesStart(driver->library.LINE, 0, 0, m);
+    driver->DrawLines(o, psLine { p[0].x, p[0].y, p[1].x, p[1].y }, 0, 0, vertexcolor);
   }
-
-  void FG_FASTCALL fgDrawLines(const AbsVec* p, size_t n, unsigned int color, const AbsVec* translate, const AbsVec* scale, FABS rotation, const AbsVec* center)
+  else
   {
-    psDriver* driver = psDriverHold::GetDriver();
-    unsigned long vertexcolor;
-    psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
-    float (&m)[4][4] = *driver->PushMatrix();
-    bss_util::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
+    DYNARRAY(psVertex, verts, n);
+    for(uint32_t i = 0; i < n; ++i)
+      verts[i] = { p[i].x, p[i].y, 0, 1, vertexcolor };
 
-    if(n == 2)
-    {
-      psBatchObj* o = driver->DrawLinesStart(driver->library.LINE, 0, 0, m);
-      driver->DrawLines(o, psLine { p[0].x, p[0].y, p[1].x, p[1].y }, 0, 0, vertexcolor);
-    }
-    else
-    {
-      DYNARRAY(psVertex, verts, n);
-      for(uint32_t i = 0; i < n; ++i)
-        verts[i] = { p[i].x, p[i].y, 0, 1, vertexcolor };
-
-      psBatchObj* o = driver->DrawCurveStart(driver->library.LINE, 0, 0, m);
-      driver->DrawCurve(o, verts, n);
-    }
-  }
-
-  fgElement* FG_FASTCALL fgCreate(const char* type, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform)
-  {
-    return fgCreateDefault(type, parent, next, name, flags, transform);
-  }
-
-  short FG_FASTCALL fgMessageMap(const char* name)
-  {
-    return fgMessageMapDefault(name);
+    psBatchObj* o = driver->DrawCurveStart(driver->library.LINE, 0, 0, m);
+    driver->DrawCurve(o, verts, n);
   }
 }
 
@@ -340,10 +328,51 @@ void fgClipboardFree(const void* mem)
   free(const_cast<void*>(mem));
 }
 
+void fgDragStart(char type, void* data, fgElement* draw)
+{
+  fgRoot* root = fgSingleton();
+  root->dragtype = type;
+  root->dragdata = data;
+  root->dragdraw = draw;
+}
+
 psRoot::psRoot()
 {
   AbsRect area = { 0, 0, 1, 1 };
-  fgRoot_Init(this, &area, psGUIManager::BASE_DPI);
+
+  static fgBackend BACKEND = {
+    &fgRoot_BehaviorDefault,
+    &fgCreateFont,
+    &fgCopyFont,
+    &fgCloneFont,
+    &fgDestroyFont,
+    &fgDrawFont,
+    &fgFontSize,
+    &fgFontGet,
+    &fgCreateResource,
+    &fgCloneResource,
+    &fgDestroyResource,
+    &fgDrawResource,
+    &fgResourceSize,
+    &fgFontIndex,
+    &fgFontPos,
+    &fgDrawLines,
+    &fgCreateDefault,
+    &fgMessageMapDefault,
+    &fgPushClipRect,
+    &fgPeekClipRect,
+    &fgPopClipRect,
+    &fgDragStart,
+    &fgSetCursor,
+    &fgClipboardCopy,
+    &fgClipboardExists,
+    &fgClipboardPaste,
+    &fgClipboardFree,
+    &fgDirtyElement,
+    0,
+    0,
+  };
+  fgRoot_Init(this, &area, psGUIManager::BASE_DPI, &BACKEND);
   DWORD blinkrate = 0;
   int64_t sz = bss_util::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
   if(sz > 0)
@@ -372,13 +401,4 @@ psFlag psRoot::GetDrawFlags(fgFlag flags)
   if(flags&FGTEXT_RIGHTALIGN) flag |= PSFONT_RIGHT;
   if(flags&FGTEXT_CENTER) flag |= PSFONT_CENTER;
   return flag;
-}
-
-void fgDragStart(char type, void* data, fgElement* draw)
-{
-  fgRoot* root = fgSingleton();
-  root->dragtype = type;
-  root->dragdata = data;
-  root->dragdraw = draw;
-  fgCaptureWindow = 0;
 }

@@ -285,7 +285,7 @@ void psTexFont::CalcTextDim(const int* text, psVec& dest, float lineheight, floa
   int last = 0;
   float lastadvance = 0;
   psRect box = { 0, 0, 0, 0 };
-  psVec cursor = { 0, (lineheight / _fontlineheight) * _fontascender };
+  psVec cursor = { 0, !_fontlineheight ? 0 : ((lineheight / _fontlineheight) * _fontascender) };
 
   float width = 0.0f;
   while(*text != 0)

@@ -3,9 +3,9 @@
   <Button name="buttontest" flags="EXPAND">
     <Resource resource="../media/circle.png" color="0xFFFFFFFF" flags="EXPAND|IGNORE" />
   </Button>
-  <Window area="130 100 510 420" text="test window" color="0xFFFFFFFF" font="arial;14" padding="10,22,10,10">
+  <Window area="130 100 510 420" text="test window" color="0xFFFFFFFF" font="arial.ttf;14" padding="10,22,10,10">
     <TabControl area="0 0 100% 100%">
-      <Tab text="Tab 1">
+      <Tab name="Tab 1">
         <Button area="10, 10, 0, 0" flags="EXPAND" text="Not Pressed" onaction="makepressed" />
         <Box area="10, 160, 150, 240" flags="TILEY|EXPANDX" max-width="100">
           <Checkbox text="Check test 1" flags="EXPAND" />
@@ -20,7 +20,7 @@
         <Slider area="10, 70, 150, 90" value="0" range="500" onvalue="statelistener" />
         <Progressbar value="0.0" area="10, 100, 150, 125" />
       </Tab>
-      <Tab text="Long Name Tab">
+      <Tab name="Long Name Tab">
         <Textbox area="140, 30, 210, 150" flags="WORDWRAP" placeholder="placeholder" />
         <Dropdown area="10, 200, 150, 230" flags="TILEY" max-height="60">
           <Text area="0, 0, 100%, 20" text="Drop 1" />
@@ -38,47 +38,219 @@
           <Text area="0, 0, 100%, 20" text="List 5" />
         </List>
       </Tab>
-      <Tab text="Tab 3"></Tab>
-      <Tab text="Tab 4"></Tab>
+      <Tab name="Tab 3"></Tab>
+      <Tab name="Tab 4"></Tab>
     </TabControl>
-    <Menu right="100%" flags="EXPANDY|TILEX">
-      <MenuItem text="File">
-        <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
-          <MenuItem text="New" />
-          <MenuItem text="Open" />
-          <MenuItem text="Save" />
-          <MenuItem text="Save As..." />
-          <MenuItem />
-          <MenuItem text="Quit" />
-        </Menu>
-      </MenuItem>
-      <MenuItem text="Edit">
-        <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
-          <MenuItem text="Cut" />
-          <MenuItem text="Copy" />
-          <MenuItem text="Paste" />
-          <MenuItem />
-          <MenuItem text="Transform" >
-            <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
-              <MenuItem text="Free Transform" >
-                <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
-                  <MenuItem text="Apply" />
-                </Menu>
-              </MenuItem>
-              <MenuItem />
-              <MenuItem text="Rotate" />
-              <MenuItem text="Skew" />
-              <MenuItem text="Resize" />
-            </Menu>
-          </MenuItem>
-        </Menu>
-      </MenuItem>
-      <MenuItem text="Options" />
-      <MenuItem text="Help">
-        <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
-          <MenuItem text="About" />
-        </Menu>
-      </MenuItem>
-    </Menu>
   </Window>  
+  <Menu right="100%" flags="EXPANDY|TILEX">
+    <MenuItem text="File">
+      <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+        <MenuItem text="New" />
+        <MenuItem text="Open" />
+        <MenuItem text="Save" />
+        <MenuItem text="Save As..." />
+        <MenuItem />
+        <MenuItem text="Quit" />
+      </Menu>
+    </MenuItem>
+    <MenuItem text="Edit">
+      <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+        <MenuItem text="Cut" />
+        <MenuItem text="Copy" />
+        <MenuItem text="Paste" />
+        <MenuItem />
+        <MenuItem text="Transform" >
+          <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+            <MenuItem text="Free Transform" >
+              <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+                <MenuItem text="Apply" />
+              </Menu>
+            </MenuItem>
+            <MenuItem />
+            <MenuItem text="Rotate" />
+            <MenuItem text="Skew" />
+            <MenuItem text="Resize" />
+          </Menu>
+        </MenuItem>
+      </Menu>
+    </MenuItem>
+    <MenuItem text="Options" />
+    <MenuItem text="Help">
+      <Menu area="100% 0 100% 0" flags="EXPAND|TILEY|HIDDEN">
+        <MenuItem text="About" />
+      </Menu>
+    </MenuItem>
+  </Menu>
 </fg:Layout>
+<fg:Skin id="testskin" xmlns:fg="featherGUI">
+  <Skin name="buttontest" color="0xFFFFFFFF" font="arial.ttf;14">
+    <Skin name="Resource">
+      <Style name="nuetral" color="0xFFFF00FF" />
+      <Style name="active" color="0xFF00FFFF" />
+      <Style name="hover" color="0xFFFFFF00" />
+    </Skin>
+    <Style name="nuetral" text="Nuetral" />
+    <Style name="active" text="Active" />
+    <Style name="hover" text="Hover" />
+  </Skin>
+  <Skin name="Window">
+    <Skin name="Button" color="0xFFFFFFFF" font="arial.ttf;14" padding="5,5,5,5">
+      <Skin name="#bg">
+        <Style name="nuetral" color="0xFF666666" />
+        <Style name="active" color="0xFF505050" />
+        <Style name="hover" color="0xFF7F7F7F" />
+      </Skin>
+      <Resource name="#bg" uv="5,5,5,5" area="0,0,100%,100%" color="0xFF666666" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
+    </Skin>
+    <Skin name="Window$text" margin="4,4,0,0" />
+    <Skin name="Checkbox" color="0xFFFFFFFF" font="arial.ttf;14">
+      <Resource name="#checkbg" uv="3,3,3,3" area="5, 0:0.5, 20, 15:0.5" color="0xFFFFFFFF" edgecolor="0xFF222222" outline="1" flags="ROUNDRECT|BACKGROUND|SNAP" padding="25,0,5,0" />
+      <Resource name="#check" uv="3,3,3,3" area="8, 0:0.5, 17, 9:0.5" color="0xFF000000" edgecolor="0" outline="0" flags="ROUNDRECT|BACKGROUND|SNAP" />
+      <Skin name="#checkbg">
+        <Style name="nuetral" color="0xFFFFFFFF" />
+        <Style name="active" color="0xFFBBBBBB" />
+        <Style name="hover" color="0xFFDDDDDD" />
+      </Skin>
+      <Skin name="#check">
+        <Style name="default" flags="HIDDEN" />
+        <Style name="checked" flags="-HIDDEN" />
+        <Style name="indeterminate" flags="HIDDEN" />
+      </Skin>
+    </Skin>
+    <Skin name="Radiobutton" color="0xFFFFFFFF" font="arial.ttf;14">
+      <Resource name="#bg" uv="0,6.2832,0,6.2832" area="5, 0:0.5, 20, 15:0.5" color="0xFFFFFFFF" edgecolor="0xFF222222" outline="1" flags="CIRCLE|BACKGROUND|SNAP" padding="25,5,5,5" />
+      <Resource name="#check" uv="0,6.2832,0,6.2832" area="5, 0:0.5, 20, 15:0.5" color="0xFF000000" edgecolor="0" outline="0" flags="CIRCLE|BACKGROUND|SNAP" />
+      <Skin name="#bg">
+        <Style name="nuetral" color="0xFFFFFFFF" />
+        <Style name="active" color="0xFFBBBBBB" />
+        <Style name="hover" color="0xFFDDDDDD" />
+      </Skin>
+      <Skin name="#check">
+        <Style name="default" flags="HIDDEN" />
+        <Style name="checked" flags="-HIDDEN" />
+      </Skin>
+    </Skin>
+    <Skin name="Progressbar" color="0xFFFFFFFF" font="arial.ttf;14" padding="0,0,0,0">
+      <Resource uv="6,6,6,6" area="0,0,100%,100%" color="0xFFFFFFFF" edgecolor="0xFFDDDDDD" outline="3" flags="ROUNDRECT|BACKGROUND" />
+      <Skin name="Progressbar$bar">
+        <Resource uv="6,6,6,6" area="0,0,100%,100%" color="0xFFFFFFFF" edgecolor="0xFF333333" outline="0" flags="ROUNDRECT" />
+      </Skin>
+    </Skin>
+    <Skin name="Slider" padding="5,0,5,0">
+      <Curve area="0, 50%, 100%, 1.0:0.5" flags="LINE" color="0xFFFFFFFF" />
+      <Skin name="Slider$slider">
+        <Resource uv="5,5,5,5" area="0,0,10,20" color="0xFFFFFFFF" edgecolor="0xFF666666" outline="1" flags="ROUNDRECT|NOCLIP" />
+      </Skin>
+    </Skin>
+    <Skin name="Box" inherit="Scrollbar" />
+    <Skin name="Textbox" color="0xFFFFFFFF" font="arial.ttf;14" lineheight="16" placecolor="0x88FFFFFF" cursorcolor="0xFFFFFFFF" selectcolor="0xAAAA0000" padding="3,3,3,3">
+      <Resource name="#textbg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+    </Skin>
+    <Skin name="Dropdown" hovercolor="0x99990099" selectcolor="0xAAAA0000">
+      <Resource name="#dropdownbg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+      <Skin name="Dropdown$box" inherit="Scrollbar">
+        <Resource name="#dropdownboxbg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+      </Skin>
+    </Skin>
+  </Skin>
+  <Skin id="TreeView">
+    <Resource uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+    <Skin name="Text" color="0xFFFFFFFF" font="arial.ttf;10" />
+    <Skin name="TreeItem" padding="20,0,0,0">
+      <Resource name="#bg" uv="2,2,2,2" area="0,0,100%,100%" color="0x99AA6666" edgecolor="0xAAFFAAAA" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+      <Skin name="TreeItem$arrow">
+        <Resource name="#bg" uv="3,3,3,3" area="0,0,100%,100%" color="0" edgecolor="0xFFDDDDDD" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+        <Resource name="#bgv" uv="0,0,0,0" area="-1:0.5, 2, 1:0.5, -2:1" color="0xFFDDDDDD" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+        <Resource name="#bgh" uv="0,0,0,0" area="2, -1:0.5, -2:1, 1:0.5" color="0xFFDDDDDD" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+        <Skin name="#bgv">
+          <Style name="hidden" flags="-HIDDEN"/>
+          <Style name="visible" flags="HIDDEN"/>
+        </Skin>
+        <Skin name="#bg">
+          <Style name="nuetral+focused" flags="-HIDDEN"/>
+          <Style name="nuetral" flags="HIDDEN"/>
+        </Skin>
+      </Skin>
+    </Skin>
+  </Skin>
+  <Skin id="Scrollbar">
+    <Skin name="Scrollbar$horzbg" area="0, -20:1, 0:1, 0:1" padding="20,0,20,0">
+      <Resource uv="0,0,0,0" area="0,0,100%,100%" color="0x66000000" edgecolor="0" outline="0" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+    </Skin>
+    <Skin name="Scrollbar$vertbg" area="-20:1, 0, 0:1, 0:1" padding="0,20,0,20">
+      <Resource uv="0,0,0,0" area="0,0,100%,100%" color="0x66000000" edgecolor="0" outline="0" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+    </Skin>
+    <Skin name="Scrollbar$corner">
+      <Resource uv="0,0,0,0" area="0,0,100%,100%" color="0x66000000" edgecolor="0" outline="0" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+    </Skin>
+    <Skin name="Scrollbar$scrollhorz">
+      <Resource name="#scrollbg" uv="6,6,6,6" area="0,0,100%,100%" color="0x660000FF" edgecolor="0xFF0000FF" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+      <Skin name="#scrollbg">
+        <Style name="disabled" edgecolor="0xFF999999"/>
+        <Style name="nuetral" edgecolor="0xFF0000FF"/>
+      </Skin>
+    </Skin>
+    <Skin name="Scrollbar$scrollvert">
+      <Resource name="#scrollbg" uv="6,6,6,6" area="0,0,100%,100%" color="0x660000FF" edgecolor="0xFF0000FF" outline="1" flags="ROUNDRECT|BACKGROUND|IGNORE" />
+      <Skin name="#scrollbg">
+        <Style name="disabled" edgecolor="0xFF999999"/>
+        <Style name="nuetral" edgecolor="0xFF0000FF"/>
+      </Skin>
+    </Skin>
+    <Skin name="Scrollbar$scrollleft" area="0,0,20,20">
+      <Resource name="#scrollbg" uv="6,6,6,6" area="0,0,100%,100%" color="0" edgecolor="0xFF0000FF" outline="1" flags="ROUNDRECT|BACKGROUND" />
+      <Skin name="#scrollbg">
+        <Style name="disabled" edgecolor="0xFF999999"/>
+        <Style name="nuetral" edgecolor="0xFF0000FF"/>
+      </Skin>
+    </Skin>
+    <Skin name="Scrollbar$scrolltop" area="0,0,20,20">
+      <Resource name="#scrollbg" uv="6,6,6,6" area="0,0,100%,100%" color="0" edgecolor="0xFF0000FF" outline="1" flags="ROUNDRECT|BACKGROUND" />
+      <Skin name="#scrollbg">
+        <Style name="disabled" edgecolor="0xFF999999"/>
+        <Style name="nuetral" edgecolor="0xFF0000FF"/>
+      </Skin>
+    </Skin>
+    <Skin name="Scrollbar$scrollright" area="-20:1, 0, 0:1, 20">
+      <Resource name="#scrollbg" uv="6,6,6,6" area="0,0,100%,100%" color="0" edgecolor="0xFF0000FF" outline="1" flags="ROUNDRECT|BACKGROUND" />
+      <Skin name="#scrollbg">
+        <Style name="disabled" edgecolor="0xFF999999"/>
+        <Style name="nuetral" edgecolor="0xFF0000FF"/>
+      </Skin>
+    </Skin>
+    <Skin name="Scrollbar$scrollbottom" area="0, -20:1, 20, 0:1">
+      <Resource name="#scrollbg" uv="6,6,6,6" area="0,0,100%,100%" color="0" edgecolor="0xFF0000FF" outline="1" flags="ROUNDRECT|BACKGROUND" />
+      <Skin name="#scrollbg">
+        <Style name="disabled" edgecolor="0xFF999999"/>
+        <Style name="nuetral" edgecolor="0xFF0000FF"/>
+      </Skin>
+    </Skin>
+  </Skin>
+  <Skin id="TabControl">
+    <Skin id="Tabcontrol$toggle" color="0xFFFFFFFF">
+      <Resource name="#tabtogglebg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
+      <Style name="default" edgecolor="0xBBFFFFFF"/>
+      <Style name="checked" edgecolor="0xFFFFFFFF"/>
+    </Skin>
+  </Skin>
+  <Skin id="List">
+    <Resource name="#listbg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
+  </Skin>
+  <Skin id="ListItem">
+    <Resource name="#listbg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
+    <Skin id="#listbg">
+      <Style name="hover" color="0x99009900" />
+      <Style name="nuetral" color="0x99990099" />
+      <Style name="nuetral+selected" color="0x99999900" />
+      <Style name="hover+selected" color="0xCC999900" />
+    </Skin>
+  </Skin>
+  <Skin id="Text" color="0xFFFFFFFF" font="arial.ttf;14" />
+  <Skin id="Menu">
+    <Resource name="#menubg" uv="0,0,0,0" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="0" flags="ROUNDRECT|BACKGROUND" />
+  </Skin>
+  <Skin id="Submenu">
+    <Resource name="#submenubg" uv="0,3,3,0" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
+  </Skin>
+  <Skin id="Debug" color="0xFFFFFFFF" font="arial.ttf;14" />
+</fg:Skin>
