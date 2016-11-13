@@ -79,23 +79,23 @@ TESTDEF::RETPAIR test_feather()
   };
 
   // fgResource
-  FG_UINT nuetral = fgSkin_AddStyle(fgResourceSkin, "nuetral");
+  FG_UINT neutral = fgSkin_AddStyle(fgResourceSkin, "neutral");
   FG_UINT active = fgSkin_AddStyle(fgResourceSkin, "active");
   FG_UINT hover = fgSkin_AddStyle(fgResourceSkin, "hover");
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, nuetral), 0xFFFF00FF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, neutral), 0xFFFF00FF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, hover), 0xFF00FFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgResourceSkin, active), 0xFFFFFF00);
 
   // fgButton
-  FG_UINT bnuetral = fgSkin_AddStyle(fgButtonTestSkin, "nuetral");
+  FG_UINT bneutral = fgSkin_AddStyle(fgButtonTestSkin, "neutral");
   FG_UINT bactive = fgSkin_AddStyle(fgButtonTestSkin, "active");
   FG_UINT bhover = fgSkin_AddStyle(fgButtonTestSkin, "hover");
-  AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bnuetral), "Nuetral");
+  AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bneutral), "Neutral");
   AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bactive), "Active");
   AddStyleMsg<FG_SETTEXT, void*>(fgSkin_GetStyle(fgButtonTestSkin, bhover), "Hover");
 
-  void* font = fgSingleton()->backend.fgCreateFont(FGTEXT_SUBPIXEL, "arial.ttf", 14, 96);
-  void* smfont = fgSingleton()->backend.fgCreateFont(FGTEXT_SUBPIXEL, "arial.ttf", 10, 96);
+  void* font = fgSingleton()->backend.fgCreateFont(0, "arial.ttf", 14, 96);
+  void* smfont = fgSingleton()->backend.fgCreateFont(0, "arial.ttf", 10, 96);
   ((psFont*)font)->SetLineHeight(16);
   ((psFont*)smfont)->SetLineHeight(12);
 
@@ -126,11 +126,11 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgButtonSkin->style, &buttonpadding);
 
   fgSkin* fgbuttonbgskin = fgSkinBase_AddSkin(&fgButtonSkin->base, "#bg");
-  bnuetral = fgSkin_AddStyle(fgbuttonbgskin, "nuetral");
+  bneutral = fgSkin_AddStyle(fgbuttonbgskin, "neutral");
   bactive = fgSkin_AddStyle(fgbuttonbgskin, "active");
   bhover = fgSkin_AddStyle(fgbuttonbgskin, "hover");
   
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bnuetral), 0xFF666666);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bneutral), 0xFF666666);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bactive), 0xFF505050);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgbuttonbgskin, bhover), 0xFF7F7F7F);
 
@@ -151,14 +151,14 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgCheckedSkin = fgSkinBase_AddSkin(&fgCheckboxSkin->base, "#check");
 
   fgSkin* fgCheckboxSkinbg = fgSkinBase_AddSkin(&fgCheckboxSkin->base, "#checkbg");
-  bnuetral = fgSkin_AddStyle(fgCheckboxSkinbg, "nuetral");
+  bneutral = fgSkin_AddStyle(fgCheckboxSkinbg, "neutral");
   bactive = fgSkin_AddStyle(fgCheckboxSkinbg, "active");
   bhover = fgSkin_AddStyle(fgCheckboxSkinbg, "hover");
   FG_UINT bdefault = fgSkin_AddStyle(fgCheckedSkin, "default");
   FG_UINT bchecked = fgSkin_AddStyle(fgCheckedSkin, "checked");
   FG_UINT bindeterminate = fgSkin_AddStyle(fgCheckedSkin, "indeterminate");
 
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bnuetral), 0xFFFFFFFF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bneutral), 0xFFFFFFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bactive), 0xFFBBBBBB);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgCheckboxSkinbg, bhover), 0xFFDDDDDD);
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgCheckedSkin, bdefault), FGELEMENT_HIDDEN, 1);
@@ -172,13 +172,13 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* fgRadioSelectedSkin = fgSkinBase_AddSkin(&fgRadioButtonSkin->base, "#check");
 
   fgSkin* fgRadioButtonSkinbg = fgSkinBase_AddSkin(&fgRadioButtonSkin->base, "#bg");
-  bnuetral = fgSkin_AddStyle(fgRadioButtonSkinbg, "nuetral");
+  bneutral = fgSkin_AddStyle(fgRadioButtonSkinbg, "neutral");
   bactive = fgSkin_AddStyle(fgRadioButtonSkinbg, "active");
   bhover = fgSkin_AddStyle(fgRadioButtonSkinbg, "hover");
   bdefault = fgSkin_AddStyle(fgRadioSelectedSkin, "default");
   bchecked = fgSkin_AddStyle(fgRadioSelectedSkin, "checked");
 
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bnuetral), 0xFFFFFFFF);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bneutral), 0xFFFFFFFF);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bactive), 0xFFBBBBBB);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(fgRadioButtonSkinbg, bhover), 0xFFDDDDDD);
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgRadioSelectedSkin, bdefault), FGELEMENT_HIDDEN, 1);
@@ -187,7 +187,7 @@ TESTDEF::RETPAIR test_feather()
   // fgSlider
   AddStyleMsgArg<FG_SETPADDING, AbsRect>(&fgSliderSkin->style, &AbsRect { 5,0,5,0 });
   {
-    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Curve", 0, FGCURVE_LINE, &fgTransform { { 0, 0, 0, 0.5, 0, 1.0, 1.0, 0.5 }, 0, { 0, 0, 0, 0 } }));
+    fgStyleLayout* layout = fgSkin_GetChild(fgSliderSkin, fgSkin_AddChild(fgSliderSkin, "Curve", 0, FGCURVE_LINE, &fgTransform { { 0, 0, 0, 0.5, 0, 1.0, 1.0, 0.5 }, 0, { 0, 0, 0, 0 } }, 0));
     AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(&layout->style, 0xFFFFFFFF);
   }
   fgSkin* fgSliderDragSkin = fgSkinBase_AddSkin(&fgSliderSkin->base, "Slider$slider");
@@ -231,12 +231,12 @@ TESTDEF::RETPAIR test_feather()
   fnAddRect(fgScrollbarSkinRight, "#scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
   fnAddRect(fgScrollbarSkinBottom, "#scrollbg", CRect { 6, 0, 6, 0, 6, 0, 6, 0 }, FILL_TRANSFORM, 0, 0xFF0000FF, 1.0f, FGELEMENT_BACKGROUND);
 
-  auto disabledskin = [](fgSkin* parent, const char* name, uint32_t nuetral, uint32_t disabled) {
+  auto disabledskin = [](fgSkin* parent, const char* name, uint32_t neutral, uint32_t disabled) {
     fgSkin* s = fgSkinBase_AddSkin(&parent->base, name);
     size_t sdisabled = fgSkin_AddStyle(s, "disabled");
-    size_t snuetral = fgSkin_AddStyle(s, "nuetral");
+    size_t sneutral = fgSkin_AddStyle(s, "neutral");
     AddStyleSubMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(s, sdisabled), FGSETCOLOR_EDGE, disabled);
-    AddStyleSubMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(s, snuetral), FGSETCOLOR_EDGE, nuetral);
+    AddStyleSubMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(s, sneutral), FGSETCOLOR_EDGE, neutral);
   };
 
   disabledskin(fgScrollbarSkinLeft, "#scrollbg", 0xFF0000FF, 0xFF999999);
@@ -276,10 +276,10 @@ TESTDEF::RETPAIR test_feather()
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemArrowSkinbg, svisible), FGELEMENT_HIDDEN, 1);
 
   fgSkin* fgTreeItemSkinbg = fgSkinBase_AddSkin(&fgTreeItemSkin->base, "#bg");
-  size_t sfocus = fgSkin_AddStyle(fgTreeItemSkinbg, "nuetral+focused");
-  bnuetral = fgSkin_AddStyle(fgTreeItemSkinbg, "nuetral");
+  size_t sfocus = fgSkin_AddStyle(fgTreeItemSkinbg, "neutral+focused");
+  bneutral = fgSkin_AddStyle(fgTreeItemSkinbg, "neutral");
   AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, sfocus), FGELEMENT_HIDDEN, 0);
-  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, bnuetral), FGELEMENT_HIDDEN, 1);
+  AddStyleMsg<FG_SETFLAG, ptrdiff_t, size_t>(fgSkin_GetStyle(fgTreeItemSkinbg, bneutral), FGELEMENT_HIDDEN, 1);
 
   // fgList
   fnAddRect(fgListSkin, "#listbg", CRect { 3, 0, 3, 0, 3, 0, 3, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
@@ -290,10 +290,10 @@ TESTDEF::RETPAIR test_feather()
   fgSkin* listitembgskin = fgSkinBase_AddSkin(&listitemskin->base, "#listbg");
 
   bhover = fgSkin_AddStyle(listitembgskin, "hover");
-  bnuetral = fgSkin_AddStyle(listitembgskin, "nuetral");
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bnuetral), 0x99009900);
+  bneutral = fgSkin_AddStyle(listitembgskin, "neutral");
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bneutral), 0x99009900);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, bhover), 0x99990099);
-  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, fgSkin_AddStyle(listitembgskin, "nuetral+selected")), 0x99999900);
+  AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, fgSkin_AddStyle(listitembgskin, "neutral+selected")), 0x99999900);
   AddStyleMsg<FG_SETCOLOR, ptrdiff_t>(fgSkin_GetStyle(listitembgskin, fgSkin_AddStyle(listitembgskin, "hover+selected")), 0xCC999900);
 
   // fgDropdown
@@ -321,11 +321,10 @@ TESTDEF::RETPAIR test_feather()
   fnAddRect(fgSubmenuSkin, "#submenubg", CRect { 0, 0, 0, 3, 0, 3, 0, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
 
   // Apply skin and set up layout
-  fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
+  //fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
-  fgElement* res = fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, 0, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
-  fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
-  fgVoidMessage(button, FG_ADDITEM, res, 0);
+  /*fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
+  fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, button, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
   button->SetName("buttontest");
   
   fgElement* topwindow = fgCreate("Window", *fgSingleton(), 0, 0, 0, &fgTransform { { 130, 0, 100, 0, 510, 0, 420, 0 }, 0, { 0, 0, 0, 0 } });
@@ -365,7 +364,7 @@ TESTDEF::RETPAIR test_feather()
   fgElement* slider = fgCreate("Slider", tab1, 0, 0, 0, &fgTransform { { 10, 0, 70, 0, 150, 0, 90, 0 }, 0, { 0, 0, 0, 0 } });
   slider->SetValue(500, 1);
   slider->AddListener(FG_SETVALUE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetValueF(self->GetValueF(0) / self->GetValueF(1), 0); fg_progbar->SetText(cStrF("%i", self->GetValue(0))); });
-  fg_progbar = fgProgressbar_Create(0.0, tab1, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 125, 0 }, 0, { 0, 0, 0, 0 } });
+  fg_progbar = fgCreate("Progressbar", tab1, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 125, 0 }, 0, { 0, 0, 0, 0 } });
 
   fgElement* textbox = fgCreate("Textbox", tab2, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 140, 0, 30, 0, 210, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
@@ -387,13 +386,13 @@ TESTDEF::RETPAIR test_feather()
   fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
   fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 5");
 
-  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, FGELEMENT_EXPANDY | FGBOX_TILEX, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, 0, 0);
   fgElement* fileitem = menu->AddItemText("File");
   fgElement* edititem = menu->AddItemText("Edit");
   menu->AddItemText("Options");
   fgElement* helpitem = menu->AddItemText("Help");
 
-  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 0, 0, 1.0, 0, 0, 0, 1.0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, 0, 0);
   filemenu->AddItemText("New");
   filemenu->AddItemText("Open");
   filemenu->AddItemText("Save");
@@ -401,30 +400,30 @@ TESTDEF::RETPAIR test_feather()
   filemenu->AddItemText(0);
   filemenu->AddItemText("Quit");
 
-  fgElement* editmenu = fgCreate("Submenu", edititem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 0, 0, 1.0, 0, 0, 0, 1.0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* editmenu = fgCreate("Submenu", edititem, 0, 0, 0, 0);
   editmenu->AddItemText("Cut");
   editmenu->AddItemText("Copy");
   editmenu->AddItemText("Paste");
   filemenu->AddItemText(0);
   fgElement* editsubitem = editmenu->AddItemText("Transform");
 
-  fgElement* editsubmenu = fgCreate("Submenu", editsubitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 1, 0, 0, 0, 1, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* editsubmenu = fgCreate("Submenu", editsubitem, 0, 0, 0, 0);
   fgElement* editsubsubitem = editsubmenu->AddItemText("Free Transform");
   filemenu->AddItemText(0);
   editsubmenu->AddItemText("Rotate");
   editsubmenu->AddItemText("Skew");
   editsubmenu->AddItemText("Resize");
 
-  fgElement* editsubsubmenu = fgCreate("Submenu", editsubsubitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 1, 0, 0, 0, 1, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* editsubsubmenu = fgCreate("Submenu", editsubsubitem, 0, 0, 0, 0);
   editsubsubmenu->AddItemText("Apply");
 
-  fgElement* helpmenu = fgCreate("Submenu", helpitem, 0, 0, FGELEMENT_EXPAND | FGBOX_TILEY | FGELEMENT_HIDDEN, &fgTransform { { 0, 0, 0, 1.0, 0, 0, 0, 1.0 }, 0, { 0, 0, 0, 0 } });
-  helpmenu->AddItemText("About");
+  fgElement* helpmenu = fgCreate("Submenu", helpitem, 0, 0, 0, 0);
+  helpmenu->AddItemText("About");//*/
 
   fgLayout layout;
   fgLayout_Init(&layout);
   fgLayout_LoadFileXML(&layout, "../media/feathertest.xml");
-  //fgSingleton()->gui->LayoutLoad(&layout);
+  fgSingleton()->gui->LayoutLoad(&layout);
 
   fgSingleton()->backend.behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
   cHighPrecisionTimer time;
