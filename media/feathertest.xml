@@ -93,7 +93,8 @@
     <Style name="active" text="Active" />
     <Style name="hover" text="Hover" />
   </Skin>
-  <Skin name="Window">
+  <Skin name="Window" flags="RESIZABLE">
+    <Resource uv="5,5,5,5" area="0,0,100%,100%" color="0xFF666666" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
     <Skin name="Button" color="0xFFFFFFFF" font="arial.ttf;14" padding="5,5,5,5">
       <Skin name="#bg">
         <Style name="neutral" color="0xFF666666" />

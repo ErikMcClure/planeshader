@@ -42,7 +42,7 @@ TESTDEF::RETPAIR test_feather()
 
   fgSkin skin;
   fgSkin_Init(&skin);
-  fgSkin* fgDebugSkin = fgSkinBase_AddSkin(&skin.base, "Debug");
+  /*fgSkin* fgDebugSkin = fgSkinBase_AddSkin(&skin.base, "Debug");
   fgSkin* fgButtonTestSkin = fgSkinBase_AddSkin(&skin.base, "buttontest");
   fgSkin* fgWindowSkin = fgSkinBase_AddSkin(&skin.base, "Window");
   fgSkin* fgButtonSkin = fgSkinBase_AddSkin(&fgWindowSkin->base, "Button");
@@ -137,7 +137,7 @@ TESTDEF::RETPAIR test_feather()
   fnAddRect(fgButtonSkin, "#bg", CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND);
 
   // fgWindow
-  fnAddRect(fgWindowSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND|FGWINDOW_RESIZABLE);
+  fnAddRect(fgWindowSkin, 0, CRect { 5, 0, 5, 0, 5, 0, 5, 0 }, FILL_TRANSFORM, 0xFF666666, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND);
 
   fgSkin* topwindowcaption = fgSkinBase_AddSkin(&fgWindowSkin->base, "Window$text");
   AbsRect margin = { 4, 4, 0, 0 };
@@ -321,19 +321,19 @@ TESTDEF::RETPAIR test_feather()
   fnAddRect(fgSubmenuSkin, "#submenubg", CRect { 0, 0, 0, 3, 0, 3, 0, 0 }, FILL_TRANSFORM, 0x99000000, 0xFFAAAAAA, 1.0f, FGELEMENT_BACKGROUND | FGELEMENT_IGNORE);
 
   // Apply skin and set up layout
-  //fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
+  fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
-  /*fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0);
-  fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, button, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0);
+  fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0, 0);
+  fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, button, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0, 0);
   button->SetName("buttontest");
   
-  fgElement* topwindow = fgCreate("Window", *fgSingleton(), 0, 0, 0, &fgTransform { { 130, 0, 100, 0, 510, 0, 420, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* topwindow = fgCreate("Window", *fgSingleton(), 0, 0, FGWINDOW_RESIZABLE, &fgTransform { { 130, 0, 100, 0, 510, 0, 420, 0 }, 0, { 0, 0, 0, 0 } }, 0);
   topwindow->SetText("test window");
   topwindow->SetColor(0xFFFFFFFF, FGSETCOLOR_MAIN);
   topwindow->SetFont(font);
   topwindow->SetPadding(AbsRect { 10,22,10,10 });
 
-  fgTabcontrol* tabs = (fgTabcontrol*)fgCreate("TabControl", topwindow, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1, 0, 1 }, 0, { 0, 0, 0, 0 } });
+  fgTabcontrol* tabs = (fgTabcontrol*)fgCreate("TabControl", topwindow, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1, 0, 1 }, 0, { 0, 0, 0, 0 } }, 0);
   fgElement* tab1 = tabs->AddItem("Tab 1");
   fgElement* tab2 = tabs->AddItem("Long Name Tab");
   fgElement* tab3 = tabs->AddItem("Tab 3");
@@ -341,58 +341,58 @@ TESTDEF::RETPAIR test_feather()
   tab1->GetSelectedItem()->Action();
   tab3->GetSelectedItem()->SetText("New Tab");
 
-  fgElement* buttontop = fgCreate("Button", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 10, 0, 10, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* buttontop = fgCreate("Button", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 10, 0, 10, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0);
   buttontop->SetText("Not Pressed");
   fgListener listener = [](fgElement* self, const FG_Msg*) { self->SetText("Pressed!"); };
   buttontop->AddListener(FG_ACTION, listener);
 
-  fgElement* boxholder = fgCreate("Box", tab1, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* boxholder = fgCreate("Box", tab1, 0, 0, FGBOX_TILEY | FGELEMENT_EXPANDX, &fgTransform { { 10, 0, 160, 0, 150, 0, 240, 0 }, 0, { 0, 0, 0, 0 } }, 0);
   fgScrollbar* test = (fgScrollbar*)boxholder;
   boxholder->SetDim(100, -1);
   //boxholder->SetDim(-1, 100);
 
-  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 1");
-  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 22");
-  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 3");
-  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 4");
-  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Check Test 5");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Check Test 1");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Check Test 22");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Check Test 3");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Check Test 4");
+  fgCreate("Checkbox", boxholder, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Check Test 5");
   
-  fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 130, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 1");
-  fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 2");
-  fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Radio Test 3");
+  fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 130, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 1");
+  fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 2");
+  fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 3");
 
-  fgElement* slider = fgCreate("Slider", tab1, 0, 0, 0, &fgTransform { { 10, 0, 70, 0, 150, 0, 90, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* slider = fgCreate("Slider", tab1, 0, 0, 0, &fgTransform { { 10, 0, 70, 0, 150, 0, 90, 0 }, 0, { 0, 0, 0, 0 } }, 0);
   slider->SetValue(500, 1);
   slider->AddListener(FG_SETVALUE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetValueF(self->GetValueF(0) / self->GetValueF(1), 0); fg_progbar->SetText(cStrF("%i", self->GetValue(0))); });
-  fg_progbar = fgCreate("Progressbar", tab1, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 125, 0 }, 0, { 0, 0, 0, 0 } });
+  fg_progbar = fgCreate("Progressbar", tab1, 0, 0, 0, &fgTransform { { 10, 0, 100, 0, 150, 0, 125, 0 }, 0, { 0, 0, 0, 0 } }, 0);
 
-  fgElement* textbox = fgCreate("Textbox", tab2, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 140, 0, 30, 0, 210, 0, 150, 0 }, 0, { 0, 0, 0, 0 } });
+  fgElement* textbox = fgCreate("Textbox", tab2, 0, 0, FGTEXT_WORDWRAP, &fgTransform { { 140, 0, 30, 0, 210, 0, 150, 0 }, 0, { 0, 0, 0, 0 } }, 0);
   //textbox->SetText((const char*)8226, FGSETTEXT_MASK);
   textbox->SetText("placeholder", FGSETTEXT_PLACEHOLDER_UTF8);
 
-  fgElement* dropdown = fgCreate("Dropdown", tab2, 0, 0, FGBOX_TILEY, &fgTransform { { 10, 0, 200, 0, 150, 0, 230, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 1");
-  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 2");
-  fgCreate("Text", dropdown, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 3");
-  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("Drop 4");
+  fgElement* dropdown = fgCreate("Dropdown", tab2, 0, 0, FGBOX_TILEY, &fgTransform { { 10, 0, 200, 0, 150, 0, 230, 0 }, 0, { 0, 0, 0, 0 } }, 0);
+  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Drop 1");
+  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Drop 2");
+  fgCreate("Text", dropdown, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 0, 0, 0, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Drop 3");
+  fgCreate("Text", dropdown, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Drop 4");
   dropdown->SetDim(-1, 60);
 
-  fgElement* list = fgCreate("List", tab2, 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT|FGLIST_DRAGGABLE, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 1");
-  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 2");
-  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 3");
-  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 4");
-  fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } });
-  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } })->SetText("List 5");
+  fgElement* list = fgCreate("List", tab2, 0, 0, FGBOX_TILEY|FGELEMENT_EXPANDY| FGLIST_MULTISELECT|FGLIST_DRAGGABLE, &fgTransform { { -350, 1.0, 30, 0, -250, 1.0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0);
+  fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0);
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("List 1");
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("List 2");
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("List 3");
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("List 4");
+  fgCreate("ListItem", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0);
+  fgCreate("Text", list, 0, 0, 0, &fgTransform { { 0, 0, 0, 0, 0, 1.0, 20, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("List 5");
 
-  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, 0, 0);
+  fgElement* menu = fgCreate("Menu", *fgSingleton(), 0, 0, 0, 0, 0);
   fgElement* fileitem = menu->AddItemText("File");
   fgElement* edititem = menu->AddItemText("Edit");
   menu->AddItemText("Options");
   fgElement* helpitem = menu->AddItemText("Help");
 
-  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, 0, 0);
+  fgElement* filemenu = fgCreate("Submenu", fileitem, 0, 0, 0, 0, 0);
   filemenu->AddItemText("New");
   filemenu->AddItemText("Open");
   filemenu->AddItemText("Save");
@@ -400,24 +400,24 @@ TESTDEF::RETPAIR test_feather()
   filemenu->AddItemText(0);
   filemenu->AddItemText("Quit");
 
-  fgElement* editmenu = fgCreate("Submenu", edititem, 0, 0, 0, 0);
+  fgElement* editmenu = fgCreate("Submenu", edititem, 0, 0, 0, 0, 0);
   editmenu->AddItemText("Cut");
   editmenu->AddItemText("Copy");
   editmenu->AddItemText("Paste");
   filemenu->AddItemText(0);
   fgElement* editsubitem = editmenu->AddItemText("Transform");
 
-  fgElement* editsubmenu = fgCreate("Submenu", editsubitem, 0, 0, 0, 0);
+  fgElement* editsubmenu = fgCreate("Submenu", editsubitem, 0, 0, 0, 0, 0);
   fgElement* editsubsubitem = editsubmenu->AddItemText("Free Transform");
   filemenu->AddItemText(0);
   editsubmenu->AddItemText("Rotate");
   editsubmenu->AddItemText("Skew");
   editsubmenu->AddItemText("Resize");
 
-  fgElement* editsubsubmenu = fgCreate("Submenu", editsubsubitem, 0, 0, 0, 0);
+  fgElement* editsubsubmenu = fgCreate("Submenu", editsubsubitem, 0, 0, 0, 0, 0);
   editsubsubmenu->AddItemText("Apply");
 
-  fgElement* helpmenu = fgCreate("Submenu", helpitem, 0, 0, 0, 0);
+  fgElement* helpmenu = fgCreate("Submenu", helpitem, 0, 0, 0, 0, 0);
   helpmenu->AddItemText("About");//*/
 
   fgLayout layout;
@@ -471,8 +471,8 @@ TESTDEF::RETPAIR test_feather()
     updatefpscount(timer, fps);
   }
 
-  fgLayout_Destroy(&layout);
   fgElement_Clear(*fgSingleton());
+  fgLayout_Destroy(&layout);
   fgSkin_Destroy(&skin);
 
   ENDTEST;
