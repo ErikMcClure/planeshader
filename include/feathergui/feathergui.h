@@ -232,11 +232,15 @@ enum FGUNIT
   FGUNIT_BOTTOM_HEIGHT = (1 << 13),
 };
 
-enum FGADDITEM
+enum FGITEM
 {
-  FGADDITEM_DEFAULT = 0,
-  FGADDITEM_TEXT = 1, 
-  FGADDITEM_ELEMENT = 2
+  FGITEM_DEFAULT = 0,
+  FGITEM_TEXT, 
+  FGITEM_ELEMENT,
+  FGITEM_ADDROW,
+  FGITEM_INSERTROW,
+  FGITEM_ADDCOLUMN,
+  FGITEM_INSERTCOLUMN,
 };
 
 enum FGVALUE
@@ -249,6 +253,7 @@ enum FGVALUE
 
 enum FG_MSGTYPE
 {
+  FG_UNKNOWN = 0,
   FG_CONSTRUCT = 1,
   FG_DESTROY, // Notification when the element is being destroyed. Sending this message will not destroy the element or call the destructor.
   FG_MOVE, // Passed when any change is made to an element. 1: propagating up, 2: x-axis resize, 4: y-axis resize, 8: x-axis move, 16: y-axis move, 32: x center move, 64: y center move, 128: rotation change, 256: padding change
@@ -269,7 +274,6 @@ enum FG_MSGTYPE
   FG_DROP, // Sent when an element is "dropped" on another element. Whether or not this does anything is up to the control.
   FG_DRAW,
   FG_INJECT,
-  FG_CLONE, // Clones the fgElement
   FG_SETSKIN, // Sets the skin. If NULL, uses GETSKIN to resolve the skin.
   FG_GETSKIN,
   FG_SETSTYLE, // Sets the style. -1 causes it to call GETSTYLE to try and resolve the style index.

@@ -28,6 +28,7 @@ enum FGELEMENT_FLAGS
   FGELEMENT_LAYOUTMOVE = 4, // Called when any child is moved so the layout can adjust as necessary.
   FGELEMENT_LAYOUTREORDER = 5, // Called when any child is reordered
   FGELEMENT_LAYOUTRESET = 6, // Called when something invalidates the entire layout (like adding an EXPAND flag)
+  FGELEMENT_USEDEFAULTS = (1 << ((sizeof(fgFlag)<<3) - 1)),
 };
 
 typedef void (FG_FASTCALL *fgDestroy)(void*);
@@ -37,6 +38,7 @@ struct _FG_STYLE;
 struct _FG_SKIN;
 struct _FG_LAYOUT;
 struct __kh_fgUserdata_t;
+struct __kh_fgSkinElements_t;
 typedef fgDeclareVector(struct _FG_ELEMENT*, Element) fgVectorElement;
 
 typedef void(FG_FASTCALL *fgListener)(struct _FG_ELEMENT*, const FG_Msg*);
@@ -44,6 +46,11 @@ typedef void(FG_FASTCALL *fgListener)(struct _FG_ELEMENT*, const FG_Msg*);
 // Defines the base GUI element
 typedef struct _FG_ELEMENT {
   fgTransform transform;
+  AbsRect margin; // defines the amount of external margin.
+  AbsRect padding; // Defines the amount of internal padding. Only affects children that DON'T have FGELEMENT_BACKGROUND set.
+  AbsVec maxdim;
+  AbsVec mindim;
+  AbsVec layoutdim;
   fgDestroy destroy;
   void (*free)(void* self); // pointer to deallocation function
   fgMessage message;
@@ -61,13 +68,9 @@ typedef struct _FG_ELEMENT {
   struct _FG_ELEMENT* nextnoclip;
   struct _FG_ELEMENT* prevnoclip;
   struct _FG_ELEMENT* lastfocus; // Stores the last child that had focus, if any. This never points to the child that CURRENTLY has focus, only to the child that HAD focus.
-  AbsRect margin; // defines the amount of external margin.
-  AbsRect padding; // Defines the amount of internal padding. Only affects children that DON'T have FGELEMENT_BACKGROUND set.
-  AbsVec maxdim;
-  AbsVec mindim;
   fgFlag flags;
   const struct _FG_SKIN* skin; // skin reference
-  fgVectorElement skinrefs; // Type: fgElement* - References to skin children or subcontrols.
+  struct __kh_fgSkinElements_t* skinelements; // child elements that are part of the skin
   char* name; // Optional name used for mapping to skin collections
   FG_UINT style; // Set to -1 if no style has been assigned, in which case the style from its parent will be used.
   FG_UINT userid;
@@ -87,7 +90,7 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT void FG_FASTCALL SetParent(struct _FG_ELEMENT* parent, struct _FG_ELEMENT* next = 0);
   FG_DLLEXPORT size_t FG_FASTCALL AddChild(struct _FG_ELEMENT* child, struct _FG_ELEMENT* next = 0);
   FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL AddItem(void* item);
-  FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL AddItemText(const char* item);
+  FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL AddItemText(const char* item, FGSETTEXT fmt = FGSETTEXT_UTF8);
   FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL AddItemElement(struct _FG_ELEMENT* item);
   FG_DLLEXPORT size_t FG_FASTCALL RemoveChild(struct _FG_ELEMENT* child);
   FG_DLLEXPORT void FG_FASTCALL LayoutChange(unsigned short subtype, struct _FG_ELEMENT* target, struct _FG_ELEMENT* old);
@@ -97,7 +100,6 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT size_t Drop(int x, int y, unsigned char allbtn);
   FG_DLLEXPORT void Draw(AbsRect* area, int dpi);
   FG_DLLEXPORT size_t FG_FASTCALL Inject(const FG_Msg* msg, const AbsRect* area);
-  FG_DLLEXPORT struct _FG_ELEMENT* FG_FASTCALL Clone(struct _FG_ELEMENT* target);
   FG_DLLEXPORT size_t FG_FASTCALL SetSkin(struct _FG_SKIN* skin);
   FG_DLLEXPORT struct _FG_SKIN* FG_FASTCALL GetSkin(struct _FG_ELEMENT* child = 0);
   FG_DLLEXPORT size_t FG_FASTCALL SetStyle(const char* name, FG_UINT mask);
@@ -132,6 +134,9 @@ typedef struct _FG_ELEMENT {
   FG_DLLEXPORT void Action();
   FG_DLLEXPORT void FG_FASTCALL SetDim(float x, float y, FGDIM type = FGDIM_MAX);
   FG_DLLEXPORT const AbsVec* GetDim(FGDIM type = FGDIM_MAX);
+  FG_DLLEXPORT struct _FG_ELEMENT* GetItem(ptrdiff_t index);
+  FG_DLLEXPORT struct _FG_ELEMENT* GetItemAt(int x, int y);
+  FG_DLLEXPORT size_t GetNumItems();
   FG_DLLEXPORT struct _FG_ELEMENT* GetSelectedItem(ptrdiff_t index = 0);
   FG_DLLEXPORT size_t GetValue(ptrdiff_t aux = 0);
   FG_DLLEXPORT float GetValueF(ptrdiff_t aux = 0);

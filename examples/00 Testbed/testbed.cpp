@@ -253,7 +253,7 @@ int main(int argc, char** argv)
             if(fgDebug_Get() != 0 && !(fgDebug_Get()->element.flags&FGELEMENT_HIDDEN))
               fgDebug_Hide();
             else
-              fgDebug_Show(200, 200);
+              fgDebug_Show(200, 200, false);
           }
         }
       }

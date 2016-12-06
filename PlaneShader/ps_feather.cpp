@@ -42,7 +42,7 @@ void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
 void* FG_FASTCALL fgDrawFont(void* font, const int* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, void* cache)
 {
   psFont* f = (psFont*)font;
-  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, 0, {0, 0}, 0 };
+  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, rotation, {center->x - area->left, center->y - area->top}, 0 };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   if(f->GetAntialias() == psFont::FAA_LCD)
     f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
@@ -103,7 +103,9 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, 
     driver->SetTextures(&tex, 1);
 
   psRect hold = psDriverHold::GetDriver()->PeekClipRect();
-  psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x, center->y));
+  psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x - area->left, center->y - area->top));
+  if(rotation != 0)
+    rotation = rotation;
 
   if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_ROUNDRECT)
     psRoundedRect::DrawRoundedRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
@@ -341,7 +343,7 @@ psRoot::psRoot()
   AbsRect area = { 0, 0, 1, 1 };
 
   static fgBackend BACKEND = {
-    &fgRoot_BehaviorDefault,
+    &fgBehaviorHookListener,
     &fgCreateFont,
     &fgCopyFont,
     &fgCloneFont,
@@ -359,6 +361,7 @@ psRoot::psRoot()
     &fgDrawLines,
     &fgCreateDefault,
     &fgMessageMapDefault,
+    &fgUserDataMapCallbacks,
     &fgPushClipRect,
     &fgPeekClipRect,
     &fgPopClipRect,

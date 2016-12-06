@@ -25,6 +25,7 @@ typedef struct {
   fgColor drag; // color index 2
   fgVectorElement selected; // vector of all selected elements
   fgMouseState mouse;
+  float splitter; // If nonzero, determines the width (or height) of the area between elements that allows you to resize them. Set using SETVALUE
 #ifdef  __cplusplus
   inline operator fgElement*() { return &box.scroll.control.element; }
   inline fgElement* operator->() { return operator fgElement*(); }
