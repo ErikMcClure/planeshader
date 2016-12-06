@@ -31,8 +31,6 @@
 using namespace bss_util;
 using namespace planeshader;
 
-fgElement* fg_progbar;
-
 TESTDEF::RETPAIR test_feather()
 {
   BEGINTEST;
@@ -323,7 +321,7 @@ TESTDEF::RETPAIR test_feather()
   // Apply skin and set up layout
   fgVoidMessage(*fgSingleton(), FG_SETSKIN, &skin, 0);
 
-  fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0, 0);
+  /*fgElement* button = fgCreate("Button", *fgSingleton(), 0, 0, FGELEMENT_EXPAND, 0, 0);
   fgResource_Create(fgCreateResourceFile(0, "../media/circle.png"), 0, 0xFFFFFFFF, button, 0, 0, FGELEMENT_EXPAND | FGELEMENT_IGNORE, 0, 0);
   button->SetName("buttontest");
   
@@ -360,7 +358,7 @@ TESTDEF::RETPAIR test_feather()
   fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 130, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 1");
   fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 160, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 2");
   fgCreate("Radiobutton", tab1, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 190, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 3");
-
+  
   fgElement* slider = fgCreate("Slider", tab1, 0, 0, 0, &fgTransform { { 10, 0, 70, 0, 150, 0, 90, 0 }, 0, { 0, 0, 0, 0 } }, 0);
   slider->SetValue(500, 1);
   slider->AddListener(FG_SETVALUE, [](fgElement* self, const FG_Msg*) { fg_progbar->SetValueF(self->GetValueF(0) / self->GetValueF(1), 0); fg_progbar->SetText(cStrF("%i", self->GetValue(0))); });
@@ -420,12 +418,19 @@ TESTDEF::RETPAIR test_feather()
   fgElement* helpmenu = fgCreate("Submenu", helpitem, 0, 0, 0, 0, 0);
   helpmenu->AddItemText("About");//*/
 
+fgRegisterFunction("statelistener", [](fgElement* self, const FG_Msg*) { fgElement* progbar = fgRoot_GetID(fgSingleton(), "#progbar"); progbar->SetValueF(self->GetValueF(0) / self->GetValueF(1), 0); progbar->SetText(cStrF("%i", self->GetValue(0))); });
+  fgRegisterFunction("makepressed", [](fgElement* self, const FG_Msg*) { self->SetText("Pressed!"); });
+
   fgLayout layout;
   fgLayout_Init(&layout);
   fgLayout_LoadFileXML(&layout, "../media/feathertest.xml");
   fgSingleton()->gui->LayoutLoad(&layout);
 
-  fgSingleton()->backend.behaviorhook = &fgRoot_BehaviorListener; // make sure the listener hash is enabled
+  fgElement* tabfocus = fgRoot_GetID(fgSingleton(), "#tabfocus");
+  if(tabfocus)
+    tabfocus->GetSelectedItem()->Action();
+  //fgCreate("Radiobutton", &fgSingleton()->gui.element, 0, 0, FGELEMENT_EXPAND, &fgTransform { { 190, 0, 130, 0, 0, 0, 0, 0 }, 0, { 0, 0, 0, 0 } }, 0)->SetText("Radio Test 1");
+
   cHighPrecisionTimer time;
 
 
@@ -460,7 +465,6 @@ TESTDEF::RETPAIR test_feather()
 
   engine->SetPreprocess(guicallback);*/
   
-  //engine->GetMonitor()->element.SetFlags(FGWINDOW_RESIZABLE);
   while(!gotonext && engine->Begin())
   {
     engine->GetDriver()->Clear(0xFF000000);
@@ -470,7 +474,7 @@ TESTDEF::RETPAIR test_feather()
     fgRoot_Update(fgSingleton(), time.Update()*0.001);
     updatefpscount(timer, fps);
   }
-
+  
   fgElement_Clear(*fgSingleton());
   fgLayout_Destroy(&layout);
   fgSkin_Destroy(&skin);
