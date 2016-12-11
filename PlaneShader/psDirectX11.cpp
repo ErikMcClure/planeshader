@@ -1458,20 +1458,25 @@ void* BSS_FASTCALL psDirectX11::CreateShader(const void* data, size_t datasize, 
 char BSS_FASTCALL psDirectX11::SetShader(void* shader, SHADER_VER profile)
 {
   PROFILE_FUNC();
-  if(profile <= VERTEX_SHADER_5_0 && _lastVS != shader) {
+  if(profile <= VERTEX_SHADER_5_0) {
+    if(_lastVS == shader) return 0;
 #ifdef BSS_DEBUG
     if(!shader) shader = _fsquadVS;
 #endif
     _context->VSSetShader(_lastVS = (ID3D11VertexShader*)shader, 0, 0);
   }
-  else if(profile <= PIXEL_SHADER_5_0 && _lastPS != shader) {
+  else if(profile <= PIXEL_SHADER_5_0) {
+    if(_lastPS == shader) return 0;
 #ifdef BSS_DEBUG
     if(!shader) shader = library.DEBUG->GetInternalPrograms()[1];
 #endif
     _context->PSSetShader(_lastPS = (ID3D11PixelShader*)shader, 0, 0);
   }
-  else if(profile <= GEOMETRY_SHADER_5_0 && _lastGS != shader)
+  else if(profile <= GEOMETRY_SHADER_5_0)
+  {
+    if(_lastGS == shader) return 0;
     _context->GSSetShader(_lastGS = (ID3D11GeometryShader*)shader, 0, 0);
+  }
   else
     return -1;
   return 0;

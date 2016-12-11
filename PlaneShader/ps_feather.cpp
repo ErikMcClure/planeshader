@@ -25,6 +25,8 @@
 #pragma comment(lib, "../lib/feathergui32.lib")
 #endif
 
+#undef DrawText
+
 using namespace planeshader;
 
 void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, unsigned int dpi)
@@ -160,29 +162,29 @@ fgRoot* FG_FASTCALL fgInitialize()
 
 char FG_FASTCALL fgLoadExtension(void* fg, const char* extname) { return -1; }
 
-void fgPushClipRect(const AbsRect* clip)
+void FG_FASTCALL fgPushClipRect(const AbsRect* clip)
 { 
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
   psDriverHold::GetDriver()->MergeClipRect(rect);
 }
 
-AbsRect fgPeekClipRect()
+AbsRect FG_FASTCALL fgPeekClipRect()
 {
   psRect c = psDriverHold::GetDriver()->PeekClipRect();
   return AbsRect { c.left, c.top, c.right, c.bottom };
 }
 
-void fgPopClipRect()
+void FG_FASTCALL fgPopClipRect()
 {
   psDriverHold::GetDriver()->PopClipRect();
 }
 
-void fgDirtyElement(fgElement* e)
+void FG_FASTCALL fgDirtyElement(fgElement* e)
 {
 
 }
 
-void fgSetCursor(uint32_t type, void* custom)
+void FG_FASTCALL fgSetCursor(uint32_t type, void* custom)
 {
   static HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
   static HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
@@ -216,7 +218,7 @@ void fgSetCursor(uint32_t type, void* custom)
   }
 }
 
-void fgClipboardCopy(uint32_t type, const void* data, size_t length)
+void FG_FASTCALL fgClipboardCopy(uint32_t type, const void* data, size_t length)
 {
   OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   if(EmptyClipboard() && data != 0 && length > 0)
@@ -263,7 +265,7 @@ void fgClipboardCopy(uint32_t type, const void* data, size_t length)
   CloseClipboard();
 }
 
-char fgClipboardExists(uint32_t type)
+char FG_FASTCALL fgClipboardExists(uint32_t type)
 {
   switch(type)
   {
@@ -281,7 +283,7 @@ char fgClipboardExists(uint32_t type)
   return 0;
 }
 
-const void* fgClipboardPaste(uint32_t type, size_t* length)
+const void* FG_FASTCALL fgClipboardPaste(uint32_t type, size_t* length)
 {
   OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   UINT format = CF_PRIVATEFIRST;
@@ -325,12 +327,12 @@ const void* fgClipboardPaste(uint32_t type, size_t* length)
   return ret;
 }
 
-void fgClipboardFree(const void* mem)
+void FG_FASTCALL fgClipboardFree(const void* mem)
 {
   free(const_cast<void*>(mem));
 }
 
-void fgDragStart(char type, void* data, fgElement* draw)
+void FG_FASTCALL fgDragStart(char type, void* data, fgElement* draw)
 {
   fgRoot* root = fgSingleton();
   root->dragtype = type;
