@@ -221,25 +221,30 @@ void FG_FASTCALL fgSetCursor(uint32_t type, void* custom)
 void FG_FASTCALL fgClipboardCopy(uint32_t type, const void* data, size_t length)
 {
   OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
-  if(EmptyClipboard() && data != 0 && length > 0)
+  if(data != 0 && length > 0 && EmptyClipboard())
   {
     if(type == FGCLIPBOARD_TEXT)
     {
-      size_t len = UTF32toUTF8((const int*)data, length / sizeof(int), 0, 0);
-      size_t unilen = UTF32toUTF16((const int*)data, length / sizeof(int), 0, 0);
+      length /= sizeof(int);
+      size_t len = UTF32toUTF8((const int*)data, length, 0, 0);
+      size_t unilen = UTF32toUTF16((const int*)data, length, 0, 0);
       HGLOBAL unimem = GlobalAlloc(GMEM_MOVEABLE, unilen * sizeof(wchar_t));
       if(unimem)
       {
         wchar_t* uni = (wchar_t*)GlobalLock(unimem);
-        UTF32toUTF16((const int*)data, length / sizeof(int), uni, unilen);
+        size_t sz = UTF32toUTF16((const int*)data, length, uni, unilen);
+        if(sz < unilen) // ensure we have a null terminator
+          uni[sz] = 0;
         GlobalUnlock(unimem);
         SetClipboardData(CF_UNICODETEXT, unimem);
       }
-      HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, len * sizeof(char));
+      HGLOBAL gmem = GlobalAlloc(GMEM_MOVEABLE, len);
       if(gmem)
       {
         char* mem = (char*)GlobalLock(gmem);
-        UTF32toUTF8((const int*)data, length / sizeof(int), mem, len);
+        size_t sz = UTF32toUTF8((const int*)data, length, mem, len);
+        if(sz < len)
+          mem[sz] = 0;
         GlobalUnlock(gmem);
         SetClipboardData(CF_TEXT, gmem);
       }
@@ -297,7 +302,7 @@ const void* FG_FASTCALL fgClipboardPaste(uint32_t type, size_t* length)
       SIZE_T size = GlobalSize(gdata) / 2;
       SIZE_T len = UTF16toUTF32(str, size, 0, 0);
       int* ret = bss_util::bssmalloc<int>(len);
-      UTF16toUTF32(str, size, ret, len);
+      *length = UTF16toUTF32(str, size, ret, len);
       GlobalUnlock(gdata);
       CloseClipboard();
       return ret;
@@ -308,7 +313,7 @@ const void* FG_FASTCALL fgClipboardPaste(uint32_t type, size_t* length)
       SIZE_T size = GlobalSize(gdata);
       SIZE_T len = UTF8toUTF32(str, size, 0, 0);
       int* ret = bss_util::bssmalloc<int>(len);
-      UTF8toUTF32(str, size, ret, len);
+      *length = UTF8toUTF32(str, size, ret, len);
       GlobalUnlock(gdata);
       CloseClipboard();
       return ret;
@@ -319,9 +324,9 @@ const void* FG_FASTCALL fgClipboardPaste(uint32_t type, size_t* length)
   }
   HANDLE gdata = GetClipboardData(format);
   void* data = GlobalLock(gdata);
-  SIZE_T size = GlobalSize(gdata);
-  void* ret = malloc(size);
-  MEMCPY(ret, size, data, size);
+  *length = GlobalSize(gdata);
+  void* ret = malloc(*length);
+  MEMCPY(ret, *length, data, *length);
   GlobalUnlock(gdata);
   CloseClipboard();
   return ret;
