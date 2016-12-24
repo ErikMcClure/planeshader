@@ -44,8 +44,8 @@ using namespace bss_util;
 #define PROCESSQUEUE()
 #endif
 
-#define LOGEMPTY  
-//#define LOGFAILURERET(fn,rn,errmsg,...) { HRESULT hr = fn; if(FAILED(hr)) { return rn; } }
+#define LOGEMPTY
+#define LOGFAILUREIGNORE(fn,rn,...) { _lasterr = (fn); if(FAILED(_lasterr)) { PSLOGV(1,__VA_ARGS__); PROCESSQUEUE(); } }
 #define LOGFAILURERET(fn,rn,...) { _lasterr = (fn); if(FAILED(_lasterr)) { PSLOGV(1,__VA_ARGS__); PROCESSQUEUE(); return rn; } }
 #define LOGFAILURE(fn,...) LOGFAILURERET(fn,LOGEMPTY,__VA_ARGS__)
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
@@ -334,6 +334,13 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl").first;
 
     library.CIRCLE = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
+      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+  }
+
+  {
+    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fstriangle.hlsl").first;
+
+    library.ROUNDTRI = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }
 
@@ -831,12 +838,12 @@ void BSS_FASTCALL psDirectX11::_applyloadshader(ID3D11Texture2D* tex, psShader* 
   if(sRGB) desc.Format = FMTtoDXGI(psDriver::FromSRGBFormat(DXGItoFMT(desc.Format)));
   desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
   ID3D11Texture2D* casttex;
-  _device->CreateTexture2D(&desc, 0, &casttex);
+  LOGFAILURE(_device->CreateTexture2D(&desc, 0, &casttex), "CreateTexture2D failed with error ", _geterror(_lasterr));
   _context->CopyResource(casttex, tex);
 
   desc.BindFlags |= D3D11_BIND_RENDER_TARGET;
   desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-  _device->CreateTexture2D(&desc, 0, &loadtex);
+  LOGFAILURE(_device->CreateTexture2D(&desc, 0, &loadtex), "CreateTexture2D failed with error ", _geterror(_lasterr));
 
   ID3D11ShaderResourceView* view = static_cast<ID3D11ShaderResourceView*>(_createshaderview(casttex));
   _context->PSSetShaderResources(0, 1, &view);
@@ -867,7 +874,7 @@ void BSS_FASTCALL psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* s
   desc2d.BindFlags |= D3D11_BIND_RENDER_TARGET;
 
   ID3D11Texture2D* buftex;
-  _device->CreateTexture2D(&desc2d, 0, &buftex);
+  LOGFAILURE(_device->CreateTexture2D(&desc2d, 0, &buftex), "CreateTexture2D failed with error ", _geterror(_lasterr));
 
   D3D11_SHADER_RESOURCE_VIEW_DESC desc;
   desc.Format = desc2d.Format;
@@ -888,12 +895,12 @@ void BSS_FASTCALL psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* s
     desc.Texture2D.MipLevels = 1;
     desc.Texture2D.MostDetailedMip = i - 1;
     ID3D11ShaderResourceView* view = 0;
-    _device->CreateShaderResourceView(tex, &desc, &view);
+    LOGFAILUREIGNORE(_device->CreateShaderResourceView(tex, &desc, &view), "CreateShaderResourceView failed with error ", _geterror(_lasterr), " on level ", i);
 
     // Get rendertarget for this level in our buffer texture
     rtDesc.Texture2D.MipSlice = i;
     ID3D11RenderTargetView* rtview = 0;
-    _device->CreateRenderTargetView(buftex, &rtDesc, &rtview);
+    LOGFAILUREIGNORE(_device->CreateRenderTargetView(buftex, &rtDesc, &rtview), "CreateRenderTargetView failed with error ", _geterror(_lasterr), " on level ", i);
 
     // Set everything and render
     _context->PSSetShaderResources(0, 1, &view);

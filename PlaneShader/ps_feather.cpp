@@ -110,9 +110,11 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, 
     rotation = rotation;
 
   if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_ROUNDRECT)
-    psRoundedRect::DrawRoundedRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
+    psRoundRect::DrawRoundRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
   else if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_CIRCLE)
     psRenderCircle::DrawCircle(driver->library.CIRCLE, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
+  else if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_TRIANGLE)
+    psRoundTri::DrawRoundTri(driver->library.ROUNDTRI, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
   else
     driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
 }

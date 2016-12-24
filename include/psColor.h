@@ -43,6 +43,11 @@ namespace planeshader {
       return psColor(h, d/u, u, a);
     }
 
+    inline static float ToLinear(float x) { return (x <= 0.04045f) ? (x / 12.92f) : pow((x + 0.055f) / 1.055f, 2.4f); }
+    inline static float FromLinear(float x) { return (x <= 0.0031308f) ? (x * 12.92f) : (1.055f*pow(x, 1/2.4f)) - 0.055f; }
+    inline const psColor ToLinearRGB() const { return psColor(ToLinear(r), ToLinear(g), ToLinear(b), a); }
+    inline const psColor ToSRGB() const { return psColor(FromLinear(r), FromLinear(g), FromLinear(b), a); }
+
     // Swizzles!
     inline const psColor& rgba() const { return *this; }
     inline psColor argb() const { return psColor(a, r, g, b); }

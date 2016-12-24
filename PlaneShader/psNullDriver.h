@@ -30,6 +30,7 @@ namespace planeshader {
       library.DEBUG = nullshader;
       library.CURVE = nullshader;
       library.ROUNDRECT = nullshader;
+      library.ROUNDTRI = nullshader;
     }
     inline ~psNullDriver()
     {
