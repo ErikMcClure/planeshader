@@ -193,6 +193,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
   library.DEBUG = nullshader;
   library.CURVE = nullshader;
   library.ROUNDRECT = nullshader;
+  library.ROUNDTRI = nullshader;
 }
 
 psVulkan::~psVulkan()

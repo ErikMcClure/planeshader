@@ -37,6 +37,23 @@ TESTDEF::RETPAIR test_psPass()
   image.ApplyEdgeBuffer();
   image2.SetShader(shader);
 
+  psVertex rect[4]{
+    { 300,300,0,1,0xFF00FF00 },
+    { 300,400,0,1,0xFF0000FF },
+    { 400,400,0,1,0xFF0000FF },
+    { 400,300,0,1,0xFF00FF00 },
+  };
+
+  psImage image4(psTex::Create("../media/radial.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, true), psVec3D(300, 100, 0));
+  image4.SetColor(0xFF00FF00);
+
+  psVertex rect2[4]{
+    { 300,100,0,1,0xFF0000FF },
+    { 300,200,0,1,0xFF0000FF },
+    { 400,200,0,1,0xFF0000FF },
+    { 400,100,0,1,0xFF0000FF },
+  };
+
   while(!gotonext && engine->Begin(0))
   {
     for(int i = 0; i < 200; ++i)
@@ -44,6 +61,9 @@ TESTDEF::RETPAIR test_psPass()
       image3.Render();
       image.Render();
     }
+    psRenderPolygon::DrawPolygon(rect2, 4);
+    image4.Render();
+    psRenderPolygon::DrawPolygon(rect, 4);
     processGUI();
     engine->End();
     engine->FlushMessages();

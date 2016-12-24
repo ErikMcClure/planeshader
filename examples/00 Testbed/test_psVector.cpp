@@ -24,17 +24,24 @@ TESTDEF::RETPAIR test_psVector()
   psCubicCurve curve2(psVec(100), psVec(300, 100), psVec(927, 115), psVec(300), 4.25f);
   engine->GetPass(0)->Insert(&curve2);
 
-  psRoundedRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
+  psRoundRect rect(psRectRotateZ(400, 300, 550, 400, 0), 0);
   rect.SetCorners(psRect(30, 10, 30, 0));
   rect.SetColor(0xAAFFFFFF);
   rect.SetOutlineColor(0xFF0000FF);
   rect.SetOutline(0.5);
+
+  psRoundTri tri(psRectRotateZ(300, 50, 400, 150, 0), 0);
+  tri.SetCorners(psRect(30, 10, 30, 0));
+  tri.SetColor(0xAAFFFFFF);
+  tri.SetOutlineColor(0xFF0000FF);
+  tri.SetOutline(5);
 
   psRenderCircle circle(50, psVec3D(200, 300, 0));
   circle.SetOutlineColor(0xFF0000FF);
   circle.SetOutline(5);
 
   engine->GetPass(0)->Insert(&rect);
+  engine->GetPass(0)->Insert(&tri);
   engine->GetPass(0)->Insert(&circle);
 
   engine->GetPass(0)->SetClearColor(0xFF999999);
@@ -49,6 +56,7 @@ TESTDEF::RETPAIR test_psVector()
     updatefpscount(timer, fps);
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
     curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
+    tri.SetCorners(psRect(30, 10, 30, (engine->GetMouse().x - tri.GetPosition().x)/tri.GetDim().x));
     circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(time.GetTime()*0.001, PI_DOUBLE)));
   }
 

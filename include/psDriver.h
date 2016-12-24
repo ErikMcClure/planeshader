@@ -474,6 +474,7 @@ namespace planeshader {
       psShader* DEBUG;
       psShader* CURVE;
       psShader* ROUNDRECT;
+      psShader* ROUNDTRI;
     } library;
 
   protected:
