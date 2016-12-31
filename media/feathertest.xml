@@ -50,19 +50,19 @@
         </Treeview>
       </Tab>
       <Tab name="Tab 3">
-		<Box area="0,0,100%,0" flags="TILE|EXPANDY" padding="5,5,5,5">
+		<Box area="0,0,100%,0" flags="TILE|EXPANDY|IGNOREMARGINEDGE" padding="5,5,5,5">
 		  <Resource uv="3,3,3,3" area="0,0,100%,100%" color="0xFF999999" flags="ROUNDRECT|BACKGROUND|IGNORE" order="1"/>
-        <Box area="0,0,100%,0" flags="TILE|EXPANDY" padding="5,5,5,5" max-width="90" min-width="60">
+        <Box area="0,0,100%,0" flags="TILE|EXPANDY|IGNOREMARGINEDGE" padding="5,5,5,5" max-width="90" min-width="60">
           <Resource uv="3,3,3,3" area="0,0,100%,100%" color="0xFFBBBB00" flags="ROUNDRECT|BACKGROUND|IGNORE" order="1"/>
-          <Resource uv="3,3,3,3" area="0,0,50,20" color="0xFFDDDDDD" flags="ROUNDRECT" margin="0,0,0,0" />
-          <Resource uv="3,3,3,3" area="0,0,30,20" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,0,0,0" /> 
+          <Resource uv="3,3,3,3" area="0,0,50,25" color="0xFFDDDDDD" flags="ROUNDRECT" margin="0,5,0,0" />
+          <Resource uv="3,3,3,3" area="0,0,30,25" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,5,0,0" /> 
         </Box>
-        <Box area="0,0,100%,0" flags="TILE|EXPANDY" padding="5,5,5,5" margin="10,0,0,0" max-width="250">
+        <Box area="0,0,100%,0" flags="TILE|EXPANDY|IGNOREMARGINEDGE" padding="5,5,5,5" margin="10,5,0,0" max-width="250">
           <Resource uv="3,3,3,3" area="0,0,100%,100%" color="0xFFBBBBBB" flags="ROUNDRECT|BACKGROUND|IGNORE" order="1"/>
-          <Resource uv="3,3,3,3" area="0,0,30,20" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,0,0,0" />
-          <Resource uv="3,3,3,3" area="0,0,100%,20" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,0,0,0" min-width="60" max-width="100"/> 
-          <Resource uv="3,3,3,3" area="0,0,100%,20" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,0,0,0" min-width="10"/> 
-          <Resource uv="3,3,3,3" area="0,0,100%,20" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,0,0,0" max-width="100"/> 
+          <Resource uv="3,3,3,3" area="0,0,30,25" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,5,0,0" />
+          <Resource uv="3,3,3,3" area="0,0,100%,25" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,5,0,0" min-width="60" max-width="100"/> 
+          <Resource uv="3,3,3,3" area="0,0,100%,25" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,5,0,0" min-width="20"/> 
+          <Resource uv="3,3,3,3" area="0,0,100%,25" color="0xFFDDDDDD" flags="ROUNDRECT" margin="10,5,0,0" min-width="20" max-width="100"/> 
         </Box>
       </Box>
       </Tab>
