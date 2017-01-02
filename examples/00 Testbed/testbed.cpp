@@ -2,7 +2,7 @@
 // -------------------------
 // This example runs a series of verification tests to ensure Planeshader is working properly.
 //
-// Copyright ©2016 Black Sphere Studios
+// Copyright ©2017 Black Sphere Studios
 
 
 #include "testbed.h"
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
   const size_t NUMTESTS = sizeof(tests) / sizeof(TESTDEF);
 
   std::cout << "Black Sphere Studios - PlaneShader v" << (uint32_t)PS_VERSION_MAJOR << '.' << (uint32_t)PS_VERSION_MINOR << '.' <<
-    (uint32_t)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2015 Black Sphere Studios\n" << std::endl;
+    (uint32_t)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2017 Black Sphere Studios\n" << std::endl;
   const int COLUMNS[3] = { 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 
