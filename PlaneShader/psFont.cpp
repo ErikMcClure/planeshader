@@ -31,14 +31,16 @@ using namespace planeshader;
 FT_Library psFont::PTRLIB = 0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
-psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi) : _path(file), _pointsize(psize), _curtex(0),
-_curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(!dpi ? psGUIManager::BASE_DPI : dpi), _haskerning(false)
+psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi) : _path(file), _pointsize(psize), _curtex(0),
+_curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
-  float scale = _dpi / (float)psGUIManager::BASE_DPI;
-  _textures.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, psVeciu(_dpi)), 0);
-  _staging.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, psVeciu(_dpi)), 0);
+  if(!_dpi.x) _dpi.x = psGUIManager::BASE_DPI;
+  if(!_dpi.y) _dpi.y = psGUIManager::BASE_DPI;
+  psVec scale(_dpi.x / (float)psGUIManager::BASE_DPI, _dpi.y / (float)psGUIManager::BASE_DPI);
+  _textures.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale.x), bss_util::fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _dpi), 0);
+  _staging.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale.x), bss_util::fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _dpi), 0);
 
   if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
@@ -92,10 +94,10 @@ uint16_t psFont::PreloadGlyphs(const int* glyphs)
   return retval;
 }
 
-psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, int dpi)
+psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi)
 {
   if(!_driver) return 0;
-  cStr str(cStrF("%s|%i|%i|%i", file, psize, antialias, dpi));
+  cStr str(cStrF("%s|%i|%i|%i|%i", file, psize, antialias, dpi.x, dpi.y));
   psFont* r = _Fonts[str];
   if(r != 0) return r;
   r = new psFont(file, psize, antialias, dpi);
@@ -205,7 +207,7 @@ void psFont::_loadfont()
   }
 
   FT_Pos psize = FT_F26Dot6(_pointsize * 64);
-  if(FT_Set_Char_Size(_ft2face, psize, psize, _dpi, _dpi) != 0)
+  if(FT_Set_Char_Size(_ft2face, psize, psize, _dpi.x, _dpi.y) != 0)
   { //certain fonts can only be rendered at specific sizes, so we iterate through them until we hit the closest one and try to use that
     int bestdif = 0x7FFFFFFF;
     int cur = 0;
@@ -222,7 +224,7 @@ void psFont::_loadfont()
     }
   }
 
-  float invdpiscale = (_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi)); // y-axis DPI scaling
+  float invdpiscale = (_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi.y)); // y-axis DPI scaling
 
   if(_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
   {
@@ -318,7 +320,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
 
   if(!lockbytes) return retval;
 
-  psVec invdpiscale(_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi));
+  psVec invdpiscale(psVec(psGUIManager::BASE_DPI) / _dpi);
   psVec dim = _staging[_curtex]->GetRawDim();
   retval->uv = psRect(_curpos.x / dim.x, _curpos.y / dim.y, (_curpos.x + width) / dim.x, (_curpos.y + height) / dim.y);
   retval->advance = (_ft2face->glyph->advance.x * FT_COEF * invdpiscale.x);

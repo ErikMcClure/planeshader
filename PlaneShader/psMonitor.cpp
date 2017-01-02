@@ -61,7 +61,9 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
 
   GetClientRect(_window, &rect);
   AbsRect r = { 0, 0, rect.right - rect.left, rect.bottom - rect.top };
-  fgMonitor_Init(this, FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, psGUIManager::GetMonitorDPI(0).y);
+  psVeciu dpi = psGUIManager::GetMonitorDPI(0);
+  fgIntVec fgdpi = { dpi.x, dpi.y };
+  fgMonitor_Init(this, FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, &fgdpi);
   _manager->_updaterootarea();
   this->element.message = (fgMessage)&Message;
 }
@@ -421,7 +423,8 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
       _lockcursor(hWnd, GetActiveWindow() == hWnd);
     RECT rect;
     GetClientRect(self->_window, &rect);
-    fgSendSubMsg<FG_SETAREA, void*>(&self->element, 1, &AbsRect { (FABS)rect.left, (FABS)rect.top, (FABS)rect.right, (FABS)rect.bottom });
+    AbsRect absrect = { (FABS)rect.left, (FABS)rect.top, (FABS)rect.right, (FABS)rect.bottom };
+    fgSendSubMsg<FG_SETAREA, void*>(&self->element, 1, &absrect);
     self->_manager->_onresize(psVeciu(rect.right - rect.left, rect.bottom - rect.top), self->_mode == MODE_FULLSCREEN);
   }
     break;
