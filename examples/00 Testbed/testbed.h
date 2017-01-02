@@ -1,4 +1,4 @@
-// Copyright ©2016 Black Sphere Studios
+// Copyright ©2017 Black Sphere Studios
 
 #ifndef __TESTBED_H__
 #define __TESTBED_H__
