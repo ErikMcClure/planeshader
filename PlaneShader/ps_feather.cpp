@@ -29,64 +29,73 @@
 
 using namespace planeshader;
 
-void* FG_FASTCALL fgCreateFont(fgFlag flags, const char* font, uint32_t fontsize, unsigned int dpi)
+const int UNICODE_TERMINATOR = 0;
+
+void* FG_FASTCALL fgCreateFontPS(fgFlag flags, const char* font, uint32_t fontsize, const fgIntVec* dpi)
 {
-  return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, dpi);
+  return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, psVeciu(dpi->x, dpi->y));
 }
-void* FG_FASTCALL fgCopyFont(void* font, unsigned int fontsize, unsigned int dpi)
+void* FG_FASTCALL fgCloneFontPS(void* font, const struct _FG_FONT_DESC* desc)
 {
   psFont* f = (psFont*)font;
-  return psFont::Create(f->GetPath(), fontsize, f->GetAntialias(), dpi);
+  if(!desc)
+  {
+    f->Grab();
+    return f;
+  }
+  return psFont::Create(f->GetPath(), desc->pt, f->GetAntialias(), psVeciu(desc->dpi.x, desc->dpi.y));
 }
-void* FG_FASTCALL fgCloneFontDPI(void* font, unsigned int dpi) { ((psFont*)font)->Grab(); return font; }
-void* FG_FASTCALL fgCloneFont(void* font) { ((psFont*)font)->Grab(); return font; }
-void FG_FASTCALL fgDestroyFont(void* font) { ((psFont*)font)->Drop(); }
-void* FG_FASTCALL fgDrawFont(void* font, const int* text, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, void* cache)
+void FG_FASTCALL fgDestroyFontPS(void* font) { ((psFont*)font)->Drop(); }
+void FG_FASTCALL fgDrawFontPS(void* font, const int* text, size_t len, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data, void* layout)
 {
   psFont* f = (psFont*)font;
   psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, rotation, {center->x - area->left, center->y - area->top}, 0 };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   if(f->GetAntialias() == psFont::FAA_LCD)
-    f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+    f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, !text ? &UNICODE_TERMINATOR : text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   else
-    f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
-  return 0;
+    f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, !text ? &UNICODE_TERMINATOR : text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
 }
-void FG_FASTCALL fgFontSize(void* font, const int* text, float lineheight, float letterspacing, AbsRect* area, fgFlag flags)
+void* FG_FASTCALL fgFontLayoutPS(void* font, const int* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, void* prevlayout)
 {
   psFont* f = (psFont*)font;
   psVec dim = { area->right - area->left, area->bottom - area->top };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
-  f->CalcTextDim(text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
+  f->CalcTextDim(!text ? &UNICODE_TERMINATOR : text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
   area->right = area->left + dim.x;
   area->bottom = area->top + dim.y;
+  return 0;
 }
-void FG_FASTCALL fgFontGet(void* font, float* lineheight, unsigned int* size, unsigned int* dpi)
+void FG_FASTCALL fgFontGetPS(void* font, fgFontDesc* desc)
 {
   psFont* f = (psFont*)font;
-  if(lineheight) *lineheight = f->GetLineHeight();
-  if(size) *size = f->GetPointSize();
-  if(dpi) *dpi = f->GetDPI();
+  if(desc)
+  {
+    desc->dpi.x = f->GetDPI().x;
+    desc->dpi.y = f->GetDPI().y;
+    desc->pt = f->GetPointSize();
+    desc->lineheight = f->GetLineHeight();
+  }
 }
-size_t FG_FASTCALL fgFontIndex(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* cache)
+size_t FG_FASTCALL fgFontIndexPS(void* font, const int* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* layout)
 {
   psFont* f = (psFont*)font;
-  auto r = f->GetIndex(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
+  auto r = f->GetIndex(!text ? &UNICODE_TERMINATOR : text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
   cursor->x = r.second.x;
   cursor->y = r.second.y;
   return r.first;
 }
-AbsVec FG_FASTCALL fgFontPos(void* font, const int* text, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* cache)
+AbsVec FG_FASTCALL fgFontPosPS(void* font, const int* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* layout)
 {
   psFont* f = (psFont*)font;
-  auto r = f->GetPos(text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
+  auto r = f->GetPos(!text ? &UNICODE_TERMINATOR : text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
   return AbsVec { r.second.x, r.second.y };
 }
 
-void* FG_FASTCALL fgCreateResource(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
-void* FG_FASTCALL fgCloneResource(void* res) { ((psTex*)res)->Grab(); return res; }
-void FG_FASTCALL fgDestroyResource(void* res) { ((psTex*)res)->Drop(); }
-void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags)
+void* FG_FASTCALL fgCreateResourcePS(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
+void* FG_FASTCALL fgCloneResourcePS(void* res, fgElement* src) { ((psTex*)res)->Grab(); return res; }
+void FG_FASTCALL fgDestroyResourcePS(void* res) { ((psTex*)res)->Drop(); }
+void FG_FASTCALL fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data)
 {
   psTex* tex = (psTex*)res;
   psRect uvresolve;
@@ -104,10 +113,7 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, 
   if(tex)
     driver->SetTextures(&tex, 1);
 
-  psRect hold = psDriverHold::GetDriver()->PeekClipRect();
   psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x - area->left, center->y - area->top));
-  if(rotation != 0)
-    rotation = rotation;
 
   if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_ROUNDRECT)
     psRoundRect::DrawRoundRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
@@ -119,7 +125,7 @@ void FG_FASTCALL fgDrawResource(void* res, const CRect* uv, unsigned int color, 
     driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
 }
 
-void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
+void FG_FASTCALL fgResourceSizePS(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
 {
   psTex* tex = (psTex*)res;
   psRect uvresolve = { (uv->left.rel*tex->GetDim().x) + uv->left.abs,
@@ -130,7 +136,7 @@ void FG_FASTCALL fgResourceSize(void* res, const CRect* uv, AbsVec* dim, fgFlag 
   dim->y = uvresolve.bottom - uvresolve.top;
 }
 
-void FG_FASTCALL fgDrawLines(const AbsVec* p, size_t n, unsigned int color, const AbsVec* translate, const AbsVec* scale, FABS rotation, const AbsVec* center)
+void FG_FASTCALL fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec* translate, const AbsVec* scale, FABS rotation, const AbsVec* center, const fgDrawAuxData* data)
 {
   psDriver* driver = psDriverHold::GetDriver();
   unsigned long vertexcolor;
@@ -164,29 +170,29 @@ fgRoot* FG_FASTCALL fgInitialize()
 
 char FG_FASTCALL fgLoadExtension(void* fg, const char* extname) { return -1; }
 
-void FG_FASTCALL fgPushClipRect(const AbsRect* clip)
+void FG_FASTCALL fgPushClipRectPS(const AbsRect* clip, const fgDrawAuxData* data)
 { 
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
   psDriverHold::GetDriver()->MergeClipRect(rect);
 }
 
-AbsRect FG_FASTCALL fgPeekClipRect()
+AbsRect FG_FASTCALL fgPeekClipRectPS(const fgDrawAuxData* data)
 {
   psRect c = psDriverHold::GetDriver()->PeekClipRect();
   return AbsRect { c.left, c.top, c.right, c.bottom };
 }
 
-void FG_FASTCALL fgPopClipRect()
+void FG_FASTCALL fgPopClipRectPS(const fgDrawAuxData* data)
 {
   psDriverHold::GetDriver()->PopClipRect();
 }
 
-void FG_FASTCALL fgDirtyElement(fgElement* e)
+void FG_FASTCALL fgDirtyElementPS(fgElement* e)
 {
 
 }
 
-void FG_FASTCALL fgSetCursor(uint32_t type, void* custom)
+void FG_FASTCALL fgSetCursorPS(uint32_t type, void* custom)
 {
   static HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
   static HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
@@ -220,7 +226,7 @@ void FG_FASTCALL fgSetCursor(uint32_t type, void* custom)
   }
 }
 
-void FG_FASTCALL fgClipboardCopy(uint32_t type, const void* data, size_t length)
+void FG_FASTCALL fgClipboardCopyPS(uint32_t type, const void* data, size_t length)
 {
   OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   if(data != 0 && length > 0 && EmptyClipboard())
@@ -272,7 +278,7 @@ void FG_FASTCALL fgClipboardCopy(uint32_t type, const void* data, size_t length)
   CloseClipboard();
 }
 
-char FG_FASTCALL fgClipboardExists(uint32_t type)
+char FG_FASTCALL fgClipboardExistsPS(uint32_t type)
 {
   switch(type)
   {
@@ -290,7 +296,7 @@ char FG_FASTCALL fgClipboardExists(uint32_t type)
   return 0;
 }
 
-const void* FG_FASTCALL fgClipboardPaste(uint32_t type, size_t* length)
+const void* FG_FASTCALL fgClipboardPastePS(uint32_t type, size_t* length)
 {
   OpenClipboard(psEngine::Instance()->GetMonitor()->GetWindow());
   UINT format = CF_PRIVATEFIRST;
@@ -334,12 +340,12 @@ const void* FG_FASTCALL fgClipboardPaste(uint32_t type, size_t* length)
   return ret;
 }
 
-void FG_FASTCALL fgClipboardFree(const void* mem)
+void FG_FASTCALL fgClipboardFreePS(const void* mem)
 {
   free(const_cast<void*>(mem));
 }
 
-void FG_FASTCALL fgDragStart(char type, void* data, fgElement* draw)
+void FG_FASTCALL fgDragStartPS(char type, void* data, fgElement* draw)
 {
   fgRoot* root = fgSingleton();
   root->dragtype = type;
@@ -353,38 +359,39 @@ psRoot::psRoot()
 
   static fgBackend BACKEND = {
     &fgBehaviorHookListener,
-    &fgCreateFont,
-    &fgCopyFont,
-    &fgCloneFont,
-    &fgDestroyFont,
-    &fgDrawFont,
-    &fgFontSize,
-    &fgFontGet,
-    &fgCreateResource,
-    &fgCloneResource,
-    &fgDestroyResource,
-    &fgDrawResource,
-    &fgResourceSize,
-    &fgFontIndex,
-    &fgFontPos,
-    &fgDrawLines,
+    &fgCreateFontPS,
+    &fgCloneFontPS,
+    &fgDestroyFontPS,
+    &fgDrawFontPS,
+    &fgFontLayoutPS,
+    &fgFontGetPS,
+    &fgCreateResourcePS,
+    &fgCloneResourcePS,
+    &fgDestroyResourcePS,
+    &fgDrawResourcePS,
+    &fgResourceSizePS,
+    &fgFontIndexPS,
+    &fgFontPosPS,
+    &fgDrawLinesPS,
     &fgCreateDefault,
     &fgMessageMapDefault,
     &fgUserDataMapCallbacks,
-    &fgPushClipRect,
-    &fgPeekClipRect,
-    &fgPopClipRect,
-    &fgDragStart,
-    &fgSetCursor,
-    &fgClipboardCopy,
-    &fgClipboardExists,
-    &fgClipboardPaste,
-    &fgClipboardFree,
-    &fgDirtyElement,
+    &fgPushClipRectPS,
+    &fgPeekClipRectPS,
+    &fgPopClipRectPS,
+    &fgDragStartPS,
+    &fgSetCursorPS,
+    &fgClipboardCopyPS,
+    &fgClipboardExistsPS,
+    &fgClipboardPastePS,
+    &fgClipboardFreePS,
+    &fgDirtyElementPS,
     0,
     0,
   };
-  fgRoot_Init(this, &area, psGUIManager::BASE_DPI, &BACKEND);
+
+  fgIntVec dpi = { psGUIManager::BASE_DPI, psGUIManager::BASE_DPI };
+  fgRoot_Init(this, &area, &dpi, &BACKEND);
   DWORD blinkrate = 0;
   int64_t sz = bss_util::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
   if(sz > 0)

@@ -29,7 +29,7 @@ void psPass::Begin()
 {
   PROFILE_FUNC();
   CurPass = this;
-  _driver->SetDPIScale(psVec(GetDPI()/(float)psGUIManager::BASE_DPI));
+  _driver->SetDPIScale(psVec(GetDPI())/psVec(psGUIManager::BASE_DPI));
   auto rt = GetRenderTarget();
   if(!rt) return;
 
@@ -71,11 +71,14 @@ void psPass::End()
   _driver->PopCamera();
   PROFILE_FUNC();
 }
-uint32_t psPass::GetDPI()
+psVeciu psPass::GetDPI()
 {
-  if(!_dpi)
-    return !_monitor ? psEngine::Instance()->GetGUI().dpi : _monitor->dpi;
-  return _dpi;
+  psVeciu dpi = _dpi;
+  if(!_dpi.x)
+    _dpi.x = !_monitor ? psEngine::Instance()->GetGUI().dpi.x : _monitor->dpi.x;
+  if(!_dpi.y)
+    _dpi.y = !_monitor ? psEngine::Instance()->GetGUI().dpi.y : _monitor->dpi.y;
+  return dpi;
 }
 psTex* const* psPass::GetRenderTarget()
 {
