@@ -38,7 +38,7 @@ _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
 
   if(!_dpi.x) _dpi.x = psGUIManager::BASE_DPI;
   if(!_dpi.y) _dpi.y = psGUIManager::BASE_DPI;
-  psVec scale(_dpi.x / (float)psGUIManager::BASE_DPI, _dpi.y / (float)psGUIManager::BASE_DPI);
+  psVec scale(_dpi.x / 72.0f, _dpi.y / 72.0f); // points are defined as 1/72 inches, so the scaling factor is DPI/72.0f to get the true glyph size. Example: a 12 point font at 96 DPI is 12 * 96/72 = 16 pixels high
   _textures.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale.x), bss_util::fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _dpi), 0);
   _staging.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale.x), bss_util::fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _dpi), 0);
 

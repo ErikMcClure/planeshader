@@ -311,7 +311,7 @@
   <Skin name="Grid">
     <Resource name="#gridbg" uv="3,3,3,3" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="1" flags="ROUNDRECT|BACKGROUND" />
   </Skin>
-  <Skin name="Text" color="0xFFFFFFFF" font="arial.ttf;14" />
+  <Skin name="Text" color="0xFFFFFFFF" font="arial.ttf;14"/>
   <Skin name="Menu" hovercolor="0xFFFFFFFF">
     <Resource name="#menubg" uv="0,0,0,0" area="0,0,100%,100%" color="0x99000000" edgecolor="0xFFAAAAAA" outline="0" flags="ROUNDRECT|BACKGROUND" />
   </Skin>
