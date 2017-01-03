@@ -168,8 +168,6 @@ fgRoot* FG_FASTCALL fgInitialize()
   return fgSingleton();
 }
 
-char FG_FASTCALL fgLoadExtension(void* fg, const char* extname) { return -1; }
-
 void FG_FASTCALL fgPushClipRectPS(const AbsRect* clip, const fgDrawAuxData* data)
 { 
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
@@ -386,8 +384,9 @@ psRoot::psRoot()
     &fgClipboardPastePS,
     &fgClipboardFreePS,
     &fgDirtyElementPS,
-    0,
-    0,
+    &fgProcessMessagesDefault,
+    &fgLoadExtensionDefault,
+    &fgTerminateDefault,
   };
 
   fgIntVec dpi = { psGUIManager::BASE_DPI, psGUIManager::BASE_DPI };
