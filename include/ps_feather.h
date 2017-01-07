@@ -72,7 +72,7 @@ namespace planeshader {
     HWND__* WndCreate(HINSTANCE__* instance, tagRECT& dim, MODE mode, fgFlag flags, HWND__* hWnd);
 
     static void WndRegister(HINSTANCE__* instance, const wchar_t* icon, HICON__* iconrc);
-    static size_t FG_FASTCALL Message(fgMonitor* self, const FG_Msg* m);
+    static size_t  Message(fgMonitor* self, const FG_Msg* m);
     static longptr_t __stdcall WndProc(HWND__* hWnd, uint32_t message, size_t wParam, longptr_t lParam);
     static tagPOINTS* __stdcall _STCpoints(HWND__* hWnd, tagPOINTS* target);
     static void _lockcursor(HWND__* hWnd, bool lock);

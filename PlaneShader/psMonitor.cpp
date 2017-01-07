@@ -74,10 +74,10 @@ psMonitor::~psMonitor()
 
   UnregisterClassW(L"PlaneShaderWindow", GetModuleHandle(0));
 }
-size_t FG_FASTCALL psMonitor::Message(fgMonitor* s, const FG_Msg* m)
+size_t  psMonitor::Message(fgMonitor* s, const FG_Msg* m)
 {
   psMonitor* self = static_cast<psMonitor*>(s);
-  ptrdiff_t otherint = m->otherint;
+  size_t otherint = m->u;
   fgFlag flags = self->element.flags;
 
   switch(m->type)
@@ -86,10 +86,10 @@ size_t FG_FASTCALL psMonitor::Message(fgMonitor* s, const FG_Msg* m)
     self->_manager->_updaterootarea();
     break;
   case FG_SETTEXT:
-    SetWindowTextW(self->_window, cStrW((const char*)m->other).c_str());
+    SetWindowTextW(self->_window, cStrW((const char*)m->p).c_str());
     return 1;
   case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
-    otherint = T_SETBIT(flags, otherint, m->otheraux);
+    otherint = T_SETBIT(flags, otherint, m->u2);
   case FG_SETFLAGS:
     if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOTITLEBAR | FGWINDOW_NOBORDER))
     { // handle a layout flag change
