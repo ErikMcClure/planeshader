@@ -136,7 +136,7 @@ void psGUIManager::ShowCursor(bool show)
 {
   ::ShowCursor(show ? 1 : 0);
 }
-size_t FG_FASTCALL psGUIManager::Message(fgRoot* self, const FG_Msg* m)
+size_t  psGUIManager::Message(fgRoot* self, const FG_Msg* m)
 {
   return fgRoot_Message(self, m);
 }

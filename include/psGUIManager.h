@@ -86,7 +86,7 @@ namespace planeshader {
     void _updaterootarea();
     virtual void _onresize(psVeciu dim, bool fullscreen) = 0;
 
-    static size_t FG_FASTCALL Message(fgRoot* self, const FG_Msg* m);
+    static size_t  Message(fgRoot* self, const FG_Msg* m);
 
     uint8_t _allkeys[NUMKEYS]; //holds keyboard layout state
     uint32_t _allbuttons[NUMJOY];
