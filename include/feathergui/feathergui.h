@@ -140,7 +140,7 @@ enum FGMOVE
   FGMOVE_CENTER = (FGMOVE_CENTERX | FGMOVE_CENTERY),
   FGMOVE_ROTATION = (1 << 7),
   FGMOVE_PADDING = (1 << 8),
-  FGMOVE_MARGIN = (1 << 9)
+  FGMOVE_MARGIN = (1 << 9),
 };
 
 enum FGTEXTFMT
@@ -275,6 +275,7 @@ enum FG_MSGTYPE
   FG_SETPARENT, // Adds this element to the parent in the first argument, inserting it after the child in the second argument, or before the root if the second argument is NULL.
   FG_ADDCHILD, // Pass an FG_Msg with this type and set the other pointer to the child that should be added.
   FG_REMOVECHILD, // Verifies child's parent is this, then sets the child's parent to NULL.
+  FG_PARENTCHANGE, // This is ONLY used to notify a child that it's parent has changed, because FG_SETPARENT might not ever be called if FG_ADDCHILD is called directly.
   FG_LAYOUTCHANGE, 
   FG_LAYOUTFUNCTION,
   FG_LAYOUTLOAD, // Loads a layout passed in the first pointer with an optional custom class name resolution function passed into the second pointer of type fgElement* (*)(const char*, fgTransform*, fgFlag)
@@ -607,7 +608,7 @@ enum FG_MOUSEFLAGS {
 
 typedef struct _FG_MOUSESTATE
 {
-  int x, y; // Last known position of the mouse for this control
+  float x, y; // Last known position of the mouse for this control
   unsigned char buttons; // Last known configuration of mouse buttons recieved by this control
   unsigned char state;
 } fgMouseState;
@@ -617,7 +618,7 @@ struct _FG_ELEMENT;
 // General message structure which contains the message type and then various kinds of information depending on the type.
 typedef struct _FG_MSG {
   union {
-    struct { int x; int y; // Mouse and touch events
+    struct { float x; float y; // Mouse and touch events
       union { 
         struct { unsigned char button; unsigned char allbtn; }; 
         struct { short scrolldelta; short scrollhdelta; }; // MOUSESCROLL
@@ -662,6 +663,7 @@ FG_EXTERN char* fgCopyText(const char* text, const char* file, size_t line);
 FG_EXTERN inline void fgUpdateMouseState(fgMouseState* state, const FG_Msg* msg);
 FG_EXTERN inline char fgRectIntersect(const AbsRect* l, const AbsRect* r); // Returns 1 if the rectangles intersect, or 0 otherwise
 FG_EXTERN inline void fgRectIntersection(const AbsRect* BSS_RESTRICT l, const AbsRect* BSS_RESTRICT r, AbsRect* out);
+FG_EXTERN inline void fgScaleRectDPI(AbsRect* rect, int dpix, int dpiy);
 FG_EXTERN size_t fgUTF32toUTF16(const int*BSS_RESTRICT input, ptrdiff_t srclen, wchar_t*BSS_RESTRICT output, size_t buflen);
 FG_EXTERN size_t fgUTF8toUTF16(const char*BSS_RESTRICT input, ptrdiff_t srclen, wchar_t*BSS_RESTRICT output, size_t buflen);
 FG_EXTERN size_t fgUTF16toUTF8(const wchar_t*BSS_RESTRICT input, ptrdiff_t srclen, char*BSS_RESTRICT output, size_t buflen);
