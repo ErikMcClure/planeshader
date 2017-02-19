@@ -6,18 +6,22 @@
 #include "psStateblock.h"
 #include "psRenderable.h"
 #include "psTex.h"
+#include "bss-util/bss_vector.h"
 
 using namespace planeshader;
 
-psVec3D BSS_FASTCALL psDriver::FromScreenSpace(const psVec& point, float z) const
+psDriver::psDriver()
+{
+  _transformstack.AddConstruct<const float(*)[4][4]>(&identity);
+}
+
+psVec3D psDriver::FromScreenSpace(const psVec& point, float z) const
 { 
   psVec pt = (point - (GetBackBuffer()->GetRawDim() / 2u)) * (-ReversePoint(VEC3D_ZERO).z + z);
   return ReversePoint(psVec3D(pt.x, pt.y, 1.0f + z));
 }
 
-#include "psEngine.h"
-
-psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
+psBatchObj* psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
   uint32_t snapshot = GetSnapshot(); // Snapshot our driver state
   if(_jobstack.Length() > 0)
@@ -67,7 +71,7 @@ psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateb
 }
 
 // Flushes the batch job queue
-/*void BSS_FASTCALL psDriver::Flush(bool preserve)
+/*void psDriver::Flush(bool preserve)
 {
   obj.shader->Activate();
   SetStateblock(obj.stateblock);
@@ -79,7 +83,7 @@ psBatchObj* BSS_FASTCALL psDriver::DrawBatchBegin(psShader* shader, void* stateb
   obj.buffer->nvert = 0;
 }*/
 
-psBufferObj* BSS_FASTCALL psDriver::CreateBufferObj(psBufferObj* target, uint32_t capacity, uint32_t element, uint32_t usage, const void* initdata)
+psBufferObj* psDriver::CreateBufferObj(psBufferObj* target, uint32_t capacity, uint32_t element, uint32_t usage, const void* initdata)
 {
   assert(target != 0);
   target->buffer = CreateBuffer(capacity, element, usage, initdata);
@@ -90,7 +94,7 @@ psBufferObj* BSS_FASTCALL psDriver::CreateBufferObj(psBufferObj* target, uint32_
   return target; // We return the same pointer we passed in due to restrictions on function calls in static variables (see psVector.cpp)
 }
 
-psBatchObj* BSS_FASTCALL psDriver::DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4])
+psBatchObj* psDriver::DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4])
 {
   psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, vbuf, ibuf, mode, transform);
   psBufferObj* verts = obj->buffer.verts;
@@ -110,7 +114,22 @@ psBatchObj* BSS_FASTCALL psDriver::DrawArray(psShader* shader, const psStatebloc
   return obj;
 }
 
-void BSS_FASTCALL psDriver::MergeClipRect(const psRect& rect)
+void psDriver::MergeClipRect(const psRect& rect)
 {
   PushClipRect(PeekClipRect().GenerateIntersection(rect));
+}
+
+void psDriver::PushTransform(const psMatrix& xform)
+{
+  psMatrix& m = *PushMatrix();
+  bss_util::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
+  _transformstack.AddConstruct<const float(*)[4][4]>(&m);
+}
+const psMatrix& psDriver::PeekTransform()
+{
+  return *_transformstack.Back();
+}
+void psDriver::PopTransform()
+{
+  _transformstack.RemoveLast();
 }

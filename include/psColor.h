@@ -25,8 +25,8 @@ namespace planeshader {
     inline psColor(double r_, double g_, double b_, double a_=1.0f) : BASE((float)r_,(float)g_,(float)b_,(float)a_) { }
     explicit inline psColor(psVec3D rgb, float alpha=1.0f) : BASE(rgb.x,rgb.y,rgb.z,alpha) { }
     explicit inline psColor(float rgb=0.0f, float alpha=1.0f) : BASE(rgb,rgb,rgb,alpha) { }
-    uint16_t BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
-    uint16_t BSS_FASTCALL ReadFormat(FORMATS format, const void* target);
+    uint16_t WriteFormat(FORMATS format, void* target) const;
+    uint16_t ReadFormat(FORMATS format, const void* target);
 
     inline const psColor ToHSVA() const
     {
@@ -90,7 +90,7 @@ namespace planeshader {
     inline operator const float*() const { return v; }
 
     // Interpolates between two colors
-    inline static uint32_t BSS_FASTCALL Interpolate(uint32_t l, uint32_t r, float c)
+    inline static uint32_t Interpolate(uint32_t l, uint32_t r, float c)
     {
       sseVec xl(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(l), _mm_setzero_si128()), _mm_setzero_si128())); // unpack left integer into floats (WITHOUT normalization)
       sseVec xr(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(r), _mm_setzero_si128()), _mm_setzero_si128())); // unpack right integer
@@ -101,7 +101,7 @@ namespace planeshader {
     }
 
     // Multiplies a color by a value (equivalent to interpolating between r and 0x00000000)
-    inline static uint32_t BSS_FASTCALL Multiply(uint32_t r, float c)
+    inline static uint32_t Multiply(uint32_t r, float c)
     {
       sseVec xr(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(r), _mm_setzero_si128()), _mm_setzero_si128())); // unpack r
       sseVec xc(c); // (c,c,c,c)
@@ -110,19 +110,19 @@ namespace planeshader {
       return (uint32_t)_mm_cvtsi128_si32(xch);
     }
 
-    inline static psColor BSS_FASTCALL Interpolate(const psColor& l, const psColor& r, float c)
+    inline static psColor Interpolate(const psColor& l, const psColor& r, float c)
     {
       sseVec xc(c);
       psColor ret;
       ((sseVec(l.v)*(sseVec(1.0f)-xc)) + (sseVec(r.v)*xc)) >> ret.v;
       return ret;
     }
-    BSS_FORCEINLINE static sseVec BSS_FASTCALL Saturate(const sseVec& x)
+    BSS_FORCEINLINE static sseVec Saturate(const sseVec& x)
     {
       return x.min(sseVec::ZeroVector()).max(sseVec(1.0f));
     }
-    inline static psColor BSS_FASTCALL FromHSV(const psVec3D& hsv) { return FromHSVA(psColor(hsv)); }
-    inline static psColor BSS_FASTCALL FromHSVA(const psColor& hsva)
+    inline static psColor FromHSV(const psVec3D& hsv) { return FromHSVA(psColor(hsv)); }
+    inline static psColor FromHSVA(const psColor& hsva)
     {
       float h=hsva.r;
       float b=hsva.b*(1-hsva.g);
@@ -132,7 +132,7 @@ namespace planeshader {
       return r;
     }
     // Builds a 32-bit color from 8-bit components
-    BSS_FORCEINLINE static uint32_t BSS_FASTCALL BuildColor(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
+    BSS_FORCEINLINE static uint32_t BuildColor(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
     {
       uint32_t ret;
       uint8_t* c=(uint8_t*)(&ret);
@@ -143,7 +143,7 @@ namespace planeshader {
       return ret;
     }
     
-    static uint16_t BSS_FASTCALL BitsPerPixel(FORMATS format);
+    static uint16_t BitsPerPixel(FORMATS format);
   };
 
   // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
@@ -157,8 +157,8 @@ namespace planeshader {
     inline bool operator!=(const psColor32& c) { return color != c.color; }
     inline psColor32& operator=(uint32_t c) { color=c; return *this; }
     inline operator uint32_t() const { return color; }
-    uint16_t BSS_FASTCALL WriteFormat(FORMATS format, void* target) const;
-    uint16_t BSS_FASTCALL ReadFormat(FORMATS format, const void* target);
+    uint16_t WriteFormat(FORMATS format, void* target) const;
+    uint16_t ReadFormat(FORMATS format, const void* target);
 
     union
     {

@@ -15,7 +15,7 @@ psTextured::psTextured(const char* file) { SetTexture(psTex::Create(file)); }
 psTextured::psTextured(psTex* tex) { SetTexture(tex); }
 psTextured::~psTextured() {}
 
-void BSS_FASTCALL psTextured::SetTexture(psTex* tex, uint32_t index)
+void psTextured::SetTexture(psTex* tex, uint32_t index)
 {
   uint32_t oldsize = _tex.Capacity();
   if(index>=oldsize)
@@ -27,7 +27,7 @@ void BSS_FASTCALL psTextured::SetTexture(psTex* tex, uint32_t index)
   _tex[index] = tex;
   if(_tex[index]) _tex[index]->Grab();
 }
-void BSS_FASTCALL psTextured::ClearTextures() { _tex.Clear(); }
+void psTextured::ClearTextures() { _tex.Clear(); }
 
 psTextured& psTextured::operator=(const psTextured& right)
 {

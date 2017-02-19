@@ -56,17 +56,17 @@ void psSolid::UpdateBoundingRect()
   //_internalflags&=(~2);
 }
 
-void BSS_FASTCALL psSolid::SetDim(const psVec& dim) { _realdim = dim; _setdim(_scale*_realdim); }
-void BSS_FASTCALL psSolid::SetScale(const psVec& scale) { _scale = scale; _setdim(_scale*_realdim); }
-void BSS_FASTCALL psSolid::SetScaleDim(const psVec& dim) { SetScale(dim/_realdim); }
+void psSolid::SetDim(const psVec& dim) { _realdim = dim; _setdim(_scale*_realdim); }
+void psSolid::SetScale(const psVec& scale) { _scale = scale; _setdim(_scale*_realdim); }
+void psSolid::SetScaleDim(const psVec& dim) { SetScale(dim/_realdim); }
 
-void BSS_FASTCALL psSolid::_setdim(const psVec& dim)
+void psSolid::_setdim(const psVec& dim)
 {
   if(_dim.x!=0 && _dim.y!=0 && dim.x!=0 && dim.y!=0) // If the dimensions are valid
     _pivot*=(dim/_dim); //Adjust center position
   _dim=dim;
 }
-void BSS_FASTCALL psSolid::GetTransform(bss_util::Matrix<float, 4, 4>& m)
+void psSolid::GetTransform(bss_util::Matrix<float, 4, 4>& m)
 {
   psVec3D pos;
   GetTotalPosition(pos);

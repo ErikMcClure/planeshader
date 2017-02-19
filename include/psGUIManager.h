@@ -42,7 +42,7 @@ namespace planeshader {
     inline PS_MESSAGE GetPostProcess() const { return _postprocess; }
     inline void SetPostProcess(PS_MESSAGE fn) { _postprocess = fn; }
     // Gets the mouse coordinates 
-    inline psVeci GetMouse() const { return psVeci(_root.mouse.x, _root.mouse.y); }
+    inline psVec GetMouse() const { return psVec(_root.mouse.x, _root.mouse.y); }
     // Gets the ID of the first joystick that is plugged in, or JOYSTICKID_INVALID (-1) otherwise 
     inline FG_JOYBUTTONS GetValidJoystickID() const { return FG_JOYBUTTONS(_firstjoystick); }
     // Captures all joysticks that are plugged in and updates joystick validity bits. Returns number of joysticks that are connected 

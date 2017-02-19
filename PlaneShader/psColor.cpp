@@ -417,7 +417,7 @@ uint16_t psColor32::WriteFormat(FORMATS format, void* target) const
   return 0;
 }
 
-uint16_t BSS_FASTCALL psColor::ReadFormat(FORMATS format, const void* target)
+uint16_t psColor::ReadFormat(FORMATS format, const void* target)
 {
   const float* f32 = reinterpret_cast<const float*>(target);
   const uint16_t* u16 = reinterpret_cast<const uint16_t*>(target);
@@ -548,7 +548,7 @@ uint16_t BSS_FASTCALL psColor::ReadFormat(FORMATS format, const void* target)
   return 0;
 }
 
-uint16_t BSS_FASTCALL psColor32::ReadFormat(FORMATS format, const void* target)
+uint16_t psColor32::ReadFormat(FORMATS format, const void* target)
 {
   const float* f32 = reinterpret_cast<const float*>(target);
   const uint16_t* u16 = reinterpret_cast<const uint16_t*>(target);

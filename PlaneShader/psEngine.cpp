@@ -28,11 +28,12 @@ using namespace bss_util;
 
 psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
+const char* psEngine::LOGSOURCE = "ps";
 const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
-psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, init.errout), _curpass(0), _passes(1),
+psEngine::psEngine(const PSINIT& init) : _log(!init.errout?"PlaneShader.log":0, init.errout), _curpass(0), _passes(1),
   _mainpass(0), _mediapath(init.mediapath), _frameprofiler(0)
 {
   PROFILE_FUNC();
@@ -42,7 +43,7 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   fSetDenormal(false);
   fSetRounding(true);
 
-  GetStream() << "--- PLANESHADER v." << PS_VERSION_MAJOR << '.' << PS_VERSION_MINOR << '.' << PS_VERSION_REVISION << " LOG ---" << std::endl;
+  _log.GetStream() << "--- Initializing PlaneShader v." << PS_VERSION_MAJOR << '.' << PS_VERSION_MINOR << '.' << PS_VERSION_REVISION << " ---" << std::endl;
 
   psVeciu dim(init.width, init.height);
   AddMonitor(dim, init.mode, 0);
@@ -50,23 +51,23 @@ psEngine::psEngine(const PSINIT& init) : cLog(!init.errout?"PlaneShader.log":0, 
   switch(init.driver)
   {
   case RealDriver::DRIVERTYPE_NULL:
-    PSLOG(4) << "Initializing Null Driver" << std::endl;
+    PSLOG(-1, "Initializing Null Driver");
     new psNullDriver();
     break;
   case RealDriver::DRIVERTYPE_VULKAN:
-    PSLOG(4) << "Initializing Vulkan Driver" << std::endl;
+    PSLOG(-1, "Initializing Vulkan Driver");
     new psVulkan(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
     //if(((psVulkan*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   case RealDriver::DRIVERTYPE_DX11:
-    PSLOG(4) << "Initializing DirectX11 Driver" << std::endl;
+    PSLOG(-1, "Initializing DirectX11 Driver");
     new psDirectX11(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
     if(_driver->GetRealDriver().dx11->GetLastError() != 0) { delete _driver; _driver = 0; }
     break;
   }
   if(!_driver)
   {
-    PSLOGV(0, "Driver encountered a fatal error");
+    PSLOG(0, "Driver encountered a fatal error");
     Quit();
     return;
   }

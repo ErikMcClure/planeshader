@@ -15,9 +15,9 @@ namespace planeshader {
   public:
     static const char* shader_profiles[];
     static DXGI_SAMPLE_DESC DEFAULT_SAMPLE_DESC;
-    static DXGI_FORMAT BSS_FASTCALL FMTtoDXGI(FORMATS format);
-    static FORMATS BSS_FASTCALL DXGItoFMT(DXGI_FORMAT format);
-    static const char* BSS_FASTCALL GetDXGIError(HRESULT err);
+    static DXGI_FORMAT FMTtoDXGI(FORMATS format);
+    static FORMATS DXGItoFMT(DXGI_FORMAT format);
+    static const char* GetDXGIError(HRESULT err);
 
   protected:
     IDXGIAdapter* _createfactory(HWND hwnd, IDXGIOutput*& out);

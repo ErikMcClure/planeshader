@@ -1,6 +1,7 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
+#include "ps_feather.h"
 #include "psEngine.h"
 #include "psFont.h"
 #include "psTex.h"
@@ -13,7 +14,6 @@
 #include "feathergui\fgProgressbar.h"
 #include "feathergui\fgSlider.h"
 #include "feathergui\fgList.h"
-#include "ps_feather.h"
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../lib/feathergui_d.lib")
@@ -49,12 +49,12 @@ void  fgDestroyFontPS(void* font) { ((psFont*)font)->Drop(); }
 void  fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data, void* layout)
 {
   psFont* f = (psFont*)font;
-  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, rotation, {center->x - area->left, center->y - area->top}, 0 };
+  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, rotation,{ center->x - area->left, center->y - area->top }, 0 };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   if(f->GetAntialias() == psFont::FAA_LCD)
-    f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, !text ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+    f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, !len ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   else
-    f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, !text ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
+    f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, !len ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
 }
 void*  fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, void* prevlayout)
 {
@@ -89,7 +89,7 @@ AbsVec  fgFontPosPS(void* font, const void* text, size_t len, float lineheight, 
 {
   psFont* f = (psFont*)font;
   auto r = f->GetPos(!text ? &UNICODE_TERMINATOR : (const int*)text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
-  return AbsVec { r.second.x, r.second.y };
+  return AbsVec{ r.second.x, r.second.y };
 }
 
 void*  fgCreateResourcePS(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
@@ -101,13 +101,13 @@ void  fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned 
   psRect uvresolve;
   if(tex)
   {
-    uvresolve = psRect { uv->left.rel + (uv->left.abs / tex->GetDim().x),
+    uvresolve = psRect{ uv->left.rel + (uv->left.abs / tex->GetDim().x),
       uv->top.rel + (uv->top.abs / tex->GetDim().y),
       uv->right.rel + (uv->right.abs / tex->GetDim().x),
       uv->bottom.rel + (uv->bottom.abs / tex->GetDim().y) };
   }
   else
-    uvresolve = psRect { uv->left.abs, uv->top.abs, uv->right.abs, uv->bottom.abs };
+    uvresolve = psRect{ uv->left.abs, uv->top.abs, uv->right.abs, uv->bottom.abs };
 
   psDriver* driver = psDriverHold::GetDriver();
   if(tex)
@@ -141,13 +141,13 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   psDriver* driver = psDriverHold::GetDriver();
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
-  float (&m)[4][4] = *driver->PushMatrix();
+  float(&m)[4][4] = *driver->PushMatrix();
   bss_util::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
 
   if(n == 2)
   {
     psBatchObj* o = driver->DrawLinesStart(driver->library.LINE, 0, 0, m);
-    driver->DrawLines(o, psLine { p[0].x, p[0].y, p[1].x, p[1].y }, 0, 0, vertexcolor);
+    driver->DrawLines(o, psLine{ p[0].x, p[0].y, p[1].x, p[1].y }, 0, 0, vertexcolor);
   }
   else
   {
@@ -169,7 +169,7 @@ fgRoot*  fgInitialize()
 }
 
 void  fgPushClipRectPS(const AbsRect* clip, const fgDrawAuxData* data)
-{ 
+{
   psRect rect = { clip->left, clip->top, clip->right, clip->bottom };
   psDriverHold::GetDriver()->MergeClipRect(rect);
 }
@@ -177,7 +177,7 @@ void  fgPushClipRectPS(const AbsRect* clip, const fgDrawAuxData* data)
 AbsRect  fgPeekClipRectPS(const fgDrawAuxData* data)
 {
   psRect c = psDriverHold::GetDriver()->PeekClipRect();
-  return AbsRect { c.left, c.top, c.right, c.bottom };
+  return AbsRect{ c.left, c.top, c.right, c.bottom };
 }
 
 void  fgPopClipRectPS(const fgDrawAuxData* data)
@@ -338,17 +338,28 @@ const void*  fgClipboardPastePS(uint32_t type, size_t* length)
   return ret;
 }
 
-void  fgClipboardFreePS(const void* mem)
+void fgClipboardFreePS(const void* mem)
 {
   free(const_cast<void*>(mem));
 }
 
-void  fgDragStartPS(char type, void* data, fgElement* draw)
+void fgDragStartPS(char type, void* data, fgElement* draw)
 {
   fgRoot* root = fgSingleton();
   root->dragtype = type;
   root->dragdata = data;
   root->dragdraw = draw;
+}
+int fgLogHookPS(const char* format, va_list args)
+{
+  return psEngine::Instance()->GetLog().PrintLogV("feather", __FILE__, __LINE__, -1, format, args);
+}
+
+char fgProcessMessagesPS()
+{
+  fgProcessMessagesDefault();
+  psEngine::Instance()->FlushMessages();
+  return !psEngine::Instance()->GetQuit();
 }
 
 psRoot::psRoot()
@@ -385,8 +396,9 @@ psRoot::psRoot()
     &fgClipboardFreePS,
     &fgDirtyElementPS,
     &fgBehaviorHookListener,
-    &fgProcessMessagesDefault,
+    &fgProcessMessagesPS,
     &fgLoadExtensionDefault,
+    &fgLogHookPS,
     &fgTerminateDefault,
   };
 
@@ -407,7 +419,7 @@ psRoot::~psRoot()
   fgRoot_Destroy(this);
 }
 
-void BSS_FASTCALL psRoot::_render()
+void psRoot::_render()
 {
   gui->Draw(0, 0);
 }

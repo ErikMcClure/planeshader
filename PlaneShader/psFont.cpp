@@ -181,7 +181,7 @@ void psFont::_loadfont()
   WFOPEN(f, cStrW(_path), L"rb"); //load font into memory
   if(!f)
   {
-    PSLOG(2) << "Font face " << _path << " does not exist." << std::endl;
+    PSLOG(2, "Font face ", _path, " does not exist.");
     return;
   }
   fseek(f, 0, SEEK_END);
@@ -195,13 +195,13 @@ void psFont::_loadfont()
   FT_Error err; //use FT to load face from font
   if((err = FT_New_Memory_Face(PTRLIB, _buf, length, 0, &_ft2face)) != 0 || !_ft2face)
   {
-    PSLOG(2) << "Font face " << _path << " failed to be created (" << err << ")" << std::endl;
+    PSLOG(2, "Font face ", _path, " failed to be created (", err, ")");
     return;
   }
 
   if(!_ft2face->charmap)
   {
-    PSLOG(2) << "Font face " << _path << " does not have a unicode character map." << std::endl;
+    PSLOG(2, "Font face ", _path, " does not have a unicode character map.");
     _cleanupfont();
     return;
   }
@@ -218,7 +218,7 @@ void psFont::_loadfont()
     }
     if(FT_Set_Char_Size(_ft2face, 0, cur, 0, 0) != 0)
     {
-      PSLOG(2) << "Font face " << _path << " can't be rendered at size " << _pointsize << std::endl;
+      PSLOG(2, "Font face ", _path, " can't be rendered at size ", _pointsize);
       _cleanupfont();
       return;
     }
@@ -273,7 +273,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   _enforceantialias();
   if(FT_Load_Char(_ft2face, codepoint, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | _antialiased) != 0) //if this throws an error, remove it as a possible renderable codepoint
   {
-    PSLOG(1) << "Codepoint " << codepoint << " in font " << _path << " failed to load" << std::endl;
+    PSLOG(1, "Codepoint ", codepoint, " in font ", _path, " failed to load");
     return retval;
   }
 

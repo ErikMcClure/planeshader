@@ -9,6 +9,6 @@ using namespace planeshader;
 psLocatable::psLocatable(const psLocatable& copy) : _relpos(copy._relpos), _rotation(copy._rotation), _pivot(copy._pivot) {}
 psLocatable::psLocatable(const psVec3D& pos, FNUM rotation, const psVec& pivot) : _relpos(pos), _rotation(rotation), _pivot(pivot) {}
 psLocatable::~psLocatable() {}
-void BSS_FASTCALL psLocatable::SetRotation(FNUM rotation) { _rotation=rotation; }
-void BSS_FASTCALL psLocatable::SetPivot(const psVec& pivot) { _pivot=pivot; }
-void BSS_FASTCALL psLocatable::SetPosition(FNUM X, FNUM Y, FNUM Z) { _relpos.x=X; _relpos.y=Y; _relpos.z=Z; }
+void psLocatable::SetRotation(FNUM rotation) { _rotation=rotation; }
+void psLocatable::SetPivot(const psVec& pivot) { _pivot=pivot; }
+void psLocatable::SetPosition(FNUM X, FNUM Y, FNUM Z) { _relpos.x=X; _relpos.y=Y; _relpos.z=Z; }

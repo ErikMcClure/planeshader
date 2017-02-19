@@ -105,7 +105,7 @@ void psTileset::SetDimIndex(psVeci dim)
   SetDim(dim*_tiledim);
 }
 
-void BSS_FASTCALL psTileset::_render()
+void psTileset::_render()
 {
   assert(_defs.Length() > 0);
   if(!_rowlength || !_tiles.Length()) return;

@@ -24,7 +24,7 @@ BSS_FORCEINLINE void r_adjust(sseVec& window, const sseVec& winhold, const sseVe
   }
 }
 
-float BSS_FASTCALL r_gettotalz(psInheritable* p)
+float r_gettotalz(psInheritable* p)
 {
   if(p->GetParent())
     return p->GetPosition().z + r_gettotalz(p->GetParent());
@@ -53,7 +53,7 @@ psVec psCamera::GetMouseAbsolute(const psTex* rt) const
   p = p*cam.Inverse();
   return psVec(p.x*p.z + dim.x, p.y*p.z + dim.y);
 }
-void BSS_FASTCALL psCamera::SetPivotAbs(const psVec& pivot, const psTex* rt)
+void psCamera::SetPivotAbs(const psVec& pivot, const psTex* rt)
 {
   if(!rt) rt = _driver->GetBackBuffer();
   SetPivot((pivot / rt->GetDim()) * _viewport.GetDimensions());
@@ -111,7 +111,7 @@ inline void psCamera::CamCache::SetSSE()
   SSEfixed_center = sseVec((SSEfixed + sseVec::Shuffle<0x4E>(SSEfixed))*sseVec(0.5f));
   SSEfixed_hold = sseVec(SSEfixed - SSEfixed_center);
 }
-bool BSS_FASTCALL psCamera::CamCache::Cull(const psRect& rect, float rectz, float camz, psFlag flags)
+bool psCamera::CamCache::Cull(const psRect& rect, float rectz, float camz, psFlag flags)
 {
   if(flags&PSFLAG_FIXED) // This is the fixed case
   {

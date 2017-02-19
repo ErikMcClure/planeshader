@@ -13,7 +13,7 @@ size_t psChartContainer::AddChart(psChart* chart) { return _captions.AddConstruc
 psChart* psChartContainer::GetChart(size_t index) { return _captions[index].get(); }
 bool psChartContainer::RemoveChart(size_t index) { if(index >= _captions.Length()) return false; _captions.Remove(index); return true; }
 
-void BSS_FASTCALL psChartContainer::_render()
+void psChartContainer::_render()
 {
   psFlag flags = GetAllFlags();
   bss_util::Matrix<float, 4, 4> m;

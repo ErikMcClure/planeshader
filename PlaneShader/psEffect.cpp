@@ -73,4 +73,4 @@ bool psEffect::_sort()
   return !fail;
 }
 
-void BSS_FASTCALL psEffect::_render() {} // don't render anything
+void psEffect::_render() {} // don't render anything

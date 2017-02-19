@@ -51,13 +51,13 @@ void psImage::_setuvs(uint32_t size)
     _uvs[i]=RECT_UNITRECT;
 }
 
-void BSS_FASTCALL psImage::_render()
+void psImage::_render()
 {
   Activate();
   _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetAllFlags());
 }
 
-void BSS_FASTCALL psImage::SetTexture(psTex* tex, uint32_t index)
+void psImage::SetTexture(psTex* tex, uint32_t index)
 {
   psTextured::SetTexture(tex, index);
   if(!index) _recalcdim();

@@ -49,7 +49,7 @@ psTex::~psTex()
 }
 
 void psTex::DestroyThis() { delete this; }
-void BSS_FASTCALL psTex::_applydesc(TEXTURE_DESC& desc)
+void psTex::_applydesc(TEXTURE_DESC& desc)
 {
   _dim = desc.dim.xy;
   _format = desc.format;
@@ -58,14 +58,14 @@ void BSS_FASTCALL psTex::_applydesc(TEXTURE_DESC& desc)
 }
 
 
-psTex* BSS_FASTCALL psTex::Create(const char* file, uint32_t usage, FILTERS mipfilter, uint8_t miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
+psTex* psTex::Create(const char* file, uint32_t usage, FILTERS mipfilter, uint8_t miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
 {
   void* view = 0;
   void* res = _driver->LoadTexture(file, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, texblock, sRGB);
   return _create(res, view, dpi, texblock);
 }
 
-psTex* BSS_FASTCALL psTex::Create(const void* data, uint32_t datasize, uint32_t usage, FILTERS mipfilter, uint8_t miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
+psTex* psTex::Create(const void* data, uint32_t datasize, uint32_t usage, FILTERS mipfilter, uint8_t miplevels, FILTERS loadfilter, bool sRGB, psTexblock* texblock, psVeciu dpi)
 {
   if(!datasize)
     return Create((const char*)data, usage);
@@ -73,16 +73,16 @@ psTex* BSS_FASTCALL psTex::Create(const void* data, uint32_t datasize, uint32_t 
   void* res = _driver->LoadTextureInMemory(data, datasize, usage, FMT_UNKNOWN, &view, miplevels, mipfilter, loadfilter, VEC_ZERO, texblock, sRGB);
   return _create(res, view, dpi, texblock);
 }
-psTex* BSS_FASTCALL psTex::Create(const psTex& copy)
+psTex* psTex::Create(const psTex& copy)
 {
   return new psTex(copy);
 }
-psTex* BSS_FASTCALL psTex::Create(psVeciu dim, FORMATS format, uint32_t usage, uint8_t miplevels, psTexblock* texblock, psVeciu dpi)
+psTex* psTex::Create(psVeciu dim, FORMATS format, uint32_t usage, uint8_t miplevels, psTexblock* texblock, psVeciu dpi)
 {
   return new psTex(dim, format, usage, miplevels, texblock, dpi);
 }
 
-psTex* BSS_FASTCALL psTex::_create(void* res, void* view, psVeciu dpi, psTexblock* texblock)
+psTex* psTex::_create(void* res, void* view, psVeciu dpi, psTexblock* texblock)
 {
   if(!res) return 0;
   TEXTURE_DESC desc = _driver->GetTextureDesc(res);

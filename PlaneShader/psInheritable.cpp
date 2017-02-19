@@ -91,28 +91,28 @@ void psInheritable::SetParent(psInheritable* parent, bool ownership)
   _invalidate();
 }
 
-psInheritable* BSS_FASTCALL psInheritable::AddClone(const psInheritable* inheritable)
+psInheritable* psInheritable::AddClone(const psInheritable* inheritable)
 {
   psInheritable* child = inheritable->Clone();
   child->SetParent(this, true);
   return child;
 }
 
-void BSS_FASTCALL psInheritable::SetPass(psPass* pass)
+void psInheritable::SetPass(psPass* pass)
 {
   PROFILE_FUNC();
   psRenderable::SetPass(pass);
   for(psInheritable* cur=_children; cur!=0; cur=cur->_lchild.next)
     cur->SetPass(pass);
 }
-void BSS_FASTCALL psInheritable::SetZOrder(int zorder)
+void psInheritable::SetZOrder(int zorder)
 {
   psRenderable::SetZOrder(zorder);
   for(psInheritable* cur = _children; cur != 0; cur = cur->_lchild.next)
     cur->_invalidate();
 }
 
-void BSS_FASTCALL psInheritable::_render() {} // don't render anything
+void psInheritable::_render() {} // don't render anything
 
 void psInheritable::_gettotalpos(psVec3D& pos) const
 {
@@ -171,9 +171,9 @@ void psInheritable::_sortchildren()
   }
   _internalflags |= INTERNALFLAG_SORTED; // children are now sorted
 }
-psRenderable* BSS_FASTCALL psInheritable::_getparent() const { return _parent; }
+psRenderable* psInheritable::_getparent() const { return _parent; }
 
-char BSS_FASTCALL psInheritable::_sort(psRenderable* r) const
+char psInheritable::_sort(psRenderable* r) const
 {
   const psRenderable* l = this;
   if(r->_getparent())

@@ -19,8 +19,8 @@ namespace planeshader {
     explicit psTextured(psTex* tex = 0);
     virtual ~psTextured();
 
-    virtual void BSS_FASTCALL SetTexture(psTex* tex, uint32_t index = 0);
-    void BSS_FASTCALL ClearTextures();
+    virtual void SetTexture(psTex* tex, uint32_t index = 0);
+    void ClearTextures();
     inline const psTex* GetTexture(uint32_t index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
     virtual inline psTex* const* GetTextures() const { return _tex; }
     virtual inline uint8_t NumTextures() const { return _tex.Capacity(); }
