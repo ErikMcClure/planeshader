@@ -11,7 +11,7 @@ using namespace bss_util;
 psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0) {}
 psQuadraticHull::~psQuadraticHull() {}
 
-void BSS_FASTCALL psQuadraticHull::_render()
+void psQuadraticHull::_render()
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CURVEBUFSIZE, sizeof(QuadVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
   Activate();
@@ -31,7 +31,7 @@ void psQuadraticHull::SetVert(float (&v)[4], psVec& x, float thickness)
   v[3] = thickness;
 }
 
-void BSS_FASTCALL psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color, char cap)
+void psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color, char cap)
 {
   const float BUFFER = 1.0;
   psVec p[3] = { p0, p1, p2 };
@@ -156,7 +156,7 @@ void psCubicCurve::Set(psVec(&p)[4])
 {
   Set(p[0], p[1], p[2], p[3]);
 }
-void BSS_FASTCALL psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2])
+void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2])
 {
   AppendQuadraticCurve(psVec(P0), psVec(P1), psVec(P2), _thickness, _color.color, !_verts.Length() | (psVec(P2) == _p[3])*2);
 }
@@ -206,7 +206,7 @@ void psRoundRect::DrawRoundRect(psShader* shader, psStateblock* stateblock, cons
     corners, edge, color, outline };
   ++obj->buffer.nvert;
 }
-void BSS_FASTCALL psRoundRect::_render()
+void psRoundRect::_render()
 {
   Activate();
   DrawRoundRect(GetShader(), _stateblock, GetCollisionRect(), _corners, GetAllFlags(), _color, _outline, _edge);
@@ -257,7 +257,7 @@ void psRoundTri::DrawRoundTri(psShader* shader, psStateblock* stateblock, const 
     corners, edge, color, outline };
   ++obj->buffer.nvert;
 }
-void BSS_FASTCALL psRoundTri::_render()
+void psRoundTri::_render()
 {
   Activate();
   DrawRoundTri(GetShader(), _stateblock, GetCollisionRect(), _corners, GetAllFlags(), _color, _outline, _edge);
@@ -308,7 +308,7 @@ void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, cons
   ++obj->buffer.nvert;
 }
 
-void BSS_FASTCALL psRenderCircle::_render()
+void psRenderCircle::_render()
 {
   Activate();
   DrawCircle(GetShader(), _stateblock, GetCollisionRect(), _arcs, GetAllFlags(), _color, _outline, _edge);

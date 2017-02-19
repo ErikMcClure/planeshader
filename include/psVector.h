@@ -25,14 +25,14 @@ namespace planeshader {
     psQuadraticHull();
     ~psQuadraticHull();
     void Clear();
-    void BSS_FASTCALL AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color, char cap);
+    void AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color, char cap);
 
     static const int CURVEBUFSIZE = 512 * 3;
     static inline psVec FromQuad(QuadVertex& v) { return psVec(v.x, v.y); }
     static void SetVert(float(&v)[4], psVec& x, float thickness);
 
   protected:
-    virtual void BSS_FASTCALL _render() override;
+    virtual void _render() override;
     bss_util::cDynArray<QuadVertex, uint32_t> _verts;
   };
 
@@ -66,7 +66,7 @@ namespace planeshader {
     inline const psVec(&Get() const)[4] { return _p; }
 
   protected:
-    void BSS_FASTCALL _addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2]);
+    void _addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2]);
     psVec _p[4];
     float _thickness;
     float _maxerr;
@@ -103,7 +103,7 @@ namespace planeshader {
     psRoundRect& operator=(psRoundRect&& mov);
 
   protected:
-    virtual void BSS_FASTCALL _render() override;
+    virtual void _render() override;
 
     psRect _corners;
     psColor32 _outline;
@@ -141,7 +141,7 @@ namespace planeshader {
     psRoundTri& operator=(psRoundTri&& mov);
 
   protected:
-    virtual void BSS_FASTCALL _render() override;
+    virtual void _render() override;
 
     psRect _corners;
     psColor32 _outline;
@@ -179,7 +179,7 @@ namespace planeshader {
     psRenderCircle& operator=(psRenderCircle&& mov);
 
   protected:
-    virtual void BSS_FASTCALL _render() override;
+    virtual void _render() override;
 
     psRect _arcs;
     psColor32 _outline;

@@ -198,7 +198,7 @@ void psGUIManager::FlushMessages()
         break;
       case WM_QUIT:
         Quit();
-        PSLOGV(3, "Quit message recieved, setting _quit to true");
+        PSLOG(3, "Quit message recieved, setting _quit to true");
         return;
     }
   }

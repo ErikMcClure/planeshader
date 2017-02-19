@@ -43,16 +43,16 @@ void psRenderable::Render()
   else
     _render(); // This is a renderable, so it can't be culled, so we just render it immediately and ignore our current pass.
 }
-void BSS_FASTCALL psRenderable::SetZOrder(int zorder)
+void psRenderable::SetZOrder(int zorder)
 { 
   _zorder = zorder;
   _invalidate();
 }
-void BSS_FASTCALL psRenderable::SetPass()
+void psRenderable::SetPass()
 {
   SetPass(psEngine::Instance()->GetPass(0));
 }
-void BSS_FASTCALL psRenderable::SetPass(psPass* pass)
+void psRenderable::SetPass(psPass* pass)
 {
   PROFILE_FUNC();
   if(pass == _pass || !psEngine::Instance()) return; // If a renderable is deleted after the engine is deleted, make sure we don't blow everything up
@@ -61,7 +61,7 @@ void BSS_FASTCALL psRenderable::SetPass(psPass* pass)
   _pass = pass;
 }
 
-void BSS_FASTCALL psRenderable::SetStateblock(psStateblock* stateblock)
+void psRenderable::SetStateblock(psStateblock* stateblock)
 {
   PROFILE_FUNC();
   _stateblock = stateblock;
@@ -79,7 +79,7 @@ inline psTex* const* psRenderable::GetRenderTargets() const
   return !pass ? 0 : pass->GetRenderTarget();
 }
 inline uint8_t psRenderable::NumRT() const { return !_rts.Capacity() ? (GetRenderTargets() != 0) : _rts.Capacity(); }
-void BSS_FASTCALL psRenderable::SetRenderTarget(psTex* rt, uint32_t index)
+void psRenderable::SetRenderTarget(psTex* rt, uint32_t index)
 {
   uint32_t oldsize = _rts.Capacity();
   if(index >= oldsize)
@@ -157,7 +157,7 @@ psRenderable& psRenderable::operator =(psRenderable&& right)
   return *this;
 }
 
-char BSS_FASTCALL psRenderable::_sort(psRenderable* r) const
+char psRenderable::_sort(psRenderable* r) const
 {
   psRenderable* root = r;
   while(r = r->_getparent()) root = r;
@@ -167,7 +167,7 @@ char BSS_FASTCALL psRenderable::_sort(psRenderable* r) const
   return c; 
 }
 
-psRenderable* BSS_FASTCALL psRenderable::_getparent() const { return 0; }
+psRenderable* psRenderable::_getparent() const { return 0; }
 //psCamera* psRenderable::GetCamera() const { return 0; }
 
 void psRenderable::Activate()

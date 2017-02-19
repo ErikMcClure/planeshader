@@ -4,8 +4,8 @@
 #ifndef __FEATHER_H__PS__
 #define __FEATHER_H__PS__
 
-#include "feathergui\fgRoot.h"
-#include "feathergui\fgMonitor.h"
+#include "feathergui/fgRoot.h"
+#include "feathergui/fgMonitor.h"
 #include "psRenderable.h"
 
 struct HWND__;
@@ -32,7 +32,7 @@ namespace planeshader {
     static psFlag GetDrawFlags(fgFlag flags);
 
   protected:
-    void BSS_FASTCALL _render();
+    void _render();
   };
 
   class PS_DLLEXPORT psMonitor : public fgMonitor

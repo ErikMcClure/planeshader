@@ -24,7 +24,7 @@ void psShader::Activate() const
   _driver->SetLayout(_layout);
 }
 
-bool BSS_FASTCALL psShader::SetConstants(const void* data, uint32_t sz, uint8_t I)
+bool psShader::SetConstants(const void* data, uint32_t sz, uint8_t I)
 {
   PROFILE_FUNC();
   if(!_sc[I] || sz != _sz[I]) return false;
@@ -91,7 +91,7 @@ psShader* psShader::CreateShader(const psShader* copy)
   r->Grab();
   return r;
 }
-psShader* BSS_FASTCALL psShader::MergeShaders(uint32_t num, const psShader* first, ...)
+psShader* psShader::MergeShaders(uint32_t num, const psShader* first, ...)
 {
   PROFILE_FUNC();
   if(!num) return 0;

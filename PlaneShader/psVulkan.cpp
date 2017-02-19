@@ -14,7 +14,7 @@ using namespace planeshader;
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint) {                        \
     fp##entrypoint = (PFN_vk##entrypoint)vkGetInstanceProcAddr(inst, "vk" #entrypoint); \
-    if (fp##entrypoint == NULL) PSLOG(2) << "vkGetInstanceProcAddr failed to find vk" #entrypoint << std::endl; \
+    if (fp##entrypoint == NULL) PSLOG(2, "vkGetInstanceProcAddr failed to find vk" #entrypoint); \
   }
 
 psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor) : psDriver()
@@ -67,9 +67,9 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
   }
 
   if(!surfaceExtFound)
-    PSLOG(1) << "vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_SURFACE_EXTENSION_NAME " extension" << std::endl;
+    PSLOG(1, "vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_SURFACE_EXTENSION_NAME " extension");
   if(!platformSurfaceExtFound)
-    PSLOG(1) << "vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_WIN32_SURFACE_EXTENSION_NAME " extension" << std::endl;
+    PSLOG(1, "vkEnumerateInstanceExtensionProperties failed to find the " VK_KHR_WIN32_SURFACE_EXTENSION_NAME " extension");
   const VkApplicationInfo app = {
     VK_STRUCTURE_TYPE_APPLICATION_INFO,
     NULL,
@@ -95,7 +95,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
   err = vkCreateInstance(&inst_info, NULL, &_instance);
   if(err)
   {
-    PSLOG(1) << "vkCreateInstance failed with error: " << VkResultToString(err) << std::endl;
+    PSLOG(1, "vkCreateInstance failed with error: ", VkResultToString(err));
     return;
   }
 
@@ -113,7 +113,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
   }
   else
   {
-    PSLOG(1) << "vkEnumeratePhysicalDevices reported zero accessible devices!" << std::endl;
+    PSLOG(1, "vkEnumeratePhysicalDevices reported zero accessible devices!");
     return;
   }
 
@@ -144,7 +144,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
   }
 
   if(!swapchainExtFound)
-    PSLOG(1) << "vkEnumerateDeviceExtensionProperties failed to find the " VK_KHR_SWAPCHAIN_EXTENSION_NAME " extension" << std::endl;
+    PSLOG(1, "vkEnumerateDeviceExtensionProperties failed to find the " VK_KHR_SWAPCHAIN_EXTENSION_NAME " extension");
 
   // Having these GIPA queries of device extension entry points both
   // BEFORE and AFTER vkCreateDevice is a good test for the loader
@@ -257,7 +257,7 @@ void psVulkan::_prepare(bool fullscreen, bool sRGB, psMonitor* monitor)
   err = vkCreateWin32SurfaceKHR(_instance, &createInfo, NULL, &_surface);
   if(err)
   {
-    PSLOG(1) << "vkCreateWin32SurfaceKHR failed with error " << VkResultToString(err) << std::endl;
+    PSLOG(1, "vkCreateWin32SurfaceKHR failed with error ", VkResultToString(err));
     return;
   }
   vkGetPhysicalDeviceQueueFamilyProperties(_gpu, &queue_count, NULL);
@@ -304,14 +304,14 @@ void psVulkan::_prepare(bool fullscreen, bool sRGB, psMonitor* monitor)
   // Generate error if could not find both a graphics and a present queue
   if(graphicsQueueNodeIndex == UINT32_MAX || presentQueueNodeIndex == UINT32_MAX)
   {
-    PSLOG(1) << "Could not find a graphics and a present queue" << std::endl;
+    PSLOG(1, "Could not find a graphics and a present queue");
     return;
   }
 
   // We assume that our presentation and graphics queues are the same, but they don't have to be.
   if(graphicsQueueNodeIndex != presentQueueNodeIndex)
   {
-    PSLOG(1) << "Could not find a common graphics and a present queue" << std::endl;
+    PSLOG(1, "Could not find a common graphics and a present queue");
     return;
   }
 

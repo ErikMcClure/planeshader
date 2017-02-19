@@ -18,7 +18,6 @@
 #ifndef __FEATHER_GUI_H__
 #define __FEATHER_GUI_H__
 
-#include <assert.h>
 #include <string.h> // memcpy,memset
 #include <stddef.h>
 #include "bss_compiler.h"
@@ -49,6 +48,19 @@ typedef void* fgFont;
 #endif
 #else
 #define FG_DLLEXPORT
+#endif
+
+#ifdef BSS_PLATFORM_WIN32 // Windows eats the abort signal sent by assertions inside a WinProc, making it impossible to cleanly kill the program
+#ifdef BSS_DEBUG
+#ifdef assert
+#undef assert
+#endif
+#define assert(x) if(!(x)) { *((int*)0) = 0; } // So we have to do this bullshit instead
+#else
+#define assert(x) 
+#endif
+#else
+#include <assert.h>
 #endif
 
 // A unified coordinate specifies things in terms of absolute and relative positions.
@@ -151,7 +163,10 @@ enum FGTEXTFMT
   FGTEXTFMT_PLACEHOLDER_UTF8 = 4,
   FGTEXTFMT_PLACEHOLDER_UTF16 = 5,
   FGTEXTFMT_PLACEHOLDER_UTF32 = 6,
-  FGTEXTFMT_MASK = 7
+  FGTEXTFMT_DYNAMIC_UTF8 = 8,
+  FGTEXTFMT_DYNAMIC_UTF16 = 9,
+  FGTEXTFMT_DYNAMIC_UTF32 = 10,
+  FGTEXTFMT_MASK = 15,
 };
 
 enum FGSETSTYLE
@@ -174,8 +189,8 @@ enum FGSETCOLOR
   FGSETCOLOR_HOVER,
   FGSETCOLOR_DRAG,
   FGSETCOLOR_EDGE,
-  FGSETCOLOR_ROWEDGE,
-  FGSETCOLOR_COLUMNEDGE,
+  FGSETCOLOR_DIVIDER,
+  FGSETCOLOR_COLUMNDIVIDER,
   FGSETCOLOR_ROWEVEN,
 };
 
@@ -256,7 +271,6 @@ enum FGVALUE
   FGVALUE_INT64 = 1,
   FGVALUE_FLOAT = 2,
   FGVALUE_POINTER = 3,
-  FGVALUE_ROW = 4,
 };
 
 enum FG_MSGTYPE
@@ -264,6 +278,7 @@ enum FG_MSGTYPE
   FG_UNKNOWN = 0,
   FG_CONSTRUCT = 1,
   FG_DESTROY, // Notification when the element is being destroyed. Sending this message will not destroy the element or call the destructor.
+  FG_CLONE,
   FG_MOVE, // Passed when any change is made to an element. 1: propagating up, 2: x-axis resize, 4: y-axis resize, 8: x-axis move, 16: y-axis move, 32: x center move, 64: y center move, 128: rotation change, 256: padding change
   FG_SETALPHA, // Used so an entire widget can be made to fade in or out. (Support is not guaranteed)
   FG_SETAREA,
@@ -333,6 +348,8 @@ enum FG_MSGTYPE
   // fgCheckbox, fgRadiobutton, fgProgressbar, etc.
   FG_GETVALUE, // Gets the on/off state of a checkbox or the current progress on a progress bar
   FG_SETVALUE, // Sets the on/off state or progress
+  FG_GETRANGE, 
+  FG_SETRANGE,
   // fgResource or fgText
   FG_SETASSET,
   FG_SETUV,
@@ -617,6 +634,8 @@ struct _FG_ELEMENT;
 
 // General message structure which contains the message type and then various kinds of information depending on the type.
 typedef struct _FG_MSG {
+  unsigned short type;
+  unsigned short subtype;
   union {
     struct { float x; float y; // Mouse and touch events
       union { 
@@ -637,8 +656,6 @@ typedef struct _FG_MSG {
       union { void* p2; ptrdiff_t i2; size_t u2; FABS f2; struct _FG_ELEMENT* e2; };
     };
   };
-  unsigned short type;
-  unsigned short subtype;
 
 #ifdef __cplusplus
   inline bool IsPressed() const { return (button&allbtn) != 0; }
@@ -659,7 +676,8 @@ FG_EXTERN inline char HitAbsRect(const AbsRect* r, FABS x, FABS y);
 FG_EXTERN inline void ToIntAbsRect(const AbsRect* r, int target[4]);
 FG_EXTERN inline void ToLongAbsRect(const AbsRect* r, long target[4]);
 FG_EXTERN inline char MsgHitAbsRect(const FG_Msg* msg, const AbsRect* r);
-FG_EXTERN char* fgCopyText(const char* text, const char* file, size_t line);
+FG_EXTERN const char* fgCopyText(const char* text, const char* file, size_t line);
+FG_EXTERN void fgFreeText(const char* text, const char* file, size_t line);
 FG_EXTERN inline void fgUpdateMouseState(fgMouseState* state, const FG_Msg* msg);
 FG_EXTERN inline char fgRectIntersect(const AbsRect* l, const AbsRect* r); // Returns 1 if the rectangles intersect, or 0 otherwise
 FG_EXTERN inline void fgRectIntersection(const AbsRect* BSS_RESTRICT l, const AbsRect* BSS_RESTRICT r, AbsRect* out);

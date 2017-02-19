@@ -21,7 +21,7 @@ void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, uint32_t c
   _driver->DrawRect(_driver->library.CIRCLE, 0, psRectRotateZ(x-a, y-b, x+a, y+b, 0), 0, 0, color, 0);
 }
 
-void BSS_FASTCALL psRenderEllipse::_render()
+void psRenderEllipse::_render()
 {
   Activate();
   _driver->DrawRect(_driver->library.CIRCLE, GetStateblock(), GetCollisionRect(), 0, 0, GetColor(), GetAllFlags());
@@ -54,7 +54,7 @@ void psRenderLine::DrawLine(const psLine3D& p, uint32_t color)
   _driver->DrawLines(obj, psLine(p.p1.xy, p.p2.xy), p.p1.z, p.p2.z, color);
 }
 
-void BSS_FASTCALL psRenderLine::_render()
+void psRenderLine::_render()
 {
   Activate();
   psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetAllFlags());
@@ -73,7 +73,7 @@ psRenderPolygon& psRenderPolygon::operator =(const psPolygon& polygon) { psPolyg
 void psRenderPolygon::DrawPolygon(const psVec* p, uint32_t num, uint32_t color, const psVec3D& offset) {  _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, offset, color, 0); }
 void psRenderPolygon::DrawPolygon(const psVertex* p, uint32_t num, const float(&transform)[4][4]) { _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, 0, transform); }
 
-void BSS_FASTCALL psRenderPolygon::_render()
+void psRenderPolygon::_render()
 {
   psVec3D pos;
   GetTotalPosition(pos);
@@ -86,7 +86,7 @@ void BSS_FASTCALL psRenderPolygon::_render()
 psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy){}
 psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov){}
 psFullScreenQuad::psFullScreenQuad(){}
-void BSS_FASTCALL psFullScreenQuad::_render()
+void psFullScreenQuad::_render()
 {
   psVec dim = GetRenderTargets()[0]->GetDim();
   _driver->PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, dim.x, dim.y), psCamera::default_extent);

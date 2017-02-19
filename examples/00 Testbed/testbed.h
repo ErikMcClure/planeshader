@@ -21,7 +21,7 @@ struct TESTDEF
 
 #define BEGINTEST TESTDEF::RETPAIR __testret(0,0)
 #define ENDTEST return __testret
-#define FAILEDTEST(t) BSSLOG(_failedtests,1) << "Test #" << __testret.first << " Failed  < " << MAKESTRING(t) << " >" << std::endl
+#define FAILEDTEST(t) BSSLOG(_failedtests,1, "Test #", __testret.first, " Failed  < ", MAKESTRING(t), " >")
 #define TEST(t) { atomic_xadd(&__testret.first); try { if(t) atomic_xadd(&__testret.second); else FAILEDTEST(t); } catch(...) { FAILEDTEST(t); } }
 #define TESTERROR(t, e) { atomic_xadd(&__testret.first); try { (t); FAILEDTEST(t); } catch(e) { atomic_xadd(&__testret.second); } }
 #define TESTERR(t) TESTERROR(t,...)

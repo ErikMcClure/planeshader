@@ -22,7 +22,7 @@ namespace planeshader {
     ~psPass();
     void Begin();
     void End();
-    inline void BSS_FASTCALL SetCamera(const psCamera* camera) { _cam=!camera?&psCamera::default_camera:camera; }
+    inline void SetCamera(const psCamera* camera) { _cam=!camera?&psCamera::default_camera:camera; }
     inline const psCamera* GetCamera() const { return _cam; }
     psTex* const* GetRenderTarget();
     inline void SetRenderTarget(psTex* rt=0) { _defaultrt = rt; }

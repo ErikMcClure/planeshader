@@ -15,7 +15,7 @@ psCullGroup::psCullGroup(psCullGroup&& mov) : _tree(std::move(mov._tree)), _node
 }
 psCullGroup::psCullGroup() : _pass(0) {}
 psCullGroup::~psCullGroup() { SetPass(0); Clear(); }
-void BSS_FASTCALL psCullGroup::Insert(psSolid* img, bool recalc)
+void psCullGroup::Insert(psSolid* img, bool recalc)
 { 
   img->SetPass(_pass); // Set pass to our pass
   _pass->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _pass)
@@ -25,11 +25,11 @@ void BSS_FASTCALL psCullGroup::Insert(psSolid* img, bool recalc)
   else
     _tree.InsertRoot(img);
 }
-void BSS_FASTCALL psCullGroup::Remove(psSolid* img) { _tree.Remove(img); }
+void psCullGroup::Remove(psSolid* img) { _tree.Remove(img); }
 void psCullGroup::Solve() { _tree.Solve(); }
 void psCullGroup::Clear() { _tree.Clear(); }
 
-void BSS_FASTCALL psCullGroup::Traverse(const float(&rect)[4], FNUM camZ)
+void psCullGroup::Traverse(const float(&rect)[4], FNUM camZ)
 {
   BSS_ALIGN(16) float rcull[4];
   float diff=((rect[1]+rect[3])*0.5f);

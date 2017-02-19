@@ -8,4 +8,4 @@ using namespace planeshader;
 psColored::psColored(const psColored& copy) : _color(copy._color) {}
 psColored::psColored(uint32_t color) : _color(color) {}
 psColored::~psColored() {}
-void BSS_FASTCALL psColored::SetColor(uint32_t color) { _color = color; }
+void psColored::SetColor(uint32_t color) { _color = color; }

@@ -28,7 +28,7 @@ namespace planeshader {
   protected:
     bool _sort();
     void _sortvisit(psRenderable* child, bool& fail, uint32_t& order);
-    virtual void BSS_FASTCALL _render() override;
+    virtual void _render() override;
 
     static char CompEdge(const Edge& l, const Edge& r) { return SGNCOMPARE(l.f, r.f); }
     static bool LessEdge(const Edge& l, const Edge& r) { return l.f < r.f; }

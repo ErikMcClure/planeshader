@@ -17,6 +17,8 @@ struct __kh_fgIDMap_t;
 struct __kh_fgCursorMap_t;
 struct __kh_fgIDHash_t;
 struct _FG_MONITOR;
+struct _FG_SKIN;
+struct _FG_MESSAGEQUEUE;
 typedef void(*fgInitializer)(fgElement* BSS_RESTRICT, fgElement* BSS_RESTRICT, fgElement* BSS_RESTRICT, const char*, fgFlag, const fgTransform*, unsigned short);
 
 typedef struct _FG_DEFER_ACTION {
@@ -52,6 +54,8 @@ typedef struct _FG_ROOT {
   fgElement* topmost;
   unsigned int keys[8]; // 8*4*8 = 256
   void* aniroot;
+  struct _FG_MESSAGEQUEUE* queue;
+  struct _FG_MESSAGEQUEUE* aux;
 #ifdef  __cplusplus
   inline bool GetKey(unsigned char key) const { return (keys[key / 32] & (1 << (key % 32))) != 0; }
   inline operator fgElement*() { return &gui.element; }
@@ -79,11 +83,17 @@ FG_EXTERN size_t fgStandardInject(fgElement* self, const FG_Msg* msg, const AbsR
 FG_EXTERN size_t fgOrderedInject(fgElement* self, const FG_Msg* msg, const AbsRect* area, fgElement* skip, fgElement* (*fn)(fgElement*, const FG_Msg*));
 FG_EXTERN void fgStandardDraw(fgElement* self, const AbsRect* area, const fgDrawAuxData* aux, char culled);
 FG_EXTERN void fgOrderedDraw(fgElement* self, const AbsRect* area, const fgDrawAuxData* aux, char culled, fgElement* skip, fgElement* (*fn)(fgElement*, const AbsRect*, const AbsRect*), void(*draw)(fgElement*, const AbsRect*, const fgDrawAuxData*));
+FG_EXTERN char fgDrawSkin(fgElement* self, const struct _FG_SKIN* skin, const AbsRect* area, const fgDrawAuxData* aux, char culled, char foreground, char clipping);
 FG_EXTERN fgElement* fgCreate(const char* type, fgElement* BSS_RESTRICT parent, fgElement* BSS_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform, unsigned short units);
 FG_EXTERN int fgRegisterCursor(int cursor, const void* data, size_t sz);
 FG_EXTERN int fgRegisterFunction(const char* name, fgListener fn);
+FG_EXTERN fgElement* fgSetTopmost(fgElement* target);
+FG_EXTERN char fgClearTopmost(fgElement* target);
 FG_EXTERN void fgRegisterControl(const char* name, fgInitializer fn, size_t sz);
 FG_EXTERN void fgIterateControls(void* p, void(*fn)(void*, const char*));
+FG_EXTERN void fgSendMessageAsync(fgElement* element, const FG_Msg* msg, unsigned int arg1size, unsigned int arg2size);
+FG_EXTERN size_t fgGetTypeSize(const char* type);
+FG_EXTERN int fgLog(const char* format, ...);
 
 #ifdef  __cplusplus
 }
@@ -94,7 +104,7 @@ inline size_t fgSendMsg(fgElement* self, Args... args)
   FG_Msg msg = { 0 };
   msg.type = type;
   fgSendMsgCall<1, Args...>::F(msg, args...);
-  return (*fgSingleton()->backend.behaviorhook)(self, &msg);
+  return (*fgSingleton()->backend.fgBehaviorHook)(self, &msg);
 }
 
 template<FG_MSGTYPE type, typename... Args>
@@ -104,7 +114,7 @@ inline size_t fgSendSubMsg(fgElement* self, unsigned short sub, Args... args)
   msg.type = type;
   msg.subtype = sub;
   fgSendMsgCall<1, Args...>::F(msg, args...);
-  return (*fgSingleton()->backend.behaviorhook)(self, &msg);
+  return (*fgSingleton()->backend.fgBehaviorHook)(self, &msg);
 }
 #endif
 

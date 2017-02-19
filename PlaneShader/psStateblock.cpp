@@ -43,7 +43,7 @@ psStateblock::~psStateblock()
 }
 void psStateblock::DestroyThis() { delete this; }
 
-psStateblock* BSS_FASTCALL psStateblock::Create(uint32_t numstates, ...)
+psStateblock* psStateblock::Create(uint32_t numstates, ...)
 {
   PROFILE_FUNC();
   DYNARRAY(STATEINFO, states, numstates);
@@ -56,7 +56,7 @@ psStateblock* BSS_FASTCALL psStateblock::Create(uint32_t numstates, ...)
 
   return Create(states, numstates);
 }
-psStateblock* BSS_FASTCALL psStateblock::Create(const STATEINFO* infos, uint32_t numstates)
+psStateblock* psStateblock::Create(const STATEINFO* infos, uint32_t numstates)
 {
   PROFILE_FUNC();
   psStateblock* r = new psStateblock(infos, numstates);
@@ -99,7 +99,7 @@ psTexblock::~psTexblock()
 }
 void psTexblock::DestroyThis() { delete this; }
 
-psTexblock* BSS_FASTCALL psTexblock::Create(uint32_t numstates, ...)
+psTexblock* psTexblock::Create(uint32_t numstates, ...)
 {
   PROFILE_FUNC();
   DYNARRAY(STATEINFO, states, numstates);
@@ -112,7 +112,7 @@ psTexblock* BSS_FASTCALL psTexblock::Create(uint32_t numstates, ...)
 
   return Create(states, numstates);
 }
-psTexblock* BSS_FASTCALL psTexblock::Create(const STATEINFO* infos, uint32_t numstates)
+psTexblock* psTexblock::Create(const STATEINFO* infos, uint32_t numstates)
 {
   PROFILE_FUNC();
   psTexblock* r = new psTexblock(infos, numstates);

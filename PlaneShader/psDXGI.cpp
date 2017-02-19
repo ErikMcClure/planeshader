@@ -17,10 +17,10 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, IDXGIOutput*& out)
 {
   HRESULT _lasterr;
   if(FAILED(_lasterr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)(&_factory))))
-    PSLOG(2) << "CreateDXGIFactory failed with error: " << GetDXGIError(_lasterr);
+    PSLOG(2, "CreateDXGIFactory failed with error: ", GetDXGIError(_lasterr));
 
   if(FAILED(_lasterr = _factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER)))
-    PSLOG(2) << "MakeWindowAssociation failed with error: " << GetDXGIError(_lasterr);
+    PSLOG(2, "MakeWindowAssociation failed with error: ", GetDXGIError(_lasterr));
 
   bss_util::cDynArray<IDXGIAdapter*, uint8_t> _adapters;
   IDXGIAdapter* adapter = NULL;
@@ -29,7 +29,7 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, IDXGIOutput*& out)
 
   if(!_adapters.Length())
   {
-    PSLOGV(0, "No adapters to attach to!");
+    PSLOG(0, "No adapters to attach to!");
     return 0;
   }
   adapter = _adapters[0];
@@ -41,7 +41,7 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, IDXGIOutput*& out)
 
   if(!_outputs.Length())
   {
-    PSLOGV(0, "No outputs to attach to!");
+    PSLOG(0, "No outputs to attach to!");
     return adapter;
   }
   out = _outputs[0];
@@ -49,7 +49,7 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, IDXGIOutput*& out)
   return adapter;
 }
 
-const char* BSS_FASTCALL psDXGI::GetDXGIError(HRESULT err)
+const char* psDXGI::GetDXGIError(HRESULT err)
 {
   static char buf[64] = { 0 };
 
@@ -81,7 +81,7 @@ const char* BSS_FASTCALL psDXGI::GetDXGIError(HRESULT err)
   return buf;
 }
 
-DXGI_FORMAT BSS_FASTCALL psDXGI::FMTtoDXGI(FORMATS format)
+DXGI_FORMAT psDXGI::FMTtoDXGI(FORMATS format)
 {
   switch(format)
   {
@@ -187,7 +187,7 @@ DXGI_FORMAT BSS_FASTCALL psDXGI::FMTtoDXGI(FORMATS format)
   return DXGI_FORMAT_UNKNOWN;
 }
 
-FORMATS BSS_FASTCALL psDXGI::DXGItoFMT(DXGI_FORMAT format)
+FORMATS psDXGI::DXGItoFMT(DXGI_FORMAT format)
 {
   switch(format)
   {
