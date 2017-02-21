@@ -13,7 +13,7 @@ using namespace bss_util;
 
 #pragma comment(lib, "Winmm.lib")
 
-psGUIManager::psGUIManager() : _preprocess(0, 0), _postprocess(0, 0), _firstjoystick(0), _alljoysticks(0), _maxjoy((uint8_t)FG_JOYSTICK_ID16), _quit(false)
+psGUIManager::psGUIManager() : _firstjoystick(0), _alljoysticks(0), _maxjoy((uint8_t)FG_JOYSTICK_ID16), _quit(false)
 {
   GetKeyboardState(_allkeys);
   memset(&_allbuttons, 0, sizeof(uint32_t)*NUMJOY);
@@ -52,7 +52,7 @@ size_t psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
   if(GetKey(FG_KEY_MENU)) evt.sigkeys = evt.sigkeys | 4; //VK_MENU
   if(held) evt.sigkeys = evt.sigkeys | 8;
 
-  return _process(evt);
+  return _root.inject(&_root, &evt);
 }
 void psGUIManager::SetChar(int key, DWORD time)
 {
@@ -70,7 +70,7 @@ void psGUIManager::SetChar(int key, DWORD time)
   if(GetKey(FG_KEY_MENU)) evt.sigkeys = evt.sigkeys | 4; //VK_MENU
   //if(held) evt.sigkeys = evt.sigkeys|8;
 
-  _process(evt);
+  _root.inject(&_root, &evt);
 }
 
 void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char button, size_t wparam, DWORD time)
@@ -85,7 +85,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char b
 
   if(type == FG_MOUSEOFF || type == FG_MOUSEON)
   {
-    _process(evt);
+    _root.inject(&_root, &evt);
     return;
   }
 
@@ -129,7 +129,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char b
     break;
   }
 
-  _process(evt);
+  _root.inject(&_root, &evt);
 }
 // Shows/hides the hardware cursor
 void psGUIManager::ShowCursor(bool show)
@@ -246,7 +246,7 @@ void psGUIManager::_joyupdateall()
             evt.joydown = (info.dwButtons&k) != 0;
             evt.type = (evt.joydown != 0) ? FG_JOYBUTTONDOWN : FG_JOYBUTTONUP;
             evt.joybutton = (i << 8) | j;
-            _process(evt);
+            _root.inject(&_root, &evt);
           }
         }
       }
@@ -267,7 +267,7 @@ void psGUIManager::_joyupdateall()
             evt.type = FG_JOYAXIS;
             evt.joyaxis = (i << 8) | j;
             evt.joyvalue = _translatejoyaxis(evt.joyaxis);
-            _process(evt);
+            _root.inject(&_root, &evt);
           }
         }
       }
@@ -282,19 +282,6 @@ float psGUIManager::_translatejoyaxis(uint16_t axis) const
   uint8_t ID = (axis >> 8);
   uint8_t a = (axis & 0xFF);
   return (((long)_alljoyaxis[ID][a]) - _joydevs[ID].offset[a]) / _joydevs[ID].range[a];
-}
-size_t psGUIManager::_process(FG_Msg& m)
-{
-  if(!_preprocess.IsEmpty() && _preprocess(m) != 0)
-    return FG_ACCEPT;
-
-  if(fgRoot_Inject(&_root, &m))
-    return FG_ACCEPT;
-
-  if(!_postprocess.IsEmpty() && _postprocess(m) != 0)
-    return FG_ACCEPT;
-
-  return 0;
 }
 
 void psGUIManager::_exactmousecalc()

@@ -222,14 +222,13 @@ int main(int argc, char** argv)
     psCamera::default_extent.x = 0.2f;
     psCamera::default_extent.y = 100;
     globalcam.SetExtent(psCamera::default_extent);
-
-    std::function<size_t(const FG_Msg&)> guicallback = [&](const FG_Msg& evt) -> size_t
+    fgSetInjectFunc([](struct _FG_ROOT* self, const FG_Msg* msg) -> size_t
     {
-      if(evt.type == FG_KEYDOWN || evt.type == FG_KEYUP)
+      if(msg->type == FG_KEYDOWN || msg->type == FG_KEYUP)
       {
-        bool isdown = evt.type == FG_KEYDOWN;
-        dirkeys[8] = evt.IsShiftDown();
-        switch(evt.keycode)
+        bool isdown = msg->type == FG_KEYDOWN;
+        dirkeys[8] = msg->IsShiftDown();
+        switch(msg->keycode)
         {
         case FG_KEY_A: dirkeys[0] = isdown; break;
         case FG_KEY_D: dirkeys[1] = isdown; break;
@@ -242,10 +241,10 @@ int main(int argc, char** argv)
         case FG_KEY_Q: dirkeys[6] = isdown; break;
         case FG_KEY_E: dirkeys[7] = isdown; break;
         case FG_KEY_ESCAPE:
-          if(isdown) ps.Quit();
+          if(isdown) psEngine::Instance()->Quit();
           break;
         case FG_KEY_RETURN:
-          if(isdown && !evt.IsAltDown()) gotonext = true;
+          if(isdown && !msg->IsAltDown()) gotonext = true;
           break;
         case FG_KEY_F11:
           if(isdown)
@@ -257,9 +256,8 @@ int main(int argc, char** argv)
           }
         }
       }
-      return 0;
-    };
-    ps.SetPreprocess(guicallback);
+      return fgRoot_DefaultInject(self, msg);
+    });
     //ps[0].SetClear(true, 0);
     engine = &ps;
 

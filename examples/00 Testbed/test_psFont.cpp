@@ -11,7 +11,7 @@ TESTDEF::RETPAIR test_psFont()
 {
   BEGINTEST;
 
-  psFont* font = psFont::Create("arial.ttf", 14, psFont::FAA_LCD);
+  psFont* font = psFont::Create("Arial", 400, false, 14, psFont::FAA_LCD);
 
   int fps = 0;
   auto timer = cHighPrecisionTimer::OpenProfiler();
