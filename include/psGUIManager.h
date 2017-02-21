@@ -23,9 +23,6 @@ namespace planeshader {
   // Manages the GUI window the graphics engine lives in and tracking all of the related input
   class PS_DLLEXPORT psGUIManager
   {
-  protected:
-    typedef bss_util::delegate<size_t, const FG_Msg&> PS_MESSAGE;
-
   public:
     psGUIManager();
     ~psGUIManager();
@@ -35,12 +32,6 @@ namespace planeshader {
     inline bool GetButton(uint16_t button) const { return (_allbuttons[button>>8]&(1<<(button&0xFF)))!=0; }
     // Returns a normalized relative axis value between -1.0 and 1.0 for the given axis code (the joystick ID plus the axis ID, e.g. JOYSTICK_ID1|JOYAXIS_X) 
     inline float GetAxis(uint16_t axis) const { return _translatejoyaxis(axis); }
-    // Get or set the GUI preprocess function
-    inline PS_MESSAGE GetPreprocess() const { return _preprocess; }
-    inline void SetPreprocess(PS_MESSAGE fn) { _preprocess = fn; }
-    // Get or set the GUI postprocess function (only called for messages rejected from the entire gui chain)
-    inline PS_MESSAGE GetPostProcess() const { return _postprocess; }
-    inline void SetPostProcess(PS_MESSAGE fn) { _postprocess = fn; }
     // Gets the mouse coordinates 
     inline psVec GetMouse() const { return psVec(_root.mouse.x, _root.mouse.y); }
     // Gets the ID of the first joystick that is plugged in, or JOYSTICKID_INVALID (-1) otherwise 
@@ -73,7 +64,6 @@ namespace planeshader {
     static const uint32_t BASE_DPI = 96;
 
   protected:
-    size_t _process(FG_Msg& m);
     // Creates the window and actually sets everything up (otherwise we get pointer problems)
     size_t SetKey(uint8_t keycode, bool down, bool held, unsigned long time);
     void SetChar(int key, unsigned long time);
@@ -98,8 +88,6 @@ namespace planeshader {
     bool _quit;
     bss_util::cDynArray<psMonitor, uint8_t, bss_util::CARRAY_CONSTRUCT> _monitors;
     psRoot _root;
-    PS_MESSAGE _preprocess;
-    PS_MESSAGE _postprocess;
     unsigned long _lastmsgtime; // Gets the timestamp of the last message
   };
 }

@@ -33,7 +33,8 @@ namespace planeshader {
     };
 
     FONT_ANTIALIAS GetAntialias() const;
-    static psFont* Create(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, const psVeciu& dpi = psVeciu(0,0));
+    static psFont* Create(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, const psVeciu& dpi = psVeciu(0, 0));
+    static psFont* Create(const char* family, short weight, bool italic, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, const psVeciu& dpi = psVeciu(0,0));
 
   protected:
     psFont(const psFont&) = delete;

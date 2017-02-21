@@ -31,9 +31,9 @@ using namespace planeshader;
 
 const int UNICODE_TERMINATOR = 0;
 
-void*  fgCreateFontPS(fgFlag flags, const char* font, uint32_t fontsize, const fgIntVec* dpi)
+void* fgCreateFontPS(fgFlag flags, const char* family, short weight, char italic, unsigned int size, const fgIntVec* dpi)
 {
-  return psFont::Create(font, fontsize, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, psVeciu(dpi->x, dpi->y));
+  return psFont::Create(family, weight, italic, size, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, psVeciu(dpi->x, dpi->y));
 }
 void*  fgCloneFontPS(void* font, const struct _FG_FONT_DESC* desc)
 {

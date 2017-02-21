@@ -54,15 +54,6 @@ _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
     HRESULT res = SHGetFolderPathW(0, CSIDL_FONTS, 0, SHGFP_TYPE_CURRENT, buf);
     if(res == E_FAIL) return;
 
-    //const wchar_t* ext=wcsrchr(_path,'.'); //This doesn't work for some reason
-    //if(!ext) //no extension, so the app wants us to find it
-    //{
-    //  WIN32_FIND_DATAW filedat;
-    //  if(FindFirstFileW(cStrWF(L"%s.*", file),&filedat)!=INVALID_HANDLE_VALUE)
-    //    _path=cStrWF(L"%s%s",buf,(const wchar_t*)filedat.cFileName);
-    //  const wchar_t* nothing=filedat.cFileName;
-    //}
-    //else
     _path = cStrF("%s\\%s", cStr(buf).c_str(), file);
   }
 
@@ -94,9 +85,13 @@ uint16_t psFont::PreloadGlyphs(const int* glyphs)
   return retval;
 }
 
+psFont* psFont::Create(const char* family, short weight, bool italic, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi)
+{
+  return Create(bss_util::GetFontPath(family, weight, italic).get(), psize, antialias, dpi);
+}
 psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi)
 {
-  if(!_driver) return 0;
+  if(!_driver || !file) return 0;
   cStr str(cStrF("%s|%i|%i|%i|%i", file, psize, antialias, dpi.x, dpi.y));
   psFont* r = _Fonts[str];
   if(r != 0) return r;
