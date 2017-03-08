@@ -94,6 +94,7 @@ psEngine::~psEngine()
   _mainpass=0;
 
   _instance=0;
+  _monitors.Clear(); // We must clear and destroy all monitors BEFORE we destroy the fgroot instance
 }
 bool psEngine::Begin(uint32_t clearcolor)
 {

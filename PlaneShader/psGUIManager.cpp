@@ -15,6 +15,8 @@ using namespace bss_util;
 
 psGUIManager::psGUIManager() : _firstjoystick(0), _alljoysticks(0), _maxjoy((uint8_t)FG_JOYSTICK_ID16), _quit(false)
 {
+  psMonitor::CheckDesktopComposition();
+  psMonitor::WndRegister(0, 0, 0);
   GetKeyboardState(_allkeys);
   memset(&_allbuttons, 0, sizeof(uint32_t)*NUMJOY);
   memset(&_alljoyaxis, 0, sizeof(unsigned long)*NUMJOY*NUMAXIS);
@@ -28,6 +30,7 @@ psGUIManager::~psGUIManager()
   PROFILE_FUNC();
   ChangeDisplaySettings(NULL, 0);
   ShowCursor(TRUE);
+  UnregisterClassW(L"PlaneShaderWindow", GetModuleHandle(0));
 }
 psMonitor* psGUIManager::AddMonitor(psVeciu& dim, psMonitor::MODE mode, HWND__* window)
 {

@@ -1,54 +1,30 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
-#include "psGUIManager.h"
+#include "psEngine.h"
 #include "bss-util/bss_win32_includes.h"
 #include "bss-util/cStr.h"
 #include "feathergui/fgWindow.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
+using namespace planeshader;
+
 typedef HRESULT(STDAPICALLTYPE *DWMCOMPENABLE)(BOOL*);
 typedef HRESULT(STDAPICALLTYPE *DWMEXTENDFRAME)(HWND, const MARGINS*);
 typedef HRESULT(STDAPICALLTYPE *DWMBLURBEHIND)(HWND, const DWM_BLURBEHIND*);
-DWMEXTENDFRAME dwmextend = 0;
-DWMBLURBEHIND dwmblurbehind = 0;
+HINSTANCE__* psMonitor::dwm;
+DWMEXTENDFRAME psMonitor::dwmextend = 0;
+DWMBLURBEHIND psMonitor::dwmblurbehind = 0;
 
 #define MAKELPPOINTS(l)       ((POINTS FAR *)&(l))
-
-using namespace planeshader;
 
 psMonitor::psMonitor() : _manager(0), _window(0) {}
 psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* window) : _manager(manager), _window(window), _mode(mode), _backbuffer(0)
 {
-  // Check for desktop composition
-  HMODULE dwm = LoadLibraryW(L"dwmapi.dll");
-  if(dwm)
-  {
-    DWMCOMPENABLE dwmcomp = (DWMCOMPENABLE)GetProcAddress(dwm, "DwmIsCompositionEnabled");
-    if(!dwmcomp) { FreeLibrary(dwm); dwm = 0; }
-    else
-    {
-      BOOL res;
-      (*dwmcomp)(&res);
-      if(res == FALSE) { FreeLibrary(dwm); dwm = 0; } //fail
-    }
-    dwmextend = (DWMEXTENDFRAME)GetProcAddress(dwm, "DwmExtendFrameIntoClientArea");
-    dwmblurbehind = (DWMBLURBEHIND)GetProcAddress(dwm, "DwmEnableBlurBehindWindow");
-
-    if(!dwmextend || !dwmblurbehind)
-    {
-      FreeLibrary(dwm);
-      dwm = 0;
-      dwmextend = 0;
-      dwmblurbehind = 0;
-    }
-  }
-
   if(!dwm && mode >= MODE_COMPOSITE) mode = MODE_WINDOWED; //can't do composite if its not supported
   psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
   dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
-  WndRegister(0, 0, 0);
   RECT rect;
   if(!_window)
   {
@@ -66,15 +42,27 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
   fgMonitor_Init(this, FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, &fgdpi);
   _manager->_updaterootarea();
   this->element.message = (fgMessage)&Message;
+  this->element.destroy = (fgDestroy)&Destroy;
 }
 psMonitor::~psMonitor()
 {
+  this->element.destroy = (fgDestroy)&fgMonitor_Destroy;
   if(_window)
     DestroyWindow(_window);
-
-  UnregisterClassW(L"PlaneShaderWindow", GetModuleHandle(0));
+  fgMonitor_Destroy(this);
 }
-size_t  psMonitor::Message(fgMonitor* s, const FG_Msg* m)
+void psMonitor::Destroy(psMonitor* self)
+{
+  auto& m = psEngine::Instance()->_monitors;
+  for(size_t i = 0; i < m.Length(); ++i)
+    if(&m[i] == self)
+    {
+      m.Remove(i);
+      return;
+    }
+}
+
+size_t psMonitor::Message(fgMonitor* s, const FG_Msg* m)
 {
   psMonitor* self = static_cast<psMonitor*>(s);
   size_t otherint = m->u;
@@ -431,4 +419,31 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
   }
 
   return DefWindowProcW(hWnd, message, wParam, lParam);
+}
+
+void psMonitor::CheckDesktopComposition()
+{
+  // Check for desktop composition
+  dwm = LoadLibraryW(L"dwmapi.dll");
+  if(dwm)
+  {
+    DWMCOMPENABLE dwmcomp = (DWMCOMPENABLE)GetProcAddress(dwm, "DwmIsCompositionEnabled");
+    if(!dwmcomp) { FreeLibrary(dwm); dwm = 0; }
+    else
+    {
+      BOOL res;
+      (*dwmcomp)(&res);
+      if(res == FALSE) { FreeLibrary(dwm); dwm = 0; } //fail
+    }
+    dwmextend = (DWMEXTENDFRAME)GetProcAddress(dwm, "DwmExtendFrameIntoClientArea");
+    dwmblurbehind = (DWMBLURBEHIND)GetProcAddress(dwm, "DwmEnableBlurBehindWindow");
+
+    if(!dwmextend || !dwmblurbehind)
+    {
+      FreeLibrary(dwm);
+      dwm = 0;
+      dwmextend = 0;
+      dwmblurbehind = 0;
+    }
+  }
 }

@@ -475,7 +475,7 @@ TESTDEF::RETPAIR test_feather()
     updatefpscount(timer, fps);
   }
   
-  fgElement_Clear(*fgSingleton());
+  fgRoot_Clear(fgSingleton());
   fgLayout_Destroy(&layout);
   fgSkin_Destroy(&skin);
 
