@@ -5,14 +5,16 @@
 *.bak
 *.aps
 *.VC.db
-bin/
-bin32/
-lib/
-PlaneShader/x64/
-PlaneShader/Win32/
-examples/00 Testbed/x64/
-examples/00 Testbed/Win32/
-media/*.ico
-media/*.png
-media/test
-media/Thumbs.db
+*.txt
+/bin/
+/bin32/
+/lib/
+/PlaneShader/x64/
+/PlaneShader/Win32/
+/examples/00 Testbed/x64/
+/examples/00 Testbed/Win32/
+/media/*.ico
+/media/*.png
+/media/test
+/media/Thumbs.db
+/.vs/

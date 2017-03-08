@@ -11,11 +11,11 @@
 extern "C" {
 #endif
 
-struct __kh_fgRadioGroup_t;
-struct __kh_fgFunctionMap_t;
-struct __kh_fgIDMap_t;
-struct __kh_fgCursorMap_t;
-struct __kh_fgIDHash_t;
+struct kh_fgRadioGroup_s;
+struct kh_fgFunctionMap_s;
+struct kh_fgIDMap_s;
+struct kh_fgCursorMap_s;
+struct kh_fgIDHash_s;
 struct _FG_MONITOR;
 struct _FG_SKIN;
 struct _FG_MESSAGEQUEUE;
@@ -37,12 +37,12 @@ typedef struct _FG_ROOT {
   fgBackend backend;
   struct _FG_MONITOR* monitors;
   fgDeferAction* updateroot;
-  struct __kh_fgRadioGroup_t* radiohash;
-  struct __kh_fgFunctionMap_t* functionhash;
-  struct __kh_fgIDMap_t* idmap;
-  struct __kh_fgIDHash_t* idhash; // reverse ID lookup
-  struct __kh_fgInitMap_t* initmap;
-  struct __kh_fgCursorMap_t* cursormap;
+  struct kh_fgRadioGroup_s* radiohash;
+  struct kh_fgFunctionMap_s* functionhash;
+  struct kh_fgIDMap_s* idmap;
+  struct kh_fgIDHash_s* idhash; // reverse ID lookup
+  struct kh_fgInitMap_s* initmap;
+  struct kh_fgCursorMap_s* cursormap;
   fgIntVec dpi;
   float lineheight;
   float fontscale;
