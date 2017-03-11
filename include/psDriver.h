@@ -52,9 +52,15 @@ namespace planeshader {
 
   struct psVertex
   {
-    float x;
-    float y;
-    float z;
+    union {
+      struct {
+        float x;
+        float y;
+        float z;
+      };
+      psVec xy;
+      psVec3D xyz;
+    };
     float w; // We have a w element to pad this to 32 bytes
     uint32_t color;
   };
