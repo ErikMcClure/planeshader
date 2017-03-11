@@ -18,7 +18,8 @@ psCullGroup::~psCullGroup() { SetPass(0); Clear(); }
 void psCullGroup::Insert(psSolid* img, bool recalc)
 { 
   img->SetPass(_pass); // Set pass to our pass
-  _pass->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _pass)
+  if(_pass != 0)
+    _pass->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _pass)
   img->UpdateBoundingRect(); // Make sure the bounding rect is up to date
   if(recalc)
     _tree.Insert(img);

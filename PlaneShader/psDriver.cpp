@@ -94,9 +94,9 @@ psBufferObj* psDriver::CreateBufferObj(psBufferObj* target, uint32_t capacity, u
   return target; // We return the same pointer we passed in due to restrictions on function calls in static variables (see psVector.cpp)
 }
 
-psBatchObj* psDriver::DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags, const float(&transform)[4][4])
+psBatchObj* psDriver::DrawArray(psShader* shader, const psStateblock* stateblock, void* data, uint32_t num, psBufferObj* vbuf, psBufferObj* ibuf, PRIMITIVETYPE mode, psFlag flags)
 {
-  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, vbuf, ibuf, mode, transform);
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, vbuf, ibuf, mode, PeekTransform());
   psBufferObj* verts = obj->buffer.verts;
 
   for(uint32_t i = (num + obj->buffer.vert + obj->buffer.nvert)*verts->element; i > verts->capacity; i -= verts->capacity)

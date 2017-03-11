@@ -72,7 +72,7 @@ namespace planeshader {
     psRenderPolygon& operator =(const psPolygon& right);
 
     static void DrawPolygon(const psVec* p, uint32_t num, uint32_t color, const psVec3D& offset = VEC3D_ZERO);
-    static void DrawPolygon(const psVertex* p, uint32_t num, const float(&transform)[4][4] = psDriver::identity);
+    static void DrawPolygon(const psVertex* p, uint32_t num);
 
   protected:
     virtual void _render() override;

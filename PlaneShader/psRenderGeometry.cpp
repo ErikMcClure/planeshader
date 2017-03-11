@@ -71,7 +71,7 @@ psRenderPolygon& psRenderPolygon::operator =(psRenderPolygon&& right) { psInheri
 psRenderPolygon& psRenderPolygon::operator =(const psPolygon& polygon) { psPolygon::operator=(polygon); return *this; }
 
 void psRenderPolygon::DrawPolygon(const psVec* p, uint32_t num, uint32_t color, const psVec3D& offset) {  _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, offset, color, 0); }
-void psRenderPolygon::DrawPolygon(const psVertex* p, uint32_t num, const float(&transform)[4][4]) { _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, 0, transform); }
+void psRenderPolygon::DrawPolygon(const psVertex* p, uint32_t num) { _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, 0); }
 
 void psRenderPolygon::_render()
 {

@@ -71,20 +71,20 @@ namespace planeshader {
     virtual void Flush() override;
     virtual psBatchObj* FlushPreserve() override;
     // Draws a vertex object
-    virtual void Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual void Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4]) override;
     // Draws a rectangle
-    virtual psBatchObj* DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4] = identity) override;
-    virtual psBatchObj* DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual psBatchObj* DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags) override;
+    virtual psBatchObj* DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags) override;
     virtual void DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color) override;
     // Draws a polygon
-    virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4] = identity) override;
-    virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags) override;
+    virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags) override;
     // Draws points
-    virtual psBatchObj* DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4] = identity) override;
+    virtual psBatchObj* DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags) override;
     // Draws lines
-    virtual psBatchObj* DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual psBatchObj* DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags) override;
     virtual void DrawLines(psBatchObj*& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) override;
-    virtual psBatchObj* DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4] = identity) override;
+    virtual psBatchObj* DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags) override;
     virtual psBatchObj* DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num) override;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
     virtual void PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) override;

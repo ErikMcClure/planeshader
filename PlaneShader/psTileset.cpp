@@ -109,10 +109,12 @@ void psTileset::_render()
 {
   assert(_defs.Length() > 0);
   if(!_rowlength || !_tiles.Length()) return;
-  GetTransform(_m);
+  bss_util::Matrix<float,4,4> m;
+  GetTransform(m);
+  _driver->PushTransform(m.v);
   Activate();
 
-  psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags(), _m.v);
+  psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags());
 
   psRecti window = psRecti(0, 0, _rowlength, _tiles.Length() / _rowlength);
 
@@ -163,4 +165,6 @@ void psTileset::_render()
         drawn[k >> 3] |= (1 << (k % 8)); // mark tile as drawn
       }
   } while(skipped > 0);
+
+  _driver->PopTransform();
 }
