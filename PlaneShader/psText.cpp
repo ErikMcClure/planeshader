@@ -61,7 +61,9 @@ void psText::_render()
     // This mimics assembling a scaling matrix and multiplying it with m, assuming we are using transposed matrices.
     sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
     sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];
-    _textdim = _font->DrawText(GetShader(), _stateblock, _text.c_str(), _lineheight, _letterspacing, psRectRotateZ(0, 0, GetUnscaledDim().x, GetUnscaledDim().y, 0), GetColor().color, GetAllFlags(), _func, m.v);
+    psDriverHold::GetDriver()->PushTransform(m.v);
+    _textdim = _font->DrawText(GetShader(), _stateblock, _text.c_str(), _lineheight, _letterspacing, psRectRotateZ(0, 0, GetUnscaledDim().x, GetUnscaledDim().y, 0), GetColor().color, GetAllFlags(), _func);
+    psDriverHold::GetDriver()->PopTransform();
   }
 }
 

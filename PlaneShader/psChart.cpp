@@ -18,7 +18,8 @@ void psChartContainer::_render()
   psFlag flags = GetAllFlags();
   bss_util::Matrix<float, 4, 4> m;
   GetTransform(m);
-  psBatchObj* batch = _driver->DrawLinesStart(_driver->library.LINE, 0, flags, m.v);
+  _driver->PushTransform(m.v);
+  psBatchObj* batch = _driver->DrawLinesStart(_driver->library.LINE, 0, flags);
   _driver->DrawLines(batch, psLine(0, 0, _dim.x, 0), 0, 0, 0xFF999999);
   _driver->DrawLines(batch, psLine(0, 0, 0, _dim.y), 0, 0, 0xFF999999);
   _driver->DrawLines(batch, psLine(0, _dim.y, _dim.x, _dim.y), 0, 0, 0xAA999999);
@@ -39,6 +40,8 @@ void psChartContainer::_render()
     _driver->DrawLines(batch, psLine(0, lineheight*2.5*i, _dim.x, lineheight*2.5*i), 0, 0, 0xFF999999);
 
   }
+
+  _driver->PopTransform();
 }
 void psChartContainer::SetDim(const psVec& dim)
 {

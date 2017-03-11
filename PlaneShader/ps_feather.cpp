@@ -141,12 +141,13 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   psDriver* driver = psDriverHold::GetDriver();
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
-  float(&m)[4][4] = *driver->PushMatrix();
+  float m[4][4];
   bss_util::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
+  driver->PushTransform(m);
 
   if(n == 2)
   {
-    psBatchObj* o = driver->DrawLinesStart(driver->library.LINE, 0, 0, m);
+    psBatchObj* o = driver->DrawLinesStart(driver->library.LINE, 0, 0);
     driver->DrawLines(o, psLine{ p[0].x, p[0].y, p[1].x, p[1].y }, 0, 0, vertexcolor);
   }
   else
@@ -155,9 +156,10 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
     for(uint32_t i = 0; i < n; ++i)
       verts[i] = { p[i].x, p[i].y, 0, 1, vertexcolor };
 
-    psBatchObj* o = driver->DrawCurveStart(driver->library.LINE, 0, 0, m);
+    psBatchObj* o = driver->DrawCurveStart(driver->library.LINE, 0, 0);
     driver->DrawCurve(o, verts, n);
   }
+  driver->PopTransform();
 }
 
 #include "bss-util/bss_win32_includes.h"
@@ -416,7 +418,6 @@ psRoot::psRoot()
 }
 psRoot::~psRoot()
 {
-  fgRoot_Destroy(this);
 }
 
 void psRoot::_render()

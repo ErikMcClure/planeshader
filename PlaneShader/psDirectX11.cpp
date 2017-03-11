@@ -458,18 +458,29 @@ void psDirectX11::Flush()
   }
 
   _jobstack.Clear();
-  _matrixstack.Clear();
   _snapshotstack.Clear();
   _texstack.Clear();
+
+  size_t length = 0;
+  for(size_t i = 1; i < _transformstack.Length(); ++i)
+  {
+    ptrdiff_t index = _matrixstack.begin() - _transformstack[i];
+    if(index > length)
+      MEMCPY(_matrixstack.begin() + length, 4 * 4 * sizeof(float), _transformstack[i], 4 * 4 * sizeof(float));
+    ++length;
+  }
+  _matrixstack.SetLength(length);
 }
 psBatchObj* psDirectX11::FlushPreserve()
 {
   assert(_jobstack.Length() > 0);
 
   psBatchObj obj(_jobstack.Back());
-  //MEMCPY(&obj, sizeof(psBatchObj), &, sizeof(psBatchObj));
+  float m[4][4];
+  MEMCPY(m, 4 * 4 * sizeof(float), &obj.transform, 4 * 4 * sizeof(float));
   Flush();
-  return DrawBatchBegin(obj.shader, obj.stateblock, obj.flags, obj.buffer.verts, obj.buffer.indices, obj.buffer.mode, obj.transform);
+  MEMCPY(PushMatrix(), 4 * 4 * sizeof(float), &m, 4 * 4 * sizeof(float));
+  return DrawBatchBegin(obj.shader, obj.stateblock, obj.flags, obj.buffer.verts, obj.buffer.indices, obj.buffer.mode, _matrixstack.Back());
 }
 
 void psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4])
@@ -498,14 +509,14 @@ void psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][
   }
 }
 
-psBatchObj* psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags, const float(&xform)[4][4])
+psBatchObj* psDirectX11::DrawRect(psShader* shader, const psStateblock* stateblock, const psRectRotateZ& rect, const psRect* uv, uint8_t numuv, uint32_t color, psFlag flags)
 { // Because we have to send the rect position in SOMEHOW and DX11 forces us to send matrices through the shaders, we will lock a buffer no matter what we do. 
   PROFILE_FUNC();
-  psBatchObj* obj = DrawRectBatchBegin(shader, stateblock, numuv, flags, xform);
+  psBatchObj* obj = DrawRectBatchBegin(shader, stateblock, numuv, flags);
   DrawRectBatch(obj, rect, uv, color);
   return obj;
 }
-psBatchObj* psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags, const float(&xform)[4][4])
+psBatchObj* psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags)
 {
   uint32_t size = sizeof(DX11_rectvert) + sizeof(psRect)*numuv;
   if(size != _rectvertbuf.element)
@@ -514,7 +525,7 @@ psBatchObj* psDirectX11::DrawRectBatchBegin(psShader* shader, const psStateblock
     _rectvertbuf.element = size;
   }
 
-  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_rectvertbuf, 0, POINTLIST, xform);
+  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_rectvertbuf, 0, POINTLIST, PeekTransform());
 }
 psBatchObj* psDirectX11::_checkflush(psBatchObj* obj, uint32_t num)
 {
@@ -534,9 +545,9 @@ void psDirectX11::DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const
   memcpy(buf + 1, uv, sizeof(psRect)*numuv);
   ++o->buffer.nvert;
 }
-psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags, const float(&transform)[4][4])
+psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags)
 {
-  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, PeekTransform(), num);
   psBufferObj* v = obj->buffer.verts;
 
   if(num*v->element > v->capacity) return obj;
@@ -555,10 +566,10 @@ psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* state
   obj->buffer.nindice = (num - 2) * 3;
   return obj;
 }
-psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags, const float(&transform)[4][4])
+psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags)
 {
   static_assert(sizeof(psVertex) == sizeof(DX11_simplevert), "Error, psVertex is not equal to DX11_simplevert");
-  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, transform, num);
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, PeekTransform(), num);
   psBufferObj* v = obj->buffer.verts;
 
   if(num*v->element > v->capacity) return obj;
@@ -569,15 +580,15 @@ psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* state
   obj->buffer.nindice = (num - 2) * 3;
   return obj;
 }
-psBatchObj* psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags, const float(&transform)[4][4])
+psBatchObj* psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags)
 {
   static_assert(sizeof(psVertex) == sizeof(DX11_simplevert), "Error, psVertex is not equal to DX11_simplevert");
   assert(sizeof(DX11_simplevert) == _batchvertbuf.element);
-  return DrawArray(shader, stateblock, particles, num, &_batchvertbuf, 0, POINTLIST, flags, transform);
+  return DrawArray(shader, stateblock, particles, num, &_batchvertbuf, 0, POINTLIST, flags);
 }
-psBatchObj* psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
+psBatchObj* psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINELIST, xform);
+  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINELIST, PeekTransform());
 }
 void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
 {
@@ -588,14 +599,15 @@ void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float 
   linebuf[1] = { line.x2 + 0.5f, line.y2 + 0.5f, Z2, 1, vertexcolor };
   o->buffer.nvert += 2;
 }
-psBatchObj* psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags, const float(&xform)[4][4])
+psBatchObj* psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  float(&m)[4][4] = *PushMatrix();
+  psMatrix m;
   Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
-  if(xform != identity)
-    MatrixMultiply(xform, m, m);
+  PushTransform(m);
 
-  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINESTRIP, m);
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINESTRIP, PeekTransform());
+  PopTransform();
+  return obj;
 }
 psBatchObj* psDirectX11::DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num)
 {

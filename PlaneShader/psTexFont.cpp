@@ -7,7 +7,7 @@
 
 using namespace planeshader;
 
-psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, float lineheight, float letterspacing, const psRectRotateZ& prearea, uint32_t color, psFlag flags, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, float lineheight, float letterspacing, const psRectRotateZ& prearea, uint32_t color, psFlag flags, DELEGATE d)
 {
   if(!text) return VEC_ZERO;
   float linewidth;
@@ -62,7 +62,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
 
     curwidth = 0.0f;
     _driver->SetTextures(&_textures[i], 1);
-    psBatchObj* obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags, transform);
+    psBatchObj* obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags);
     texdim = _textures[i]->GetDim();
 
     topleft.x = area.left;
@@ -86,17 +86,30 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
       //{
       //  rect.left = linewidth - (rect.left - linestart) - gdimx;
       //}
+      if(!d.IsEmpty()) d(ipos, rect, color);
       if(flags&PSFONT_PIXELSNAP)
       {
         rect.left = (float)bss_util::fFastRound(rect.left);
         rect.top = (float)bss_util::fFastRound(rect.top);
+        rect.right = rect.left + gdimx;
+        rect.bottom = rect.top + gdimy;
+        _driver->DrawRectBatch(obj, rect, &g->uv, color);
+      }
+      else
+      {
+        psRect uv = g->uv;
+        psRect old = { rect.left, rect.top, rect.left + gdimx, rect.top + gdimy };
+        rect.left = floor(old.left);
+        rect.top = floor(old.top);
+        rect.right = ceil(old.right);
+        rect.bottom = ceil(old.bottom);
+        uv.left += (rect.left - old.left) / texdim.x;
+        uv.top += (rect.top - old.top) / texdim.y;
+        uv.right += (rect.right - old.right) / texdim.x;
+        uv.bottom += (rect.bottom - old.bottom) / texdim.y;
+        _driver->DrawRectBatch(obj, rect, &uv, color);
       }
 
-      rect.right = rect.left + gdimx;
-      rect.bottom = rect.top + gdimy;
-
-      if(!d.IsEmpty()) d(ipos, rect, color);
-      _driver->DrawRectBatch(obj, rect, &g->uv, color);
     }
     /*while(*pos)
     {
@@ -160,17 +173,17 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   return dim;
 }
 
-psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const char* text, float lineheight, float letterspacing, const psRectRotateZ& area, uint32_t color, psFlag flags, DELEGATE d, const float(&transform)[4][4])
+psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const char* text, float lineheight, float letterspacing, const psRectRotateZ& area, uint32_t color, psFlag flags, DELEGATE d)
 {
   size_t len = strlen(text)+1;
   if(len < 100000)
   {
     DYNARRAY(int, txt, len);
     UTF8toUTF32(text, len, txt, len);
-    return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d, transform);
+    return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d);
   }
   cStrT<int> txt(text);
-  return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d, transform);
+  return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d);
 }
 bool psTexFont::_isspace(int c) // We have to make our own isspace implementation because the standard isspace() explodes if you feed it unicode characters.
 {
