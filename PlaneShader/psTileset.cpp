@@ -109,9 +109,9 @@ void psTileset::_render()
 {
   assert(_defs.Length() > 0);
   if(!_rowlength || !_tiles.Length()) return;
-  bss_util::Matrix<float,4,4> m;
+  psMatrix m;
   GetTransform(m);
-  _driver->PushTransform(m.v);
+  _driver->PushTransform(m);
   Activate();
 
   psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags());

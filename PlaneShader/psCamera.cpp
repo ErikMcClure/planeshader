@@ -80,7 +80,8 @@ inline const psRect& psCamera::Apply(const psTex* rt) const
   psVec pivot = GetPivot()*psVec(dim);
   _driver->PushCamera(_relpos, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = _relpos.xy - pivot;
-  _cache.window = psRectRotate(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot).BuildAABB();
+  _cache.full = psRectRotateZ(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot, _relpos.z);
+  _cache.window = _cache.full.BuildAABB();
   _cache.winfixed = realvp;
   _cache.lastfixed = 0;
   _cache.last = 0;
@@ -99,6 +100,10 @@ inline bool psCamera::Cull(const psRectRotateZ& rect, psFlag flags) const
 {
   if((flags&PSFLAG_DONOTCULL) != 0) return false;
   return _cache.Cull(rect.BuildAABB(), rect.z, _relpos.z, flags);
+}
+inline psRectRotateZ psCamera::Resolve(const psRectRotateZ& rect) const
+{
+  return rect.RelativeTo(psVec3D(_cache.full.left, _cache.full.top, _cache.full.z), _cache.full.rotation, _cache.full.pivot);
 }
 
 inline void psCamera::CamCache::SetSSE()

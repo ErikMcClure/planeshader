@@ -66,13 +66,13 @@ void psSolid::_setdim(const psVec& dim)
     _pivot*=(dim/_dim); //Adjust center position
   _dim=dim;
 }
-void psSolid::GetTransform(bss_util::Matrix<float, 4, 4>& m)
+void psSolid::GetTransform(psMatrix& m)
 {
   psVec3D pos;
   GetTotalPosition(pos);
   bss_util::Matrix<float, 4, 4>::AffineTransform_T(pos.x - _pivot.x, pos.y - _pivot.y, pos.z, GetTotalRotation(), _pivot.x, _pivot.y, m);
-  sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
-  sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];
+  sseVec(m[0])*sseVec(_scale.x) >> m[0];
+  sseVec(m[1])*sseVec(_scale.y) >> m[1];
 }
 
 psSolid& psSolid::operator =(const psSolid& right)
