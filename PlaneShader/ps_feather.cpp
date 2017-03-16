@@ -35,7 +35,7 @@ void* fgCreateFontPS(fgFlag flags, const char* family, short weight, char italic
 {
   return psFont::Create(family, weight, italic, size, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, psVeciu(dpi->x, dpi->y));
 }
-void*  fgCloneFontPS(void* font, const struct _FG_FONT_DESC* desc)
+void* fgCloneFontPS(void* font, const struct _FG_FONT_DESC* desc)
 {
   psFont* f = (psFont*)font;
   if(!desc)
@@ -45,8 +45,8 @@ void*  fgCloneFontPS(void* font, const struct _FG_FONT_DESC* desc)
   }
   return psFont::Create(f->GetPath(), desc->pt, f->GetAntialias(), psVeciu(desc->dpi.x, desc->dpi.y));
 }
-void  fgDestroyFontPS(void* font) { ((psFont*)font)->Drop(); }
-void  fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data, void* layout)
+void fgDestroyFontPS(void* font) { ((psFont*)font)->Drop(); }
+void fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data, void* layout)
 {
   psFont* f = (psFont*)font;
   psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, rotation,{ center->x - area->left, center->y - area->top }, 0 };
@@ -56,7 +56,7 @@ void  fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, f
   else
     f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, !len ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
 }
-void*  fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, void* prevlayout)
+void* fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, void* prevlayout)
 {
   psFont* f = (psFont*)font;
   psVec dim = { area->right - area->left, area->bottom - area->top };
@@ -66,7 +66,7 @@ void*  fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight
   area->bottom = area->top + dim.y;
   return 0;
 }
-void  fgFontGetPS(void* font, fgFontDesc* desc)
+void fgFontGetPS(void* font, fgFontDesc* desc)
 {
   psFont* f = (psFont*)font;
   if(desc)
@@ -77,7 +77,7 @@ void  fgFontGetPS(void* font, fgFontDesc* desc)
     desc->lineheight = f->GetLineHeight();
   }
 }
-size_t  fgFontIndexPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* layout)
+size_t fgFontIndexPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* layout)
 {
   psFont* f = (psFont*)font;
   auto r = f->GetIndex(!text ? &UNICODE_TERMINATOR : (const int*)text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
@@ -85,7 +85,7 @@ size_t  fgFontIndexPS(void* font, const void* text, size_t len, float lineheight
   cursor->y = r.second.y;
   return r.first;
 }
-AbsVec  fgFontPosPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* layout)
+AbsVec fgFontPosPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* layout)
 {
   psFont* f = (psFont*)font;
   auto r = f->GetPos(!text ? &UNICODE_TERMINATOR : (const int*)text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
@@ -364,7 +364,7 @@ char fgProcessMessagesPS()
   return !psEngine::Instance()->GetQuit();
 }
 
-psRoot::psRoot()
+psRoot::psRoot() : _psInject(0, 0)
 {
   AbsRect area = { 0, 0, 1, 1 };
 
@@ -417,10 +417,9 @@ psRoot::psRoot()
   }
 }
 psRoot::~psRoot()
-{
-}
+{}
 
-void psRoot::_render()
+void psRoot::_render(const psParent& parent)
 {
   gui->Draw(0, 0);
 }

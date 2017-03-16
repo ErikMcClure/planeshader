@@ -11,11 +11,20 @@ using namespace bss_util;
 psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0) {}
 psQuadraticHull::~psQuadraticHull() {}
 
-void psQuadraticHull::_render()
+void psQuadraticHull::_render(const psParent& parent)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CURVEBUFSIZE, sizeof(QuadVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
   Activate();
-  _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetAllFlags());
+  if(parent == psParent::Zero)
+    _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
+  else
+  {
+    psMatrix m;
+    parent.GetTransform(m);
+    _driver->PushTransform(m);
+    _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
+    _driver->PopTransform();
+  }
 }
 
 void psQuadraticHull::Clear()
@@ -163,9 +172,9 @@ void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const floa
 
 psRoundRect::psRoundRect(const psRoundRect& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
 psRoundRect::psRoundRect(psRoundRect&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
-psRoundRect::psRoundRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
+psRoundRect::psRoundRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
-  !shader?_driver->library.ROUNDRECT:shader, pass, parent, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
+  !shader?_driver->library.ROUNDRECT:shader, pass, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
 {
   SetDim(rect.GetDimensions());
 }
@@ -206,17 +215,17 @@ void psRoundRect::DrawRoundRect(psShader* shader, psStateblock* stateblock, cons
     corners, edge, color, outline };
   ++obj->buffer.nvert;
 }
-void psRoundRect::_render()
+void psRoundRect::_render(const psParent& parent)
 {
   Activate();
-  DrawRoundRect(GetShader(), _stateblock, GetCollisionRect(), _corners, GetAllFlags(), _color, _outline, _edge);
+  DrawRoundRect(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
 }
 
 psRoundTri::psRoundTri(const psRoundTri& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
 psRoundTri::psRoundTri(psRoundTri&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
-psRoundTri::psRoundTri(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
+psRoundTri::psRoundTri(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
-    !shader ? _driver->library.ROUNDTRI : shader, pass, parent, scale), _outline(0), _edge(-1), _corners(0, 0, 0, 0)
+    !shader ? _driver->library.ROUNDTRI : shader, pass, scale), _outline(0), _edge(-1), _corners(0, 0, 0, 0)
 {
   SetDim(rect.GetDimensions());
 }
@@ -257,16 +266,16 @@ void psRoundTri::DrawRoundTri(psShader* shader, psStateblock* stateblock, const 
     corners, edge, color, outline };
   ++obj->buffer.nvert;
 }
-void psRoundTri::_render()
+void psRoundTri::_render(const psParent& parent)
 {
   Activate();
-  DrawRoundTri(GetShader(), _stateblock, GetCollisionRect(), _corners, GetAllFlags(), _color, _outline, _edge);
+  DrawRoundTri(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
 }
 
 psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _arcs(copy._arcs), _edge(copy._edge) {}
 psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _arcs(mov._arcs), _edge(mov._edge) {}
-psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, parent, scale),
+psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+  psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, scale),
   _outline(0), _edge(-1), _arcs(-PI, PI, -PI, PI)
 {
   SetDim(psVec(radius*2));
@@ -308,8 +317,8 @@ void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, cons
   ++obj->buffer.nvert;
 }
 
-void psRenderCircle::_render()
+void psRenderCircle::_render(const psParent& parent)
 {
   Activate();
-  DrawCircle(GetShader(), _stateblock, GetCollisionRect(), _arcs, GetAllFlags(), _color, _outline, _edge);
+  DrawCircle(GetShader(), _stateblock, GetCollisionRect(parent), _arcs, GetFlags(), _color, _outline, _edge);
 }

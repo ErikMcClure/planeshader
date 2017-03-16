@@ -84,8 +84,8 @@ TESTDEF::RETPAIR test_psTileset()
   {
     updatefpscount(timer, fps);
     processGUI();
-    tiles.Render();
-    tiles2.Render();
+    tiles.Render(0);
+    tiles2.Render(0);
     engine->End();
     engine->FlushMessages();
   }

@@ -36,12 +36,22 @@ psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, p
 }
 
 psRenderable::~psRenderable() { _destroy(); }
-void psRenderable::Render()
+void psRenderable::Render(const psParent* parent)
 {
-  if(_pass)
-    _pass->_sort(this);
+  if(!parent)
+  {
+    if(_pass)
+      _pass->_sort(this);
+    else if(psPass::CurPass)
+      psPass::CurPass->_sort(this);
+  }
   else
-    _render(); // This is a renderable, so it can't be culled, so we just render it immediately and ignore our current pass.
+  {
+    if(_pass != 0 && _pass != psPass::CurPass)
+      _pass->Defer(this, *parent);
+    else if(psPass::CurPass != 0)
+      _render(*parent);
+  }
 }
 void psRenderable::SetZOrder(int zorder)
 { 
@@ -65,10 +75,8 @@ void psRenderable::SetStateblock(psStateblock* stateblock)
 {
   PROFILE_FUNC();
   _stateblock = stateblock;
-  _invalidate();
 }
 
-psFlag psRenderable::GetAllFlags() const { return GetFlags(); }
 psTex* const* psRenderable::GetTextures() const { return 0; } // these aren't inline because they're virtual
 uint8_t psRenderable::NumTextures() const { return 0; }
 inline psTex* const* psRenderable::GetRenderTargets() const
@@ -104,13 +112,10 @@ void psRenderable::_destroy()
 
 void psRenderable::_invalidate()
 {
-  if(_pass != 0)
-  {
-    if(_psort!=0 && ((_psort->prev!=0 && psPass::StandardCompare(_psort->prev->value, this)>0) || (_psort->next && psPass::StandardCompare(this, _psort->next->value)<0)))
-    { // We only invalidate if the new parameters actually invalidate the object's position.
-      _pass->_renderlist.Remove(_psort);
-      _psort = 0;
-    }
+  if(_psort!=0 && ((_psort->prev!=0 && psPass::StandardCompare(_psort->prev->value, this)>0) || (_psort->next && psPass::StandardCompare(this, _psort->next->value)<0)))
+  { // We only invalidate if the new parameters actually invalidate the object's position.
+    _pass->_renderlist.Remove(_psort);
+    _psort = 0;
   }
 }
 
@@ -156,19 +161,6 @@ psRenderable& psRenderable::operator =(psRenderable&& right)
   right._pass = 0;
   return *this;
 }
-
-char psRenderable::_sort(psRenderable* r) const
-{
-  psRenderable* root = r;
-  while(r = r->_getparent()) root = r;
-
-  char c = SGNCOMPARE(_zorder, root->_zorder);
-  if(!c) c = SGNCOMPARE(this, root);
-  return c; 
-}
-
-psRenderable* psRenderable::_getparent() const { return 0; }
-//psCamera* psRenderable::GetCamera() const { return 0; }
 
 void psRenderable::Activate()
 {

@@ -54,9 +54,6 @@
     <ClInclude Include="..\include\psShader.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psInheritable.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\psGUIManager.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -138,6 +135,12 @@
     <ClInclude Include="psVulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\psGroup.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\psParent.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="psEngine.cpp">
@@ -162,9 +165,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="psInheritable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psGUIManager.cpp">
@@ -228,6 +228,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psVulkan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psGroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psParent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

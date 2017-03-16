@@ -6,8 +6,8 @@
 
 using namespace planeshader;
 
-psEffect::psEffect(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psPass* pass, psInheritable* parent) :
-  psInheritable(position, rotation, pivot, flags, zorder, 0, 0, pass, parent)
+psEffect::psEffect(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psPass* pass) :
+  psGroup(position, rotation, pivot, flags, zorder, 0, 0, pass)
 {
 
 }
@@ -68,9 +68,7 @@ bool psEffect::_sort()
   bool fail = false;
   uint32_t order = NumChildren();
   
-  MapToChildren([&](psInheritable* child) { _sortvisit(child, fail, order); });
-  MapToChildren([&](psInheritable* child) { child->SetZOrder(child->GetZOrder()&(~FLAGMASK)); }); // Fix all the zorders
+  MapToChildren([&](psRenderable* child) { _sortvisit(child, fail, order); });
+  MapToChildren([&](psRenderable* child) { child->SetZOrder(child->GetZOrder()&(~FLAGMASK)); }); // Fix all the zorders
   return !fail;
 }
-
-void psEffect::_render() {} // don't render anything

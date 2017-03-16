@@ -33,7 +33,7 @@ const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
-psEngine::psEngine(const PSINIT& init) : _log(!init.errout?"PlaneShader.log":0, init.errout), _curpass(0), _passes(1),
+psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShader.log":0, log), _curpass(0), _passes(1),
   _mainpass(0), _mediapath(init.mediapath), _frameprofiler(0)
 {
   PROFILE_FUNC();
