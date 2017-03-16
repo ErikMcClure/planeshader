@@ -222,9 +222,10 @@
     <ClInclude Include="..\include\psChart.h" />
     <ClInclude Include="..\include\psGUIManager.h" />
     <ClInclude Include="..\include\psImage.h" />
-    <ClInclude Include="..\include\psInheritable.h" />
+    <ClInclude Include="..\include\psGroup.h" />
     <ClInclude Include="..\include\psLine.h" />
     <ClInclude Include="..\include\psLocatable.h" />
+    <ClInclude Include="..\include\psParent.h" />
     <ClInclude Include="..\include\psPass.h" />
     <ClInclude Include="..\include\psPolygon.h" />
     <ClInclude Include="..\include\psRect.h" />
@@ -264,9 +265,10 @@
     <ClCompile Include="psFont.cpp" />
     <ClCompile Include="psGUIManager.cpp" />
     <ClCompile Include="psImage.cpp" />
-    <ClCompile Include="psInheritable.cpp" />
+    <ClCompile Include="psGroup.cpp" />
     <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psMonitor.cpp" />
+    <ClCompile Include="psParent.cpp" />
     <ClCompile Include="psPass.cpp" />
     <ClCompile Include="psRenderable.cpp" />
     <ClCompile Include="psRenderGeometry.cpp" />

@@ -468,7 +468,7 @@ TESTDEF::RETPAIR test_feather()
   while(!gotonext && engine->Begin())
   {
     engine->GetDriver()->Clear(0xFF000000);
-    engine->GetGUI().Render();
+    engine->GetGUI().Render(0);
     engine->End();
     engine->FlushMessages();
     fgRoot_Update(fgSingleton(), time.Update()*0.001);

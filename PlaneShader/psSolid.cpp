@@ -6,54 +6,22 @@
 
 using namespace planeshader;
 
-psSolid::psSolid(const psSolid& copy) : psInheritable(copy), _scale(copy._scale), _dim(copy._dim), _realdim(copy._realdim), _collisionrect(copy._collisionrect), _boundingrect(copy._boundingrect) { }
-psSolid::psSolid(psSolid&& mov) : psInheritable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _collisionrect(mov._collisionrect), _boundingrect(mov._boundingrect) { }
+psSolid::psSolid(const psSolid& copy) : psLocatable(copy), psRenderable(copy), _scale(copy._scale), _dim(copy._dim), _realdim(copy._realdim),  _boundingrect(copy._boundingrect) { }
+psSolid::psSolid(psSolid&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _boundingrect(mov._boundingrect) { }
 
-psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psInheritable(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
+psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+  psLocatable(position, rotation, pivot), psRenderable(flags, zorder, stateblock, shader, pass), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
 {
   psSolid::SetScale(scale);
-  UpdateBoundingRect();
 }
 
 psSolid::~psSolid() { }
-void psSolid::Render()
+void psSolid::Render(const psParent* parent)
 {
-  psInheritable* cur = _prerender();
   psPass* pass = !_pass ? psPass::CurPass : _pass;
   if(pass != 0)
-    if(!pass->GetCamera()->Cull(this))
-      psRenderable::Render();
-  for(; cur != 0; cur = cur->_lchild.next)
-    cur->Render();
-}
-
-void psSolid::UpdateBoundingRect() 
-{
-  psVec3D pos;
-  GetTotalPosition(pos);
-  pos.xy -= _pivot;
-  psVec hold(pos.xy); //This only works with nonnegative scales
-  hold+=_dim;
-  FNUM rot = GetTotalRotation();
-  //if(_collisionrect.topleft == pos && _collisionrect.bottomright == hold && _collisionrect.rotation==rot && _collisionrect.pivot==_pivot && _collisionrect.z==pos.z)
-  //  return false; //no update needed 
-  _collisionrect.topleft=pos.xy;
-  /*cVec holdleft(pos);
-  cVec hold(pos); // This works for all scales
-  hold+=_dim;
-  if(holdleft.x>hold.x) rswap(holdleft.x,hold.x);
-  if(holdleft.y>hold.y) rswap(holdleft.y,hold.y);
-  GetTotalRotation();
-  if(_collisionrect.topleft == holdleft && _collisionrect.bottomright == hold && _collisionrect.rotation==rot && _collisionrect.pivot==_pivot)
-  return false; //no update needed
-  _collisionrect.topleft=holdleft;*/
-  _collisionrect.bottomright=hold;
-  _collisionrect.rotation=rot;
-  _collisionrect.pivot=_pivot;
-  _collisionrect.z=pos.z;
-  _boundingrect=_collisionrect.BuildAABB();
-  //_internalflags&=(~2);
+    if(!pass->GetCamera()->Cull(this, parent))
+      psRenderable::Render(parent);
 }
 
 void psSolid::SetDim(const psVec& dim) { _realdim = dim; _setdim(_scale*_realdim); }
@@ -66,18 +34,17 @@ void psSolid::_setdim(const psVec& dim)
     _pivot*=(dim/_dim); //Adjust center position
   _dim=dim;
 }
-void psSolid::GetTransform(psMatrix& m)
+void psSolid::GetTransform(psMatrix& m, const psParent* parent)
 {
-  psVec3D pos;
-  GetTotalPosition(pos);
-  bss_util::Matrix<float, 4, 4>::AffineTransform_T(pos.x - _pivot.x, pos.y - _pivot.y, pos.z, GetTotalRotation(), _pivot.x, _pivot.y, m);
+  psLocatable::GetTransform(m, parent);
   sseVec(m[0])*sseVec(_scale.x) >> m[0];
   sseVec(m[1])*sseVec(_scale.y) >> m[1];
 }
 
 psSolid& psSolid::operator =(const psSolid& right)
 {
-  psInheritable::operator =(right);
+  psLocatable::operator =(right);
+  psRenderable::operator =(right);
   _dim=right._dim;
   _scale=right._scale;
   _realdim=right._realdim;
@@ -85,7 +52,8 @@ psSolid& psSolid::operator =(const psSolid& right)
 }
 psSolid& psSolid::operator =(psSolid&& right)
 {
-  psInheritable::operator =(std::move(right));
+  psLocatable::operator =(std::move(right));
+  psRenderable::operator =(std::move(right));
   _dim=right._dim;
   _scale=right._scale;
   _realdim=right._realdim;

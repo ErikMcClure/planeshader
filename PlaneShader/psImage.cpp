@@ -9,14 +9,14 @@ using namespace planeshader;
 psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColored(copy), _uvs(copy._uvs) {}
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
 psImage::~psImage() {}
-psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, uint32_t color) : 
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psTextured(tex), psColored(color)
+psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale, uint32_t color) : 
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(tex), psColored(color)
 {
   AddSource();
 }
 
-psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale, uint32_t color) :
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), psTextured(file), psColored(color)
+psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale, uint32_t color) :
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(file), psColored(color)
 {
   AddSource();
 }
@@ -51,10 +51,10 @@ void psImage::_setuvs(uint32_t size)
     _uvs[i]=RECT_UNITRECT;
 }
 
-void psImage::_render()
+void psImage::_render(const psParent& parent)
 {
   Activate();
-  _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(), _uvs, NumSources(), GetColor().color, GetAllFlags());
+  _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(parent), _uvs, NumSources(), GetColor().color, GetFlags());
 }
 
 void psImage::SetTexture(psTex* tex, uint32_t index)

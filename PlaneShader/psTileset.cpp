@@ -14,8 +14,8 @@ psTileset::psTileset(psTileset&& mov) : psSolid(std::move(mov)), psTextured(std:
   mov._rowlength = 0;
 }
 
-psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, psInheritable* parent, const psVec& scale) :
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, parent, scale), _rowlength(0), _tiledim(VEC_ZERO)
+psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), _rowlength(0), _tiledim(VEC_ZERO)
 {
 }
 
@@ -105,25 +105,25 @@ void psTileset::SetDimIndex(psVeci dim)
   SetDim(dim*_tiledim);
 }
 
-void psTileset::_render()
+void psTileset::_render(const psParent& parent)
 {
   assert(_defs.Length() > 0);
   if(!_rowlength || !_tiles.Length()) return;
   psMatrix m;
-  GetTransform(m);
+  GetTransform(m, &parent);
   _driver->PushTransform(m);
   Activate();
 
-  psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetAllFlags());
+  psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetFlags());
 
   psRecti window = psRecti(0, 0, _rowlength, _tiles.Length() / _rowlength);
-
-  if(GetCollisionRectStatic().rotation == 0.0f)
+  psRectRotateZ crect = GetCollisionRect(parent);
+  if(crect.rotation == 0.0f)
   {
-    psRect r = GetBoundingRectStatic();
+    psRect r = crect.BuildAABB();
     psRect c = _driver->PeekClipRect();
-    psVec3D lt = _driver->FromScreenSpace(c.topleft, GetCollisionRectStatic().z);
-    psVec3D rb = _driver->FromScreenSpace(c.bottomright, GetCollisionRectStatic().z);
+    psVec3D lt = _driver->FromScreenSpace(c.topleft, crect.z);
+    psVec3D rb = _driver->FromScreenSpace(c.bottomright, crect.z);
     r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
     window = window.GenerateIntersection(psRecti(
       bss_util::fFastTruncate(r.left / _tiledim.x), 

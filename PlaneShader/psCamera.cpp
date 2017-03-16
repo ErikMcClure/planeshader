@@ -24,13 +24,6 @@ BSS_FORCEINLINE void r_adjust(sseVec& window, const sseVec& winhold, const sseVe
   }
 }
 
-float r_gettotalz(psInheritable* p)
-{
-  if(p->GetParent())
-    return p->GetPosition().z + r_gettotalz(p->GetParent());
-  return p->GetPosition().z;
-}
-
 psCamera::psCamera(const psCamera& copy) : psLocatable(copy), _viewport(copy._viewport), _extent(copy._extent), _cache(copy._cache)
 {
 }
@@ -89,14 +82,12 @@ inline const psRect& psCamera::Apply(const psTex* rt) const
   //_driver->DrawRect(_driver->library.IMAGE0, 0, psRectRotate(_cache.window, 0, VEC_ZERO), 0, 0, 0x88FFFFFF, 0);
   return _cache.window;
 }
-inline bool psCamera::Cull(psSolid* solid) const
+inline bool psCamera::Cull(psSolid* solid, const psParent* parent) const
 {
-  psFlag flags = solid->GetAllFlags();
-  if((flags&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
-
-  return _cache.Cull(solid->GetBoundingRect(), r_gettotalz(solid), _relpos.z, flags);
+  if((solid->GetFlags()&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
+  return _cache.Cull(solid->GetBoundingRect((!parent)?(psParent::Zero):(*parent)), solid->GetPosition().z + (!parent ? 0 : parent->position.z), _relpos.z, solid->GetFlags());
 }
-inline bool psCamera::Cull(const psRectRotateZ& rect, psFlag flags) const
+inline bool psCamera::Cull(const psRectRotateZ& rect, const psParent* parent, psFlag flags) const
 {
   if((flags&PSFLAG_DONOTCULL) != 0) return false;
   return _cache.Cull(rect.BuildAABB(), rect.z, _relpos.z, flags);

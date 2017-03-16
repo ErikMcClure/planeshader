@@ -12,7 +12,10 @@ psLocatable::~psLocatable() {}
 void psLocatable::SetRotation(FNUM rotation) { _rotation=rotation; }
 void psLocatable::SetPivot(const psVec& pivot) { _pivot=pivot; }
 void psLocatable::SetPosition(FNUM X, FNUM Y, FNUM Z) { _relpos.x=X; _relpos.y=Y; _relpos.z=Z; }
-void psLocatable::GetTransform(psMatrix& m)
+void psLocatable::GetTransform(psMatrix& m, const psParent* parent)
 {
-  bss_util::Matrix<float, 4, 4>::AffineTransform_T(_relpos.x - _pivot.x, _relpos.y - _pivot.y, _relpos.z, _rotation, _pivot.x, _pivot.y, m);
+  if(!parent)
+    bss_util::Matrix<float, 4, 4>::AffineTransform_T(_relpos.x - _pivot.x, _relpos.y - _pivot.y, _relpos.z, _rotation, _pivot.x, _pivot.y, m);
+  else
+    (*parent).Push(_relpos, _rotation, _pivot).GetTransform(m);
 }
