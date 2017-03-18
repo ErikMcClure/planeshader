@@ -32,16 +32,12 @@ bool gotonext = false;
 
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../../bin/PlaneShader_d.lib")
-#pragma comment(lib, "../../lib/bss-util_d.lib")
 #elif defined(BSS_CPU_x86_64)
 #pragma comment(lib, "../../bin/PlaneShader.lib")
-#pragma comment(lib, "../../lib/bss-util.lib")
 #elif defined(BSS_DEBUG)
 #pragma comment(lib, "../../bin32/PlaneShader32_d.lib")
-#pragma comment(lib, "../../lib/bss-util32_d.lib")
 #else
 #pragma comment(lib, "../../bin32/PlaneShader32.lib")
-#pragma comment(lib, "../../lib/bss-util32.lib")
 #endif
 
 bool comparevec(psVec a, psVec b, int diff)

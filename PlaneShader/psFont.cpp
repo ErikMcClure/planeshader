@@ -7,24 +7,11 @@
 #include "psEngine.h"
 #include "bss-util/cStr.h"
 #include "bss-util/os.h"
-#include "freetype/ft2build.h"
+#include "ft2build.h"
 #include FT_FREETYPE_H
-#include "freetype/freetype.h"
 #include "freetype/ftlcdfil.h"
 #include <Shlobj.h>
 #include <algorithm>
-
-#ifdef BSS_COMPILER_MSC
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/freetype_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/freetype.lib")
-#elif defined(BSS_DEBUG)
-#pragma comment(lib, "../lib/freetype32_d.lib")
-#else
-#pragma comment(lib, "../lib/freetype32.lib")
-#endif
-#endif
 
 using namespace planeshader;
 

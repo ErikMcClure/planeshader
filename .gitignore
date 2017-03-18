@@ -7,6 +7,7 @@
 *.VC.db
 *.txt
 *.log
+*.user
 /bin/
 /bin32/
 /lib/

@@ -96,6 +96,10 @@ inline psRectRotateZ psCamera::Resolve(const psRectRotateZ& rect) const
 {
   return rect.RelativeTo(psVec3D(_cache.full.left, _cache.full.top, _cache.full.z), _cache.full.rotation, _cache.full.pivot);
 }
+inline psParent psCamera::Resolve(const psParent& rect) const
+{
+  return psParent{ { _cache.full.left, _cache.full.top, _cache.full.z }, _cache.full.rotation, _cache.full.pivot }.Push(rect.position, rect.rotation, rect.pivot);
+}
 
 inline void psCamera::CamCache::SetSSE()
 {

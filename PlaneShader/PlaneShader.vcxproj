@@ -21,8 +21,17 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D4997047-629C-4100-AEDA-4670F3D277CA}</ProjectGuid>
     <RootNamespace>PlaneShader</RootNamespace>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <!--<PropertyGroup Condition="'$(Platform)'=='Win32'" Label="Configuration">
+    <VcpkgTriplet>x86-windows-static</VcpkgTriplet>
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Platform)'=='x64'" Label="Configuration">
+    <VcpkgTriplet>x64-windows-static</VcpkgTriplet>
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>-->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -66,7 +75,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)bin32\</OutDir>
+    <OutDir>$(ProjectDir)..\bin32\</OutDir>
     <TargetName>$(ProjectName)32_d</TargetName>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
@@ -76,11 +85,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
     <CustomBuildAfterTargets />
-    <OutDir>$(SolutionDir)bin\</OutDir>
+    <OutDir>$(ProjectDir)..\bin\</OutDir>
     <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)bin32\</OutDir>
+    <OutDir>$(ProjectDir)..\bin32\</OutDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
@@ -90,7 +99,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CustomBuildAfterTargets />
     <TargetName>$(ProjectName)</TargetName>
-    <OutDir>$(SolutionDir)bin\</OutDir>
+    <OutDir>$(ProjectDir)..\bin\</OutDir>
     <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -98,7 +107,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../include;freetype</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/planeshader;../include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -123,7 +132,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../include;freetype</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/planeshader;../include</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;feathergui_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -151,7 +160,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>../include;freetype</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/planeshader;../include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -183,7 +192,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <AdditionalIncludeDirectories>../include;freetype</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../include/planeshader;../include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -208,43 +217,78 @@
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(VcpkgEnabled)' == 'true'">
+    <PostBuildEvent>
+      <Message>Copy include files to vcpkg folder</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Release|true'">
+    <PostBuildEvent>
+      <Command>xcopy "$(TargetDir)$(TargetName).lib" "$(VcpkgRoot)lib" /c /y /q /i
+xcopy "$(TargetDir)$(TargetName).dll" "$(VcpkgRoot)bin" /c /y /q /i
+xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)bin" /c /y /q /i
+xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Release Static|true'">
+    <PostBuildEvent>
+      <Command>xcopy "$(TargetDir)$(TargetName).lib" "$(VcpkgRoot)lib" /c /y /q /i
+xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)lib" /c /y /q /i
+xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug|true'">
+    <PostBuildEvent>
+      <Command>xcopy "$(TargetDir)$(TargetName).lib" "$(VcpkgRoot)debug\lib" /c /y /q /i
+xcopy "$(TargetDir)$(TargetName).dll" "$(VcpkgRoot)debug\bin" /c /y /q /i
+xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)debug\bin" /c /y /q /i
+xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug Static|true'">
+    <PostBuildEvent>
+      <Command>xcopy "$(TargetDir)$(TargetName).lib" "$(VcpkgRoot)debug\lib" /c /y /q /i
+xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)debug\lib" /c /y /q /i
+xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\psCamera.h" />
-    <ClInclude Include="..\include\psCircle.h" />
-    <ClInclude Include="..\include\psColor.h" />
-    <ClInclude Include="..\include\psColored.h" />
-    <ClInclude Include="..\include\psCullGroup.h" />
-    <ClInclude Include="..\include\psDriver.h" />
-    <ClInclude Include="..\include\psEffect.h" />
-    <ClInclude Include="..\include\psEllipse.h" />
-    <ClInclude Include="..\include\psEngine.h" />
-    <ClInclude Include="..\include\psFont.h" />
-    <ClInclude Include="..\include\psChart.h" />
-    <ClInclude Include="..\include\psGUIManager.h" />
-    <ClInclude Include="..\include\psImage.h" />
-    <ClInclude Include="..\include\psGroup.h" />
-    <ClInclude Include="..\include\psLine.h" />
-    <ClInclude Include="..\include\psLocatable.h" />
-    <ClInclude Include="..\include\psParent.h" />
-    <ClInclude Include="..\include\psPass.h" />
-    <ClInclude Include="..\include\psPolygon.h" />
-    <ClInclude Include="..\include\psRect.h" />
-    <ClInclude Include="..\include\psRenderable.h" />
-    <ClInclude Include="..\include\psRenderGeometry.h" />
-    <ClInclude Include="..\include\psShader.h" />
-    <ClInclude Include="..\include\psSolid.h" />
-    <ClInclude Include="..\include\psStateblock.h" />
-    <ClInclude Include="..\include\psTex.h" />
-    <ClInclude Include="..\include\psTexFont.h" />
-    <ClInclude Include="..\include\psText.h" />
-    <ClInclude Include="..\include\psTextured.h" />
-    <ClInclude Include="..\include\psTileset.h" />
-    <ClInclude Include="..\include\psTriangle.h" />
-    <ClInclude Include="..\include\psVec.h" />
-    <ClInclude Include="..\include\psVector.h" />
-    <ClInclude Include="..\include\ps_dec.h" />
-    <ClInclude Include="..\include\ps_feather.h" />
-    <ClInclude Include="..\include\ps_interface.h" />
+    <ClInclude Include="..\include\planeshader\psCamera.h" />
+    <ClInclude Include="..\include\planeshader\psCircle.h" />
+    <ClInclude Include="..\include\planeshader\psColor.h" />
+    <ClInclude Include="..\include\planeshader\psColored.h" />
+    <ClInclude Include="..\include\planeshader\psCullGroup.h" />
+    <ClInclude Include="..\include\planeshader\psDriver.h" />
+    <ClInclude Include="..\include\planeshader\psEffect.h" />
+    <ClInclude Include="..\include\planeshader\psEllipse.h" />
+    <ClInclude Include="..\include\planeshader\psEngine.h" />
+    <ClInclude Include="..\include\planeshader\psFont.h" />
+    <ClInclude Include="..\include\planeshader\psChart.h" />
+    <ClInclude Include="..\include\planeshader\psGUIManager.h" />
+    <ClInclude Include="..\include\planeshader\psImage.h" />
+    <ClInclude Include="..\include\planeshader\psGroup.h" />
+    <ClInclude Include="..\include\planeshader\psLine.h" />
+    <ClInclude Include="..\include\planeshader\psLocatable.h" />
+    <ClInclude Include="..\include\planeshader\psParent.h" />
+    <ClInclude Include="..\include\planeshader\psPass.h" />
+    <ClInclude Include="..\include\planeshader\psPolygon.h" />
+    <ClInclude Include="..\include\planeshader\psRect.h" />
+    <ClInclude Include="..\include\planeshader\psRenderable.h" />
+    <ClInclude Include="..\include\planeshader\psRenderGeometry.h" />
+    <ClInclude Include="..\include\planeshader\psShader.h" />
+    <ClInclude Include="..\include\planeshader\psSolid.h" />
+    <ClInclude Include="..\include\planeshader\psStateblock.h" />
+    <ClInclude Include="..\include\planeshader\psTex.h" />
+    <ClInclude Include="..\include\planeshader\psTexFont.h" />
+    <ClInclude Include="..\include\planeshader\psText.h" />
+    <ClInclude Include="..\include\planeshader\psTextured.h" />
+    <ClInclude Include="..\include\planeshader\psTileset.h" />
+    <ClInclude Include="..\include\planeshader\psTriangle.h" />
+    <ClInclude Include="..\include\planeshader\psVec.h" />
+    <ClInclude Include="..\include\planeshader\psVector.h" />
+    <ClInclude Include="..\include\planeshader\ps_dec.h" />
+    <ClInclude Include="..\include\planeshader\ps_feather.h" />
+    <ClInclude Include="..\include\planeshader\ps_interface.h" />
     <ClInclude Include="psDirectX11_fsquadVS.h" />
     <ClInclude Include="psDirectX11.h" />
     <ClInclude Include="psDXGI.h" />
