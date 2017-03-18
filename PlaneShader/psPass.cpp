@@ -110,6 +110,12 @@ void psPass::Defer(psRenderable* r, const psParent& parent)
 
 void psPass::_sort(psRenderable* r)
 {
+  if(r->_pass != this)
+  {
+    if(r->_pass != 0)
+      r->_pass->Remove(r);
+    r->_pass = this;
+  }
   if(!r->_psort) r->_psort = _renderlist.Insert(r);
   r->_internalflags |= psRenderable::INTERNALFLAG_ACTIVE;
 }

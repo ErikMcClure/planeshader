@@ -14,18 +14,6 @@
 using namespace planeshader;
 using namespace bss_util;
 
-#ifdef BSS_COMPILER_MSC
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/bss-util_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/bss-util.lib")
-#elif defined(BSS_DEBUG)
-#pragma comment(lib, "../lib/bss-util32_d.lib")
-#else
-#pragma comment(lib, "../lib/bss-util32.lib")
-#endif
-#endif
-
 psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
 const char* psEngine::LOGSOURCE = "ps";

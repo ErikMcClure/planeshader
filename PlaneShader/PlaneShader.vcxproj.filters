@@ -18,97 +18,97 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\psEngine.h">
+    <ClInclude Include="..\include\planeshader\psEngine.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psDriver.h">
+    <ClInclude Include="..\include\planeshader\psDriver.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psRenderable.h">
+    <ClInclude Include="..\include\planeshader\psRenderable.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ps_dec.h">
+    <ClInclude Include="..\include\planeshader\ps_dec.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psCamera.h">
+    <ClInclude Include="..\include\planeshader\psCamera.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psLocatable.h">
+    <ClInclude Include="..\include\planeshader\psLocatable.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psRect.h">
+    <ClInclude Include="..\include\planeshader\psRect.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psVec.h">
+    <ClInclude Include="..\include\planeshader\psVec.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psPass.h">
+    <ClInclude Include="..\include\planeshader\psPass.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psTex.h">
+    <ClInclude Include="..\include\planeshader\psTex.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psStateblock.h">
+    <ClInclude Include="..\include\planeshader\psStateblock.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psShader.h">
+    <ClInclude Include="..\include\planeshader\psShader.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psGUIManager.h">
+    <ClInclude Include="..\include\planeshader\psGUIManager.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="psNullDriver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psColor.h">
+    <ClInclude Include="..\include\planeshader\psColor.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psCircle.h">
+    <ClInclude Include="..\include\planeshader\psCircle.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ps_interface.h">
+    <ClInclude Include="..\include\planeshader\ps_interface.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psSolid.h">
+    <ClInclude Include="..\include\planeshader\psSolid.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psEllipse.h">
+    <ClInclude Include="..\include\planeshader\psEllipse.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psLine.h">
+    <ClInclude Include="..\include\planeshader\psLine.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psCullGroup.h">
+    <ClInclude Include="..\include\planeshader\psCullGroup.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psColored.h">
+    <ClInclude Include="..\include\planeshader\psColored.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psTriangle.h">
+    <ClInclude Include="..\include\planeshader\psTriangle.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psPolygon.h">
+    <ClInclude Include="..\include\planeshader\psPolygon.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psTexFont.h">
+    <ClInclude Include="..\include\planeshader\psTexFont.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psFont.h">
+    <ClInclude Include="..\include\planeshader\psFont.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psTextured.h">
+    <ClInclude Include="..\include\planeshader\psTextured.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psImage.h">
+    <ClInclude Include="..\include\planeshader\psImage.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psRenderGeometry.h">
+    <ClInclude Include="..\include\planeshader\psRenderGeometry.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psText.h">
+    <ClInclude Include="..\include\planeshader\psText.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psTileset.h">
+    <ClInclude Include="..\include\planeshader\psTileset.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="psDirectX11.h">
@@ -117,16 +117,16 @@
     <ClInclude Include="psDXGI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psEffect.h">
+    <ClInclude Include="..\include\planeshader\psEffect.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ps_feather.h">
+    <ClInclude Include="..\include\planeshader\ps_feather.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psChart.h">
+    <ClInclude Include="..\include\planeshader\psChart.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psVector.h">
+    <ClInclude Include="..\include\planeshader\psVector.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="psDirectX11_fsquadVS.h">
@@ -135,10 +135,10 @@
     <ClInclude Include="psVulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psGroup.h">
+    <ClInclude Include="..\include\planeshader\psGroup.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\psParent.h">
+    <ClInclude Include="..\include\planeshader\psParent.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

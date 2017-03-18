@@ -15,16 +15,6 @@
 #include "feathergui\fgSlider.h"
 #include "feathergui\fgList.h"
 
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/feathergui_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../lib/feathergui.lib")
-#elif defined(BSS_DEBUG)
-#pragma comment(lib, "../lib/feathergui32_d.lib")
-#else
-#pragma comment(lib, "../lib/feathergui32.lib")
-#endif
-
 #undef DrawText
 
 using namespace planeshader;

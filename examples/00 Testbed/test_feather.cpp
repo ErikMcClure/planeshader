@@ -17,17 +17,6 @@
 #include "feathergui/fgDebug.h"
 #include "feathergui/fgLayout.h"
 
-
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../../lib/feathergui_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../../lib/feathergui.lib")
-#elif defined(BSS_DEBUG)
-#pragma comment(lib, "../../lib/feathergui32_d.lib")
-#else
-#pragma comment(lib, "../../lib/feathergui32.lib")
-#endif
-
 using namespace bss_util;
 using namespace planeshader;
 
