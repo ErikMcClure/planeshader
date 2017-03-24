@@ -17,6 +17,18 @@
 
 #undef DrawText
 
+#ifdef BSS_COMPILER_MSC
+#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64) 
+#pragma comment(lib, "feathergui_d.lib") 
+#elif defined(BSS_CPU_x86_64) 
+#pragma comment(lib, "feathergui.lib") 
+#elif defined(BSS_DEBUG) 
+#pragma comment(lib, "feathergui32_d.lib") 
+#else 
+#pragma comment(lib, "feathergui32.lib") 
+#endif 
+#endif
+
 using namespace planeshader;
 
 const int UNICODE_TERMINATOR = 0;
