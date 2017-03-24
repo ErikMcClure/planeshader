@@ -15,6 +15,14 @@
 
 using namespace planeshader;
 
+#ifdef BSS_COMPILER_MSC
+#ifdef BSS_DEBUG
+#pragma comment(lib, "freetyped.lib")
+#else
+#pragma comment(lib, "freetype.lib")
+#endif
+#endif
+
 FT_Library psFont::PTRLIB = 0;
 bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
