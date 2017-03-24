@@ -65,7 +65,7 @@ void psMonitor::Destroy(psMonitor* self)
 size_t psMonitor::Message(fgMonitor* s, const FG_Msg* m)
 {
   psMonitor* self = static_cast<psMonitor*>(s);
-  size_t otherint = m->u;
+  fgFlag otherint = (fgFlag)m->u;
   fgFlag flags = self->element.flags;
 
   switch(m->type)
@@ -77,7 +77,7 @@ size_t psMonitor::Message(fgMonitor* s, const FG_Msg* m)
     SetWindowTextW(self->_window, cStrW((const char*)m->p).c_str());
     return 1;
   case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
-    otherint = T_SETBIT(flags, otherint, m->u2);
+    otherint = bss_util::bssSetBit<fgFlag>(flags, otherint, m->u2 != 0);
   case FG_SETFLAGS:
     if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOTITLEBAR | FGWINDOW_NOBORDER))
     { // handle a layout flag change
