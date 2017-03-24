@@ -30,16 +30,6 @@ bool gotonext = false;
 
 #pragma warning(disable:4244)
 
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../../bin/PlaneShader_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "../../bin/PlaneShader.lib")
-#elif defined(BSS_DEBUG)
-#pragma comment(lib, "../../bin32/PlaneShader32_d.lib")
-#else
-#pragma comment(lib, "../../bin32/PlaneShader32.lib")
-#endif
-
 bool comparevec(psVec a, psVec b, int diff)
 {
   return b.x == 0.0f ? fsmall(a.x, FLT_EPS * 4) : fcompare(a.x, b.x, diff) && b.y == 0.0f ? fsmall(a.y, FLT_EPS * 4) : fcompare(a.y, b.y, diff);
