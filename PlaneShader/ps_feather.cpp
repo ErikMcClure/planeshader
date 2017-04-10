@@ -387,6 +387,7 @@ psRoot::psRoot() : _psInject(0, 0)
     &fgResourceSizePS,
     &fgDrawLinesPS,
     &fgCreateDefault,
+    &fgFlagMapDefault,
     &fgMessageMapDefault,
     &fgUserDataMapCallbacks,
     &fgPushClipRectPS,
