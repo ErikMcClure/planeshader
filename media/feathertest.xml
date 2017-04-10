@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fg:Layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fg="featherGUI" xsi:schemaLocation="featherGUI feather.xsd" skin="testskin" padding="0,20,0,0">
+<fg:Layout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fg="featherGUI" xsi:schemaLocation="featherGUI feather.xsd" skin="testskin">
   <Button name="buttontest" flags="EXPAND"> 
     <Resource resource="../media/circle.png" color="0xFFFFFFFF" flags="EXPAND|IGNORE" /> 
   </Button> 
@@ -116,7 +116,7 @@
       </Tab>
     </TabControl>
   </Window>
-  <!--<Menu flags="EXPANDY|TILEX|BACKGROUND">
+  <Menu>
     <MenuItem text="File">
       <Submenu>
         <MenuItem text="New" />
@@ -154,7 +154,7 @@
         <MenuItem text="About" />
       </Submenu>
     </MenuItem>
-  </Menu>-->
+  </Menu>
 </fg:Layout>
 <fg:Skin name="testskin" xmlns:fg="featherGUI">
   <Skin name="buttontest" color="0xFFFFFFFF" font="14 arial">
