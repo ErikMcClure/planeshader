@@ -235,10 +235,10 @@ int main(int argc, char** argv)
         case FG_KEY_F11:
           if(isdown)
           {
-            if(fgDebug_Get() != 0 && !(fgDebug_Get()->element.flags&FGELEMENT_HIDDEN))
+            if(fgDebug_Get() != 0 && !(fgDebug_Get()->tabs->flags&FGELEMENT_HIDDEN))
               fgDebug_Hide();
             else
-              fgDebug_Show(200, 200, false);
+              fgDebug_Show(0, false);
           }
         }
       }
