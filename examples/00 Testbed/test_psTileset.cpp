@@ -5,7 +5,7 @@
 #include "psPass.h"
 #include "psTileset.h"
 
-using namespace bss_util;
+using namespace bss;
 using namespace planeshader;
 
 /*
@@ -48,7 +48,7 @@ TESTDEF::RETPAIR test_psTileset()
 {
   BEGINTEST;
   int fps = 0;
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   const int dimx = 500;

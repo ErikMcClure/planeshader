@@ -7,7 +7,7 @@
 #include "psDriver.h"
 #include "ps_feather.h"
 #include "psTex.h"
-#include "bss-util/bss_win32_includes.h" // Vulkan will try to include the windows header itself, so first include it on our terms
+#include "bss-util/win32_includes.h" // Vulkan will try to include the windows header itself, so first include it on our terms
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"

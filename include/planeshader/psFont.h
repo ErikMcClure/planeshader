@@ -5,7 +5,7 @@
 #define __FONT_H__PS__
 
 #include "psTexFont.h"
-#include "bss-util/cStr.h"
+#include "bss-util/Str.h"
 
 typedef struct FT_FaceRec_*  FT_Face;
 typedef struct FT_LibraryRec_* FT_Library;
@@ -59,12 +59,12 @@ namespace planeshader {
     psVeciu _curpos;
     uint32_t _nexty;
     uint8_t _curtex;
-    cStr _path;
-    cStr _hash;
-    bss_util::cArray<psTex*, uint8_t> _staging;
+    bss::Str _path;
+    bss::Str _hash;
+    bss::Array<psTex*, uint8_t> _staging;
     bool _haskerning;
 
-    static bss_util::cHash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.
+    static bss::Hash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.
   };
 }
 

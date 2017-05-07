@@ -5,7 +5,7 @@
 #include "psTex.h"
 #include "psColor.h"
 #include "psEngine.h"
-#include "bss-util/cStr.h"
+#include "bss-util/Str.h"
 #include "bss-util/os.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
@@ -14,6 +14,7 @@
 #include <algorithm>
 
 using namespace planeshader;
+using namespace bss;
 
 #ifdef BSS_COMPILER_MSC
 #ifdef BSS_DEBUG
@@ -24,7 +25,7 @@ using namespace planeshader;
 #endif
 
 FT_Library psFont::PTRLIB = 0;
-bss_util::cHash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
+Hash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
 psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi) : _path(file), _pointsize(psize), _curtex(0),
 _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
@@ -34,10 +35,10 @@ _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
   if(!_dpi.x) _dpi.x = psGUIManager::BASE_DPI;
   if(!_dpi.y) _dpi.y = psGUIManager::BASE_DPI;
   psVec scale(_dpi.x / 72.0f, _dpi.y / 72.0f); // points are defined as 1/72 inches, so the scaling factor is DPI/72.0f to get the true glyph size. Example: a 12 point font at 96 DPI is 12 * 96/72 = 16 pixels high
-  _textures.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale.x), bss_util::fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _dpi), 0);
-  _staging.Insert(new psTex(psVeciu(bss_util::fFastRound(psize * 8 * scale.x), bss_util::fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _dpi), 0);
+  _textures.Insert(new psTex(psVeciu(fFastRound(psize * 8 * scale.x), fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _dpi), 0);
+  _staging.Insert(new psTex(psVeciu(fFastRound(psize * 8 * scale.x), fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _dpi), 0);
 
-  if(!bss_util::FileExists(_path)) //we only adjust the path if our current path doesn't exist
+  if(!FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
     _path.ReplaceChar('\\', '/');
     const char* file = strrchr(_path, '/');
@@ -49,7 +50,7 @@ _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
     HRESULT res = SHGetFolderPathW(0, CSIDL_FONTS, 0, SHGFP_TYPE_CURRENT, buf);
     if(res == E_FAIL) return;
 
-    _path = cStrF("%s\\%s", cStr(buf).c_str(), file);
+    _path = StrF("%s\\%s", Str(buf).c_str(), file);
   }
 
   _adjustantialias(antialias);
@@ -64,7 +65,7 @@ psFont::~psFont()
 
 uint16_t psFont::PreloadGlyphs(const char* glyphs)
 {
-  return PreloadGlyphs(cStrT<int>(glyphs).c_str());
+  return PreloadGlyphs(StrT<int>(glyphs).c_str());
 }
 
 uint16_t psFont::PreloadGlyphs(const int* glyphs)
@@ -82,12 +83,12 @@ uint16_t psFont::PreloadGlyphs(const int* glyphs)
 
 psFont* psFont::Create(const char* family, short weight, bool italic, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi)
 {
-  return Create(bss_util::GetFontPath(family, weight, italic).get(), psize, antialias, dpi);
+  return Create(GetFontPath(family, weight, italic).get(), psize, antialias, dpi);
 }
 psFont* psFont::Create(const char* file, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi)
 {
   if(!_driver || !file) return 0;
-  cStr str(cStrF("%s|%i|%i|%i|%i", file, psize, antialias, dpi.x, dpi.y));
+  Str str(StrF("%s|%i|%i|%i|%i", file, psize, antialias, dpi.x, dpi.y));
   psFont* r = _Fonts[str];
   if(r != 0) return r;
   r = new psFont(file, psize, antialias, dpi);
@@ -168,7 +169,7 @@ void psFont::_loadfont()
   _curpos = psVeciu(1, 1);
   _nexty = 0;
   FILE* f;
-  WFOPEN(f, cStrW(_path), L"rb"); //load font into memory
+  WFOPEN(f, StrW(_path), L"rb"); //load font into memory
   if(!f)
   {
     PSLOG(2, "Font face ", _path, " does not exist.");

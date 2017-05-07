@@ -5,13 +5,13 @@
 #define __RECT_H__PS__
 
 #include "psCircle.h"
-#include "bss-util/bss_sse.h"
+#include "bss-util/sseVec.h"
 
 namespace planeshader {
   template<class T>
   struct BSS_COMPILER_DLLEXPORT psRectT
   {
-    typedef bss_util::Vector<T, 2> VEC;
+    typedef bss::Vector<T, 2> VEC;
     inline psRectT() {} //The following constructors allow for implicit conversion between rect types
     inline psRectT(const psRectT<T>& other) : left(other.left), top(other.top), right(other.right), bottom(other.bottom) {}
     template<class U>
@@ -35,7 +35,7 @@ namespace planeshader {
     inline bool IntersectEllipse(T X, T Y, T A, T B) const { T s=A/B; return psCircleT<T>::CircleRectIntersect(X, Y*s, A, left, top*s, right, bottom*s); }
     inline psRectT<T> Abs() const { return psRectT<T>(abs(left), abs(top), abs(right), abs(bottom)); }
     inline psCircleT<T> ToCircle() const { VEC center=topleft+bottomright; center/=(T)2; return psCircleT<T>(center, (T)PTR_DISTANCE(center.x, center.y, topleft.x, topleft.y)); }
-    inline psCircleT<T> ToCircleSameArea() const { VEC center=topleft+bottomright; center/=(T)2; return psCircleT<T>(center, (T)bss_util::FastSqrt(Area()/PI_DOUBLE)); }
+    inline psCircleT<T> ToCircleSameArea() const { VEC center=topleft+bottomright; center/=(T)2; return psCircleT<T>(center, (T)bss::FastSqrt(Area()/PI_DOUBLE)); }
     inline VEC GetCenter() const { VEC center=topleft; center+=bottomright; center/=(T)2; return center; }
 
     inline psRectT<T> operator +(const psRectT<T>& other) const { return psRectT<T>(left + other.left, top + other.top, right + other.right, bottom + other.bottom); }
@@ -148,7 +148,7 @@ namespace planeshader {
     inline psRectRotateT(const VEC& pos, const VEC& dim, T rotation, const VEC& pivot=VEC_ZERO) : rotation(rotation), pivot(pivot) { left = pos.x; right = pos.x+dim.x; top = pos.y; bottom = pos.y+dim.y; }
     inline bool IntersectPoint(T x, T y) const
     {
-      if(!bss_util::fsmall(rotation))
+      if(!bss::fSmall(rotation))
         VEC::RotatePoint(x, y, -rotation, pivot.x+left, pivot.y+top);
       return psRectT<T>::IntersectPoint(x, y);
     }
@@ -157,7 +157,7 @@ namespace planeshader {
     // This builds an Axis-Aligned Bounding Box from the rotated rectangle, rotated around a pivot RELATIVE TO THE TOPLEFT CORNER OF THE RECTANGLE. It does this by representing the box by the distance from an arbitrary rotation axis, and rotating that axis. 
     inline psRectT<T> BuildAABB() const
     {
-      if(bss_util::fsmall(rotation))
+      if(bss::fSmall(rotation))
         return *this;
       float c = (cos(rotation));
       float s = (sin(rotation));

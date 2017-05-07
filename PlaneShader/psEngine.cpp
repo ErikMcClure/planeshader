@@ -12,7 +12,7 @@
 #include "ps_feather.h"
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 #ifdef BSS_COMPILER_MSC
 #if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
@@ -104,7 +104,7 @@ bool psEngine::Begin(uint32_t clearcolor)
     return false;
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
-  _frameprofiler = cHighPrecisionTimer::OpenProfiler();
+  _frameprofiler = HighPrecisionTimer::OpenProfiler();
   _curpass = 0;
   _driver->Clear(clearcolor);
   _passes[0]->Begin();
@@ -117,7 +117,7 @@ bool psEngine::Begin()
     return false;
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
-  _frameprofiler = cHighPrecisionTimer::OpenProfiler();
+  _frameprofiler = HighPrecisionTimer::OpenProfiler();
   _curpass=0;
   _passes[0]->Begin();
   return true;
@@ -132,7 +132,7 @@ uint64_t psEngine::End()
   //    SetWindowLong(_window, GWL_EXSTYLE, ((GetWindowLong(_window, GWL_EXSTYLE))&(~WS_EX_TRANSPARENT)));
   //  else
   //    SetWindowLong(_window, GWL_EXSTYLE, ((GetWindowLong(_window, GWL_EXSTYLE))|WS_EX_TRANSPARENT));
-  _frameprofiler = cHighPrecisionTimer::CloseProfiler(_frameprofiler);
+  _frameprofiler = HighPrecisionTimer::CloseProfiler(_frameprofiler);
   _driver->End();
   return _frameprofiler;
 }

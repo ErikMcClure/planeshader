@@ -7,8 +7,8 @@
 #include "psTexFont.h"
 #include "psSolid.h"
 #include "psColored.h"
-#include "bss-util\cStr.h"
-#include "bss-util\cDynArray.h"
+#include "bss-util\Str.h"
+#include "bss-util\DynArray.h"
 
 namespace planeshader {
   struct psChart : public psDriverHold
@@ -31,7 +31,7 @@ namespace planeshader {
 
   protected:
     psRect _extrema;
-    bss_util::cDynArray<cStr, size_t, bss_util::CARRAY_SAFE> _captions;
+    bss::DynArray<bss::Str, size_t, bss::ARRAY_SAFE> _captions;
     psFlag _flags;
   };
 
@@ -123,12 +123,12 @@ namespace planeshader {
     virtual void _render(const psParent& parent) override;
 
     psTexFont* _font;
-    cStr _title;
-    cStr _xlabel;
-    cStr _ylabel;
+    bss::Str _title;
+    bss::Str _xlabel;
+    bss::Str _ylabel;
     psRect _view;
     psRect _viewrel;
-    bss_util::cDynArray<std::unique_ptr<psChart>, size_t, bss_util::CARRAY_SAFE> _captions;
+    bss::DynArray<std::unique_ptr<psChart>, size_t, bss::ARRAY_SAFE> _captions;
     psFlag _flags;
     psColor32 _textcolor;
   };

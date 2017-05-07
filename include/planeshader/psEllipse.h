@@ -10,7 +10,7 @@ namespace planeshader {
   template <class T>
   struct BSS_COMPILER_DLLEXPORT psEllipseT
   {
-    typedef bss_util::Vector<T, 2> VEC;
+    typedef bss::Vector<T, 2> VEC;
     inline psEllipseT() {} //The following constructors allow for implicit conversion between types
     template<class U>
     inline psEllipseT(const psEllipseT<U>& other) : pos(other.pos), axes(other.axes) {}

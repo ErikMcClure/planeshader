@@ -4,8 +4,8 @@
 #ifndef __CULL_GROUP_H__PS__
 #define __CULL_GROUP_H__PS__
 
-#include "bss-util/bss_alloc_block.h"
-#include "bss-util/cKDTree.h"
+#include "bss-util/BlockAlloc.h"
+#include "bss-util/KDTree.h"
 #include "bss-util/LLBase.h"
 #include "psSolid.h"
 #include "psPass.h"
@@ -31,13 +31,13 @@ namespace planeshader {
     BSS_FORCEINLINE void SetRBThreshold(uint32_t rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
     virtual void Render(const psParent* parent) override;
 
-    typedef bss_util::BlockPolicy<bss_util::KDNode<psSolid>> KDNODE_ALLOC;
+    typedef bss::BlockPolicy<bss::KDNode<psSolid>> KDNODE_ALLOC;
 
   protected:
     BSS_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic()._ltrbarray; }
-    BSS_FORCEINLINE static bss_util::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bss_util::LLBase<psSolid>*)&p->_llist); }
+    BSS_FORCEINLINE static bss::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bss::LLBase<psSolid>*)&p->_llist); }
     BSS_FORCEINLINE static void CF_MERGE(psSolid* p) { if(!p->GetPass()) psPass::CurPass->_sort(p); else p->GetPass()->_sort(p); }
-    BSS_FORCEINLINE static bss_util::KDNode<psSolid>*& CF_FNODE(psSolid* p) { return p->_kdnode; }
+    BSS_FORCEINLINE static bss::KDNode<psSolid>*& CF_FNODE(psSolid* p) { return p->_kdnode; }
     BSS_FORCEINLINE static void AdjustRect(const float(&rect)[4], float camZ, float(&rcull)[4])
     {
       float diff = ((rect[1] + rect[3])*0.5f);
@@ -48,8 +48,8 @@ namespace planeshader {
     virtual void _render(const psParent& parent) override;
 
     psPass::ALLOC _alloc;
-    bss_util::cKDTree<psSolid, KDNODE_ALLOC, CF_FRECT, CF_FLIST, CF_FNODE> _tree;
-    bss_util::cTRBtree<psRenderable*, psPass::StandardCompare, psPass::ALLOC> _list;
+    bss::KDTree<psSolid, KDNODE_ALLOC, CF_FRECT, CF_FLIST, CF_FNODE> _tree;
+    bss::TRBtree<psRenderable*, psPass::StandardCompare, psPass::ALLOC> _list;
     KDNODE_ALLOC _nodealloc;
   };
 }

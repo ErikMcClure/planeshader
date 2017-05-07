@@ -2,14 +2,14 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psGUIManager.h"
-#include "bss-util/bss_win32_includes.h"
+#include "bss-util/win32_includes.h"
 #include "bss-util/profiler.h"
 #include "psEngine.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 #pragma comment(lib, "Winmm.lib")
 

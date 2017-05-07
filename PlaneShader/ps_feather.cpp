@@ -48,24 +48,29 @@ void* fgCloneFontPS(void* font, const struct _FG_FONT_DESC* desc)
   return psFont::Create(f->GetPath(), desc->pt, f->GetAntialias(), psVeciu(desc->dpi.x, desc->dpi.y));
 }
 void fgDestroyFontPS(void* font) { ((psFont*)font)->Drop(); }
-void fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, unsigned int color, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data, void* layout)
+void fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, unsigned int color, const AbsRect* dpiarea, FABS rotation, const AbsVec* dpicenter, fgFlag flags, const fgDrawAuxData* data, void* layout)
 {
   psFont* f = (psFont*)font;
-  psRectRotateZ rect = { area->left, area->top, area->right, area->bottom, rotation,{ center->x - area->left, center->y - area->top }, 0 };
+  AbsRect area;
+  AbsVec center;
+  fgResolveDrawRect(dpiarea, &area, dpicenter, &center, flags, data);
+  psRectRotateZ rect = { area.left, area.top, area.right, area.bottom, rotation,{ center.x - area.left, center.y - area.top }, 0 };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   if(f->GetAntialias() == psFont::FAA_LCD)
     f->DrawText(psDriverHold::GetDriver()->library.TEXT1, STATEBLOCK_LIBRARY::SUBPIXELBLEND1, !len ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
   else
     f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, !len ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
 }
-void* fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, void* prevlayout)
+void* fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, const fgIntVec* dpi, void* prevlayout)
 {
   psFont* f = (psFont*)font;
+  fgScaleRectDPI(area, dpi->x, dpi->y);
   psVec dim = { area->right - area->left, area->bottom - area->top };
   if(lineheight == 0.0f) lineheight = f->GetLineHeight();
   f->CalcTextDim(!text ? &UNICODE_TERMINATOR : (const int*)text, dim, lineheight, letterspacing, psRoot::GetDrawFlags(flags));
   area->right = area->left + dim.x;
   area->bottom = area->top + dim.y;
+  fgInvScaleRectDPI(area, dpi->x, dpi->y);
   return 0;
 }
 void fgFontGetPS(void* font, fgFontDesc* desc)
@@ -79,28 +84,39 @@ void fgFontGetPS(void* font, fgFontDesc* desc)
     desc->lineheight = f->GetLineHeight();
   }
 }
-size_t fgFontIndexPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, AbsVec pos, AbsVec* cursor, void* layout)
+size_t fgFontIndexPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* dpiarea, fgFlag flags, AbsVec pos, AbsVec* cursor, const fgIntVec* dpi, void* layout)
 {
   psFont* f = (psFont*)font;
-  auto r = f->GetIndex(!text ? &UNICODE_TERMINATOR : (const int*)text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
+  AbsRect area = *dpiarea;
+  fgScaleRectDPI(&area, dpi->x, dpi->y);
+  fgScaleVecDPI(&pos, dpi->x, dpi->y);
+  auto r = f->GetIndex(!text ? &UNICODE_TERMINATOR : (const int*)text, area.right - area.left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, psVec(pos.x, pos.y));
   cursor->x = r.second.x;
   cursor->y = r.second.y;
+  fgInvScaleVecDPI(cursor, dpi->x, dpi->y);
   return r.first;
 }
-AbsVec fgFontPosPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* area, fgFlag flags, size_t index, void* layout)
+AbsVec fgFontPosPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* dpiarea, fgFlag flags, size_t index, const fgIntVec* dpi, void* layout)
 {
   psFont* f = (psFont*)font;
-  auto r = f->GetPos(!text ? &UNICODE_TERMINATOR : (const int*)text, area->right - area->left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
-  return AbsVec{ r.second.x, r.second.y };
+  AbsRect area = *dpiarea;
+  fgScaleRectDPI(&area, dpi->x, dpi->y);
+  auto r = f->GetPos(!text ? &UNICODE_TERMINATOR : (const int*)text, area.right - area.left, psRoot::GetDrawFlags(flags), lineheight, letterspacing, index);
+  AbsVec c = { r.second.x, r.second.y };
+  fgInvScaleVecDPI(&c, dpi->x, dpi->y);
+  return c;
 }
 
 void*  fgCreateResourcePS(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
 void*  fgCloneResourcePS(void* res, fgElement* src) { ((psTex*)res)->Grab(); return res; }
 void  fgDestroyResourcePS(void* res) { ((psTex*)res)->Drop(); }
-void  fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* area, FABS rotation, const AbsVec* center, fgFlag flags, const fgDrawAuxData* data)
+void  fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* dpiarea, FABS rotation, const AbsVec* dpicenter, fgFlag flags, const fgDrawAuxData* data)
 {
   psTex* tex = (psTex*)res;
   psRect uvresolve;
+  AbsRect area;
+  AbsVec center;
+  fgResolveDrawRect(dpiarea, &area, dpicenter, &center, flags, data);
   if(tex)
   {
     uvresolve = psRect{ uv->left.rel + (uv->left.abs / tex->GetDim().x),
@@ -115,7 +131,7 @@ void  fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned 
   if(tex)
     driver->SetTextures(&tex, 1);
 
-  psRectRotate rect(area->left, area->top, area->right, area->bottom, rotation, psVec(center->x - area->left, center->y - area->top));
+  psRectRotate rect(area.left, area.top, area.right, area.bottom, rotation, psVec(center.x - area.left, center.y - area.top));
 
   if((flags&FGRESOURCE_SHAPEMASK) == FGRESOURCE_RECT)
     psRoundRect::DrawRoundRect(driver->library.ROUNDRECT, STATEBLOCK_LIBRARY::PREMULTIPLIED, rect, uvresolve, 0, psColor32(color), psColor32(edge), outline);
@@ -140,11 +156,16 @@ void  fgResourceSizePS(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
 
 void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec* translate, const AbsVec* scale, FABS rotation, const AbsVec* center, const fgDrawAuxData* data)
 {
+  //AbsVec t = *translate;
+  //fgScaleVecDPI(&t, data->dpi.x, data->dpi.y);
   psDriver* driver = psDriverHold::GetDriver();
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
   float m[4][4];
-  bss_util::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
+  bss::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
+  float ms[4][4];
+  bss::Matrix<float, 4, 4>::AffineScaling(scale->x * (data->dpi.x / 96.0f), scale->y * (data->dpi.y / 96.0f), 1.0f, ms);
+  bss::MatrixMultiply<float, 4, 4, 4>(m, ms, m);
   driver->PushTransform(m);
 
   if(n == 2)
@@ -164,7 +185,7 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   driver->PopTransform();
 }
 
-#include "bss-util/bss_win32_includes.h"
+#include "bss-util/win32_includes.h"
 #include "bss-util/os.h"
 
 fgRoot*  fgInitialize()
@@ -311,7 +332,7 @@ const void*  fgClipboardPastePS(uint32_t type, size_t* length)
       const wchar_t* str = (const wchar_t*)GlobalLock(gdata);
       SIZE_T size = GlobalSize(gdata) / 2;
       SIZE_T len = UTF16toUTF32(str, size, 0, 0);
-      int* ret = bss_util::bssmalloc<int>(len);
+      int* ret = bss::bssMalloc<int>(len);
       *length = UTF16toUTF32(str, size, ret, len);
       GlobalUnlock(gdata);
       CloseClipboard();
@@ -322,7 +343,7 @@ const void*  fgClipboardPastePS(uint32_t type, size_t* length)
       const char* str = (const char*)GlobalLock(gdata);
       SIZE_T size = GlobalSize(gdata);
       SIZE_T len = UTF8toUTF32(str, size, 0, 0);
-      int* ret = bss_util::bssmalloc<int>(len);
+      int* ret = bss::bssMalloc<int>(len);
       *length = UTF8toUTF32(str, size, ret, len);
       GlobalUnlock(gdata);
       CloseClipboard();
@@ -410,13 +431,13 @@ psRoot::psRoot() : _psInject(0, 0)
   fgIntVec dpi = { psGUIManager::BASE_DPI, psGUIManager::BASE_DPI };
   fgRoot_Init(this, &area, &dpi, &BACKEND);
   DWORD blinkrate = 0;
-  int64_t sz = bss_util::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
+  int64_t sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
   if(sz > 0)
   {
     DYNARRAY(wchar_t, buf, sz / 2);
-    sz = bss_util::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", (unsigned char*)buf, sz);
+    sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", (unsigned char*)buf, sz);
     if(sz > 0)
-      cursorblink = atoi(cStr(buf, sz / 2)) / 1000.0;
+      cursorblink = atoi(bss::Str(buf, sz / 2)) / 1000.0;
   }
 }
 psRoot::~psRoot()

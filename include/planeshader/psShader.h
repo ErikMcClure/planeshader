@@ -5,7 +5,7 @@
 #define __SHADER_H__PS__
 
 #include "psDriver.h"
-#include "bss-util/cRefCounter.h"
+#include "bss-util/RefCounter.h"
 #include <stdarg.h>
 
 namespace planeshader {
@@ -28,7 +28,7 @@ namespace planeshader {
   };
 
   // Encapsulates an entire shader effect: each type of shader program (vertex/pixel/etc.), the constants for each individual shader program, and the shader layout.
-  class PS_DLLEXPORT psShader : protected psDriverHold, public bss_util::cRefCounter
+  class PS_DLLEXPORT psShader : protected psDriverHold, public bss::RefCounter
   {
   public:
     void Activate() const;

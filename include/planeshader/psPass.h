@@ -7,8 +7,8 @@
 #include "psDriver.h"
 #include "psRenderable.h"
 #include "psCamera.h"
-#include "bss-util\bss_alloc_block.h"
-#include "bss-util\cDynArray.h"
+#include "bss-util\BlockAlloc.h"
+#include "bss-util\DynArray.h"
 
 namespace planeshader {
   class psMonitor;
@@ -37,7 +37,7 @@ namespace planeshader {
     inline psMonitor* GetMonitor() const { return _monitor; }
     inline void SetMonitor(psMonitor* monitor = 0) { _monitor = monitor; }
 
-    static BSS_FORCEINLINE bss_util::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
+    static BSS_FORCEINLINE bss::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
     static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r)
     {
       char c = SGNCOMPARE(l->_zorder, r->_zorder);
@@ -45,7 +45,7 @@ namespace planeshader {
     }
     static psPass* CurPass;
 
-    typedef bss_util::BlockPolicy<bss_util::TRB_Node<psRenderable*>> ALLOC;
+    typedef bss::BlockPolicy<bss::TRB_Node<psRenderable*>> ALLOC;
     friend class psRenderable;
     friend class psCullGroup;
 
@@ -60,8 +60,8 @@ namespace planeshader {
     bool _clear;
     psVeciu _dpi;
     psMonitor* _monitor;
-    bss_util::cDynArray<std::pair<psRenderable*, psParent>> _defer;
-    bss_util::cTRBtree<psRenderable*, StandardCompare, ALLOC> _renderlist;
+    bss::DynArray<std::pair<psRenderable*, psParent>> _defer;
+    bss::TRBtree<psRenderable*, StandardCompare, ALLOC> _renderlist;
   };
 }
 

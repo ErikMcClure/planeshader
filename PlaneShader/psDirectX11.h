@@ -6,8 +6,8 @@
 
 #include "psDriver.h"
 #include "psShader.h"
-#include "bss-util/bss_stack.h"
-#include "bss-util/bss_win32_includes.h"
+#include "bss-util/Stack.h"
+#include "bss-util/win32_includes.h"
 #include "directx/D3D11.h"
 #include "directx/D3DX11.h"
 #include "psDXGI.h"
@@ -159,7 +159,7 @@ namespace planeshader {
     static void* operator new(std::size_t sz);
     static void operator delete(void* ptr, std::size_t sz);
 
-    struct CamDef { bss_util::Matrix<float, 4, 4> viewproj; bss_util::Matrix<float, 4, 4> proj; bss_util::Matrix<float, 4, 4> view; psRectiu viewport; };
+    struct CamDef { bss::Matrix<float, 4, 4> viewproj; bss::Matrix<float, 4, 4> proj; bss::Matrix<float, 4, 4> view; psRectiu viewport; };
     struct Snapshot { uint32_t tex[3]; uint32_t ntex[3]; uint32_t rt; uint32_t nrt; ID3D11DepthStencilView* depth; psRectl cliprect; };
 
   protected:
@@ -204,18 +204,21 @@ namespace planeshader {
     psVec _dpiscale;
     bool _zerocamrot;
     bool _vsync;
-    bss_util::cStack<psRectl> _clipstack;
-    bss_util::cStack<CamDef> _camstack;
-    bss_util::cDynArray<Snapshot, uint32_t> _snapshotstack;
-    bss_util::cDynArray<void*, uint32_t> _texstack;
-    std::array<bss_util::cDynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
-    bss_util::cDynArray<ID3D11RenderTargetView*, uint32_t> _lastrt;
+    bss::Stack<psRectl> _clipstack;
+    bss::Stack<CamDef> _camstack;
+    bss::DynArray<Snapshot, uint32_t> _snapshotstack;
+    bss::DynArray<void*, uint32_t> _texstack;
+    std::array<bss::DynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
+    bss::DynArray<ID3D11RenderTargetView*, uint32_t> _lastrt;
     ID3D11DepthStencilView* _lastdepth;
     ID3D11VertexShader* _fsquadVS;
     ID3D11VertexShader* _defaultVS;
     ID3D11VertexShader* _lastVS;
     ID3D11GeometryShader* _lastGS;
     ID3D11PixelShader* _lastPS;
+    ID3D11ComputeShader* _lastCS;
+    ID3D11DomainShader* _lastDS;
+    ID3D11HullShader* _lastHS;
     ID3D11PixelShader* _defaultPS; //single texture pixel shader
     ID3D11SamplerState* _defaultSS; //default sampler state
     DX11_SB* _defaultSB; // default stateblock

@@ -7,7 +7,7 @@
 #include <feathergui/fgRoot.h>
 #include <feathergui/fgMonitor.h>
 #include "psRenderable.h"
-#include "bss-util/delegate.h"
+#include "bss-util/Delegate.h"
 
 struct HWND__;
 struct HINSTANCE__;
@@ -29,7 +29,7 @@ namespace planeshader {
   class PS_DLLEXPORT psRoot : public fgRoot, public psDriverHold, public psRenderable
   {
   public:
-    typedef bss_util::delegate<size_t, const FG_Msg&> PS_MESSAGE;
+    typedef bss::Delegate<size_t, const FG_Msg&> PS_MESSAGE;
 
     psRoot();
     ~psRoot();
@@ -99,7 +99,7 @@ namespace planeshader {
     psGUIManager* _manager;
     psTex* _backbuffer;
     MODE _mode;
-    bss_util::cBitField<uint8_t> _guiflags;
+    bss::BitField<uint8_t> _guiflags;
   };
 }
 

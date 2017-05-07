@@ -126,10 +126,10 @@ void psTileset::_render(const psParent& parent)
     psVec3D rb = _driver->FromScreenSpace(c.bottomright, crect.z);
     r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
     window = window.GenerateIntersection(psRecti(
-      bss_util::fFastTruncate(r.left / _tiledim.x), 
-      bss_util::fFastTruncate(r.top / _tiledim.y), 
-      bss_util::fFastTruncate(r.right / _tiledim.x) + 1, 
-      bss_util::fFastTruncate(r.bottom / _tiledim.y) + 1));
+      bss::fFastTruncate(r.left / _tiledim.x), 
+      bss::fFastTruncate(r.top / _tiledim.y), 
+      bss::fFastTruncate(r.right / _tiledim.x) + 1, 
+      bss::fFastTruncate(r.bottom / _tiledim.y) + 1));
   }
 
   uint32_t skipped = 0;
@@ -143,7 +143,7 @@ void psTileset::_render(const psParent& parent)
       for(uint32_t i = window.left; i < (uint32_t)window.right; ++i)
       {
         uint32_t k = i + (j*_rowlength);
-        if(bss_util::bssGetBit(drawn, k))
+        if(bss::bssGetBit(drawn, k))
           continue; // if we drew this tile already don't draw it again
 
         psTileDef& def = _defs[_tiles[k].index];

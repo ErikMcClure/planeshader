@@ -24,7 +24,7 @@ namespace planeshader {
 
     // Interpolation functions for animation
     //template<uint8_t TypeID>
-    //static inline uint32_t colorinterpolate(const typename bss_util::AniAttributeT<TypeID>::TVT_ARRAY_T& rarr, bss_util::AniAttribute::IDTYPE index, double factor) {
+    //static inline uint32_t colorinterpolate(const typename bss::AniAttributeT<TypeID>::TVT_ARRAY_T& rarr, bss::AniAttribute::IDTYPE index, double factor) {
     //  return psColor::Interpolate(rarr[index-1].value, rarr[index].value, factor);
     //}
 

@@ -5,7 +5,7 @@
 #include "psPass.h"
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 struct PBRobj {
   Vector<float, 4> vecEye;
@@ -17,12 +17,12 @@ TESTDEF::RETPAIR test_PBR_System()
 {
   BEGINTEST;
   int fps = 0;
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
-  cStr media(psEngine::Instance()->GetMediaPath());
+  Str media(psEngine::Instance()->GetMediaPath());
 
   // Load and configure PBR shader
-  auto pbrfile = bssloadfile<char, true>(media + "/pbr-model.hlsl").first;
+  auto pbrfile = bssLoadFile<char, true>(media + "/pbr-model.hlsl").first;
   PBRobj data = { {0}, { 0 }, { 1,1,1,1 } };
 
   psShader* pbrshader = psShader::MergeShaders(2, driver->library.IMAGE, psShader::CreateShader(0, 0, 1,

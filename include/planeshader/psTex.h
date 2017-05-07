@@ -8,7 +8,7 @@
 #include "psGUIManager.h"
 #include "psStateblock.h"
 #include "psColor.h"
-#include "bss-util/cRefCounter.h"
+#include "bss-util/RefCounter.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psPixelArray : public psDriverHold
@@ -44,7 +44,7 @@ namespace planeshader {
   };
 
   // Encapsulates an arbitrary texture not necessarily linked to an actual image
-  class PS_DLLEXPORT psTex : public bss_util::cRefCounter, psDriverHold // The reference counter is optional
+  class PS_DLLEXPORT psTex : public bss::RefCounter, psDriverHold // The reference counter is optional
   {
   public:
     psTex(psTex&& mov);
@@ -93,7 +93,7 @@ namespace planeshader {
     uint8_t _miplevels;
     uint32_t _usage;
     FORMATS _format;
-    bss_util::ref_ptr<psTexblock> _texblock;
+    bss::ref_ptr<psTexblock> _texblock;
     psVeciu _dpi; // Actual DPI of this texture. The returned dimensions are scaled by this.
   };
 }

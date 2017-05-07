@@ -4,16 +4,16 @@
 #include "psTex.h"
 #include "psPass.h"
 
-using namespace bss_util;
+using namespace bss;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psDirectX11()
 {
   BEGINTEST;
-  cStr shfile = ReadFile("../media/testbed.hlsl");
+  Str shfile = ReadFile("../media/testbed.hlsl");
   auto shader = psShader::CreateShader(0, 0, 2, &SHADER_INFO(shfile.c_str(), (const char*)"vs_main", VERTEX_SHADER_4_0),
     &SHADER_INFO(shfile.c_str(), "ps_main", PIXEL_SHADER_4_0));
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   int fps = 0;
   //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
   psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, false);

@@ -5,7 +5,7 @@
 #define __DRIVER_H__PS__
 
 #include "psLine.h"
-#include "bss-util\cDynArray.h"
+#include "bss-util\DynArray.h"
 
 namespace planeshader {
   class psTex;
@@ -489,9 +489,9 @@ namespace planeshader {
     } library;
 
   protected:
-    bss_util::cDynArray<psBatchObj> _jobstack;
-    bss_util::cDynArray<float[4][4]> _matrixstack;
-    bss_util::cDynArray<const float(*)[4][4]> _transformstack;
+    bss::DynArray<psBatchObj> _jobstack;
+    bss::DynArray<float[4][4]> _matrixstack;
+    bss::DynArray<const float(*)[4][4]> _transformstack;
   };
 
   struct PS_DLLEXPORT psDriverHold

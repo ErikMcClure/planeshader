@@ -3,7 +3,7 @@
 
 #include "psCullGroup.h"
 #include "psPass.h"
-#include "bss-util\delegate.h"
+#include "bss-util\Delegate.h"
 
 using namespace planeshader;
 

@@ -5,9 +5,9 @@
 #define __STATEBLOCK_H__PS__
 
 #include "ps_dec.h"
-#include "bss-util/cHash.h"
-#include "bss-util/cArray.h"
-#include "bss-util/cRefCounter.h"
+#include "bss-util/Hash.h"
+#include "bss-util/Array.h"
+#include "bss-util/RefCounter.h"
 
 namespace planeshader {
   enum STATETYPE : uint8_t {
@@ -90,14 +90,14 @@ namespace planeshader {
       uint64_t __vali64;
     };
 
-    typedef bss_util::cArray<STATEINFO, uint16_t> STATEINFOS;
+    typedef bss::Array<STATEINFO, uint16_t> STATEINFOS;
 
     inline static bool SILESS(const planeshader::STATEINFO& l, const planeshader::STATEINFO& r) { return l.type<=r.type && (l.type<r.type || l.index<r.index); }
     inline static khint_t SIHASHFUNC(STATEINFOS* const& sb) {
       uint16_t sz=sb->Capacity();
       khint32_t r=0;
       for(uint16_t i = 0; i < sz; ++i)
-        r=bss_util::KH_INT64_HASHFUNC((((int64_t)bss_util::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
+        r=bss::KH_INT64_HASHFUNC((((int64_t)bss::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
       return r;
     }
     inline static bool SIEQUALITY(STATEINFOS* const& left, STATEINFOS* const& right)
@@ -111,11 +111,11 @@ namespace planeshader {
       return true;
     }
     static STATEINFOS* Exists(STATEINFOS* compare);
-    typedef bss_util::cHashBase<STATEINFOS*, char, false, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
+    typedef bss::HashBase<STATEINFOS*, char, false, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
     static BLOCKHASH _blocks;
   };
 
-  class PS_DLLEXPORT psStateblock : public bss_util::cArray<STATEINFO, uint16_t>, public bss_util::cRefCounter
+  class PS_DLLEXPORT psStateblock : public bss::Array<STATEINFO, uint16_t>, public bss::RefCounter
   {
   public:
     inline void* GetSB() const { return _sb; }
@@ -136,7 +136,7 @@ namespace planeshader {
   };
 
   // Restricted to sampler infos
-  class PS_DLLEXPORT psTexblock : public bss_util::cArray<STATEINFO, uint16_t>, public bss_util::cRefCounter
+  class PS_DLLEXPORT psTexblock : public bss::Array<STATEINFO, uint16_t>, public bss::RefCounter
   {
   public:
     inline void* GetSB() const { return _tb; }

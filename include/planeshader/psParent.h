@@ -5,7 +5,7 @@
 #define __PARENT_H__PS__
 
 #include "psDriver.h"
-#include "bss-util/bss_vector.h"
+#include "bss-util/vector.h"
 
 namespace planeshader {
   struct PS_DLLEXPORT psParent
@@ -25,7 +25,7 @@ namespace planeshader {
     }
     inline void GetTransform(psMatrix& matrix) const
     {
-      bss_util::Matrix<float, 4, 4>::AffineTransform_T(position.x - pivot.x, position.y - pivot.y, position.z, rotation, pivot.x, pivot.y, matrix);
+      bss::Matrix<float, 4, 4>::AffineTransform_T(position.x - pivot.x, position.y - pivot.y, position.z, rotation, pivot.x, pivot.y, matrix);
     }
 
     inline bool operator ==(const psParent& r) const { return position == r.position && rotation == r.rotation && pivot == r.pivot; }

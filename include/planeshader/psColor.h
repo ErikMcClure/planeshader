@@ -7,9 +7,9 @@
 #include "psDriver.h"
 
 namespace planeshader {
-  BSS_ALIGNED_STRUCT(16) PS_DLLEXPORT psColor : bss_util::Vector<float, 4>
+  BSS_ALIGNED_STRUCT(16) PS_DLLEXPORT psColor : bss::Vector<float, 4>
   {
-    typedef bss_util::Vector<float, 4> BASE;
+    typedef bss::Vector<float, 4> BASE;
     using BASE::a;
     using BASE::r;
     using BASE::g;

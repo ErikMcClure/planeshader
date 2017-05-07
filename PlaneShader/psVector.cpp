@@ -2,11 +2,11 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psVector.h"
-#include "bss-util\bss_algo.h"
+#include "bss-util\algo.h"
 #include "psTex.h"
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0) {}
 psQuadraticHull::~psQuadraticHull() {}
@@ -158,8 +158,8 @@ void psCubicCurve::Set(psVec p0, psVec p1, psVec p2, psVec p3)
   _p[3] = p3;
 
   Clear();
-  //IterateCubic<float>(p0.v, p1.v, p2.v, p3.v, delegate<void, const float(&)[2], const float(&)[2], const float(&)[2]>::From<psCubicCurve, &psCubicCurve::_addquad>(this), 20);
-  ApproxCubic<float>(p0.v, p1.v, p2.v, p3.v, delegate<void, const float(&)[2], const float(&)[2], const float(&)[2]>::From<psCubicCurve, &psCubicCurve::_addquad>(this), _maxerr);
+  //IterateCubic<float>(p0.v, p1.v, p2.v, p3.v, Delegate<void, const float(&)[2], const float(&)[2], const float(&)[2]>::From<psCubicCurve, &psCubicCurve::_addquad>(this), 20);
+  ApproxCubic<float>(p0.v, p1.v, p2.v, p3.v, Delegate<void, const float(&)[2], const float(&)[2], const float(&)[2]>::From<psCubicCurve, &psCubicCurve::_addquad>(this), _maxerr);
 }
 void psCubicCurve::Set(psVec(&p)[4])
 {

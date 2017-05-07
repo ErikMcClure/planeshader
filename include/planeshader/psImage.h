@@ -39,7 +39,7 @@ namespace planeshader {
     void _setuvs(uint32_t size);
     void _recalcdim();
 
-    bss_util::cArray<psRect, uint8_t> _uvs;
+    bss::Array<psRect, uint8_t> _uvs;
   };
 }
 

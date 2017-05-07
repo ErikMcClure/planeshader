@@ -10,7 +10,7 @@
 
 #ifndef _WINRESRC_
 
-#include "bss-util/bss_defines.h"
+#include "bss-util/defines.h"
 
 #ifndef PS_STATIC_LIB
 #ifdef PlaneShader_EXPORTS

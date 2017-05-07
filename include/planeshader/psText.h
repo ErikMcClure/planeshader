@@ -7,8 +7,8 @@
 #include "psTexFont.h"
 #include "psSolid.h"
 #include "psColored.h"
-#include "bss-util\cStr.h"
-#include "bss-util\cArraySort.h"
+#include "bss-util\Str.h"
+#include "bss-util\ArraySort.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psText : public psSolid, public psColored
@@ -44,8 +44,8 @@ namespace planeshader {
     virtual void _render(const psParent& parent) override;
     void _recalcdim();
 
-    cStrT<int> _text;
-    bss_util::ref_ptr<psTexFont> _font;
+    bss::StrT<int> _text;
+    bss::ref_ptr<psTexFont> _font;
     psVec _textdim;
     float _letterspacing;
     uint16_t _drawflags;
