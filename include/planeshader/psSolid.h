@@ -8,7 +8,7 @@
 #include "psRenderable.h"
 #include "psRect.h"
 
-namespace bss_util { template<typename T> struct KDNode; }
+namespace bss { template<typename T> struct KDNode; }
 
 namespace planeshader {
   // A solid is an inheritable with dimensions. Only objects inheriting from psSolid can be culled.
@@ -63,7 +63,7 @@ namespace planeshader {
     void _setdim(const psVec& dim);
 
     psRect _boundingrect;
-    bss_util::KDNode<psSolid>* _kdnode;
+    bss::KDNode<psSolid>* _kdnode;
   };
 }
 

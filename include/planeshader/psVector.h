@@ -6,7 +6,7 @@
 
 #include "psSolid.h"
 #include "psColored.h"
-#include "bss-util\cDynArray.h"
+#include "bss-util\DynArray.h"
 
 namespace planeshader {
   // Used by all curve objects to render a curve as a deconstructed quadratic curve
@@ -33,7 +33,7 @@ namespace planeshader {
 
   protected:
     virtual void _render(const psParent& parent) override;
-    bss_util::cDynArray<QuadVertex, uint32_t> _verts;
+    bss::DynArray<QuadVertex, uint32_t> _verts;
   };
 
   class PS_DLLEXPORT psQuadraticCurve : public psQuadraticHull, public psColored

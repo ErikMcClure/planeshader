@@ -5,7 +5,7 @@
 #define __EFFECT_H__PS__
 
 #include "psGroup.h"
-#include "bss-util/cArraySort.h"
+#include "bss-util/ArraySort.h"
 
 namespace planeshader {
   // Given a set of interconnected renderables, does a topological sort to find the correct multipass rendering configuration.
@@ -32,7 +32,7 @@ namespace planeshader {
     static char CompEdge(const Edge& l, const Edge& r) { return SGNCOMPARE(l.f, r.f); }
     static bool LessEdge(const Edge& l, const Edge& r) { return l.f < r.f; }
 
-    bss_util::cArraySort<Edge, &CompEdge> _edges;
+    bss::ArraySort<Edge, &CompEdge> _edges;
   };
 }
 

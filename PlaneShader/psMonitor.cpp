@@ -2,8 +2,8 @@
 // For conditions of distribution and use, see copyright notice in PlaneShader.h
 
 #include "psEngine.h"
-#include "bss-util/bss_win32_includes.h"
-#include "bss-util/cStr.h"
+#include "bss-util/win32_includes.h"
+#include "bss-util/Str.h"
 #include "feathergui/fgWindow.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
@@ -39,7 +39,7 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
   AbsRect r = { 0, 0, rect.right - rect.left, rect.bottom - rect.top };
   psVeciu dpi = psGUIManager::GetMonitorDPI(0);
   fgIntVec fgdpi = { dpi.x, dpi.y };
-  fgMonitor_Init(this, FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, &fgdpi);
+  fgMonitor_Init(this, FGFLAGS_INTERNAL|FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, &fgdpi);
   _manager->_updaterootarea();
   this->element.message = (fgMessage)&Message;
   this->element.destroy = (fgDestroy)&Destroy;
@@ -74,10 +74,10 @@ size_t psMonitor::Message(fgMonitor* s, const FG_Msg* m)
     self->_manager->_updaterootarea();
     break;
   case FG_SETTEXT:
-    SetWindowTextW(self->_window, cStrW((const char*)m->p).c_str());
+    SetWindowTextW(self->_window, bss::StrW((const char*)m->p).c_str());
     return 1;
   case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
-    otherint = bss_util::bssSetBit<fgFlag>(flags, otherint, m->u2 != 0);
+    otherint = bss::bssSetBit<fgFlag>(flags, otherint, m->u2 != 0);
   case FG_SETFLAGS:
     if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOTITLEBAR | FGWINDOW_NOBORDER))
     { // handle a layout flag change
@@ -402,7 +402,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     //case 32:
     //  break;
     //default:
-    //  OutputDebugString(cStr("\n%i",message));
+    //  OutputDebugString(Str("\n%i",message));
     //  message=message;
     //  break;
   case WM_SIZE:

@@ -5,15 +5,15 @@
 #include "psPass.h"
 #include "psVector.h"
 
-using namespace bss_util;
+using namespace bss;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psVector()
 {
   BEGINTEST;
-  cHighPrecisionTimer time;
+  HighPrecisionTimer time;
   int fps = 0;
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psQuadraticCurve curve(psVec(100), psVec(200, 200), psVec(300), 4.25f);
@@ -57,7 +57,7 @@ TESTDEF::RETPAIR test_psVector()
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
     curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
     tri.SetCorners(psRect(30, 10, 30, (engine->GetMouse().x - tri.GetPosition().x)/tri.GetDim().x));
-    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssfmod(time.GetTime()*0.001, PI_DOUBLE)));
+    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssFMod(time.GetTime()*0.001, PI_DOUBLE)));
   }
 
   ENDTEST;

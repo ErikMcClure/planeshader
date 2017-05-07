@@ -8,10 +8,10 @@
 #include "testbed.h"
 #include "ps_feather.h"
 #include "feathergui/fgDebug.h"
-#include "bss-util/cStr.h"
+#include "bss-util/Str.h"
 #include "bss-util/profiler.h"
-#include "bss-util/bss_algo.h"
-#include "bss-util/bss_win32_includes.h"
+#include "bss-util/algo.h"
+#include "bss-util/win32_includes.h"
 #include <time.h>
 #include <iostream>
 #include <functional>
@@ -19,9 +19,9 @@
 #undef DrawText
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
-cLog _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
+Logger _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
 psEngine* engine = 0;
 psCamera globalcam;
 bool dirkeys[9] = { false }; // left right up down in out counterclockwise clockwise shift
@@ -32,21 +32,21 @@ bool gotonext = false;
 
 bool comparevec(psVec a, psVec b, int diff)
 {
-  return b.x == 0.0f ? fsmall(a.x, FLT_EPS * 4) : fcompare(a.x, b.x, diff) && b.y == 0.0f ? fsmall(a.y, FLT_EPS * 4) : fcompare(a.y, b.y, diff);
+  return b.x == 0.0f ? fSmall(a.x, FLT_EPS * 4) : fCompare(a.x, b.x, diff) && b.y == 0.0f ? fSmall(a.y, FLT_EPS * 4) : fCompare(a.y, b.y, diff);
 }
 bool comparevec(psColor& a, psColor& b, int diff)
 {
-  return b.r == 0.0f ? fsmall(a.r) : fcompare(a.r, b.r, diff) &&
-    b.g == 0.0f ? fsmall(a.g) : fcompare(a.g, b.g, diff) &&
-    b.b == 0.0f ? fsmall(a.b) : fcompare(a.b, b.b, diff) &&
-    b.a == 0.0f ? fsmall(a.a) : fcompare(a.a, b.a, diff);
+  return b.r == 0.0f ? fSmall(a.r) : fCompare(a.r, b.r, diff) &&
+    b.g == 0.0f ? fSmall(a.g) : fCompare(a.g, b.g, diff) &&
+    b.b == 0.0f ? fSmall(a.b) : fCompare(a.b, b.b, diff) &&
+    b.a == 0.0f ? fSmall(a.a) : fCompare(a.a, b.a, diff);
 }
-cStr ReadFile(const char* path)
+Str ReadFile(const char* path)
 {
   FILE* f;
   FOPEN(f, path, "rb");
   if(!f) return "";
-  cStr buf;
+  Str buf;
   fseek(f, 0, SEEK_END);
   long ln = ftell(f);
   buf.resize(ln + 1);
@@ -58,7 +58,7 @@ cStr ReadFile(const char* path)
 void processGUI()
 {
   //Sleep(10); // For some reason, limiting framerate can reduce jitter in windowed mode.
-  static cHighPrecisionTimer delta;
+  static HighPrecisionTimer delta;
   delta.Update();
   double secdelta = delta.GetDeltaNS() / 1000000000.0;
   float scale = dirkeys[8] ? 0.01f : 1.0f;
@@ -83,9 +83,9 @@ void processGUI()
 
 void updatefpscount(uint64_t& timer, int& fps)
 {
-  if(cHighPrecisionTimer::CloseProfiler(timer)>1000000000)
+  if(HighPrecisionTimer::CloseProfiler(timer)>1000000000)
   {
-    timer = cHighPrecisionTimer::OpenProfiler();
+    timer = HighPrecisionTimer::OpenProfiler();
     char text[10] = { 0,0,0,0,0,0,0,0,0,0 };
     _itoa_r(fps, text, 10);
     engine->GetMonitor()->element.SetText(text);
@@ -131,9 +131,6 @@ TESTDEF::RETPAIR test_psColor()
   ENDTEST;
 }
 
-#include "psTex.h"
-#include "bss-util/cAliasTable.h"
-
 TESTDEF::RETPAIR test_psOpenGL4()
 {
   BEGINTEST;
@@ -155,9 +152,9 @@ TESTDEF::RETPAIR test_psInheritable()
 // Main program function
 int main(int argc, char** argv)
 {
-  bss_util::ForceWin64Crash();
+  bss::ForceWin64Crash();
   SetWorkDirToCur();
-  bssrandseed(time(NULL));
+  bssRandSeed(time(NULL));
 
   AllocConsole();
   freopen("CONOUT$", "wb", stdout);
@@ -256,7 +253,7 @@ int main(int argc, char** argv)
       numpassed = tests[i].FUNC(); //First is total, second is succeeded
       if(numpassed.first != numpassed.second) failures.push_back(i);
 
-      printf("%-*s %*s %-*s\n", COLUMNS[0], tests[i].NAME, COLUMNS[1], cStrF("%u/%u", numpassed.second, numpassed.first).c_str(), COLUMNS[2], (numpassed.first == numpassed.second) ? "PASS" : "FAIL");
+      printf("%-*s %*s %-*s\n", COLUMNS[0], tests[i].NAME, COLUMNS[1], StrF("%u/%u", numpassed.second, numpassed.first).c_str(), COLUMNS[2], (numpassed.first == numpassed.second) ? "PASS" : "FAIL");
     }
   }
 

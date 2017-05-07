@@ -135,6 +135,9 @@
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalDependencies>bss-util_d.lib;planeshader_d.lib;feathergui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -192,6 +195,9 @@
       <LargeAddressAware>true</LargeAddressAware>
       <AdditionalDependencies>bss-util.lib;planeshader.lib;feathergui.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <Manifest>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="testbed.cpp" />

@@ -7,14 +7,14 @@
 #include "psEngine.h"
 #include "psTex.h"
 #include "psStateblock.h"
-#include "bss-util/cStr.h"
-#include "bss-util/cDynArray.h"
+#include "bss-util/Str.h"
+#include "bss-util/DynArray.h"
 #include "bss-util/profiler.h"
 #include "psColor.h"
 #include "psCamera.h"
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 #ifdef BSS_CPU_x86_64
 #pragma comment(lib, "../lib/dxlib/x64/d3d11.lib")
@@ -45,8 +45,8 @@ using namespace bss_util;
 #endif
 
 #define LOGEMPTY
-#define LOGFAILUREIGNORE(fn,rn,...) { _lasterr = (fn); if(FAILED(_lasterr)) { PSLOG(1,__VA_ARGS__); PROCESSQUEUE(); } }
-#define LOGFAILURERET(fn,rn,...) { _lasterr = (fn); if(FAILED(_lasterr)) { PSLOG(1,__VA_ARGS__); PROCESSQUEUE(); return rn; } }
+#define LOGFAILUREIGNORE(fn,rn,...) { if(FAILED(_lasterr = (fn))) { PSLOG(1,__VA_ARGS__); PROCESSQUEUE(); } }
+#define LOGFAILURERET(fn,rn,...) { if(FAILED(_lasterr = (fn))) { PSLOG(1,__VA_ARGS__); PROCESSQUEUE(); return rn; } }
 #define LOGFAILURE(fn,...) LOGFAILURERET(fn,LOGEMPTY,__VA_ARGS__)
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
 
@@ -64,9 +64,12 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _fsquadVS = 0;
   _defaultSB = 0;
   _defaultSS = 0;
-  _lastGS = 0;
   _lastVS = 0;
   _lastPS = 0;
+  _lastGS = 0;
+  _lastCS = 0;
+  _lastDS = 0;
+  _lastHS = 0;
   _driver = this;
 
 #ifdef BSS_DEBUG
@@ -93,7 +96,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   PSLOG(3, "DX11 Feature Level: ", strfeature);
-
+  
 #ifdef BSS_DEBUG
   _device->QueryInterface(__uuidof(ID3D11InfoQueue), (void **)&_infoqueue);
 #endif
@@ -173,8 +176,8 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _fsquadVS = (ID3D11VertexShader*)CreateShader(fsquadVS_main, sizeof(fsquadVS_main), VERTEX_SHADER_4_0);
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl").first;
-
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl").first;
+    
     ELEMENT_DESC desc[4] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -189,7 +192,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl").first;
 
     ELEMENT_DESC desc[3] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -204,7 +207,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl").first;
 
     ELEMENT_DESC desc[5] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -221,7 +224,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl").first;
 
     ELEMENT_DESC desc[6] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -239,35 +242,35 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fstext.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fstext.hlsl").first;
 
     library.TEXT1 = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl").first;
 
     library.DEBUG = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsalphabox.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsalphabox.hlsl").first;
 
     _alphaboxfilter = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fspremultiply.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fspremultiply.hlsl").first;
 
     _premultiplyfilter = psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl").first;
 
     ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -281,7 +284,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl").first;
 
     ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -295,7 +298,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl").first;
 
     ELEMENT_DESC desc[5] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -311,7 +314,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fsrectround.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsrectround.hlsl").first;
 
     ELEMENT_DESC desc[6] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -329,14 +332,14 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl").first;
 
     library.CIRCLE = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
   }
 
   {
-    auto a = bssloadfile<char, true>(cStr(psEngine::Instance()->GetMediaPath()) + "/fstriangle.hlsl").first;
+    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fstriangle.hlsl").first;
 
     library.ROUNDTRI = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
       &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
@@ -938,7 +941,7 @@ void* psDirectX11::LoadTexture(const char* path, uint32_t usage, FORMATS format,
   _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
 
   ID3D11Resource* tex = 0;
-  LOGFAILURERETNULL(D3DX11CreateTextureFromFileW(_device, cStrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path);
+  LOGFAILURERETNULL(D3DX11CreateTextureFromFileW(_device, StrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path);
 
   if(_customfilter(loadfilter))
     _applyloadshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(loadfilter), loadfilter == FILTER_PREMULTIPLY_SRGB);
@@ -1036,6 +1039,12 @@ void psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER shader)
     _context->PSSetConstantBuffers(1, 1, (ID3D11Buffer**)&constbuf);
   else if(shader <= GEOMETRY_SHADER_5_0)
     _context->GSSetConstantBuffers(1, 1, (ID3D11Buffer**)&constbuf);
+  else if(shader <= COMPUTE_SHADER_5_0)
+    _context->CSSetConstantBuffers(1, 1, (ID3D11Buffer**)&constbuf);
+  else if(shader <= DOMAIN_SHADER_5_0)
+    _context->DSSetConstantBuffers(1, 1, (ID3D11Buffer**)&constbuf);
+  else if(shader <= HULL_SHADER_5_0)
+    _context->HSSetConstantBuffers(1, 1, (ID3D11Buffer**)&constbuf);
 }
 
 void psDirectX11::SetTextures(const psTex* const* texes, uint8_t num, SHADER_VER shader)
@@ -1373,6 +1382,9 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
     _context->VSSetShader(_lastVS, 0, 0);
     _context->PSSetShader(_lastPS, 0, 0);
     _context->GSSetShader(_lastGS, 0, 0);
+    _context->CSSetShader(_lastCS, 0, 0);
+    _context->DSSetShader(_lastDS, 0, 0);
+    _context->HSSetShader(_lastHS, 0, 0);
   }
 
   if(fullscreen >= 0)
@@ -1466,8 +1478,12 @@ void* psDirectX11::CreateShader(const void* data, size_t datasize, SHADER_VER pr
     LOGFAILURERETNULL(_device->CreatePixelShader(data, datasize, NULL, (ID3D11PixelShader**)&p), "CreatePixelShader failed")
   else if(profile <= GEOMETRY_SHADER_5_0)
     LOGFAILURERETNULL(_device->CreateGeometryShader(data, datasize, NULL, (ID3D11GeometryShader**)&p), "CreateGeometryShader failed")
-    //else if(profile<=COMPUTE_SHADER_5_0)
-    //  _device->Create((DWORD*)blob->GetBufferPointer(), blob->GetBufferSize(), (ID3D11PixelShader**)&p);
+  else if(profile <= COMPUTE_SHADER_5_0)
+    LOGFAILURERETNULL(_device->CreateComputeShader(data, datasize, NULL, (ID3D11ComputeShader**)&p), "CreateComputeShader failed")
+  else if(profile <= DOMAIN_SHADER_5_0)
+    LOGFAILURERETNULL(_device->CreateDomainShader(data, datasize, NULL, (ID3D11DomainShader**)&p), "CreateDomainShader failed")
+  else if(profile <= HULL_SHADER_5_0)
+    LOGFAILURERETNULL(_device->CreateHullShader(data, datasize, NULL, (ID3D11HullShader**)&p), "CreateHullShader failed")
   else
     return 0;
   return p;
@@ -1493,6 +1509,21 @@ char psDirectX11::SetShader(void* shader, SHADER_VER profile)
   {
     if(_lastGS == shader) return 0;
     _context->GSSetShader(_lastGS = (ID3D11GeometryShader*)shader, 0, 0);
+  }
+  else if(profile <= COMPUTE_SHADER_5_0)
+  {
+    if(_lastCS == shader) return 0;
+    _context->CSSetShader(_lastCS = (ID3D11ComputeShader*)shader, 0, 0);
+  }
+  else if(profile <= DOMAIN_SHADER_5_0)
+  {
+    if(_lastDS == shader) return 0;
+    _context->DSSetShader(_lastDS = (ID3D11DomainShader*)shader, 0, 0);
+  }
+  else if(profile <= HULL_SHADER_5_0)
+  {
+    if(_lastHS == shader) return 0;
+    _context->HSSetShader(_lastHS = (ID3D11HullShader*)shader, 0, 0);
   }
   else
     return -1;
@@ -1662,7 +1693,7 @@ void psDirectX11::_processdebugmessage(UINT64 index, SIZE_T len)
   case D3D11_MESSAGE_CATEGORY::D3D11_MESSAGE_CATEGORY_STATE_SETTING: category = ":State Setting"; break;
   }
 
-  PSLOG(level, "(DirectX11", category, ") ", cStr(message->pDescription, message->DescriptionByteLength));
+  PSLOG(level, "(DirectX11", category, ") ", Str(message->pDescription, message->DescriptionByteLength));
 }
 
 uint32_t psDirectX11::_usagetodxtype(uint32_t types)

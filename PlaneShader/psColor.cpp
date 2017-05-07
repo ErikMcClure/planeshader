@@ -149,14 +149,14 @@ uint16_t float_to_half(float f)
 template<uint8_t TYPE, uint8_t BITS, uint16_t OFFSET>
 void BSS_FORCEINLINE _psColor_WriteComponent(float c, void* target);
 
-template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 32, 0>(float c, void* target) { ((uint32_t*)target)[0] = bss_util::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint32_t>::max())); }
-template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 32, 0>(float c, void* target) { ((int32_t*)target)[0] = bss_util::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int32_t>::max())); }
+template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 32, 0>(float c, void* target) { ((uint32_t*)target)[0] = bss::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint32_t>::max())); }
+template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 32, 0>(float c, void* target) { ((int32_t*)target)[0] = bss::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int32_t>::max())); }
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<2, 32, 0>(float c, void* target) { ((float*)target)[0] = c; }
-template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 16, 0>(float c, void* target) { ((uint16_t*)target)[0] = bss_util::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint16_t>::max())); }
-template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 16, 0>(float c, void* target) { ((int16_t*)target)[0] = bss_util::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int16_t>::max())); }
+template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 16, 0>(float c, void* target) { ((uint16_t*)target)[0] = bss::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint16_t>::max())); }
+template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 16, 0>(float c, void* target) { ((int16_t*)target)[0] = bss::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int16_t>::max())); }
 template<> void BSS_FORCEINLINE _psColor_WriteComponent<2, 16, 0>(float c, void* target) { ((uint16_t*)target)[0] = float_to_half(c); }
-template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 8, 0>(float c, void* target) { ((uint8_t*)target)[0] = bss_util::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint8_t>::max())); }
-template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 8, 0>(float c, void* target) { ((int8_t*)target)[0] = bss_util::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int8_t>::max())); }
+template<> void BSS_FORCEINLINE _psColor_WriteComponent<0, 8, 0>(float c, void* target) { ((uint8_t*)target)[0] = bss::fFastRound(bssclamp(c, 0.0f, 1.0f) * (std::numeric_limits<uint8_t>::max())); }
+template<> void BSS_FORCEINLINE _psColor_WriteComponent<1, 8, 0>(float c, void* target) { ((int8_t*)target)[0] = bss::fFastRound(bssclamp(c, -1.0f, 1.0f) * (std::numeric_limits<int8_t>::max())); }
 
 uint16_t psColor::WriteFormat(FORMATS format, void* target) const
 {

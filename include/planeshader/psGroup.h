@@ -6,7 +6,7 @@
 
 #include "psLocatable.h"
 #include "psRenderable.h"
-#include "bss-util/cArraySort.h"
+#include "bss-util/ArraySort.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psGroup : public psLocatable, public psRenderable
@@ -23,8 +23,13 @@ namespace planeshader {
     // Clone function
     virtual psGroup* Clone() const override { return new psGroup(*this); }
     psRenderable* Add(const psRenderable* renderable);
-    template<typename F>    BSS_FORCEINLINE void MapToChildren(F && fn) const    {      for(size_t i = 0; i < _children.Length(); ++i)
-        fn(_children[i]);    }
+    template<typename F>
+    BSS_FORCEINLINE void MapToChildren(F && fn) const
+    {
+      for(size_t i = 0; i < _children.Length(); ++i)
+        fn(_children[i]);
+    }
+
     psGroup& operator=(const psGroup& copy);
     psGroup& operator=(psGroup&& mov);
 
@@ -32,7 +37,7 @@ namespace planeshader {
     virtual void _render(const psParent& parent) override;
 
   protected:
-    bss_util::cArraySort<psRenderable*, &Comp> _children;
+    bss::ArraySort<psRenderable*, &Comp> _children;
   };
 }
 

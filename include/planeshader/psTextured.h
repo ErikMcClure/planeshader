@@ -5,7 +5,7 @@
 #define __TEXTURED_H__PS__
 
 #include "psTex.h"
-#include "bss-util/cArray.h"
+#include "bss-util/Array.h"
 #include <vector>
 
 namespace planeshader {
@@ -30,7 +30,7 @@ namespace planeshader {
     psTextured& operator=(psTextured&& right);
 
   protected:
-    bss_util::cArray<psTex*, uint8_t> _tex;
+    bss::Array<psTex*, uint8_t> _tex;
   };
 }
 

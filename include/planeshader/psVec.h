@@ -5,7 +5,7 @@
 #define __VEC_H__PS__
 
 #include "ps_dec.h"
-#include "bss-util/bss_vector.h"
+#include "bss-util/vector.h"
 
 namespace planeshader {
   // Geometric point intersection and distance functions
@@ -45,7 +45,7 @@ namespace planeshader {
   template<typename T>
   static BSS_FORCEINLINE T PointLineInfDistSqr(T X, T Y, T X1, T Y1, T X2, T Y2) { T tx=X2-X1; T ty=Y2-Y1; T det=(tx*(Y1-Y)) - ((X1-X)*ty); return (det*det)/((tx*tx)+(ty*ty)); }
   template<typename T>
-  static BSS_FORCEINLINE T PointLineInfDist(T X, T Y, T X1, T Y1, T X2, T Y2) { T tx=X2-X1; T ty=Y2-Y1; return ((tx*(Y1-Y)) - ((X1-X)*ty))/bss_util::FastSqrt((tx*tx)+(ty*ty)); }
+  static BSS_FORCEINLINE T PointLineInfDist(T X, T Y, T X1, T Y1, T X2, T Y2) { T tx=X2-X1; T ty=Y2-Y1; return ((tx*(Y1-Y)) - ((X1-X)*ty))/bss::FastSqrt((tx*tx)+(ty*ty)); }
   template<typename T>
   static inline T PointLineDistSqr(T X, T Y, T X1, T Y1, T X2, T Y2) //line segment
   {
@@ -56,7 +56,7 @@ namespace planeshader {
     return (det*det)/length;
   }
   template<typename T>
-  static BSS_FORCEINLINE T PointLineDist(T X, T Y, T X1, T Y1, T X2, T Y2) { return bss_util::FastSqrt(PointLineDistSqr(X, Y, X1, Y1, X2, Y2)); }
+  static BSS_FORCEINLINE T PointLineDist(T X, T Y, T X1, T Y1, T X2, T Y2) { return bss::FastSqrt(PointLineDistSqr(X, Y, X1, Y1, X2, Y2)); }
   template<typename T>
   static inline void NearestPointToLineInf(T X, T Y, T X1, T Y1, T X2, T Y2, T& outX, T& outY) //treated as infinite line
   {
@@ -86,30 +86,30 @@ namespace planeshader {
     outY=Y1 + u*uy;
   }
 
-  typedef bss_util::Vector<float, 2> psVec; //default typedef
-  typedef bss_util::Vector<float, 2> psVector;
-  typedef bss_util::Vector<int, 2> psVeci;
-  typedef bss_util::Vector<double, 2> psVecd;
-  typedef bss_util::Vector<short, 2> psVecs;
-  typedef bss_util::Vector<long, 2> psVecl;
-  typedef bss_util::Vector<uint32_t, 2> psVeciu;
-  typedef bss_util::Vector<uint16_t, 2> psVecsu;
-  typedef bss_util::Vector<unsigned long, 2> psVeclu;
+  typedef bss::Vector<float, 2> psVec; //default typedef
+  typedef bss::Vector<float, 2> psVector;
+  typedef bss::Vector<int, 2> psVeci;
+  typedef bss::Vector<double, 2> psVecd;
+  typedef bss::Vector<short, 2> psVecs;
+  typedef bss::Vector<long, 2> psVecl;
+  typedef bss::Vector<uint32_t, 2> psVeciu;
+  typedef bss::Vector<uint16_t, 2> psVecsu;
+  typedef bss::Vector<unsigned long, 2> psVeclu;
 
   static psVec const VEC_ZERO(0, 0);
   static psVec const VEC_ONE(1, 1);
   static psVec const VEC_HALF(0.5f, 0.5f);
   static psVec const VEC_NEGHALF(-0.5f, -0.5f);
 
-  typedef bss_util::Vector<float, 3> psVec3D; //default typedef
-  typedef bss_util::Vector<float, 3> psVector3D;
-  typedef bss_util::Vector<int, 3> psVec3Di;
-  typedef bss_util::Vector<double, 3> psVec3Dd;
-  typedef bss_util::Vector<short, 3> psVec3Ds;
-  typedef bss_util::Vector<long, 3> psVec3Dl;
-  typedef bss_util::Vector<uint32_t, 3> psVec3Diu;
-  typedef bss_util::Vector<uint16_t, 3> psVec3Dsu;
-  typedef bss_util::Vector<unsigned long, 3> psVec3Dlu;
+  typedef bss::Vector<float, 3> psVec3D; //default typedef
+  typedef bss::Vector<float, 3> psVector3D;
+  typedef bss::Vector<int, 3> psVec3Di;
+  typedef bss::Vector<double, 3> psVec3Dd;
+  typedef bss::Vector<short, 3> psVec3Ds;
+  typedef bss::Vector<long, 3> psVec3Dl;
+  typedef bss::Vector<uint32_t, 3> psVec3Diu;
+  typedef bss::Vector<uint16_t, 3> psVec3Dsu;
+  typedef bss::Vector<unsigned long, 3> psVec3Dlu;
 
   static psVec3D const VEC3D_ZERO(0, 0, 0);
   static psVec3D const VEC3D_ONE(1, 1, 1);

@@ -4,7 +4,7 @@
 #include "psTex.h"
 #include "psFont.h"
 
-using namespace bss_util;
+using namespace bss;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psFont()
@@ -14,7 +14,7 @@ TESTDEF::RETPAIR test_psFont()
   psFont* font = psFont::Create("Arial", 400, false, 14, psFont::FAA_LCD);
 
   int fps = 0;
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psStateblock* block = STATEBLOCK_LIBRARY::SUBPIXELBLEND->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 1, 0.0f));

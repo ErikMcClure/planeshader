@@ -7,7 +7,7 @@
 #include "psSolid.h"
 #include "psDriver.h"
 #include "psTextured.h"
-#include "bss-util\cDynArray.h"
+#include "bss-util\DynArray.h"
 
 namespace planeshader {
   struct psTile
@@ -56,13 +56,13 @@ namespace planeshader {
   protected:
     virtual void _render(const psParent& parent) override;
     template<class T>
-    BSS_FORCEINLINE bool _drawcheck(T* drawn, uint32_t k, int level) { return (k < _tiles.Length()) && !bss_util::bssGetBit<T>(drawn, k) && (level < _defs[_tiles[k].index].level); }
+    BSS_FORCEINLINE bool _drawcheck(T* drawn, uint32_t k, int level) { return (k < _tiles.Length()) && !bss::bssGetBit<T>(drawn, k) && (level < _defs[_tiles[k].index].level); }
     
     uint32_t _rowlength;
     psVeci _tiledim; // Size of the actual tile for figuring out where to put each tile.
-    bss_util::cDynArray<psTileDef, uint32_t> _defs; // For each tile indice, stores what the actual UV coordinates of that tile are and what the offset is
-    bss_util::cDynArray<psTile, uint32_t> _tiles;
-    bss_util::Matrix<float, 4, 4> _m;
+    bss::DynArray<psTileDef, uint32_t> _defs; // For each tile indice, stores what the actual UV coordinates of that tile are and what the offset is
+    bss::DynArray<psTile, uint32_t> _tiles;
+    bss::Matrix<float, 4, 4> _m;
   };
 }
 #endif

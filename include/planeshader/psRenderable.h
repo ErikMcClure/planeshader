@@ -7,9 +7,9 @@
 #include "psStateBlock.h"
 #include "psShader.h"
 #include "psParent.h"
-#include "bss-util/cBitField.h"
+#include "bss-util/BitField.h"
 #include "bss-util/LLBase.h"
-#include "bss-util/cTRBtree.h"
+#include "bss-util/TRBtree.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psRenderable
@@ -28,7 +28,7 @@ namespace planeshader {
     inline psPass* GetPass() const { return _pass; }
     void SetPass(psPass* pass);
     void SetPass(); // Sets the pass to the 0th pass.
-    inline bss_util::cBitField<psFlag>& GetFlags() { return _flags; }
+    inline bss::BitField<psFlag>& GetFlags() { return _flags; }
     inline psFlag GetFlags() const { return _flags; }
     inline psShader* GetShader() { return _shader; }
     inline const psShader* GetShader() const { return _shader; }
@@ -54,15 +54,15 @@ namespace planeshader {
     void _copyinsert(const psRenderable& r);
     void _invalidate();
 
-    bss_util::cBitField<psFlag> _flags;
+    bss::BitField<psFlag> _flags;
     psPass* _pass; // Stores what pass we are in
     int _zorder;
     uint8_t _internalflags;
-    bss_util::ref_ptr<psStateblock> _stateblock;
-    bss_util::ref_ptr<psShader> _shader;
-    bss_util::LLBase<psRenderable> _llist;
-    bss_util::TRB_Node<psRenderable*>* _psort;
-    bss_util::cArray<psTex*, uint8_t> _rts;
+    bss::ref_ptr<psStateblock> _stateblock;
+    bss::ref_ptr<psShader> _shader;
+    bss::LLBase<psRenderable> _llist;
+    bss::TRB_Node<psRenderable*>* _psort;
+    bss::Array<psTex*, uint8_t> _rts;
 
     enum INTERNALFLAGS : uint8_t
     {

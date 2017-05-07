@@ -5,14 +5,14 @@
 #define __POLYGON_H__PS__
 
 #include "psLine.h"
-#include "bss-util/cArray.h"
+#include "bss-util/Array.h"
 
 namespace planeshader {
   template<class T>
   class BSS_COMPILER_DLLEXPORT psPolygonT
   {
   public:
-    typedef bss_util::Vector<T, 2> VEC;
+    typedef bss::Vector<T, 2> VEC;
 
     inline psPolygonT(const psPolygonT<T>& copy) : _verts(copy._verts) {}
     inline psPolygonT(psPolygonT<T>&& mov) : _verts(std::move(mov._verts)) {}
@@ -22,9 +22,9 @@ namespace planeshader {
     template <uint32_t num>
     inline psPolygonT(const VEC(&vertices)[num]) : _verts(num) { if(_verts!=0) memcpy(_verts, vertices, _size*sizeof(VEC)); }
     template<class U>
-    inline psPolygonT(const bss_util::Vector<U, 2>* vertices, uint16_t num) : _verts(num) { for(uint16_t i=0; i < _numverts; ++i) _verts[i]=vertices[i]; }
+    inline psPolygonT(const bss::Vector<U, 2>* vertices, uint16_t num) : _verts(num) { for(uint16_t i=0; i < _numverts; ++i) _verts[i]=vertices[i]; }
     template <class U, uint32_t num>
-    inline psPolygonT(const bss_util::Vector<U, 2>(&vertices)[num]) : _verts(num) { for(uint16_t i=0; i < _numverts; ++i) _verts[i]=vertices[i]; }
+    inline psPolygonT(const bss::Vector<U, 2>(&vertices)[num]) : _verts(num) { for(uint16_t i=0; i < _numverts; ++i) _verts[i]=vertices[i]; }
     inline const VEC* GetVertices() const { return _verts; }
     inline uint16_t GetNumVerts() const { return _size; }
     inline T Area() const { return PolyArea(_verts, _verts.Capacity()); }
@@ -164,7 +164,7 @@ namespace planeshader {
     }
 
   protected:
-    bss_util::cArray<VEC, uint32_t> _verts;
+    bss::Array<VEC, uint32_t> _verts;
   };
 
   typedef psPolygonT<float> psPolygon; //default typedef

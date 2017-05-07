@@ -4,8 +4,8 @@
 #ifndef __GUI_MANAGER_H__PS__
 #define __GUI_MANAGER_H__PS__
 
-#include "bss-util/cBitField.h"
-#include "bss-util/delegate.h"
+#include "bss-util/BitField.h"
+#include "bss-util/Delegate.h"
 #include "psVec.h"
 #include "ps_feather.h"
 
@@ -86,7 +86,7 @@ namespace planeshader {
     JOY_DEVCAPS _joydevs[NUMJOY];
     uint8_t _maxjoy; //Number of joysticks supported by the driver
     bool _quit;
-    bss_util::cDynArray<psMonitor, uint8_t, bss_util::CARRAY_CONSTRUCT> _monitors;
+    bss::DynArray<psMonitor, uint8_t, bss::ARRAY_CONSTRUCT> _monitors;
     psRoot _root;
     unsigned long _lastmsgtime; // Gets the timestamp of the last message
   };

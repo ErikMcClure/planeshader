@@ -10,7 +10,7 @@
 #include "bss-util/profiler.h"
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 psPass* psPass::CurPass = 0;
 

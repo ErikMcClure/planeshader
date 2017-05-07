@@ -11,14 +11,14 @@ namespace planeshader {
   template <class T>
   struct BSS_COMPILER_DLLEXPORT psLineT
   {
-    typedef bss_util::Vector<T, 2> VEC;
+    typedef bss::Vector<T, 2> VEC;
     inline psLineT() {} //The following constructors allow for implicit conversion between types
     template<class U>
     inline psLineT(const psLineT<U>& other) : p1(other.p1), p2(other.p2) {}
     inline psLineT(T X1, T Y1, T X2, T Y2) : x1(X1), y1(Y1), x2(X2), y2(Y2) {}
     inline psLineT(const VEC& P1, T X2, T Y2) : p1(P1), x2(X2), y2(Y2) {}
     inline psLineT(const VEC& P1, const VEC& P2) : p1(P1), p2(P2) {}
-    inline T Length() const { return bss_util::dist<T>(x1, y1, x2, y2); }
+    inline T Length() const { return bss::Dist<T>(x1, y1, x2, y2); }
     inline bool IntersectCircle(const psCircleT<T>& other) const { return DistanceToPointSquared(other.pos)<=other.r*other.r; }
     inline bool IntersectCircle(const VEC& pos, T R) const { return DistanceToPointSquared(pos) <= R*R; }
     inline bool IntersectCircle(T X, T Y, T R) const { return DistanceToPointSquared(X, Y) <= R*R; }
@@ -152,7 +152,7 @@ namespace planeshader {
   template <class T>
   struct BSS_COMPILER_DLLEXPORT psLine3DT
   {
-    typedef bss_util::Vector<T, 3> VEC;
+    typedef bss::Vector<T, 3> VEC;
 
     inline psLine3DT() {} //The following constructors allow for implicit conversion between types
     template<class U>

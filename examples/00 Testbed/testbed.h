@@ -8,9 +8,9 @@
 #include "psEngine.h"
 #include "psColor.h"
 #include "psCamera.h"
-#include "bss-util/cHighPrecisionTimer.h"
+#include "bss-util/HighPrecisionTimer.h"
 #include "bss-util/lockless.h"
-#include "bss-util/cStr.h"
+#include "bss-util/Str.h"
 
 struct TESTDEF
 {
@@ -32,7 +32,7 @@ struct TESTDEF
 #define TESTCOUNTALL(c,t) { bool __val=true; for(uint32_t i = 0; i < c; ++i) __val=__val&&(t); TEST(__val); }
 #define TESTFOUR(s,a,b,c,d) TEST(((s)[0]==(a)) && ((s)[1]==(b)) && ((s)[2]==(c)) && ((s)[3]==(d)))
 #define TESTALLFOUR(s,a) TEST(((s)[0]==(a)) && ((s)[1]==(a)) && ((s)[2]==(a)) && ((s)[3]==(a)))
-#define TESTRELFOUR(s,a,b,c,d) TEST(fcompare((s)[0],(a)) && fcompare((s)[1],(b)) && fcompare((s)[2],(c)) && fcompare((s)[3],(d)))
+#define TESTRELFOUR(s,a,b,c,d) TEST(fCompare((s)[0],(a)) && fCompare((s)[1],(b)) && fCompare((s)[2],(c)) && fCompare((s)[3],(d)))
 #define TESTVEC(v,cx,cy) TEST((v).x==(cx)) TEST((v).y==(cy))
 #define TESTVEC3(v,cx,cy,cz) TEST((v).x==(cx)) TEST((v).y==(cy)) TEST((v).z==(cz))
 
@@ -41,14 +41,14 @@ static void _ITERFUNC(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { for(uint3
 template<class T, size_t SIZE, class F>
 static void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val = true; for(uint32_t i = 0; i < SIZE; ++i) __val = __val && (f(i)); TEST(__val); }
 
-extern bss_util::cLog _failedtests;
+extern bss::Logger _failedtests;
 extern planeshader::psCamera globalcam;
 extern planeshader::psEngine* engine;
 extern bool gotonext;
 
 extern bool comparevec(planeshader::psVec a, planeshader::psVec b, int diff = 1);
 extern bool comparevec(planeshader::psColor& a, planeshader::psColor& b, int diff = 1);
-extern cStr ReadFile(const char* path);
+extern bss::Str ReadFile(const char* path);
 extern void processGUI();
 extern void updatefpscount(uint64_t& timer, int& fps);
 

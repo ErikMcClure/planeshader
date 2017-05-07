@@ -4,11 +4,11 @@
 #ifndef __ENGINE_H__PS__
 #define __ENGINE_H__PS__
 
-#include "bss-util/cArray.h"
-#include "bss-util/cBitField.h"
-#include "bss-util/bss_log.h"
-#include "bss-util/cStr.h"
-#include "bss-util/cSerializer.h"
+#include "bss-util/Array.h"
+#include "bss-util/BitField.h"
+#include "bss-util/Logger.h"
+#include "bss-util/Str.h"
+#include "bss-util/Serializer.h"
 #include "psGUIManager.h"
 #include "psDriver.h"
 
@@ -36,7 +36,7 @@ namespace planeshader {
     const char* mediapath;
 
     template<typename Engine>
-    void Serialize(bss_util::cSerializer<Engine>& e)
+    void Serialize(bss::Serializer<Engine>& e)
     {
       e.EvaluateType<PSINIT>(
         GenPair("width", width),
@@ -80,7 +80,7 @@ namespace planeshader {
     inline uint16_t NumPass() const { return _passes.Capacity(); }
     inline const char* GetMediaPath() const { return _mediapath.c_str(); }
     inline psMonitor::MODE GetMode() const { return _mode; }
-    inline bss_util::cLog& GetLog() { return _log; }
+    inline bss::Logger& GetLog() { return _log; }
 
     inline int PrintLog(const char* file, uint32_t line, uint8_t level, const char* format, ...)
     {
@@ -105,13 +105,13 @@ namespace planeshader {
   protected:
     virtual void _onresize(psVeciu dim, bool fullscreen) override;
 
-    bss_util::cArray<psPass*, uint16_t> _passes;
+    bss::Array<psPass*, uint16_t> _passes;
     uint16_t _curpass;
     psPass* _mainpass;
-    cStr _mediapath;
+    bss::Str _mediapath;
     psMonitor::MODE _mode;
     uint64_t _frameprofiler;
-    bss_util::cLog _log;
+    bss::Logger _log;
 
     static psEngine* _instance;
   };

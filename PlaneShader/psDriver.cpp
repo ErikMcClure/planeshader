@@ -6,7 +6,7 @@
 #include "psStateblock.h"
 #include "psRenderable.h"
 #include "psTex.h"
-#include "bss-util/bss_vector.h"
+#include "bss-util/vector.h"
 
 using namespace planeshader;
 
@@ -122,7 +122,7 @@ void psDriver::MergeClipRect(const psRect& rect)
 void psDriver::PushTransform(const psMatrix& xform)
 {
   psMatrix& m = *PushMatrix();
-  bss_util::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
+  bss::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
   _transformstack.AddConstruct<const float(*)[4][4]>(&m);
 }
 const psMatrix& psDriver::PeekTransform()

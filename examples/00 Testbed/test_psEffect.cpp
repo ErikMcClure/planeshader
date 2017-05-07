@@ -4,14 +4,14 @@
 #include "psTex.h"
 #include "psPass.h"
 
-using namespace bss_util;
+using namespace bss;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psEffect()
 {
   BEGINTEST;
   int fps = 0;
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psTex* gamma = psTex::Create(driver->GetBackBuffer()->GetDim(), FMT_R8G8B8A8_SRGB, USAGE_RENDERTARGET | USAGE_SHADER_RESOURCE, 1);

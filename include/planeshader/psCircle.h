@@ -11,18 +11,18 @@ namespace planeshader {
   template <class T>
   struct BSS_COMPILER_DLLEXPORT psCircleT
   {
-    typedef bss_util::Vector<T, 2> VEC;
+    typedef bss::Vector<T, 2> VEC;
     inline psCircleT() {} //The following constructors allow for implicit conversion between types
     template<class U>
     inline psCircleT(const psCircleT<U>& other) : x((T)other.x), y((T)other.y), r((T)other.r) {}
     inline psCircleT(T X, T Y, T R) : x(X), y(Y), r(R) {}
     inline psCircleT(const VEC& Pos, T R) : x(Pos.x), y(Pos.y), r(R) {}
     inline T Area() const { return (T)(PI*r*r); }
-    inline bool IntersectPoint(T X, T Y) const { return bss_util::distsqr<T>(x, y, X, Y)<=(r*r); }
+    inline bool IntersectPoint(T X, T Y) const { return bss::DistSqr<T>(x, y, X, Y)<=(r*r); }
     inline bool IntersectPoint(const VEC& point) const { return IntersectPoint(point.x, point.y); }
     inline bool IntersectCircle(const psCircleT& other) const { return IntersectCircle(other.x, other.y, other.r); }
     inline bool IntersectCircle(const VEC& pos, T R) const { return IntersectCircle(pos.x, pos.y, R); }
-    inline bool IntersectCircle(T X, T Y, T R) const { T tr=r+R; return bss_util::distsqr<T>(x, y, X, Y)<=(tr*tr); }
+    inline bool IntersectCircle(T X, T Y, T R) const { T tr=r+R; return bss::DistSqr<T>(x, y, X, Y)<=(tr*tr); }
     inline void IntersectCircle(const psCircleT& other, const VEC(&output)[2]) const { return _IntersectCircle(other.x, other.y, other.r, output[0]._xyarray); }
     inline void IntersectCircle(const VEC& pos, T R, const VEC(&output)[2]) const { return _IntersectCircle(pos.x, pos.y, R, output[0]._xyarray); }
     inline void IntersectCircle(T X, T Y, T R, const VEC(&output)[2]) const { return _IntersectCircle(X, Y, R, output[0]._xyarray); }
@@ -31,7 +31,7 @@ namespace planeshader {
     inline void IntersectCircle(T X, T Y, T R, T(&output)[4]) const { _IntersectCircle(X, Y, R, output); }
     inline bool WithinCircle(const psCircleT& other) const { return WithinCircle(other.x, other.y, other.r); }
     inline bool WithinCircle(const VEC& pos, T R) const { return WithinCircle(pos.x, pos.y, R); }
-    inline bool WithinCircle(T X, T Y, T R) const { T tr=R-r; return (r>=R || bss_util::distsqr(X, Y, x, y)>=(tr*tr)); }
+    inline bool WithinCircle(T X, T Y, T R) const { T tr=R-r; return (r>=R || bss::DistSqr(X, Y, x, y)>=(tr*tr)); }
     inline bool IntersectLineInf(T X1, T Y1, T X2, T Y2) const { return pos.LineInfDistanceSqr(X1, Y1, X2, Y2)<=(r*r); }
     inline bool IntersectLine(T X1, T Y1, T X2, T Y2) const { return pos.LineDistanceSqr(X1, Y1, X2, Y2)<=(r*r); }
     inline bool IntersectRect(const T(&rect)[4]) const { return CircleRectIntersect(x, y, r, rect); }
@@ -44,7 +44,7 @@ namespace planeshader {
     template<class U>
     inline psCircleT& operator=(const psCircleT<U>& other) { r=(T)other.r; x=(T)other.x; y=(T)other.y; }
 
-    static inline void CircleNearestPoint(T X, T Y, T x, T y, T r, T& outX, T& outY) { T tx=X-x; T ty=Y-y; T s=r/bss_util::FastSqrt((tx*tx)+(ty*ty)); outX=tx*s + x; outY=ty*s + y; }
+    static inline void CircleNearestPoint(T X, T Y, T x, T y, T r, T& outX, T& outY) { T tx=X-x; T ty=Y-y; T s=r/bss::FastSqrt((tx*tx)+(ty*ty)); outX=tx*s + x; outY=ty*s + y; }
     static inline bool CircleRectIntersect(T X, T Y, T R, const T(&rect)[4]) { return _CircleRectIntersect(X, Y, R, rect[0], rect[1], rect[2], rect[3]); }
     static inline bool CircleRectIntersect(T X, T Y, T R, T left, T top, T right, T bottom) { return _CircleRectIntersect(X, Y, R, left, top, right, bottom); }
     static inline bool CircleEllipseIntersect(T X, T Y, T A, T B, T x, T y, T r)
@@ -52,7 +52,7 @@ namespace planeshader {
       T dx=x-X; //Centers the ellipse/circle pair such that the ellipse is at the origin
       T dy=y-Y;
       EllipseNearestPoint(A, B, dx, dy, X, Y);
-      return bss_util::distsqr(X, Y, dx, dy)<(r*r);
+      return bss::DistSqr(X, Y, dx, dy)<(r*r);
     }
 
     static inline bool FastCircleEllipseIntersect(T X, T Y, T A, T B, T x, T y, T r) //Fast circle-ellipse collision (5-10% error)
@@ -72,7 +72,7 @@ namespace planeshader {
 
       NearestPointToLine(tx, ty, U1, 0, U2, 0, Vx, Vy); //compiler should optimize the zeros out.
       Vx*=ratio;
-      if(bss_util::distsqr(Vx, Vy, tx, ty)<r2) return true; //if the nearest point on the line is inside the circle, the circle intersects the line, so it must intersect the ellipse
+      if(bss::DistSqr(Vx, Vy, tx, ty)<r2) return true; //if the nearest point on the line is inside the circle, the circle intersects the line, so it must intersect the ellipse
       CircleNearestPoint(Vx, Vy, tx, ty, r, U1, U2); //Failing that we get the nearest point on the circle to the line and check to see if its in the ellipse
       return IntersectEllipse(0, 0, A, B, U1, U2);
     }
@@ -122,7 +122,7 @@ namespace planeshader {
       T dx = X - x;
       T dy = Y - y;
       T dsq = (dx*dx) + (dy*dy);
-      T d = bss_util::FastSqrt(d);
+      T d = bss::FastSqrt(d);
       T id = ((T)1)/d;
 
       //We don't check if there's a solution - you should do that before calling this
@@ -134,7 +134,7 @@ namespace planeshader {
 
       T x2 = X + (dx*a*id);
       T y2 = Y + (dy*a*id);
-      T h = bss_util::FastSqrt(r02 - (a*a));
+      T h = bss::FastSqrt(r02 - (a*a));
 
       T rx = -dy*h*id;
       T ry = dx*h*id;

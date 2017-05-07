@@ -8,7 +8,7 @@
 #include "psTex.h"
 
 using namespace planeshader;
-using namespace bss_util;
+using namespace bss;
 
 const psCamera psCamera::default_camera(psVec3D(0, 0, -1.0f), 0.0f, VEC_ZERO, psVec(1.0f, 50000.0f)); // we must manually set the extent because the default_extent constructor is not gauranteed to have been called.
 psVec psCamera::default_extent(1.0f, 50000.0f);
@@ -69,7 +69,7 @@ inline const psRect& psCamera::Apply(const psTex* rt) const
 {
   psVeciu dim = rt->GetRawDim();
   auto& vp = GetViewPort();
-  psRectiu realvp = { (uint32_t)bss_util::fFastRound(vp.left*dim.x), (uint32_t)bss_util::fFastRound(vp.top*dim.y), (uint32_t)bss_util::fFastRound(vp.right*dim.x), (uint32_t)bss_util::fFastRound(vp.bottom*dim.y) };
+  psRectiu realvp = { (uint32_t)bss::fFastRound(vp.left*dim.x), (uint32_t)bss::fFastRound(vp.top*dim.y), (uint32_t)bss::fFastRound(vp.right*dim.x), (uint32_t)bss::fFastRound(vp.bottom*dim.y) };
   psVec pivot = GetPivot()*psVec(dim);
   _driver->PushCamera(_relpos, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = _relpos.xy - pivot;

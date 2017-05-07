@@ -31,7 +31,7 @@ STATEINFO::STATEINFOS* STATEINFO::Exists(STATEINFOS* infos)
   _blocks.Insert(infos);
   return 0;
 }
-psStateblock::psStateblock(const STATEINFO* infos, uint32_t numstates) : bss_util::cArray<STATEINFO, uint16_t>(numstates)
+psStateblock::psStateblock(const STATEINFO* infos, uint32_t numstates) : bss::Array<STATEINFO, uint16_t>(numstates)
 {
   memcpy(_array, infos, numstates*sizeof(STATEINFO));
   std::sort<STATEINFO*>(_array, _array+numstates, &STATEINFO::SILESS);
@@ -71,7 +71,7 @@ psStateblock* psStateblock::Create(const STATEINFO* infos, uint32_t numstates)
 }
 
 template<class T>
-T* stateblock_combine(bss_util::cArray<STATEINFO, uint16_t>& left, STATEINFO* right, uint16_t num)
+T* stateblock_combine(bss::Array<STATEINFO, uint16_t>& left, STATEINFO* right, uint16_t num)
 {
   DYNARRAY(STATEINFO, states, left.Capacity() + num);
   memcpy(states, (STATEINFO*)left, left.Capacity()*sizeof(STATEINFO));
@@ -80,14 +80,14 @@ T* stateblock_combine(bss_util::cArray<STATEINFO, uint16_t>& left, STATEINFO* ri
 }
 psStateblock* psStateblock::Combine(psStateblock* other) const
 { 
-  return stateblock_combine<psStateblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
+  return stateblock_combine<psStateblock>((bss::Array<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
 }
 psStateblock* psStateblock::Append(STATEINFO state) const
 {
-  return stateblock_combine<psStateblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, &state, 1);
+  return stateblock_combine<psStateblock>((bss::Array<STATEINFO, uint16_t>&)*this, &state, 1);
 }
 
-psTexblock::psTexblock(const STATEINFO* infos, uint32_t numstates) : bss_util::cArray<STATEINFO, uint16_t>(numstates)
+psTexblock::psTexblock(const STATEINFO* infos, uint32_t numstates) : bss::Array<STATEINFO, uint16_t>(numstates)
 {
   memcpy(_array, infos, numstates*sizeof(STATEINFO));
   std::sort<STATEINFO*>(_array, _array+numstates, &STATEINFO::SILESS);
@@ -127,11 +127,11 @@ psTexblock* psTexblock::Create(const STATEINFO* infos, uint32_t numstates)
 }
 psTexblock* psTexblock::Combine(psTexblock* other) const
 {
-  return stateblock_combine<psTexblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
+  return stateblock_combine<psTexblock>((bss::Array<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
 }
 psTexblock* psTexblock::Append(STATEINFO state) const
 {
-  return stateblock_combine<psTexblock>((bss_util::cArray<STATEINFO, uint16_t>&)*this, &state, 1);
+  return stateblock_combine<psTexblock>((bss::Array<STATEINFO, uint16_t>&)*this, &state, 1);
 }
 
 void STATEBLOCK_LIBRARY::INITLIBRARY()

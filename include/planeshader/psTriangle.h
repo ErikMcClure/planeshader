@@ -11,7 +11,7 @@ namespace planeshader {
   template <class T>
   struct BSS_COMPILER_DLLEXPORT psTriangleT
   {
-    typedef bss_util::Vector<T, 2> VEC;
+    typedef bss::Vector<T, 2> VEC;
     inline psTriangleT() { }
     template<class U>
     inline psTriangleT(const cTriangleT<U>& other) { for(int i = 0; i < 3; ++i) p[i] = other.p[i]; }

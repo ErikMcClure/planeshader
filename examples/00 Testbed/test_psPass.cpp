@@ -5,7 +5,7 @@
 #include "psPass.h"
 #include "psRenderGeometry.h"
 
-using namespace bss_util;
+using namespace bss;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psPass()
@@ -13,10 +13,10 @@ TESTDEF::RETPAIR test_psPass()
   BEGINTEST;
 
   int fps = 0;
-  auto timer = cHighPrecisionTimer::OpenProfiler();
+  auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  cStr shfile = ReadFile("../media/motionblur.hlsl");
+  Str shfile = ReadFile("../media/motionblur.hlsl");
   auto shader = psShader::MergeShaders(2, driver->library.IMAGE, psShader::CreateShader(0, 0, 1, &SHADER_INFO(shfile.c_str(), "mainPS", PIXEL_SHADER_4_0)));
 
   psImage image(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_PREMULTIPLY_SRGB, false));
