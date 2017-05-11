@@ -4,8 +4,8 @@
 #ifndef __FEATHER_H__PS__
 #define __FEATHER_H__PS__
 
-#include <feathergui/fgRoot.h>
-#include <feathergui/fgMonitor.h>
+#include "feathergui/fgRoot.h"
+#include "feathergui/fgMonitor.h"
 #include "psRenderable.h"
 #include "bss-util/Delegate.h"
 

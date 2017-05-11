@@ -421,7 +421,6 @@ psRoot::psRoot() : _psInject(0, 0)
     &fgClipboardPastePS,
     &fgClipboardFreePS,
     &fgDirtyElementPS,
-    &fgBehaviorHookListener,
     &fgProcessMessagesPS,
     &fgLoadExtensionDefault,
     &fgLogHookPS,
