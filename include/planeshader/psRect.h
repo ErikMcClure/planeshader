@@ -20,7 +20,7 @@ namespace planeshader {
     inline psRectT(T X, T Y, const VEC& dim) : left(X), top(Y), right(X+dim.x), bottom(Y+dim.y) {}
     inline psRectT(const VEC& pos, const VEC& dim) : left(pos.x), top(pos.y), right(pos.x+dim.x), bottom(pos.y+dim.y) {}
     inline explicit psRectT(const VEC& v) : left(v.x), top(v.y), right(v.x), bottom(v.y) {}
-    inline explicit psRectT(const sseVecT<T>& v) { v>>_ltrbarray; }
+    inline explicit psRectT(const bss::sseVecT<T>& v) { v>>_ltrbarray; }
     inline explicit psRectT(const T(&rectarray)[4]) : left(rectarray[0]), top(rectarray[1]), right(rectarray[2]), bottom(rectarray[3]) {}
     inline T Area() const { return (right-left)*(bottom-top); }
     inline bool IntersectPoint(T x, T y) const { return (x >= left && y >= top && x < right && y < bottom); }
@@ -63,14 +63,14 @@ namespace planeshader {
     inline psRectT<T>& operator -=(const T other) { left-=other; top-=other; right-=other; bottom-=other; return *this; }
     inline psRectT<T>& operator *=(const T other) { left*=other; top*=other; right*=other; bottom*=other; return *this; }
     inline psRectT<T>& operator /=(const T other) { left/=other; top/=other; right/=other; bottom/=other; return *this; }
-    //inline psRectT<T>& operator +=(const psRectT<T>& other) { (sseVecT<T>(_ltrbarray)+sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator -=(const psRectT<T>& other) { (sseVecT<T>(_ltrbarray)-sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator *=(const psRectT<T>& other) { (sseVecT<T>(_ltrbarray)*sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator /=(const psRectT<T>& other) { (sseVecT<T>(_ltrbarray)/sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator +=(const T other) { (sseVecT<T>(_ltrbarray)+sseVecT<T>(other))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator -=(const T other) { (sseVecT<T>(_ltrbarray)-sseVecT<T>(other))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator *=(const T other) { (sseVecT<T>(_ltrbarray)*sseVecT<T>(other))>>_ltrbarray; return *this; }
-    //inline psRectT<T>& operator /=(const T other) { (sseVecT<T>(_ltrbarray)/sseVecT<T>(other))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator +=(const psRectT<T>& other) { (bss::sseVecT<T>(_ltrbarray)+bss::sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator -=(const psRectT<T>& other) { (bss::sseVecT<T>(_ltrbarray)-bss::sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator *=(const psRectT<T>& other) { (bss::sseVecT<T>(_ltrbarray)*bss::sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator /=(const psRectT<T>& other) { (bss::sseVecT<T>(_ltrbarray)/bss::sseVecT<T>(other._ltrbarray))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator +=(const T other) { (bss::sseVecT<T>(_ltrbarray)+bss::sseVecT<T>(other))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator -=(const T other) { (bss::sseVecT<T>(_ltrbarray)-bss::sseVecT<T>(other))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator *=(const T other) { (bss::sseVecT<T>(_ltrbarray)*bss::sseVecT<T>(other))>>_ltrbarray; return *this; }
+    //inline psRectT<T>& operator /=(const T other) { (bss::sseVecT<T>(_ltrbarray)/bss::sseVecT<T>(other))>>_ltrbarray; return *this; }
 
     inline psRectT<T> operator -() const { return psRectT<T>(-left, -top, -right, -bottom); }
 
@@ -84,7 +84,7 @@ namespace planeshader {
     inline bool operator >=(const psRectT<T> &other) const { return !operator<(other); }
     inline bool operator <=(const psRectT<T> &other) const { return !operator>(other); }
 
-    inline psRectT<T>& operator =(const sseVecT<T>& _right) { _right>>_ltrbarray; return *this; }
+    inline psRectT<T>& operator =(const bss::sseVecT<T>& _right) { _right>>_ltrbarray; return *this; }
     inline psRectT<T>& operator =(const psRectT<T>& _right) { left = _right.left; top = _right.top; right = _right.right;  bottom = _right.bottom; return *this; }
     template<class U>
     inline psRectT<T>& operator =(const psRectT<U>& _right) { left = (T)_right.left; top = (T)_right.top; right = (T)_right.right; bottom = (T)_right.bottom; return *this; }
@@ -106,7 +106,7 @@ namespace planeshader {
     BSS_FORCEINLINE VEC GetDimensions() const { return VEC(right-left, bottom-top); }
     BSS_FORCEINLINE psRectT<T> Inflate(T amount) const { return psRectT<T>(left-amount, top-amount, right+amount, bottom+amount); }
     inline psRectT<T> ZProject(T Z) { Z+=(T)1; psRectT<T> ret(*this); ret.topleft/=Z; ret.bottomright/=Z; return ret; }
-    BSS_FORCEINLINE sseVecT<T> ToSSE() const { return sseVecT<T>(_ltrbarray); }
+    BSS_FORCEINLINE bss::sseVecT<T> ToSSE() const { return bss::sseVecT<T>(_ltrbarray); }
 
     // Returns a rectangle gaurenteed to have valid LTRB even if left and right or top and down are swapped in this one
     BSS_FORCEINLINE psRectT<T> EnforceLTRB() const { return psRectT<T>(bssmin(left, right), bssmin(top, bottom), bssmax(left, right), bssmax(top, bottom)); }

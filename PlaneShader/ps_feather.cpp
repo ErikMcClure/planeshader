@@ -401,6 +401,7 @@ psRoot::psRoot() : _psInject(0, 0)
     &fgFontGetPS,
     &fgFontIndexPS,
     &fgFontPosPS,
+    &fgCreateAssetFileDefault,
     &fgCreateResourcePS,
     &fgCloneResourcePS,
     &fgDestroyResourcePS,

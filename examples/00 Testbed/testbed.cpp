@@ -152,7 +152,7 @@ TESTDEF::RETPAIR test_psInheritable()
 // Main program function
 int main(int argc, char** argv)
 {
-  bss::ForceWin64Crash();
+  ForceWin64Crash();
   SetWorkDirToCur();
   bssRandSeed(time(NULL));
 
@@ -179,8 +179,8 @@ int main(int argc, char** argv)
 
   const size_t NUMTESTS = sizeof(tests) / sizeof(TESTDEF);
 
-  std::cout << "Black Sphere Studios - PlaneShader v" << (uint32_t)PS_VERSION_MAJOR << '.' << (uint32_t)PS_VERSION_MINOR << '.' <<
-    (uint32_t)PS_VERSION_REVISION << ": Unit Tests\nCopyright (c)2017 Black Sphere Studios\n" << std::endl;
+  std::cout << "Black Sphere Studios - PlaneShader v" << (uint32_t)psEngine::Version.Major << '.' << (uint32_t)psEngine::Version.Minor << '.' <<
+    (uint32_t)psEngine::Version.Revision << ": Unit Tests\nCopyright (c)2017 Black Sphere Studios\n" << std::endl;
   const int COLUMNS[3] = { 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 

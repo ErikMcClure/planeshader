@@ -31,7 +31,7 @@ TESTDEF::RETPAIR test_feather()
   fgRegisterFunction("makepressed", [](fgElement* self, const FG_Msg*) { self->SetText("Pressed!"); });
 
   fgLayout layout;
-  fgLayout_Init(&layout);
+  fgLayout_Init(&layout, 0);
   fgLayout_LoadFileXML(&layout, "../media/feathertest.xml");
   fgSingleton()->gui->LayoutLoad(&layout);
 

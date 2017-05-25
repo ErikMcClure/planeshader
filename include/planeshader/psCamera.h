@@ -16,6 +16,7 @@ namespace planeshader {
 
   class PS_DLLEXPORT psCamera : public psLocatable, public psDriverHold
   {
+    typedef bss::sseVec sseVec;
   public:
     // Constructors
     psCamera(const psCamera& copy);
