@@ -42,8 +42,8 @@ namespace planeshader {
     {
       float diff = ((rect[1] + rect[3])*0.5f);
       float diff2 = ((rect[0] + rect[2])*0.5f);
-      sseVec d(diff2, diff, diff2, diff);
-      (((sseVec(rect) - d)*sseVec(1 + camZ)) + d) >> rcull;
+      bss::sseVec d(diff2, diff, diff2, diff);
+      (((bss::sseVec(rect) - d)*bss::sseVec(1 + camZ)) + d) >> rcull;
     }
     virtual void _render(const psParent& parent) override;
 

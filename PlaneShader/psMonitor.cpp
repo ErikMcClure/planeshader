@@ -79,7 +79,7 @@ size_t psMonitor::Message(fgMonitor* s, const FG_Msg* m)
   case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
     otherint = bss::bssSetBit<fgFlag>(flags, otherint, m->u2 != 0);
   case FG_SETFLAGS:
-    if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOTITLEBAR | FGWINDOW_NOBORDER))
+    if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOCAPTION | FGWINDOW_NOBORDER))
     { // handle a layout flag change
       size_t r = fgMonitor_Message(s, m); // we have to actually set the flags first before updating the window
       RECT rect;
@@ -145,7 +145,7 @@ HWND psMonitor::WndCreate(HINSTANCE instance, RECT& rsize, MODE mode, fgFlag fla
   if(mode == MODE_WINDOWED)
   {
     style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-    if(!(flags & FGWINDOW_NOTITLEBAR)) style |= WS_CAPTION | WS_SYSMENU;
+    if(!(flags & FGWINDOW_NOCAPTION)) style |= WS_CAPTION | WS_SYSMENU;
     if(!(flags & FGWINDOW_NOBORDER)) style |= WS_BORDER;
   }
   if(mode >= MODE_BORDERLESS)

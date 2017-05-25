@@ -15,6 +15,8 @@ namespace planeshader {
     using BASE::g;
     using BASE::b;
     using BASE::v;
+    typedef bss::sseVec sseVec;
+    typedef bss::sseVeci sseVeci;
 
     explicit inline psColor(uint32_t argb) { operator=(argb); } // operator= is SSE optimized in this case
     explicit inline psColor(const uint8_t(&rgba)[4]) : BASE(rgba[0]/255.0f, rgba[1]/255.0f, rgba[2]/255.0f, rgba[3]/255.0f) {}

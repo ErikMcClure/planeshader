@@ -30,6 +30,7 @@ psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
 const char* psEngine::LOGSOURCE = "ps";
 const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+const bssVersionInfo psEngine::Version = { PS_VERSION_REVISION, PS_VERSION_MINOR, PS_VERSION_MAJOR };
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
@@ -43,7 +44,7 @@ psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShad
   fSetDenormal(false);
   fSetRounding(true);
 
-  _log.GetStream() << "--- Initializing PlaneShader v." << PS_VERSION_MAJOR << '.' << PS_VERSION_MINOR << '.' << PS_VERSION_REVISION << " ---" << std::endl;
+  _log.GetStream() << "--- Initializing PlaneShader v." << Version.Major << '.' << Version.Minor << '.' << Version.Revision << " ---" << std::endl;
 
   psVeciu dim(init.width, init.height);
   AddMonitor(dim, init.mode, 0);
