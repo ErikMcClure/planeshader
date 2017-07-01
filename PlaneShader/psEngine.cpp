@@ -30,7 +30,7 @@ psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
 const char* psEngine::LOGSOURCE = "ps";
 const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-const bssVersionInfo psEngine::Version = { PS_VERSION_REVISION, PS_VERSION_MINOR, PS_VERSION_MAJOR };
+const bssVersionInfo psEngine::Version = { 0, PS_VERSION_REVISION, PS_VERSION_MINOR, PS_VERSION_MAJOR };
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 

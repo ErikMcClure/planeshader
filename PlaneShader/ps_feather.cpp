@@ -33,7 +33,7 @@ using namespace planeshader;
 
 const int UNICODE_TERMINATOR = 0;
 
-void* fgCreateFontPS(fgFlag flags, const char* family, short weight, char italic, unsigned int size, const fgIntVec* dpi)
+void* fgCreateFontPS(fgFlag flags, const char* family, short weight, char italic, unsigned int size, const AbsVec* dpi)
 {
   return psFont::Create(family, weight, italic, size, (flags&FGTEXT_SUBPIXEL) ? psFont::FAA_LCD : psFont::FAA_ANTIALIAS, psVeciu(dpi->x, dpi->y));
 }
@@ -61,7 +61,7 @@ void fgDrawFontPS(void* font, const void* text, size_t len, float lineheight, fl
   else
     f->DrawText(psDriverHold::GetDriver()->library.IMAGE, 0, !len ? &UNICODE_TERMINATOR : (const int*)text, lineheight, letterspacing, rect, color, psRoot::GetDrawFlags(flags));
 }
-void* fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, const fgIntVec* dpi, void* prevlayout)
+void* fgFontLayoutPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, AbsRect* area, fgFlag flags, const AbsVec* dpi, void* prevlayout)
 {
   psFont* f = (psFont*)font;
   fgScaleRectDPI(area, dpi->x, dpi->y);
@@ -84,7 +84,7 @@ void fgFontGetPS(void* font, fgFontDesc* desc)
     desc->lineheight = f->GetLineHeight();
   }
 }
-size_t fgFontIndexPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* dpiarea, fgFlag flags, AbsVec pos, AbsVec* cursor, const fgIntVec* dpi, void* layout)
+size_t fgFontIndexPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* dpiarea, fgFlag flags, AbsVec pos, AbsVec* cursor, const AbsVec* dpi, void* layout)
 {
   psFont* f = (psFont*)font;
   AbsRect area = *dpiarea;
@@ -96,7 +96,7 @@ size_t fgFontIndexPS(void* font, const void* text, size_t len, float lineheight,
   fgInvScaleVecDPI(cursor, dpi->x, dpi->y);
   return r.first;
 }
-AbsVec fgFontPosPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* dpiarea, fgFlag flags, size_t index, const fgIntVec* dpi, void* layout)
+AbsVec fgFontPosPS(void* font, const void* text, size_t len, float lineheight, float letterspacing, const AbsRect* dpiarea, fgFlag flags, size_t index, const AbsVec* dpi, void* layout)
 {
   psFont* f = (psFont*)font;
   AbsRect area = *dpiarea;
@@ -107,7 +107,7 @@ AbsVec fgFontPosPS(void* font, const void* text, size_t len, float lineheight, f
   return c;
 }
 
-void*  fgCreateResourcePS(fgFlag flags, const char* data, size_t length) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
+void*  fgCreateResourcePS(fgFlag flags, const char* data, size_t length, const AbsVec* dpi) { return psTex::Create(data, length, USAGE_SHADER_RESOURCE, FILTER_ALPHABOX); }
 void*  fgCloneResourcePS(void* res, fgElement* src) { ((psTex*)res)->Grab(); return res; }
 void  fgDestroyResourcePS(void* res) { ((psTex*)res)->Drop(); }
 void  fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned int edge, FABS outline, const AbsRect* dpiarea, FABS rotation, const AbsVec* dpicenter, fgFlag flags, const fgDrawAuxData* data)
@@ -143,7 +143,7 @@ void  fgDrawResourcePS(void* res, const CRect* uv, unsigned int color, unsigned 
     driver->DrawRect(driver->library.IMAGE, 0, rect, &uvresolve, 1, color, 0);
 }
 
-void  fgResourceSizePS(void* res, const CRect* uv, AbsVec* dim, fgFlag flags)
+void  fgResourceSizePS(void* res, const CRect* uv, AbsVec* dim, fgFlag flags, const AbsVec* dpi)
 {
   psTex* tex = (psTex*)res;
   psRect uvresolve = { (uv->left.rel*tex->GetDim().x) + uv->left.abs,
@@ -375,9 +375,9 @@ void fgDragStartPS(char type, void* data, fgElement* draw)
   root->dragdata = data;
   root->dragdraw = draw;
 }
-int fgLogHookPS(const char* format, va_list args)
+int fgLogHookPS(char level, const char* format, va_list args)
 {
-  return psEngine::Instance()->GetLog().PrintLogV("feather", __FILE__, __LINE__, -1, format, args);
+  return psEngine::Instance()->GetLog().PrintLogV("feather", __FILE__, __LINE__, level, format, args);
 }
 
 char fgProcessMessagesPS()
@@ -428,7 +428,7 @@ psRoot::psRoot() : _psInject(0, 0)
     &fgTerminateDefault,
   };
 
-  fgIntVec dpi = { psGUIManager::BASE_DPI, psGUIManager::BASE_DPI };
+  AbsVec dpi = { psGUIManager::BASE_DPI, psGUIManager::BASE_DPI };
   fgRoot_Init(this, &area, &dpi, &BACKEND);
   DWORD blinkrate = 0;
   int64_t sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
