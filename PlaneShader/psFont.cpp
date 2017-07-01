@@ -261,6 +261,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   psGlyph* retval = _glyphs[codepoint];
   if(!retval) return 0;
 
+  _antialiased = FT_LOAD_TARGET_LCD;
   _enforceantialias();
   if(FT_Load_Char(_ft2face, codepoint, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | _antialiased) != 0) //if this throws an error, remove it as a possible renderable codepoint
   {

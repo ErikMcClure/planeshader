@@ -38,7 +38,7 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
   GetClientRect(_window, &rect);
   AbsRect r = { 0, 0, rect.right - rect.left, rect.bottom - rect.top };
   psVeciu dpi = psGUIManager::GetMonitorDPI(0);
-  fgIntVec fgdpi = { dpi.x, dpi.y };
+  AbsVec fgdpi = { dpi.x, dpi.y };
   fgMonitor_Init(this, FGFLAGS_INTERNAL|FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, &fgdpi);
   _manager->_updaterootarea();
   this->element.message = (fgMessage)&Message;
