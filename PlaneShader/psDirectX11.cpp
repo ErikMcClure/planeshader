@@ -1693,7 +1693,7 @@ void psDirectX11::_processdebugmessage(UINT64 index, SIZE_T len)
   case D3D11_MESSAGE_CATEGORY::D3D11_MESSAGE_CATEGORY_STATE_SETTING: category = ":State Setting"; break;
   }
 
-  PSLOG(level, "(DirectX11", category, ") ", Str(message->pDescription, message->DescriptionByteLength));
+  PSLOG(level, "(DirectX11", category, ") ", Str(message->pDescription, message->DescriptionByteLength).c_str());
 }
 
 uint32_t psDirectX11::_usagetodxtype(uint32_t types)
