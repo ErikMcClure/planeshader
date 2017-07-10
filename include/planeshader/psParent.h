@@ -17,11 +17,10 @@ namespace planeshader {
     inline psParent Push(const psVec3D& pos, float r, const psVec& p) const { return psParent{ CalcPosition(pos, r, p), r + rotation, p }; }
     inline psVec3D CalcPosition(const psVec3D& pos, float r, const psVec& p) const
     {
-      psVec3D ret(position);
+      psVec3D ret(pos);
       if(r != 0.0f)
-        psVec::RotatePoint(ret.x, ret.y, r, ret.x - pivot.x, ret.y - pivot.y);
-      ret.xy += p;
-      return ret + pos;
+        psVec::RotatePoint(ret.x, ret.y, r, pivot.x, pivot.y);
+      return ret + position;
     }
     inline void GetTransform(psMatrix& matrix) const
     {
@@ -33,5 +32,6 @@ namespace planeshader {
     static const psParent Zero;
   };
 }
+
 
 #endif

@@ -55,11 +55,15 @@ size_t psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
   if(GetKey(FG_KEY_MENU)) evt.sigkeys = evt.sigkeys | 4; //VK_MENU
   if(held) evt.sigkeys = evt.sigkeys | 8;
 
+  if(keycode == FG_KEY_Z)
+    keycode = keycode;
   return _root.inject(&_root, &evt);
 }
 void psGUIManager::SetChar(int key, DWORD time)
 {
   PROFILE_FUNC();
+  if((key >= 0 && key <= 31) || key == 127)
+    return; // Discard any ascii control characters
   GetKeyboardState(_allkeys);
 
   FG_Msg evt = { 0 };
