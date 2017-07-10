@@ -47,10 +47,15 @@ TESTDEF::RETPAIR test_psVector()
   engine->GetPass(0)->SetClearColor(0xFF999999);
   engine->GetPass(0)->SetCamera(&globalcam);
 
+  Matrix<float, 4, 4> m;
+  Matrix<float, 4, 4>::AffineScaling(0.8, 0.8, 1.0f, m);
+
   while(!gotonext && engine->Begin(0))
   {
     processGUI();
+    engine->GetDriver()->PushTransform(m.v);
     engine->End();
+    engine->GetDriver()->PopTransform();
     time.Update();
     engine->FlushMessages();
     updatefpscount(timer, fps);
