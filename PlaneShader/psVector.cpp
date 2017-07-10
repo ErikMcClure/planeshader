@@ -202,7 +202,7 @@ psRoundRect& psRoundRect::operator=(psRoundRect&& mov)
 void psRoundRect::DrawRoundRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RRBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
+  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, _driver->PeekTransform(), 1);
 
   uint32_t color;
   uint32_t outline;
@@ -253,7 +253,7 @@ psRoundTri& psRoundTri::operator=(psRoundTri&& mov)
 void psRoundTri::DrawRoundTri(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, RTRIBUFSIZE, sizeof(RRVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, psDriver::identity, 1);
+  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, _driver->PeekTransform(), 1);
 
   uint32_t color;
   uint32_t outline;
@@ -300,10 +300,10 @@ psRenderCircle& psRenderCircle::operator=(psRenderCircle&& mov)
   _arcs = mov._arcs;
   return *this;
 }
-void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge, const float(&transform)[4][4])
+void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CIRCLEBUFSIZE, sizeof(CircleVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, transform, 1);
+  psBatchObj* obj = _driver->DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &bufobj, 0, POINTLIST, _driver->PeekTransform(), 1);
 
   uint32_t color;
   uint32_t outline;

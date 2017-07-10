@@ -439,7 +439,8 @@ void psDirectX11::Flush()
   for(uint32_t i = 0; i < _jobstack.Length(); ++i)
   {
     psBatchObj& obj = _jobstack[i];
-    obj.shader->Activate();
+    if(obj.shader != 0)
+      obj.shader->Activate();
     SetStateblock(obj.stateblock);
     _applysnapshot(_snapshotstack[obj.snapshot]);
 
@@ -591,15 +592,21 @@ psBatchObj* psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateb
 }
 psBatchObj* psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  return DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINELIST, PeekTransform());
+  psMatrix m;
+  Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
+  PushTransform(m);
+
+  psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags, &_batchvertbuf, 0, LINELIST, PeekTransform());
+  PopTransform();
+  return obj;
 }
 void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
 {
   o = _checkflush(o, 2);
 
   DX11_simplevert* linebuf = (DX11_simplevert*)o->buffer.get();
-  linebuf[0] = { line.x1 + 0.5f, line.y1 + 0.5f, Z1, 1, vertexcolor }; // DirectX renders lines in a REALLY WEIRD way. This is as close as we can get to a pixel perfect line.
-  linebuf[1] = { line.x2 + 0.5f, line.y2 + 0.5f, Z2, 1, vertexcolor };
+  linebuf[0] = { line.x1, line.y1, Z1, 1, vertexcolor }; // DirectX renders lines in a REALLY WEIRD way. This is as close as we can get to a pixel perfect line.
+  linebuf[1] = { line.x2, line.y2, Z2, 1, vertexcolor };
   o->buffer.nvert += 2;
 }
 psBatchObj* psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
@@ -1615,8 +1622,8 @@ void psDirectX11::_applysnapshot(const Snapshot& s)
     for(int i = 0; i < num; ++i)
     {
       psTex* t = (psTex*)(_texstack[s.tex[i] + i]);
-      views[i] = (ID3D11ShaderResourceView*)t->GetRes();
-      const psTexblock* texblock = t->GetTexblock();
+      views[i] = !t ? 0 : (ID3D11ShaderResourceView*)t->GetRes();
+      const psTexblock* texblock = !t ? 0 : t->GetTexblock();
       states[i] = !texblock ? _defaultSS : (ID3D11SamplerState*)texblock->GetSB();
     }
     switch(k)

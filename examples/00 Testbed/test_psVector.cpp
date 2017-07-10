@@ -36,7 +36,7 @@ TESTDEF::RETPAIR test_psVector()
   tri.SetOutlineColor(0xFF0000FF);
   tri.SetOutline(5);
 
-  psRenderCircle circle(50, psVec3D(200, 300, 0));
+  psRenderCircle circle(50, psVec3D(200, 350, 0));
   circle.SetOutlineColor(0xFF0000FF);
   circle.SetOutline(5);
 
