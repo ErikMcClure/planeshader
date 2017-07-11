@@ -39,6 +39,8 @@
 #include "psDirectX11_rectround_mainVS.h"
 #include "psDirectX11_rectround_mainPS.h"
 #include "psDirectX11_rectround_mainGS.h"
+#include "psDirectX11_circle_mainPS.h"
+#include "psDirectX11_triangle_mainPS.h"
 
 using namespace planeshader;
 using namespace bss;
@@ -76,6 +78,36 @@ using namespace bss;
 #define LOGFAILURERET(fn,rn,...) { if(FAILED(_lasterr = (fn))) { PSLOG(1,__VA_ARGS__); PROCESSQUEUE(); return rn; } }
 #define LOGFAILURE(fn,...) LOGFAILURERET(fn,LOGEMPTY,__VA_ARGS__)
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
+
+class IHeaderBlob : public ID3DBlob
+{
+public:
+  IHeaderBlob(const void* data, size_t len) : _data(data), _len(len) {}
+  virtual LPVOID STDMETHODCALLTYPE GetBufferPointer(void) override { return const_cast<LPVOID>(_data); }
+  virtual SIZE_T STDMETHODCALLTYPE GetBufferSize(void) override { return _len; }
+  virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, __RPC__deref_out void __RPC_FAR *__RPC_FAR *ppvObject) override {
+    *ppvObject = nullptr;
+    HRESULT hr = S_OK;
+
+    if(riid == __uuidof(ID3DBlob))
+      *ppvObject = static_cast<ID3DBlob*>(this);
+    else if(riid == __uuidof(IUnknown))
+      *ppvObject = this;
+    else
+      hr = E_NOINTERFACE;
+
+    if(*ppvObject != nullptr)
+      AddRef();
+
+    return hr;
+  }
+  virtual ULONG STDMETHODCALLTYPE AddRef(void) override { return 1; }
+  virtual ULONG STDMETHODCALLTYPE Release(void) override { return 0; }
+
+protected:
+  const void* _data;
+  size_t _len;
+};
 
 // Constructors
 psDirectX11::psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor) : psDriver(), _device(0), _vsync(vsync), _lasterr(0),
@@ -211,9 +243,9 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(CreateShader(image_mainVS, sizeof(image_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image_mainPS, sizeof(image_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image_mainGS, sizeof(image_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO(&IHeaderBlob(image_mainVS, sizeof(image_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO(&IHeaderBlob(image_mainPS, sizeof(image_mainPS)), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO(&IHeaderBlob(image_mainGS, sizeof(image_mainGS)), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -224,9 +256,9 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE0 = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(CreateShader(image0_mainVS, sizeof(image0_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image0_mainPS, sizeof(image0_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image0_mainGS, sizeof(image0_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(image0_mainVS, sizeof(image0_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(image0_mainPS, sizeof(image0_mainPS)), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(image0_mainGS, sizeof(image0_mainGS)), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -239,9 +271,9 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE2 = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(CreateShader(image2_mainVS, sizeof(image2_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image2_mainPS, sizeof(image2_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image2_mainGS, sizeof(image2_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(image2_mainVS, sizeof(image2_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(image2_mainPS, sizeof(image2_mainPS)), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(image2_mainGS, sizeof(image2_mainGS)), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -255,29 +287,29 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE3 = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(CreateShader(image3_mainVS, sizeof(image3_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image3_mainPS, sizeof(image3_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(image3_mainGS, sizeof(image3_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(image3_mainVS, sizeof(image3_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(image3_mainPS, sizeof(image3_mainPS)), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(image3_mainGS, sizeof(image3_mainGS)), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
     library.TEXT1 = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(CreateShader(text_mainPS, sizeof(text_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0)));
+      &SHADER_INFO::From<void>(&IHeaderBlob(text_mainPS, sizeof(text_mainPS)), PIXEL_SHADER_4_0, 0)));
   }
 
   {
     library.DEBUG = psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(CreateShader(debug_mainPS, sizeof(debug_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(debug_mainPS, sizeof(debug_mainPS)), PIXEL_SHADER_4_0, 0));
   }
 
   {
     _alphaboxfilter = psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(CreateShader(alphabox_mainPS, sizeof(alphabox_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(alphabox_mainPS, sizeof(alphabox_mainPS)), PIXEL_SHADER_4_0, 0));
   }
 
   {
     _premultiplyfilter = psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(CreateShader(premultiply_mainPS, sizeof(premultiply_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(premultiply_mainPS, sizeof(premultiply_mainPS)), PIXEL_SHADER_4_0, 0));
   }
 
   {
@@ -287,8 +319,8 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.LINE = psShader::CreateShader(desc, 2,
-      &SHADER_INFO::From<void>(CreateShader(line_mainVS, sizeof(line_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(line_mainPS, sizeof(line_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(line_mainVS, sizeof(line_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(line_mainPS, sizeof(line_mainPS)), PIXEL_SHADER_4_0, 0));
     library.POLYGON = library.LINE;
   }
 
@@ -299,9 +331,9 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.PARTICLE = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(CreateShader(point_mainVS, sizeof(point_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(point_mainPS, sizeof(point_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(point_mainGS, sizeof(point_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(point_mainVS, sizeof(point_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(point_mainPS, sizeof(point_mainPS)), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(point_mainGS, sizeof(point_mainGS)), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
@@ -314,8 +346,8 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.CURVE = psShader::CreateShader(desc, 2,
-      &SHADER_INFO::From<void>(CreateShader(curve_mainVS, sizeof(curve_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(curve_mainPS, sizeof(curve_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(curve_mainVS, sizeof(curve_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(curve_mainPS, sizeof(curve_mainPS)), PIXEL_SHADER_4_0, 0));
   }
 
   {
@@ -329,19 +361,19 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.ROUNDRECT = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(CreateShader(rectround_mainVS, sizeof(rectround_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(rectround_mainPS, sizeof(rectround_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(CreateShader(rectround_mainGS, sizeof(rectround_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(&IHeaderBlob(rectround_mainVS, sizeof(rectround_mainVS)), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(rectround_mainPS, sizeof(rectround_mainPS)), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(&IHeaderBlob(rectround_mainGS, sizeof(rectround_mainGS)), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
     library.CIRCLE = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(CreateShader(circle_mainPS, sizeof(circle_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0)));
+      &SHADER_INFO::From<void>(&IHeaderBlob(circle_mainPS, sizeof(circle_mainPS)), PIXEL_SHADER_4_0, 0)));
   }
 
   {
     library.ROUNDTRI = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(CreateShader(triangle_mainPS, sizeof(triangle_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0)));
+      &SHADER_INFO::From<void>(&IHeaderBlob(triangle_mainPS, sizeof(triangle_mainPS)), PIXEL_SHADER_4_0, 0)));
   }
 
   CreateBufferObj(&_rectvertbuf, RECTBUFSIZE, sizeof(DX11_rectvert), USAGE_VERTEX | USAGE_DYNAMIC, 0);

@@ -35,7 +35,7 @@ const bssVersionInfo psEngine::Version = { 0, PS_VERSION_REVISION, PS_VERSION_MI
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
 psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShader.log":0, log), _curpass(0), _passes(1),
-  _mainpass(0), _mediapath(init.mediapath), _frameprofiler(0)
+  _mainpass(0),  _frameprofiler(0)
 {
   PROFILE_FUNC();
   if(_instance!=0) // If you try to make another instance, it violently explodes.
