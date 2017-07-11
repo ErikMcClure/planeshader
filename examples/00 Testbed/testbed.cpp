@@ -196,7 +196,6 @@ int main(int argc, char** argv)
   //init.mode = psMonitor::MODE_COMPOSITE;
   //init.antialias = 8;
   init.sRGB = false;
-  init.mediapath = "../media";
   //init.iconresource=101;
   //init.filter=5;
   {

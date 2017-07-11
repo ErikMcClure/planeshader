@@ -24,7 +24,7 @@ namespace planeshader {
   struct PSINIT
   {
     inline PSINIT() : width(0), height(0), driver(RealDriver::DRIVERTYPE_DX11), mode(psMonitor::MODE_WINDOWED), vsync(false), sRGB(false),
-      antialias(0), mediapath("") {}
+      antialias(0) {}
 
     int width;
     int height;
@@ -33,7 +33,6 @@ namespace planeshader {
     bool vsync;
     bool sRGB;
     uint8_t antialias;
-    const char* mediapath;
 
     template<typename Engine>
     void Serialize(bss::Serializer<Engine>& e)
@@ -78,7 +77,6 @@ namespace planeshader {
     // Gets a pass. The 0th pass always exists.
     inline psPass* GetPass(uint16_t index=0) const { return index<_passes.Capacity()?_passes[index]:0; }
     inline uint16_t NumPass() const { return _passes.Capacity(); }
-    inline const char* GetMediaPath() const { return _mediapath.c_str(); }
     inline psMonitor::MODE GetMode() const { return _mode; }
     inline bss::Logger& GetLog() { return _log; }
 
@@ -109,7 +107,6 @@ namespace planeshader {
     bss::Array<psPass*, uint16_t> _passes;
     uint16_t _curpass;
     psPass* _mainpass;
-    bss::Str _mediapath;
     psMonitor::MODE _mode;
     uint64_t _frameprofiler;
     bss::Logger _log;

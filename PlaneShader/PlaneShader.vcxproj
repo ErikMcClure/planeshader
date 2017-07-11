@@ -557,7 +557,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psVulkan.cpp" />
     <ClCompile Include="ps_feather.cpp" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='Release'">
     <FxCompile Include="shaders/quadVS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>

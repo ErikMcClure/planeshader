@@ -21,7 +21,7 @@ TESTDEF::RETPAIR test_PBR_System()
   psDriver* driver = engine->GetDriver();
 
   // Load and configure PBR shader
-  auto pbrfile = bssLoadFile<char, true>("media/pbr-model.hlsl").first;
+  auto pbrfile = bssLoadFile<char, true>("../media/pbr-model.hlsl").first;
   PBRobj data = { {0}, { 0 }, { 1,1,1,1 } };
 
   psShader* pbrshader = psShader::MergeShaders(2, driver->library.IMAGE, psShader::CreateShader(0, 0, 1,
