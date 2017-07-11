@@ -3,7 +3,6 @@
 
 #include "ps_feather.h"
 #include "psDirectX11.h"
-#include "psDirectX11_fsquadVS.h"
 #include "psEngine.h"
 #include "psTex.h"
 #include "psStateblock.h"
@@ -12,6 +11,34 @@
 #include "bss-util/profiler.h"
 #include "psColor.h"
 #include "psCamera.h"
+
+#include "psDirectX11_quadVS_main.h"
+#include "psDirectX11_image_mainVS.h"
+#include "psDirectX11_image_mainPS.h"
+#include "psDirectX11_image_mainGS.h"
+#include "psDirectX11_image0_mainVS.h"
+#include "psDirectX11_image0_mainPS.h"
+#include "psDirectX11_image0_mainGS.h"
+#include "psDirectX11_image2_mainVS.h"
+#include "psDirectX11_image2_mainPS.h"
+#include "psDirectX11_image2_mainGS.h"
+#include "psDirectX11_image3_mainVS.h"
+#include "psDirectX11_image3_mainPS.h"
+#include "psDirectX11_image3_mainGS.h"
+#include "psDirectX11_text_mainPS.h"
+#include "psDirectX11_debug_mainPS.h"
+#include "psDirectX11_alphabox_mainPS.h"
+#include "psDirectX11_premultiply_mainPS.h"
+#include "psDirectX11_line_mainVS.h"
+#include "psDirectX11_line_mainPS.h"
+#include "psDirectX11_point_mainVS.h"
+#include "psDirectX11_point_mainPS.h"
+#include "psDirectX11_point_mainGS.h"
+#include "psDirectX11_curve_mainVS.h"
+#include "psDirectX11_curve_mainPS.h"
+#include "psDirectX11_rectround_mainVS.h"
+#include "psDirectX11_rectround_mainPS.h"
+#include "psDirectX11_rectround_mainGS.h"
 
 using namespace planeshader;
 using namespace bss;
@@ -173,11 +200,9 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _getbackbufferref();
   _resetscreendim();
 
-  _fsquadVS = (ID3D11VertexShader*)CreateShader(fsquadVS_main, sizeof(fsquadVS_main), VERTEX_SHADER_4_0);
+  _fsquadVS = (ID3D11VertexShader*)CreateShader(quadVS_main, sizeof(quadVS_main), VERTEX_SHADER_4_0);
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage.hlsl").first;
-    
     ELEMENT_DESC desc[4] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -186,14 +211,12 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(image_mainVS, sizeof(image_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image_mainPS, sizeof(image_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image_mainGS, sizeof(image_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage0.hlsl").first;
-
     ELEMENT_DESC desc[3] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -201,14 +224,12 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE0 = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(image0_mainVS, sizeof(image0_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image0_mainPS, sizeof(image0_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image0_mainGS, sizeof(image0_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage2.hlsl").first;
-
     ELEMENT_DESC desc[5] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -218,14 +239,12 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE2 = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(image2_mainVS, sizeof(image2_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image2_mainPS, sizeof(image2_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image2_mainGS, sizeof(image2_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsimage3.hlsl").first;
-
     ELEMENT_DESC desc[6] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -236,70 +255,56 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.IMAGE3 = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(image3_mainVS, sizeof(image3_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image3_mainPS, sizeof(image3_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(image3_mainGS, sizeof(image3_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fstext.hlsl").first;
-
     library.TEXT1 = psShader::MergeShaders(2, library.IMAGE, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+      &SHADER_INFO::From<void>(CreateShader(text_mainPS, sizeof(text_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0)));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsdebug.hlsl").first;
-
     library.DEBUG = psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(debug_mainPS, sizeof(debug_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsalphabox.hlsl").first;
-
     _alphaboxfilter = psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(alphabox_mainPS, sizeof(alphabox_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fspremultiply.hlsl").first;
-
     _premultiplyfilter = psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(premultiply_mainPS, sizeof(premultiply_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsline.hlsl").first;
-
     ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 }
     };
 
     library.LINE = psShader::CreateShader(desc, 2,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(line_mainVS, sizeof(line_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(line_mainPS, sizeof(line_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
     library.POLYGON = library.LINE;
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fspoint.hlsl").first;
-
     ELEMENT_DESC desc[2] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_COLOR, 0, FMT_R8G8B8A8, 0, (uint32_t)-1 }
     };
 
     library.PARTICLE = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<float>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(point_mainVS, sizeof(point_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(point_mainPS, sizeof(point_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(point_mainGS, sizeof(point_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/curve.hlsl").first;
-
     ELEMENT_DESC desc[5] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -309,13 +314,11 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.CURVE = psShader::CreateShader(desc, 2,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(curve_mainVS, sizeof(curve_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(curve_mainPS, sizeof(curve_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fsrectround.hlsl").first;
-
     ELEMENT_DESC desc[6] = {
       { ELEMENT_POSITION, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
       { ELEMENT_TEXCOORD, 0, FMT_R32G32B32A32F, 0, (uint32_t)-1 },
@@ -326,23 +329,19 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
     };
 
     library.ROUNDRECT = psShader::CreateShader(desc, 3,
-      &SHADER_INFO::From<void>(a.get(), "mainVS", VERTEX_SHADER_4_0, 0),
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0),
-      &SHADER_INFO::From<float>(a.get(), "mainGS", GEOMETRY_SHADER_4_0, 0));
+      &SHADER_INFO::From<void>(CreateShader(rectround_mainVS, sizeof(rectround_mainVS), VERTEX_SHADER_4_0), VERTEX_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(rectround_mainPS, sizeof(rectround_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0),
+      &SHADER_INFO::From<void>(CreateShader(rectround_mainGS, sizeof(rectround_mainGS), GEOMETRY_SHADER_4_0), GEOMETRY_SHADER_4_0, 0));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fscircle.hlsl").first;
-
     library.CIRCLE = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+      &SHADER_INFO::From<void>(CreateShader(circle_mainPS, sizeof(circle_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0)));
   }
 
   {
-    auto a = bssLoadFile<char, true>(Str(psEngine::Instance()->GetMediaPath()) + "/fstriangle.hlsl").first;
-
     library.ROUNDTRI = psShader::MergeShaders(2, library.ROUNDRECT, psShader::CreateShader(0, 0, 1,
-      &SHADER_INFO::From<void>(a.get(), "mainPS", PIXEL_SHADER_4_0, 0)));
+      &SHADER_INFO::From<void>(CreateShader(triangle_mainPS, sizeof(triangle_mainPS), PIXEL_SHADER_4_0), PIXEL_SHADER_4_0, 0)));
   }
 
   CreateBufferObj(&_rectvertbuf, RECTBUFSIZE, sizeof(DX11_rectvert), USAGE_VERTEX | USAGE_DYNAMIC, 0);

@@ -19,10 +19,9 @@ TESTDEF::RETPAIR test_PBR_System()
   int fps = 0;
   auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
-  Str media(psEngine::Instance()->GetMediaPath());
 
   // Load and configure PBR shader
-  auto pbrfile = bssLoadFile<char, true>(media + "/pbr-model.hlsl").first;
+  auto pbrfile = bssLoadFile<char, true>("media/pbr-model.hlsl").first;
   PBRobj data = { {0}, { 0 }, { 1,1,1,1 } };
 
   psShader* pbrshader = psShader::MergeShaders(2, driver->library.IMAGE, psShader::CreateShader(0, 0, 1,
@@ -32,7 +31,7 @@ TESTDEF::RETPAIR test_PBR_System()
   // Render a shadowmap for all shadow-casting lights
   // Pass in the material information and light data for each light to each object being rendered
 
-  psImage img(media + "blocksrough-b/blocksrough_basecolor.png");
+  psImage img("media/blocksrough-b/blocksrough_basecolor.png");
   img.SetShader(pbrshader);
 
 

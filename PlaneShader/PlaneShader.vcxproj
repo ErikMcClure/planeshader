@@ -519,7 +519,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\ps_dec.h" />
     <ClInclude Include="..\include\planeshader\ps_feather.h" />
     <ClInclude Include="..\include\planeshader\ps_interface.h" />
-    <ClInclude Include="psDirectX11_fsquadVS.h" />
     <ClInclude Include="psDirectX11.h" />
     <ClInclude Include="psDXGI.h" />
     <ClInclude Include="psNullDriver.h" />
@@ -559,55 +558,265 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="ps_feather.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="fsquadVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">Vertex</ShaderType>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <FxCompile Include="shaders/quadVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>mainGS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">$(ProjectDir)psDirectX11_%(Filename).h</HeaderFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image0.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image0.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image0.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>mainGS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image2.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
       </ObjectFileOutput>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">4.0</ShaderModel>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename)_main</VariableName>
-      <VariableName Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">%(Filename)_main</VariableName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">4.0</ShaderModel>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image2.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image2.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>mainGS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image3.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image3.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/image3.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>mainGS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/text.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/debug.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/alphabox.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/premultiply.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/line.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/line.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/point.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/point.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/point.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>mainGS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/curve.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/curve.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/rectround.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/rectround.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/rectround.hlsl">
+      <ShaderType>Geometry</ShaderType>
+      <EntryPointName>mainGS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/circle.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
+    </FxCompile>
+    <FxCompile Include="shaders/triangle.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
+      <ObjectFileOutput>
+      </ObjectFileOutput>
+      <ShaderModel>4.0</ShaderModel>
+      <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
