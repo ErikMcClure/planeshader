@@ -129,9 +129,6 @@
     <ClInclude Include="..\include\planeshader\psVector.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="psDirectX11_fsquadVS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="psVulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -238,7 +235,49 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="fsquadVS.hlsl">
+    <FxCompile Include="shaders/quadVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/image.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/image0.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/image2.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/image3.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/text.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/debug.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/alphabox.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/premultiply.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/line.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/point.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/curve.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/rectround.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/circle.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
+    <FxCompile Include="shaders/triangle.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>
