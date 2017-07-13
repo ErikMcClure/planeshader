@@ -60,7 +60,7 @@ void psRenderLine::_render(const psParent& parent)
 {
   Activate();
   psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetFlags());
-  psParent p = parent.Push(_relpos, _rotation, _pivot);
+  psParent p = parent.Push(*this);
   _driver->DrawLines(obj, psLine(p.position.xy, p.position.xy), p.position.z, _point.z, GetColor().color);
 }
 
@@ -93,7 +93,7 @@ void psRenderPolygon::DrawPolygon(const psVertex* p, uint32_t num) { _driver->Dr
 void psRenderPolygon::_render(const psParent& parent)
 {
   psMatrix m;
-  parent.Push(_relpos, _rotation, _pivot).GetTransform(m);
+  parent.Push(*this).GetTransform(m);
   Activate();
   _driver->PushTransform(m);
   _driver->DrawPolygon(GetShader(), GetStateblock(), _verts, _verts.Capacity(), VEC3D_ZERO, GetColor().color, GetFlags());

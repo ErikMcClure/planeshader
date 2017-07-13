@@ -23,9 +23,9 @@ namespace planeshader {
     // Generates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 
     inline psRectRotateZ GetCollisionRect(const psParent& parent)
     {
-      psVec3D pos = parent.CalcPosition(_relpos, _rotation, _pivot);
-      pos.xy -= _pivot;
-      return psRectRotateZ(pos.x, pos.y, pos.x + _dim.x, pos.y + _dim.y, _rotation, _pivot, pos.z);
+      psVec3D pos = parent.CalcPosition(*this);
+      pos.xy -= pivot;
+      return psRectRotateZ(pos.x, pos.y, pos.x + _dim.x, pos.y + _dim.y, rotation, pivot, pos.z);
     }
     // Generates an AABB bounding rect for general collisions (will also update the collision rect) 
     inline const psRect& GetBoundingRect(const psParent& parent) { return _boundingrect = GetCollisionRect(parent).BuildAABB(); }
@@ -40,7 +40,7 @@ namespace planeshader {
     void SetScale(const psVec& scale);
     void SetScaleDim(const psVec& dim);
     // Sets z-depth while maintaining invariant size 
-    inline void SetPositionZInvariant(FNUM Z) { SetScale(_scale*((Z+1.0f)/(_relpos.z+1.0f))); SetPositionZ(Z); }
+    inline void SetPositionZInvariant(FNUM Z) { SetScale(_scale*((Z+1.0f)/(position.z+1.0f))); SetPositionZ(Z); }
     // Sets the center position using coordinates relative to the dimensions
     inline void SetPivotRel(const psVec& relpos) { SetPivot(relpos*_dim); }
     // Generates a matrix transform using the solid's position, rotation, pivot, and scaling (used when the actual dimensions are implicit)

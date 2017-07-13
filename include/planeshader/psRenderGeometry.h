@@ -21,7 +21,7 @@ namespace planeshader {
     explicit psRenderEllipse(const psCircle& circle);
     explicit psRenderEllipse(const psEllipse& ellipse);
 
-    inline operator psEllipse() const { return psEllipse(_relpos.x + _realdim.x, _relpos.y + _realdim.y, _realdim.x/2, _realdim.y/2); }
+    inline operator psEllipse() const { return psEllipse(position.x + _realdim.x, position.y + _realdim.y, _realdim.x/2, _realdim.y/2); }
     psRenderEllipse& operator =(const psRenderEllipse& right);
     psRenderEllipse& operator =(psRenderEllipse&& right);
     inline psRenderEllipse& operator =(const psCircle& right) { operator=(psEllipse(right.x, right.y, right.r, right.r)); return *this; }
@@ -44,7 +44,7 @@ namespace planeshader {
     explicit psRenderLine(const psLine3D& line);
     explicit psRenderLine(const psLine& line);
 
-    inline operator psLine3D() const { return psLine3D(_relpos, _point); }
+    inline operator psLine3D() const { return psLine3D(position, _point); }
     psRenderLine& operator =(const psRenderLine& right);
     psRenderLine& operator =(psRenderLine&& right);
     psRenderLine& operator =(const psLine3D& right);

@@ -33,7 +33,7 @@ psRenderable* psGroup::Add(const psRenderable* renderable)
 }
 void psGroup::_render(const psParent& parent)
 {
-  psParent n = parent.Push(_relpos, _rotation, _pivot);
+  psParent n = parent.Push(*this);
 
   for(size_t i = 0; i < _children.Length(); ++i)
     _children[i]->Render(&n);

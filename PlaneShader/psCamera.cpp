@@ -42,7 +42,7 @@ psVec psCamera::GetMouseAbsolute(const psTex* rt) const
   Vector<float, 4> p(psEngine::Instance()->GetMouse().x - dim.x, psEngine::Instance()->GetMouse().y - dim.y, 0, 1);
 
   BSS_ALIGN(16) Matrix<float, 4, 4> cam;
-  Matrix<float, 4, 4>::AffineTransform_T(_relpos.x - (_pivot.x*dim.x), _relpos.y - (_pivot.y*dim.y), _relpos.z, _rotation, _pivot.x, _pivot.y, cam.v);
+  Matrix<float, 4, 4>::AffineTransform_T(position.x - (pivot.x*dim.x), position.y - (pivot.y*dim.y), position.z, rotation, pivot.x, pivot.y, cam.v);
   p = p*cam.Inverse();
   return psVec(p.x*p.z + dim.x, p.y*p.z + dim.y);
 }
@@ -71,9 +71,9 @@ inline const psRect& psCamera::Apply(const psTex* rt) const
   auto& vp = GetViewPort();
   psRectiu realvp = { (uint32_t)bss::fFastRound(vp.left*dim.x), (uint32_t)bss::fFastRound(vp.top*dim.y), (uint32_t)bss::fFastRound(vp.right*dim.x), (uint32_t)bss::fFastRound(vp.bottom*dim.y) };
   psVec pivot = GetPivot()*psVec(dim);
-  _driver->PushCamera(_relpos, pivot, GetRotation(), realvp, GetExtent());
-  psVec pos = _relpos.xy - pivot;
-  _cache.full = psRectRotateZ(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot, _relpos.z);
+  _driver->PushCamera(position, pivot, GetRotation(), realvp, GetExtent());
+  psVec pos = position.xy - pivot;
+  _cache.full = psRectRotateZ(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot, position.z);
   _cache.window = _cache.full.BuildAABB();
   _cache.winfixed = realvp;
   _cache.lastfixed = 0;
@@ -85,12 +85,12 @@ inline const psRect& psCamera::Apply(const psTex* rt) const
 inline bool psCamera::Cull(psSolid* solid, const psParent* parent) const
 {
   if((solid->GetFlags()&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
-  return _cache.Cull(solid->GetBoundingRect((!parent)?(psParent::Zero):(*parent)), solid->GetPosition().z + (!parent ? 0 : parent->position.z), _relpos.z, solid->GetFlags());
+  return _cache.Cull(solid->GetBoundingRect((!parent)?(psParent::Zero):(*parent)), solid->GetPosition().z + (!parent ? 0 : parent->position.z), position.z, solid->GetFlags());
 }
 inline bool psCamera::Cull(const psRectRotateZ& rect, const psParent* parent, psFlag flags) const
 {
   if((flags&PSFLAG_DONOTCULL) != 0) return false;
-  return _cache.Cull(rect.BuildAABB(), rect.z, _relpos.z, flags);
+  return _cache.Cull(rect.BuildAABB(), rect.z, position.z, flags);
 }
 inline psRectRotateZ psCamera::Resolve(const psRectRotateZ& rect) const
 {
