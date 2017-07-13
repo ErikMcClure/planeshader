@@ -32,7 +32,7 @@ void psSolid::SetScaleDim(const psVec& dim) { SetScale(dim/_realdim); }
 void psSolid::_setdim(const psVec& dim)
 {
   if(_dim.x!=0 && _dim.y!=0 && dim.x!=0 && dim.y!=0) // If the dimensions are valid
-    _pivot*=(dim/_dim); //Adjust center position
+    pivot*=(dim/_dim); //Adjust center position
   _dim=dim;
 }
 void psSolid::GetTransform(psMatrix& m, const psParent* parent)

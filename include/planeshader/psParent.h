@@ -14,7 +14,9 @@ namespace planeshader {
     float rotation;
     psVec pivot;
 
+    BSS_FORCEINLINE psParent Push(const psParent& p) const { return Push(p.position, p.rotation, p.pivot); }
     inline psParent Push(const psVec3D& pos, float r, const psVec& p) const { return psParent{ CalcPosition(pos, r, p), r + rotation, p }; }
+    BSS_FORCEINLINE psVec3D CalcPosition(const psParent& p) const { return CalcPosition(p.position, p.rotation, p.pivot); }
     inline psVec3D CalcPosition(const psVec3D& pos, float r, const psVec& p) const
     {
       psVec3D ret(pos);
@@ -25,6 +27,13 @@ namespace planeshader {
     inline void GetTransform(psMatrix& matrix) const
     {
       bss::Matrix<float, 4, 4>::AffineTransform_T(position.x - pivot.x, position.y - pivot.y, position.z, rotation, pivot.x, pivot.y, matrix);
+    }
+    BSS_FORCEINLINE void GetTransform(psMatrix& matrix, const psParent* parent) const
+    {
+      if(!parent)
+        GetTransform(matrix);
+      else
+        (*parent).Push(position, rotation, pivot).GetTransform(matrix);
     }
 
     inline bool operator ==(const psParent& r) const { return position == r.position && rotation == r.rotation && pivot == r.pivot; }

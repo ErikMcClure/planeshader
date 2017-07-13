@@ -6,16 +6,6 @@
 
 using namespace planeshader;
 
-psLocatable::psLocatable(const psLocatable& copy) : _relpos(copy._relpos), _rotation(copy._rotation), _pivot(copy._pivot) {}
-psLocatable::psLocatable(const psVec3D& pos, FNUM rotation, const psVec& pivot) : _relpos(pos), _rotation(rotation), _pivot(pivot) {}
+psLocatable::psLocatable(const psLocatable& copy) : psParent(copy) {}
+psLocatable::psLocatable(const psVec3D& pos, FNUM r, const psVec& p) { position = pos; rotation = r; pivot = p; }
 psLocatable::~psLocatable() {}
-void psLocatable::SetRotation(FNUM rotation) { _rotation=rotation; }
-void psLocatable::SetPivot(const psVec& pivot) { _pivot=pivot; }
-void psLocatable::SetPosition(FNUM X, FNUM Y, FNUM Z) { _relpos.x=X; _relpos.y=Y; _relpos.z=Z; }
-void psLocatable::GetTransform(psMatrix& m, const psParent* parent)
-{
-  if(!parent)
-    bss::Matrix<float, 4, 4>::AffineTransform_T(_relpos.x - _pivot.x, _relpos.y - _pivot.y, _relpos.z, _rotation, _pivot.x, _pivot.y, m);
-  else
-    (*parent).Push(_relpos, _rotation, _pivot).GetTransform(m);
-}

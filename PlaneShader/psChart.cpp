@@ -16,7 +16,7 @@ bool psChartContainer::RemoveChart(size_t index) { if(index >= _captions.Length(
 void psChartContainer::_render(const psParent& parent)
 {
   psMatrix m;
-  parent.Push(_relpos, _rotation, _pivot).GetTransform(m);
+  parent.Push(*this).GetTransform(m);
   _driver->PushTransform(m);
   psBatchObj* batch = _driver->DrawLinesStart(_driver->library.LINE, 0, GetFlags());
   _driver->DrawLines(batch, psLine(0, 0, _dim.x, 0), 0, 0, 0xFF999999);
