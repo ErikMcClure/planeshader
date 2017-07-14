@@ -204,6 +204,7 @@ int main(int argc, char** argv)
     psCamera::default_extent.x = 0.2f;
     psCamera::default_extent.y = 100;
     globalcam.SetExtent(psCamera::default_extent);
+    ps.CaptureAllJoy(ps.GetMonitor()->GetWindow());
     fgSetInjectFunc([](struct _FG_ROOT* self, const FG_Msg* msg) -> size_t
     {
       if(msg->type == FG_KEYDOWN || msg->type == FG_KEYUP)

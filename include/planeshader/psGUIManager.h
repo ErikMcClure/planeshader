@@ -14,8 +14,8 @@ namespace planeshader {
   {
     static const uint8_t NUMAXIS=6; //Max number of axis accounted for
 
-    long offset[NUMAXIS];
-    float range[NUMAXIS];
+    uint16_t offset[NUMAXIS];
+    uint16_t range[NUMAXIS];
     uint8_t numaxes;
     uint8_t numbuttons;
   };

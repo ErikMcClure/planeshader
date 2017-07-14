@@ -13,7 +13,7 @@ using namespace bss;
 
 #pragma comment(lib, "Winmm.lib")
 
-psGUIManager::psGUIManager() : _firstjoystick(0), _alljoysticks(0), _maxjoy((uint8_t)FG_JOYSTICK_ID16), _quit(false)
+psGUIManager::psGUIManager() : _firstjoystick(FG_JOYSTICK_INVALID), _alljoysticks(0), _maxjoy((uint8_t)(FG_JOYSTICK_ID16 >> 8)), _quit(false)
 {
   psMonitor::CheckDesktopComposition();
   psMonitor::WndRegister(0, 0, 0);
@@ -173,10 +173,29 @@ char psGUIManager::CaptureAllJoy(HWND__* hwnd)
   _alljoysticks = 0;
   for(uint16_t i = 0; i < _maxjoy; ++i)
   {
-    if(joySetCapture(hwnd, i, 0, TRUE) == JOYERR_NOERROR)
+    if(joySetCapture(hwnd, i << 8, 0, TRUE) == JOYERR_NOERROR)
     {
       ++r;
       _alljoysticks |= (1 << i);
+      JOYCAPSA caps;
+      if(joyGetDevCapsA(i << 8, &caps, sizeof(JOYCAPSA)) == JOYERR_NOERROR)
+      {
+        _joydevs[i].numaxes = caps.wNumAxes;
+        _joydevs[i].numbuttons = caps.wNumButtons;
+        _joydevs[i].offset[0] = caps.wXmin;
+        _joydevs[i].offset[1] = caps.wYmin;
+        _joydevs[i].offset[2] = caps.wZmin;
+        _joydevs[i].offset[3] = caps.wRmin;
+        _joydevs[i].offset[4] = caps.wUmin;
+        _joydevs[i].offset[5] = caps.wVmin;
+        _joydevs[i].range[0] = caps.wXmax - caps.wXmin;
+        _joydevs[i].range[1] = caps.wYmax - caps.wYmin;
+        _joydevs[i].range[2] = caps.wZmax - caps.wZmin;
+        _joydevs[i].range[3] = caps.wRmax - caps.wRmin;
+        _joydevs[i].range[4] = caps.wUmax - caps.wUmin;
+        _joydevs[i].range[5] = caps.wVmax - caps.wVmin;
+      }
+
       if(_firstjoystick == FG_JOYSTICK_INVALID)
         _firstjoystick = (i << 8);
     }
@@ -236,7 +255,7 @@ void psGUIManager::_joyupdateall()
   for(uint16_t i = 0; i < _maxjoy; ++i)
   {
     if(!(_alljoysticks & (1 << i))) continue;
-    if(joyGetPosEx(i, &info) == JOYERR_NOERROR)
+    if(joyGetPosEx(i << 8, &info) == JOYERR_NOERROR)
     {
       if(_allbuttons[i] != info.dwButtons)
       {
@@ -289,7 +308,8 @@ float psGUIManager::_translatejoyaxis(uint16_t axis) const
 {
   uint8_t ID = (axis >> 8);
   uint8_t a = (axis & 0xFF);
-  return (((long)_alljoyaxis[ID][a]) - _joydevs[ID].offset[a]) / _joydevs[ID].range[a];
+  uint16_t half = _joydevs[ID].range[a] / 2;
+  return (((long)(_alljoyaxis[ID][a] - _joydevs[ID].offset[a]) - half) / (float)half);
 }
 
 void psGUIManager::_exactmousecalc()
