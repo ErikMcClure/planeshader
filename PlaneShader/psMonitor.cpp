@@ -239,6 +239,24 @@ POINTS* __stdcall psMonitor::_STCpoints(HWND hWnd, POINTS* target)
   return target;
 }
 
+WPARAM MapLRKeys(WPARAM vk, LPARAM lParam)
+{
+  UINT scancode = (lParam & 0x00ff0000) >> 16;
+  int extended = (lParam & 0x01000000) != 0;
+
+  switch(vk)
+  {
+  case VK_SHIFT:
+    return MapVirtualKey(scancode, MAPVK_VSC_TO_VK_EX);
+  case VK_CONTROL:
+    return extended ? VK_RCONTROL : VK_LCONTROL;
+  case VK_MENU:
+    return extended ? VK_RMENU : VK_LMENU;
+  }
+
+  return vk;
+}
+
 LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   static tagTRACKMOUSEEVENT _trackingstruct = { sizeof(tagTRACKMOUSEEVENT), TME_LEAVE, 0, 0 };
@@ -355,14 +373,14 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_XBUTTONDBLCLK:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDBLCLICK, (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? FG_MOUSEXBUTTON1 : FG_MOUSEXBUTTON2), wpcopy, GetMessageTime());
-    break;
+    break; 
   case WM_SYSKEYUP:
   case WM_SYSKEYDOWN:
-    gui->SetKey((uint8_t)wParam, message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
+    gui->SetKey((uint8_t)MapLRKeys(wParam, lParam), message == WM_SYSKEYDOWN, (lParam & 0x40000000) != 0, (lParam & 0x00ff0000) >> 16, GetMessageTime());
     break;
   case WM_KEYUP:
   case WM_KEYDOWN: // Windows return codes are the opposite of feathergui's - returning 0 means we accept, anything else rejects, so we invert the return code here.
-    return !gui->SetKey((uint8_t)wParam, message == WM_KEYDOWN, (lParam & 0x40000000) != 0, GetMessageTime());
+    return !gui->SetKey((uint8_t)MapLRKeys(wParam, lParam), message == WM_KEYDOWN, (lParam & 0x40000000) != 0, (lParam & 0x00ff0000) >> 16, GetMessageTime());
   case WM_UNICHAR:
     if(wParam == UNICODE_NOCHAR) return TRUE;
   case WM_CHAR:

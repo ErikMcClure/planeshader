@@ -64,7 +64,7 @@ namespace planeshader {
 
   protected:
     // Creates the window and actually sets everything up (otherwise we get pointer problems)
-    size_t SetKey(uint8_t keycode, bool down, bool held, unsigned long time);
+    size_t SetKey(uint8_t keycode, bool down, bool held, unsigned short scancode, unsigned long time);
     void SetChar(int key, unsigned long time);
     void SetMouse(tagPOINTS* points, unsigned short type, unsigned char button, size_t wparam, unsigned long time);
     // Updates values for all plugged in joysticks 
