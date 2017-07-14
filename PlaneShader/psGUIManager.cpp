@@ -38,7 +38,7 @@ psMonitor* psGUIManager::AddMonitor(psVeciu& dim, psMonitor::MODE mode, HWND__* 
   return &_monitors.Back();
 }
 
-size_t psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
+size_t psGUIManager::SetKey(uint8_t keycode, bool down, bool held, unsigned short scancode, DWORD time)
 {
   PROFILE_FUNC();
   GetKeyboardState(_allkeys);
@@ -49,6 +49,7 @@ size_t psGUIManager::SetKey(uint8_t keycode, bool down, bool held, DWORD time)
   evt.type = down ? FG_KEYDOWN : FG_KEYUP;
   _lastmsgtime = time;
   evt.keycode = keycode;
+  evt.keyraw = scancode;
   evt.sigkeys = 0;
   if(GetKey(FG_KEY_SHIFT)) evt.sigkeys = evt.sigkeys | 1; //VK_SHIFT
   if(GetKey(FG_KEY_CONTROL)) evt.sigkeys = evt.sigkeys | 2; //VK_CONTROL

@@ -51,19 +51,19 @@ TESTDEF::RETPAIR test_psTileset()
   auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  const int dimx = 500;
-  const int dimy = 500;
+  const int dimx = 2000;
+  const int dimy = 2000;
   char edges[dimy + 1][dimx + 1][2];
   for(char* i = edges[0][0]; i - edges[0][0] < sizeof(edges) / sizeof(char); ++i)
     *i = RANDBOOLGEN();
 
-  psTile map[dimy][dimx];
-  memset(&map, 0, sizeof(psTile) * dimx * dimy);
+  std::unique_ptr<psTile[]> map(new psTile[dimx * dimy]);
+  memset(map.get(), 0, sizeof(psTile) * dimx * dimy);
   for(int j = 0; j < dimy; ++j)
     for(int i = 0; i < dimx; ++i)
     {
-      map[j][i].color = ~0;
-      map[j][i].index = wang_indices(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
+      map[j * dimx + i].color = ~0;
+      map[j * dimx + i].index = wang_indices(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
       //psVeciu pos = psTileset::WangTile2D(edges[j][i][0], edges[j][i][1], edges[j][i + 1][0], edges[j + 1][i][1]);
       //map[j][i].index = pos.x + (pos.y * 4);
     }
@@ -71,12 +71,12 @@ TESTDEF::RETPAIR test_psTileset()
   psTileset tiles(VEC3D_ZERO, 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
   tiles.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
   tiles.AutoGenDefs(psVeciu(8, 8));
-  tiles.SetTiles(map[0], dimx*dimy, dimx);
+  tiles.SetTiles(map.get(), dimx*dimy, dimx);
 
   psTileset tiles2(psVec3D(0, 0, 1), 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
   tiles2.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
   tiles2.AutoGenDefs(psVeciu(8, 8));
-  tiles2.SetTiles(map[0], dimx*dimy, dimx);
+  tiles2.SetTiles(map.get(), dimx*dimy, dimx);
 
   engine->GetPass(0)->SetCamera(&globalcam);
 
