@@ -11,16 +11,16 @@ using namespace bss;
 psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0) {}
 psQuadraticHull::~psQuadraticHull() {}
 
-void psQuadraticHull::_render(const psParent& parent)
+void psQuadraticHull::_render(const psTransform2D& parent)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CURVEBUFSIZE, sizeof(QuadVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
   Activate();
-  if(parent == psParent::Zero)
+  if(parent == psTransform2D::Zero)
     _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
   else
   {
     psMatrix m;
-    parent.GetTransform(m);
+    parent.GetMatrix(m);
     _driver->PushTransform(m);
     _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
     _driver->PopTransform();
@@ -215,7 +215,7 @@ void psRoundRect::DrawRoundRect(psShader* shader, psStateblock* stateblock, cons
     corners, edge, color, outline };
   ++obj->buffer.nvert;
 }
-void psRoundRect::_render(const psParent& parent)
+void psRoundRect::_render(const psTransform2D& parent)
 {
   Activate();
   DrawRoundRect(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
@@ -266,7 +266,7 @@ void psRoundTri::DrawRoundTri(psShader* shader, psStateblock* stateblock, const 
     corners, edge, color, outline };
   ++obj->buffer.nvert;
 }
-void psRoundTri::_render(const psParent& parent)
+void psRoundTri::_render(const psTransform2D& parent)
 {
   Activate();
   DrawRoundTri(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
@@ -317,7 +317,7 @@ void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, cons
   ++obj->buffer.nvert;
 }
 
-void psRenderCircle::_render(const psParent& parent)
+void psRenderCircle::_render(const psTransform2D& parent)
 {
   Activate();
   DrawCircle(GetShader(), _stateblock, GetCollisionRect(parent), _arcs, GetFlags(), _color, _outline, _edge);

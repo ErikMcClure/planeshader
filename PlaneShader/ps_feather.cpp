@@ -443,7 +443,7 @@ psRoot::psRoot() : _psInject(0, 0)
 psRoot::~psRoot()
 {}
 
-void psRoot::_render(const psParent& parent)
+void psRoot::_render(const psTransform2D& parent)
 {
   gui->Draw(0, 0);
 }

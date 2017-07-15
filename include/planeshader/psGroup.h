@@ -34,7 +34,7 @@ namespace planeshader {
     psGroup& operator=(psGroup&& mov);
 
     inline static char Comp(psRenderable* const& l, psRenderable* const& r) { char c = SGNCOMPARE(l->GetZOrder(), r->GetZOrder()); return !c ? SGNCOMPARE(l, r) : c; }
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
   protected:
     bss::ArraySort<psRenderable*, &Comp> _children;

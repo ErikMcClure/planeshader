@@ -59,7 +59,7 @@ void psPass::End()
     }
     else
     {
-      node->value->_render(psParent::Zero);
+      node->value->_render(psTransform2D::Zero);
       node->value->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
       node = node->next;
     }
@@ -103,7 +103,7 @@ void psPass::Remove(psRenderable* r)
     r->_psort = 0;
   }
 }
-void psPass::Defer(psRenderable* r, const psParent& parent)
+void psPass::Defer(psRenderable* r, const psTransform2D& parent)
 {
   _defer.AddConstruct(r, parent);
 }

@@ -120,7 +120,7 @@ namespace planeshader {
     };
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     psTexFont* _font;
     bss::Str _title;

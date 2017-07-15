@@ -54,7 +54,7 @@ namespace planeshader {
     psTileset& operator=(psTileset&& mov);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
     template<class T>
     BSS_FORCEINLINE bool _drawcheck(T* drawn, uint32_t k, int level) { return (k < _tiles.Length()) && !bss::bssGetBit<T>(drawn, k) && (level < _defs[_tiles[k].index].level); }
     

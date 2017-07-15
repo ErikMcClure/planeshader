@@ -31,9 +31,9 @@ psRenderable* psGroup::Add(const psRenderable* renderable)
   _children.Insert(r);
   return r;
 }
-void psGroup::_render(const psParent& parent)
+void psGroup::_render(const psTransform2D& parent)
 {
-  psParent n = parent.Push(*this);
+  psTransform2D n = parent.Push(*this);
 
   for(size_t i = 0; i < _children.Length(); ++i)
     _children[i]->Render(&n);

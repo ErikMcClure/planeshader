@@ -105,12 +105,12 @@ void psTileset::SetDimIndex(psVeci dim)
   SetDim(dim*_tiledim);
 }
 
-void psTileset::_render(const psParent& parent)
+void psTileset::_render(const psTransform2D& parent)
 {
   assert(_defs.Length() > 0);
   if(!_rowlength || !_tiles.Length()) return;
   psMatrix m;
-  GetTransform(m, &parent);
+  GetMatrix(m, &parent);
   _driver->PushTransform(m);
   Activate();
 

@@ -40,7 +40,7 @@ namespace planeshader {
     static size_t InjectDelegate(fgRoot* self, const FG_Msg* m) { return reinterpret_cast<psRoot*>(self)->_psInject(*m); }
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     PS_MESSAGE _psInject;
   };
