@@ -6,6 +6,6 @@
 
 using namespace planeshader;
 
-psLocatable::psLocatable(const psLocatable& copy) : psParent(copy) {}
+psLocatable::psLocatable(const psLocatable& copy) : psTransform2D(copy) {}
 psLocatable::psLocatable(const psVec3D& pos, FNUM r, const psVec& p) { position = pos; rotation = r; pivot = p; }
 psLocatable::~psLocatable() {}

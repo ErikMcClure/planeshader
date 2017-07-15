@@ -29,7 +29,7 @@ namespace planeshader {
     inline void SetRenderTarget(psTex* rt=0) { _defaultrt = rt; }
     void Insert(psRenderable* r);
     void Remove(psRenderable* r);
-    void Defer(psRenderable* r, const psParent& parent);
+    void Defer(psRenderable* r, const psTransform2D& parent);
     inline void SetClearColor(uint32_t color, bool enable = true) { _clearcolor = color; _clear = enable; }
     inline uint32_t GetClearColor() const { return _clearcolor; }
     psVeciu GetDPI();
@@ -60,7 +60,7 @@ namespace planeshader {
     bool _clear;
     psVeciu _dpi;
     psMonitor* _monitor;
-    bss::DynArray<std::pair<psRenderable*, psParent>> _defer;
+    bss::DynArray<std::pair<psRenderable*, psTransform2D>> _defer;
     bss::TRBtree<psRenderable*, StandardCompare, ALLOC> _renderlist;
   };
 }

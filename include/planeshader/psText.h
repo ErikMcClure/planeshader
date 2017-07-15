@@ -41,7 +41,7 @@ namespace planeshader {
     psText& operator=(psText&& mov);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
     void _recalcdim();
 
     bss::StrT<int> _text;

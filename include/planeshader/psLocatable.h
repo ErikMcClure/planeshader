@@ -6,11 +6,11 @@
 
 #include "psVec.h"
 #include "psDriver.h"
-#include "psParent.h"
+#include "psTransform2D.h"
 
 namespace planeshader {
   // This holds position information. 
-  class PS_DLLEXPORT psLocatable : protected psParent
+  class PS_DLLEXPORT psLocatable : protected psTransform2D
   {
   public:
     psLocatable(const psLocatable& copy);
@@ -34,8 +34,8 @@ namespace planeshader {
     inline void SetPosition(const psVec3D& pos) { position = pos; }
     inline void SetPosition(FNUM X, FNUM Y) { position.x = X; position.y = Y; }
     inline void SetPosition(FNUM X, FNUM Y, FNUM Z) { position.x = X; position.y = Y; position.z = Z; }
-    inline void GetTransform(psMatrix& matrix, const psParent* parent) { psParent::GetTransform(matrix, parent); }
-    inline const psParent& ToParent() const { return *this; }
+    inline void GetMatrix(psMatrix& matrix, const psTransform2D* parent) { psTransform2D::GetMatrix(matrix, parent); }
+    inline const psTransform2D& ToTransform() const { return *this; }
 
     inline psLocatable& operator=(const psLocatable& right) { position=right.position; rotation=right.rotation; pivot=right.pivot; return *this; }
   };

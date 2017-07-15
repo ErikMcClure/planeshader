@@ -51,7 +51,7 @@ void psImage::_setuvs(uint32_t size)
     _uvs[i]=RECT_UNITRECT;
 }
 
-void psImage::_render(const psParent& parent)
+void psImage::_render(const psTransform2D& parent)
 {
   Activate();
   _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(parent), _uvs, NumSources(), GetColor().color, GetFlags());

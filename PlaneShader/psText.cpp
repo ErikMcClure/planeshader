@@ -51,7 +51,7 @@ void psText::SetFont(psTexFont* font)
 { 
   _font = font;
 }
-void psText::_render(const psParent& parent)
+void psText::_render(const psTransform2D& parent)
 {
   if(_font)
   {

@@ -6,7 +6,7 @@
 
 #include "psStateBlock.h"
 #include "psShader.h"
-#include "psParent.h"
+#include "psTransform2D.h"
 #include "bss-util/BitField.h"
 #include "bss-util/LLBase.h"
 #include "bss-util/TRBtree.h"
@@ -22,7 +22,7 @@ namespace planeshader {
     psRenderable(psRenderable&& mov);
     explicit psRenderable(psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass=0);
     virtual ~psRenderable();
-    virtual void Render(const psParent* parent);
+    virtual void Render(const psTransform2D* parent);
     int GetZOrder() const { return _zorder; }
     void SetZOrder(int zorder);
     inline psPass* GetPass() const { return _pass; }
@@ -47,7 +47,7 @@ namespace planeshader {
     psRenderable& operator =(psRenderable&& right);
 
     void Activate();
-    virtual void _render(const psParent& parent) = 0;
+    virtual void _render(const psTransform2D& parent) = 0;
 
   protected:
     void _destroy();

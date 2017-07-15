@@ -33,7 +33,7 @@ namespace planeshader {
     static void DrawEllipse(float x, float y, float a, float b, uint32_t color);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
   };
 
   class PS_DLLEXPORT psRenderLine : public psLocatable, public psRenderable, public psColored, public psDriverHold
@@ -54,7 +54,7 @@ namespace planeshader {
     static inline void DrawLine(const psLine& p, uint32_t color) { DrawLine(psLine3D(p.x1, p.y1, 0, p.x2, p.y2, 0), color); }
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     psVec3D _point;
   };
@@ -75,7 +75,7 @@ namespace planeshader {
     static void DrawPolygon(const psVertex* p, uint32_t num);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
   };
 
   class PS_DLLEXPORT psFullScreenQuad : public psRenderable, public psTextured, public psColored, public psDriverHold
@@ -87,7 +87,7 @@ namespace planeshader {
     virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
   };
 }
 #endif

@@ -37,9 +37,9 @@ namespace planeshader {
     inline psCamera& operator =(const psCamera& copy) { psLocatable::operator =(copy); return *this; }
     inline const psRect& Apply(const psTex* rt) const;
     inline psRectRotateZ Resolve(const psRectRotateZ& rect) const;
-    inline psParent Resolve(const psParent& rect) const;
-    inline bool Cull(psSolid* solid, const psParent* parent) const;
-    inline bool Cull(const psRectRotateZ& rect, const psParent* parent, psFlag flags) const;
+    inline psTransform2D Resolve(const psTransform2D& rect) const;
+    inline bool Cull(psSolid* solid, const psTransform2D* parent) const;
+    inline bool Cull(const psRectRotateZ& rect, const psTransform2D* parent, psFlag flags) const;
 
     static const psVeci INVALID_LASTRELMOUSE;
     static const psCamera default_camera;

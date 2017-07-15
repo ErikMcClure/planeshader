@@ -17,7 +17,7 @@ psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psF
 }
 
 psSolid::~psSolid() { }
-void psSolid::Render(const psParent* parent)
+void psSolid::Render(const psTransform2D* parent)
 {
   psPass* pass = !_pass ? psPass::CurPass : _pass;
   if(pass != 0)
@@ -35,9 +35,9 @@ void psSolid::_setdim(const psVec& dim)
     pivot*=(dim/_dim); //Adjust center position
   _dim=dim;
 }
-void psSolid::GetTransform(psMatrix& m, const psParent* parent)
+void psSolid::GetMatrix(psMatrix& m, const psTransform2D* parent)
 {
-  psLocatable::GetTransform(m, parent);
+  psLocatable::GetMatrix(m, parent);
   sseVec(m[0])*sseVec(_scale.x) >> m[0];
   sseVec(m[1])*sseVec(_scale.y) >> m[1];
 }

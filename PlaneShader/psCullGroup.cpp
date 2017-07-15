@@ -19,7 +19,7 @@ void psCullGroup::Insert(psSolid* img, bool recalc)
   img->SetPass(_pass); // Set pass to our pass
   if(_pass != 0)
     _pass->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _pass)
-  img->GetBoundingRect(psParent::Zero); // Make sure the bounding rect is up to date
+  img->GetBoundingRect(psTransform2D::Zero); // Make sure the bounding rect is up to date
   if(recalc)
     _tree.Insert(img);
   else
@@ -29,7 +29,7 @@ void psCullGroup::Remove(psSolid* img) { _tree.Remove(img); }
 void psCullGroup::Solve() { _tree.Solve(); }
 void psCullGroup::Clear() { _tree.Clear(); }
 
-void psCullGroup::Render(const psParent* parent)
+void psCullGroup::Render(const psTransform2D* parent)
 {
   psPass* pass = !_pass ? psPass::CurPass : _pass;
   if(!pass)
@@ -56,7 +56,7 @@ void psCullGroup::Render(const psParent* parent)
     psRenderable::Render(parent);
   }
 }
-void psCullGroup::_render(const psParent& parent)
+void psCullGroup::_render(const psTransform2D& parent)
 {
   auto node = _list.Front(); // If this is nonzero then we didn't interweave with a pass, so we manually render our children
   auto next = node;

@@ -29,7 +29,7 @@ namespace planeshader {
     // Gets or sets the rebalance threshold
     BSS_FORCEINLINE uint32_t GetRBThreshold() const { return _tree.GetRBThreshold(); }
     BSS_FORCEINLINE void SetRBThreshold(uint32_t rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
-    virtual void Render(const psParent* parent) override;
+    virtual void Render(const psTransform2D* parent) override;
 
     typedef bss::BlockPolicy<bss::KDNode<psSolid>> KDNODE_ALLOC;
 
@@ -45,7 +45,7 @@ namespace planeshader {
       bss::sseVec d(diff2, diff, diff2, diff);
       (((bss::sseVec(rect) - d)*bss::sseVec(1 + camZ)) + d) >> rcull;
     }
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     psPass::ALLOC _alloc;
     bss::KDTree<psSolid, KDNODE_ALLOC, CF_FRECT, CF_FLIST, CF_FNODE> _tree;

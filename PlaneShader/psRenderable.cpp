@@ -36,7 +36,7 @@ psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, p
 }
 
 psRenderable::~psRenderable() { _destroy(); }
-void psRenderable::Render(const psParent* parent)
+void psRenderable::Render(const psTransform2D* parent)
 {
   if(!parent)
   {

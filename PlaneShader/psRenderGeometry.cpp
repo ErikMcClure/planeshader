@@ -21,7 +21,7 @@ void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, uint32_t c
   _driver->DrawRect(_driver->library.CIRCLE, 0, psRectRotateZ(x-a, y-b, x+a, y+b, 0), 0, 0, color, 0);
 }
 
-void psRenderEllipse::_render(const psParent& parent)
+void psRenderEllipse::_render(const psTransform2D& parent)
 {
   Activate();
   _driver->DrawRect(_driver->library.CIRCLE, GetStateblock(), GetCollisionRect(parent), 0, 0, GetColor(), GetFlags());
@@ -56,11 +56,11 @@ void psRenderLine::DrawLine(const psLine3D& p, uint32_t color)
   _driver->DrawLines(obj, psLine(p.p1.xy, p.p2.xy), p.p1.z, p.p2.z, color);
 }
 
-void psRenderLine::_render(const psParent& parent)
+void psRenderLine::_render(const psTransform2D& parent)
 {
   Activate();
   psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetFlags());
-  psParent p = parent.Push(*this);
+  psTransform2D p = parent.Push(*this);
   _driver->DrawLines(obj, psLine(p.position.xy, p.position.xy), p.position.z, _point.z, GetColor().color);
 }
 
@@ -90,10 +90,10 @@ psRenderPolygon& psRenderPolygon::operator =(const psPolygon& polygon) { psPolyg
 void psRenderPolygon::DrawPolygon(const psVec* p, uint32_t num, uint32_t color, const psVec3D& offset) {  _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, offset, color, 0); }
 void psRenderPolygon::DrawPolygon(const psVertex* p, uint32_t num) { _driver->DrawPolygon(_driver->library.POLYGON, 0, p, num, 0); }
 
-void psRenderPolygon::_render(const psParent& parent)
+void psRenderPolygon::_render(const psTransform2D& parent)
 {
   psMatrix m;
-  parent.Push(*this).GetTransform(m);
+  parent.Push(*this).GetMatrix(m);
   Activate();
   _driver->PushTransform(m);
   _driver->DrawPolygon(GetShader(), GetStateblock(), _verts, _verts.Capacity(), VEC3D_ZERO, GetColor().color, GetFlags());
@@ -103,7 +103,7 @@ void psRenderPolygon::_render(const psParent& parent)
 psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy) : psRenderable(copy) {}
 psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov) : psRenderable(std::move(mov)) {}
 psFullScreenQuad::psFullScreenQuad(){}
-void psFullScreenQuad::_render(const psParent& parent)
+void psFullScreenQuad::_render(const psTransform2D& parent)
 {
   psVec dim = GetRenderTargets()[0]->GetDim();
   _driver->PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, dim.x, dim.y), psCamera::default_extent);

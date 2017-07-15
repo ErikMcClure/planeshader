@@ -499,7 +499,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psGroup.h" />
     <ClInclude Include="..\include\planeshader\psLine.h" />
     <ClInclude Include="..\include\planeshader\psLocatable.h" />
-    <ClInclude Include="..\include\planeshader\psParent.h" />
     <ClInclude Include="..\include\planeshader\psPass.h" />
     <ClInclude Include="..\include\planeshader\psPolygon.h" />
     <ClInclude Include="..\include\planeshader\psRect.h" />
@@ -513,6 +512,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psText.h" />
     <ClInclude Include="..\include\planeshader\psTextured.h" />
     <ClInclude Include="..\include\planeshader\psTileset.h" />
+    <ClInclude Include="..\include\planeshader\psTransform2D.h" />
     <ClInclude Include="..\include\planeshader\psTriangle.h" />
     <ClInclude Include="..\include\planeshader\psVec.h" />
     <ClInclude Include="..\include\planeshader\psVector.h" />
@@ -541,7 +541,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psGroup.cpp" />
     <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psMonitor.cpp" />
-    <ClCompile Include="psParent.cpp" />
     <ClCompile Include="psPass.cpp" />
     <ClCompile Include="psRenderable.cpp" />
     <ClCompile Include="psRenderGeometry.cpp" />
@@ -553,6 +552,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psText.cpp" />
     <ClCompile Include="psTextured.cpp" />
     <ClCompile Include="psTileset.cpp" />
+    <ClCompile Include="psTransform2D.cpp" />
     <ClCompile Include="psVector.cpp" />
     <ClCompile Include="psVulkan.cpp" />
     <ClCompile Include="ps_feather.cpp" />

@@ -19,16 +19,16 @@ namespace planeshader {
     psSolid(psSolid&& mov);
     explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, const psVec& scale=VEC_ONE);
     virtual ~psSolid();
-    virtual void Render(const psParent* parent) override;
+    virtual void Render(const psTransform2D* parent) override;
     // Generates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 
-    inline psRectRotateZ GetCollisionRect(const psParent& parent)
+    inline psRectRotateZ GetCollisionRect(const psTransform2D& parent)
     {
       psVec3D pos = parent.CalcPosition(*this);
       pos.xy -= pivot;
       return psRectRotateZ(pos.x, pos.y, pos.x + _dim.x, pos.y + _dim.y, rotation, pivot, pos.z);
     }
     // Generates an AABB bounding rect for general collisions (will also update the collision rect) 
-    inline const psRect& GetBoundingRect(const psParent& parent) { return _boundingrect = GetCollisionRect(parent).BuildAABB(); }
+    inline const psRect& GetBoundingRect(const psTransform2D& parent) { return _boundingrect = GetCollisionRect(parent).BuildAABB(); }
     // Gets the cached bounding rect (used by KD-trees)
     inline const psRect& GetBoundingRectStatic() { return _boundingrect; }
     // Gets the dimensions of the object 
@@ -44,7 +44,7 @@ namespace planeshader {
     // Sets the center position using coordinates relative to the dimensions
     inline void SetPivotRel(const psVec& relpos) { SetPivot(relpos*_dim); }
     // Generates a matrix transform using the solid's position, rotation, pivot, and scaling (used when the actual dimensions are implicit)
-    void GetTransform(psMatrix& matrix, const psParent* parent);
+    void GetMatrix(psMatrix& matrix, const psTransform2D* parent);
     virtual psSolid* Clone() const override { return 0; }
 
     psSolid& operator =(const psSolid& right);

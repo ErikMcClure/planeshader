@@ -82,12 +82,12 @@ inline const psRect& psCamera::Apply(const psTex* rt) const
   //_driver->DrawRect(_driver->library.IMAGE0, 0, psRectRotate(_cache.window, 0, VEC_ZERO), 0, 0, 0x88FFFFFF, 0);
   return _cache.window;
 }
-inline bool psCamera::Cull(psSolid* solid, const psParent* parent) const
+inline bool psCamera::Cull(psSolid* solid, const psTransform2D* parent) const
 {
   if((solid->GetFlags()&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
-  return _cache.Cull(solid->GetBoundingRect((!parent)?(psParent::Zero):(*parent)), solid->GetPosition().z + (!parent ? 0 : parent->position.z), position.z, solid->GetFlags());
+  return _cache.Cull(solid->GetBoundingRect((!parent)?(psTransform2D::Zero):(*parent)), solid->GetPosition().z + (!parent ? 0 : parent->position.z), position.z, solid->GetFlags());
 }
-inline bool psCamera::Cull(const psRectRotateZ& rect, const psParent* parent, psFlag flags) const
+inline bool psCamera::Cull(const psRectRotateZ& rect, const psTransform2D* parent, psFlag flags) const
 {
   if((flags&PSFLAG_DONOTCULL) != 0) return false;
   return _cache.Cull(rect.BuildAABB(), rect.z, position.z, flags);
@@ -96,9 +96,9 @@ inline psRectRotateZ psCamera::Resolve(const psRectRotateZ& rect) const
 {
   return rect.RelativeTo(psVec3D(_cache.full.left, _cache.full.top, _cache.full.z), _cache.full.rotation, _cache.full.pivot);
 }
-inline psParent psCamera::Resolve(const psParent& rect) const
+inline psTransform2D psCamera::Resolve(const psTransform2D& rect) const
 {
-  return psParent{ { _cache.full.left, _cache.full.top, _cache.full.z }, _cache.full.rotation, _cache.full.pivot }.Push(rect.position, rect.rotation, rect.pivot);
+  return psTransform2D{ { _cache.full.left, _cache.full.top, _cache.full.z }, _cache.full.rotation, _cache.full.pivot }.Push(rect.position, rect.rotation, rect.pivot);
 }
 
 inline void psCamera::CamCache::SetSSE()

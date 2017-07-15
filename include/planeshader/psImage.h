@@ -35,7 +35,7 @@ namespace planeshader {
     psImage& operator =(psImage&& right);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
     void _setuvs(uint32_t size);
     void _recalcdim();
 

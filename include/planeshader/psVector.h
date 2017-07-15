@@ -32,7 +32,7 @@ namespace planeshader {
     static void SetVert(float(&v)[4], psVec& x, float thickness);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
     bss::DynArray<QuadVertex, uint32_t> _verts;
   };
 
@@ -103,7 +103,7 @@ namespace planeshader {
     psRoundRect& operator=(psRoundRect&& mov);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     psRect _corners;
     psColor32 _outline;
@@ -141,7 +141,7 @@ namespace planeshader {
     psRoundTri& operator=(psRoundTri&& mov);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     psRect _corners;
     psColor32 _outline;
@@ -179,7 +179,7 @@ namespace planeshader {
     psRenderCircle& operator=(psRenderCircle&& mov);
 
   protected:
-    virtual void _render(const psParent& parent) override;
+    virtual void _render(const psTransform2D& parent) override;
 
     psRect _arcs;
     psColor32 _outline;
