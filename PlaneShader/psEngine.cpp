@@ -152,7 +152,9 @@ psEngine* psEngine::Instance()
 }
 bool psEngine::InsertPass(psPass& pass, uint16_t index)
 {
-  if(index>_passes.Capacity())
+  if(index == (uint16_t)~0)
+    index = _passes.Capacity();
+  if(index > _passes.Capacity())
     return false;
   _passes.Insert(&pass, index);
   return true;

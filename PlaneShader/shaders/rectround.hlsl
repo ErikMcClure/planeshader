@@ -38,9 +38,9 @@ void mainGS(point VS_INPUT sprite[1], inout TriangleStream<PS_INPUT> triStream)
   float s = sin(pos[3]);
   float4x4 matTransform ={
     c, -s, 0, pos[0] - c*pivot[0] + pivot[0] + pivot[1]*s,
-    s, c, 0, pos[1] - c*pivot[1] + pivot[1] - pivot[0]*s,
-    0, 0, 1, pos[2],
-    0, 0, 0, 1
+    s,  c, 0, pos[1] - c*pivot[1] + pivot[1] - pivot[0]*s,
+    0,  0, 1, pos[2],
+    0,  0, 0, 1
   };
   float4x4 m = mul(matViewProj, matWorld);
     m = mul(m, matTransform);

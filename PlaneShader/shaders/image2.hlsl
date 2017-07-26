@@ -41,8 +41,8 @@ void mainGS(point VS_INPUT sprite[1], inout TriangleStream<PS_INPUT> triStream)
     0,  0, 1, pos[2],
     0,  0, 0, 1
     };
-  float4x4 m = mul(matViewProj, matTransform);
-  m = mul(m, matWorld);
+  float4x4 m = mul(matViewProj, matWorld);
+  m = mul(m, matTransform);
   
   PS_INPUT v;
   v.color = sprite[0].color;
