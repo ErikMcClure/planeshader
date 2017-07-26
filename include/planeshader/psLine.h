@@ -42,20 +42,24 @@ namespace planeshader {
       return (dx >= 0 && dx <= 1 && Y >= 0 && Y <= 1);
     }
 
-    inline bool PointOfIntersection(const psLineT<T>& other, VEC* retpoint)
+    inline bool IntersectionPoint(const psLineT<T>& other, VEC& retpoint)
+    {
+      return PointOfIntersection(x1, y1, x2, y2, other.x1, other.y1, other.x2, other.y2, retpoint);
+    }
+    inline static bool PointOfIntersection(T x1, T y1, T x2, T y2, T X1, T Y1, T X2, T Y2, VEC& retpoint)
     {
       VEC p(x1, y1);
-      VEC r(x2-x1, y2-y1);
-      VEC q(other.x1, other.y1);
-      VEC s(other.x2-other.x1, other.y2-other.y1);
-      float rCrossS = r.CrossProduct(s);
+      VEC r(x2 - x1, y2 - y1);
+      VEC q(X1, Y1);
+      VEC s(X2 - X1, Y2 - Y1);
+      float rCrossS = r.Cross(s);
 
       if(rCrossS <= 0 && rCrossS >= -1) return false;
-      float t = s.CrossProduct(q-=p)/rCrossS;
-      float u = r.CrossProduct(q)/rCrossS;
+      float t = s.Cross(q -= p) / rCrossS;
+      float u = r.Cross(q) / rCrossS;
       if(0 <= u && u <= 1 && 0 <= t && t <= 1)
       {
-        *retpoint = (p+=(r*=t));
+        retpoint = (p += (r *= t));
         return true;
       }
       return false;
@@ -67,7 +71,39 @@ namespace planeshader {
     inline VEC ParametricPoint(float s) const { return pos1 + (pos2-pos1)*s; }
     inline psLineT<T>& Rotate(float r, VEC center) { return Rotate(r, center.x, center.y); }
     inline psLineT<T>& Rotate(float r, float x, float y) { pos1.Rotate(r, x, y); pos2.Rotate(r, x, y); return *this; }
+    inline int LineCircleIntersectionPoints(float x, float y, float r, float (&out)[2][2])
+    {
+      T X1 = x1 - x;
+      T Y1 = y1 - y;
+      T X2 = x2 - x;
+      T Y2 = y2 - y;
+      T Dx = X2 - X1;
+      T Dy = Y2 - Y1;
+      T D = X1*Y2 - X2*Y1;
+      T Dr2 = Dx*Dx + Dy*Dy;
+      T d = r*r*Dr2 - D*D;
 
+      if(d < 0)
+        return 0;
+
+      if(bss::fSmall(d))
+      {
+        out[0][0] = (D*Dy) / Dr2;
+        out[0][1] = (D*Dx) / Dr2;
+        return 1;
+      }
+      
+      d = bss::FastSqrt<float>(d);
+      T xr = bss::fsign(Dy)*d;
+      T yr = abs(Dy)*d;
+      T xl = D*Dy;
+      T yl = -D*Dx;
+      out[0][0] = (xl + xr) / Dr2;
+      out[0][1] = (yl - yr) / Dr2;
+      out[1][0] = (xl - xr) / Dr2;
+      out[1][1] = (yl - yr) / Dr2;
+      return 2;
+    }
     static inline bool LineLineIntersect(T x1, T y1, T x2, T y2, T X1, T Y1, T X2, T Y2)
     {
       T da = X2-X1;

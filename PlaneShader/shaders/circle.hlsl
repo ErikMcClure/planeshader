@@ -39,7 +39,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
   float outline = (input.outline / d.x)*2;
   
   float s = 1 - smoothstep(1 - outline - w, 1 - outline + w, r);
-  float alpha = smoothstep(1+w, 1-w, r);
+  float alpha = smoothstep(1+ w, 1-w, r);
   float4 fill = float4(input.color.rgb, 1);
   float4 edge = float4(input.outlinecolor.rgb, 1);
   return (fill*input.color.a*s*getarc(input.arcs.xy, angle, anglew)) + (edge*input.outlinecolor.a*saturate(alpha-s)*getarc(input.arcs.zw, angle, anglew));

@@ -61,7 +61,7 @@ void psRenderLine::_render(const psTransform2D& parent)
   Activate();
   psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetFlags());
   psTransform2D p = parent.Push(*this);
-  _driver->DrawLines(obj, psLine(p.position.xy, p.position.xy), p.position.z, _point.z, GetColor().color);
+  _driver->DrawLines(obj, psLine(p.position.xy, _point.xy), p.position.z, _point.z, GetColor().color);
 }
 
 psRenderPolygon::psRenderPolygon(const psRenderPolygon& copy) : psLocatable(copy), psRenderable(copy), psPolygon(copy), psColored(copy) {}

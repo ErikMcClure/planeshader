@@ -276,7 +276,7 @@ psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psCo
 psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _arcs(mov._arcs), _edge(mov._edge) {}
 psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
   psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, scale),
-  _outline(0), _edge(-1), _arcs(-PI, PI, -PI, PI)
+  _outline(0), _edge(0), _arcs(0, PI_DOUBLEf, 0, PI_DOUBLEf)
 {
   SetDim(psVec(radius*2));
 }

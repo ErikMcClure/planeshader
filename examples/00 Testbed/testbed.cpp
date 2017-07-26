@@ -137,18 +137,6 @@ TESTDEF::RETPAIR test_psOpenGL4()
   ENDTEST;
 }
 
-TESTDEF::RETPAIR test_psInheritable()
-{
-  BEGINTEST;
-
-  // use a worst case inheritance pattern here and then copy to another psInheritable
-  // Verify that the copy clones things correctly, renders things correctly, and gets culled properly
-  // do this both inside and outside the automatic pass management
-  // then verify it gets destroyed properly.
-
-  ENDTEST;
-}
-
 // Main program function
 int main(int argc, char** argv)
 {
@@ -162,6 +150,7 @@ int main(int argc, char** argv)
   freopen("CONIN$", "rb", stdin);
 
   TESTDEF tests[] = {
+    { "psGeometry", &test_psGeometry },
     //{ "PBR_System", &test_PBR_System },
     { "ps_feather", &test_feather },
     { "psFont", &test_psFont },
@@ -174,7 +163,6 @@ int main(int argc, char** argv)
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
     { "psParticles", &test_psParticles },
-    { "psInheritable", &test_psInheritable },
   };
 
   const size_t NUMTESTS = sizeof(tests) / sizeof(TESTDEF);

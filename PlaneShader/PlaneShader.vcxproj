@@ -485,6 +485,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
   <ItemGroup>
     <ClInclude Include="..\include\planeshader\psCamera.h" />
     <ClInclude Include="..\include\planeshader\psCircle.h" />
+    <ClInclude Include="..\include\planeshader\psCircleSegment.h" />
     <ClInclude Include="..\include\planeshader\psColor.h" />
     <ClInclude Include="..\include\planeshader\psColored.h" />
     <ClInclude Include="..\include\planeshader\psCullGroup.h" />

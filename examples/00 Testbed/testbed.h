@@ -59,6 +59,7 @@ extern TESTDEF::RETPAIR test_psFont();
 extern TESTDEF::RETPAIR test_psPass();
 extern TESTDEF::RETPAIR test_psTileset();
 extern TESTDEF::RETPAIR test_psVector();
+extern TESTDEF::RETPAIR test_psGeometry();
 extern TESTDEF::RETPAIR test_psParticles();
 extern TESTDEF::RETPAIR test_PBR_System();
 

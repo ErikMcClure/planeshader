@@ -397,6 +397,7 @@
     <ClCompile Include="test_psDirectX11.cpp" />
     <ClCompile Include="test_psEffect.cpp" />
     <ClCompile Include="test_psFont.cpp" />
+    <ClCompile Include="test_psGeometry.cpp" />
     <ClCompile Include="test_psPass.cpp" />
     <ClCompile Include="test_psTileset.cpp" />
     <ClCompile Include="test_psVector.cpp" />

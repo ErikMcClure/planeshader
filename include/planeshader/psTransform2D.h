@@ -15,13 +15,13 @@ namespace planeshader {
     psVec pivot;
 
     BSS_FORCEINLINE psTransform2D Push(const psTransform2D& p) const { return Push(p.position, p.rotation, p.pivot); }
-    inline psTransform2D Push(const psVec3D& pos, float r, const psVec& p) const { return psTransform2D{ CalcPosition(pos, r, p), r + rotation, p }; }
-    BSS_FORCEINLINE psVec3D CalcPosition(const psTransform2D& p) const { return CalcPosition(p.position, p.rotation, p.pivot); }
-    inline psVec3D CalcPosition(const psVec3D& pos, float r, const psVec& p) const
+    inline psTransform2D Push(const psVec3D& pos, float r, const psVec& p) const { return psTransform2D{ CalcPosition(pos), r + rotation, p }; }
+    BSS_FORCEINLINE psVec3D CalcPosition(const psTransform2D& p) const { return CalcPosition(p.position); }
+    inline psVec3D CalcPosition(const psVec3D& pos) const
     {
       psVec3D ret(pos);
-      if(r != 0.0f)
-        psVec::RotatePoint(ret.x, ret.y, r, pivot.x, pivot.y);
+      if(rotation != 0.0f)
+        psVec::RotatePoint(ret.x, ret.y, rotation, pivot.x, pivot.y);
       return ret + position;
     }
     inline void GetMatrix(psMatrix& matrix) const

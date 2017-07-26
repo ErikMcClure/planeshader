@@ -51,8 +51,8 @@ TESTDEF::RETPAIR test_psTileset()
   auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  const int dimx = 2000;
-  const int dimy = 2000;
+  const int dimx = 500;
+  const int dimy = 500;
   char edges[dimy + 1][dimx + 1][2];
   for(char* i = edges[0][0]; i - edges[0][0] < sizeof(edges) / sizeof(char); ++i)
     *i = RANDBOOLGEN();

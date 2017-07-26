@@ -138,6 +138,9 @@
     <ClInclude Include="..\include\planeshader\psTransform2D.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\planeshader\psCircleSegment.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="psEngine.cpp">
