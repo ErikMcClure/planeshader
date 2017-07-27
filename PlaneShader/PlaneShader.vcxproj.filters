@@ -63,31 +63,16 @@
     <ClInclude Include="..\include\planeshader\psColor.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\psCircle.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\ps_interface.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\planeshader\psSolid.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\psEllipse.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\planeshader\psLine.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\psCullGroup.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\planeshader\psColored.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\planeshader\psTriangle.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\planeshader\psPolygon.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\planeshader\psTexFont.h">

@@ -116,7 +116,7 @@ psBatchObj* psDriver::DrawArray(psShader* shader, const psStateblock* stateblock
 
 void psDriver::MergeClipRect(const psRect& rect)
 {
-  PushClipRect(PeekClipRect().GenerateIntersection(rect));
+  PushClipRect(PeekClipRect().Intersection(rect));
 }
 
 void psDriver::PushTransform(const psMatrix& xform)

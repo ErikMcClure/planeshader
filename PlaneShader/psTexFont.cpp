@@ -17,7 +17,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
   const int* pos;
   const int* peek = text;
   psRect area(prearea);
-  psVec maxdim = area.GetDimensions();
+  psVec maxdim = area.Dim();
   psVec texdim;
   psVec dim(0, 0);
   uint8_t svar=_textures.Capacity();

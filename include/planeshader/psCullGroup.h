@@ -34,7 +34,7 @@ namespace planeshader {
     typedef bss::BlockPolicy<bss::KDNode<psSolid>> KDNODE_ALLOC;
 
   protected:
-    BSS_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic()._ltrbarray; }
+    BSS_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic().ltrb; }
     BSS_FORCEINLINE static bss::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bss::LLBase<psSolid>*)&p->_llist); }
     BSS_FORCEINLINE static void CF_MERGE(psSolid* p) { if(!p->GetPass()) psPass::CurPass->_sort(p); else p->GetPass()->_sort(p); }
     BSS_FORCEINLINE static bss::KDNode<psSolid>*& CF_FNODE(psSolid* p) { return p->_kdnode; }

@@ -97,10 +97,8 @@ void updatefpscount(uint64_t& timer, int& fps)
 TESTDEF::RETPAIR test_psCircle()
 {
   BEGINTEST;
-  TEST(psCirclei(1, 2, 1).IntersectPoint(2, 2));
-  TEST(!psCirclei(1, 1, 1).IntersectPoint(2, 2));
-  TEST(psCircle(1.5f, 1.5f, 2).IntersectPoint(2, 2));
-  TEST(!psCircle(1.5f, 1.5f, 0.1f).IntersectPoint(2, 2));
+  TEST(psCircle(1.5f, 1.5f, 2).ContainsPoint(2, 2));
+  TEST(!psCircle(1.5f, 1.5f, 0.1f).ContainsPoint(2, 2));
   ENDTEST;
 }
 
@@ -108,10 +106,10 @@ TESTDEF::RETPAIR test_psRect()
 {
   BEGINTEST;
   psRect rct(-1.0f, 0.0f, 1.0f, 2.0f);
-  TEST(!rct.IntersectPoint(2, 2));
-  TEST(!rct.IntersectPoint(1, 2));
-  TEST(rct.IntersectPoint(-1, 0));
-  TEST(rct.IntersectPoint(0, 1));
+  TEST(!rct.ContainsPoint(2, 2));
+  TEST(!rct.ContainsPoint(1, 2));
+  TEST(rct.ContainsPoint(-1, 0));
+  TEST(rct.ContainsPoint(0, 1));
   ENDTEST;
 }
 

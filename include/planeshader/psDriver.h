@@ -4,7 +4,7 @@
 #ifndef __DRIVER_H__PS__
 #define __DRIVER_H__PS__
 
-#include "psLine.h"
+#include "psRect.h"
 #include "bss-util\DynArray.h"
 
 namespace planeshader {

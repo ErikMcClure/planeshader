@@ -176,7 +176,7 @@ psRoundRect::psRoundRect(const psRectRotateZ& rect, psFlag flags, int zorder, ps
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
   !shader?_driver->library.ROUNDRECT:shader, pass, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
 {
-  SetDim(rect.GetDimensions());
+  SetDim(rect.Dim());
 }
 psRoundRect::~psRoundRect(){}
 
@@ -227,7 +227,7 @@ psRoundTri::psRoundTri(const psRectRotateZ& rect, psFlag flags, int zorder, psSt
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
     !shader ? _driver->library.ROUNDTRI : shader, pass, scale), _outline(0), _edge(-1), _corners(0, 0, 0, 0)
 {
-  SetDim(rect.GetDimensions());
+  SetDim(rect.Dim());
 }
 psRoundTri::~psRoundTri() {}
 
