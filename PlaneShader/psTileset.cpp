@@ -125,7 +125,7 @@ void psTileset::_render(const psTransform2D& parent)
     psVec3D lt = _driver->FromScreenSpace(c.topleft, crect.z);
     psVec3D rb = _driver->FromScreenSpace(c.bottomright, crect.z);
     r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
-    window = window.GenerateIntersection(psRecti(
+    window = window.Intersection(psRecti(
       bss::fFastTruncate(r.left / _tiledim.x), 
       bss::fFastTruncate(r.top / _tiledim.y), 
       bss::fFastTruncate(r.right / _tiledim.x) + 1, 

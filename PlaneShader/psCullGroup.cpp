@@ -38,9 +38,9 @@ void psCullGroup::Render(const psTransform2D* parent)
   float camZ = pass->GetCamera()->GetPosition().z;
   BSS_ALIGN(16) float rcull[4];
   if(!parent)
-    AdjustRect(pass->GetCamera()->GetCache().window._ltrbarray, camZ, rcull);
+    AdjustRect(pass->GetCamera()->GetCache().window.ltrb, camZ, rcull);
   else
-    AdjustRect(pass->GetCamera()->GetCache().full.RelativeTo(parent->position, parent->rotation, parent->pivot).BuildAABB()._ltrbarray, camZ, rcull);
+    AdjustRect(pass->GetCamera()->GetCache().full.RelativeTo(parent->position, parent->rotation, parent->pivot).BuildAABB().ltrb, camZ, rcull);
 
   if(!parent)
   {

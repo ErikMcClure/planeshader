@@ -3,7 +3,6 @@
 #include "testbed.h"
 #include "psRenderGeometry.h"
 #include "psPass.h"
-#include "psCircleSegment.h"
 #include "psVector.h"
 #include "psImage.h"
 
@@ -18,7 +17,7 @@ TESTDEF::RETPAIR test_psGeometry()
   auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  psCircleSegment segment(300, 100, 10, 50, PI/2, 0.5);
+  bss::CircleSector<float> segment(300, 100, 10, 50, PI/2, 0.5);
 
   psRenderCircle arc(50, psVec3D(300, 100, 0));
   arc.SetOutline(segment.outer - segment.inner);
@@ -53,19 +52,19 @@ TESTDEF::RETPAIR test_psGeometry()
   {
     processGUI();
     psRenderLine::DrawLine(line, 0xFFFFFFFF);
-    float out[2][2];
-    int n = psCircleSegment::_lineSegmentRadiusIntersect(line.x1 - circle.GetPosition().x, line.y1 - circle.GetPosition().y, line.x2 - circle.GetPosition().x, line.y2 - circle.GetPosition().y, circle.GetDim().x / 2, out);
+    psVec out[2];
+    int n = bss::LineSegmentRadiusIntersect<float>(line.x1 - circle.GetPosition().x, line.y1 - circle.GetPosition().y, line.x2 - circle.GetPosition().x, line.y2 - circle.GetPosition().y, circle.GetDim().x / 2, out);
     line.p2 = globalcam.GetMouseAbsolute();
     //circle3.SetPosition(line.p2);
     arc2.SetPosition(line.p2);
-    n = psCircleSegment::_intersectCircle(segment.outer, line.p2.x - arc.GetPosition().x, line.p2.y - arc.GetPosition().y, segment.outer, out);
+    n = bss::CircleRadiusIntersect<float>(segment.outer, line.p2.x - arc.GetPosition().x, line.p2.y - arc.GetPosition().y, segment.outer, out);
     //float X = arc2.GetPosition().x - segment.x;
     //float Y = arc2.GetPosition().y - segment.y;
     //n = psCircleSegment::_lineSegmentRadiusIntersect((cos(segment.min) * segment.inner) - X, - (sin(segment.min) * segment.inner) - Y, (cos(segment.min) * segment.outer) - X, - (sin(segment.min) * segment.outer) - Y, segment.outer, out);
     if(n > 0)
-      circle1.SetPosition(psVec(out[0][0], out[0][1]) + arc2.GetPosition().xy);
+      circle1.SetPosition(out[0] + arc2.GetPosition().xy);
     if(n > 1)
-      circle2.SetPosition(psVec(out[1][0], out[1][1]) + arc2.GetPosition().xy);
+      circle2.SetPosition(out[1] + arc2.GetPosition().xy);
 
     engine->End();
     time.Update();
@@ -79,7 +78,7 @@ TESTDEF::RETPAIR test_psGeometry()
     //arc.SetOutlineColor(segment.IntersectLine(line.x1, line.y1, line.x2, line.y2) ? 0xFF00FF00 : 0xFFFFFFFF);
     //arc.SetOutlineColor(segment.IntersectCircle(circle3.GetPosition().x, circle3.GetPosition().y, circle3.GetDim().x * 0.5f) ? 0xFFFF0000 : 0xFFFFFFFF);
 
-    arc.SetOutlineColor(segment.IntersectCircleSegment(arc2.GetPosition().x, arc2.GetPosition().y, segment.inner, segment.outer, segment.min, segment.range) ? 0xFFFF0000 : 0xFFFFFFFF);
+    arc.SetOutlineColor(segment.CircleSegmentCollide(arc2.GetPosition().x, arc2.GetPosition().y, segment.inner, segment.outer, segment.min, segment.range) ? 0xFFFF0000 : 0xFFFFFFFF);
   }
 
   ENDTEST;

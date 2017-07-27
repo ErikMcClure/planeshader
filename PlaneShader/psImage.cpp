@@ -66,7 +66,7 @@ void psImage::SetTexture(psTex* tex, uint32_t index)
 void psImage::_recalcdim()
 {
   if(_tex.Capacity() > 0 && _tex[0])
-    SetDim((_uvs.Capacity()>0)?(_tex[0]->GetDim()*_uvs[0].GetDimensions()):_tex[0]->GetDim());
+    SetDim((_uvs.Capacity()>0)?(_tex[0]->GetDim()*_uvs[0].Dim()):_tex[0]->GetDim());
 }
 
 void psImage::ApplyEdgeBuffer()

@@ -484,24 +484,20 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\planeshader\psCamera.h" />
-    <ClInclude Include="..\include\planeshader\psCircle.h" />
     <ClInclude Include="..\include\planeshader\psCircleSegment.h" />
     <ClInclude Include="..\include\planeshader\psColor.h" />
     <ClInclude Include="..\include\planeshader\psColored.h" />
     <ClInclude Include="..\include\planeshader\psCullGroup.h" />
     <ClInclude Include="..\include\planeshader\psDriver.h" />
     <ClInclude Include="..\include\planeshader\psEffect.h" />
-    <ClInclude Include="..\include\planeshader\psEllipse.h" />
     <ClInclude Include="..\include\planeshader\psEngine.h" />
     <ClInclude Include="..\include\planeshader\psFont.h" />
     <ClInclude Include="..\include\planeshader\psChart.h" />
     <ClInclude Include="..\include\planeshader\psGUIManager.h" />
     <ClInclude Include="..\include\planeshader\psImage.h" />
     <ClInclude Include="..\include\planeshader\psGroup.h" />
-    <ClInclude Include="..\include\planeshader\psLine.h" />
     <ClInclude Include="..\include\planeshader\psLocatable.h" />
     <ClInclude Include="..\include\planeshader\psPass.h" />
-    <ClInclude Include="..\include\planeshader\psPolygon.h" />
     <ClInclude Include="..\include\planeshader\psRect.h" />
     <ClInclude Include="..\include\planeshader\psRenderable.h" />
     <ClInclude Include="..\include\planeshader\psRenderGeometry.h" />
@@ -514,7 +510,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psTextured.h" />
     <ClInclude Include="..\include\planeshader\psTileset.h" />
     <ClInclude Include="..\include\planeshader\psTransform2D.h" />
-    <ClInclude Include="..\include\planeshader\psTriangle.h" />
     <ClInclude Include="..\include\planeshader\psVec.h" />
     <ClInclude Include="..\include\planeshader\psVector.h" />
     <ClInclude Include="..\include\planeshader\ps_dec.h" />

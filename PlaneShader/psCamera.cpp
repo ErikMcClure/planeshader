@@ -49,7 +49,7 @@ psVec psCamera::GetMouseAbsolute(const psTex* rt) const
 void psCamera::SetPivotAbs(const psVec& pivot, const psTex* rt)
 {
   if(!rt) rt = _driver->GetBackBuffer();
-  SetPivot((pivot / rt->GetDim()) * _viewport.GetDimensions());
+  SetPivot((pivot / rt->GetDim()) * _viewport.Dim());
 }
 
 // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
@@ -103,11 +103,11 @@ inline psTransform2D psCamera::Resolve(const psTransform2D& rect) const
 
 inline void psCamera::CamCache::SetSSE()
 {
-  SSEwindow = sseVec(window._ltrbarray);
+  SSEwindow = sseVec(window.ltrb);
   SSEwindow_center = sseVec((SSEwindow + sseVec::Shuffle<0x4E>(SSEwindow))*sseVec(0.5f));
   SSEwindow_hold = sseVec(SSEwindow - SSEwindow_center);
 
-  SSEfixed = sseVec(winfixed._ltrbarray);
+  SSEfixed = sseVec(winfixed.ltrb);
   SSEfixed_center = sseVec((SSEfixed + sseVec::Shuffle<0x4E>(SSEfixed))*sseVec(0.5f));
   SSEfixed_hold = sseVec(SSEfixed - SSEfixed_center);
 }
@@ -118,13 +118,13 @@ bool psCamera::CamCache::Cull(const psRect& rect, float rectz, float camz, psFla
     rectz += 1.0f;
     r_adjust(SSEfixed, SSEfixed_hold, SSEfixed_center, lastfixed, rectz);
     BSS_ALIGN(16) psRect rfixed(SSEfixed);
-    return !rect.IntersectRect(rfixed);
+    return !rect.RectCollide(rfixed);
   }
 
   rectz -= camz;
   r_adjust(SSEwindow, SSEwindow_hold, SSEwindow_center, last, rectz);
   BSS_ALIGN(16) psRect rfixed(SSEwindow);
-  return !rect.IntersectRect(rfixed);
+  return !rect.RectCollide(rfixed);
 }
 
 

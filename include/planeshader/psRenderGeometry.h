@@ -4,10 +4,8 @@
 #ifndef __RENDER_GEOMETRY_H__PS__
 #define __RENDER_GEOMETRY_H__PS__
 
-#include "psLine.h"
+#include "psRect.h"
 #include "psSolid.h"
-#include "psPolygon.h"
-#include "psEllipse.h"
 #include "psColored.h"
 #include "psDriver.h"
 #include "psTextured.h"
