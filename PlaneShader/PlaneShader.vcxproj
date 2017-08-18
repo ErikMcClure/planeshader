@@ -141,26 +141,26 @@
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">
     <OutDir>$(ProjectDir)..\bin32\</OutDir>
     <TargetName>$(ProjectName)32_d_s</TargetName>
     <CustomBuildAfterTargets />
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
     <CustomBuildAfterTargets />
     <OutDir>$(ProjectDir)..\bin\</OutDir>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">
     <TargetName>$(ProjectName)_d_s</TargetName>
     <CustomBuildAfterTargets />
     <OutDir>$(ProjectDir)..\bin\</OutDir>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)..\bin32\</OutDir>
@@ -168,26 +168,26 @@
     </CustomBuildAfterTargets>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)32</TargetName>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">
     <OutDir>$(ProjectDir)..\bin32\</OutDir>
     <CustomBuildAfterTargets />
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)32_s</TargetName>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <CustomBuildAfterTargets />
     <TargetName>$(ProjectName)</TargetName>
     <OutDir>$(ProjectDir)..\bin\</OutDir>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">
     <CustomBuildAfterTargets />
     <TargetName>$(ProjectName)_s</TargetName>
     <OutDir>$(ProjectDir)..\bin\</OutDir>
-    <ExecutablePath>$(UniversalCRTSdkDir)bin\x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(UniversalCRTSdkDir)bin\10.0.15063.0\x64;$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -198,6 +198,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -225,6 +226,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ProgramDataBaseFileName>$(TargetDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -250,6 +252,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;feathergui_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -276,6 +279,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;feathergui_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ProgramDataBaseFileName>$(TargetDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -310,6 +314,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -343,6 +348,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ProgramDataBaseFileName>$(TargetDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -375,6 +381,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -408,6 +415,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ProgramDataBaseFileName>$(TargetDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

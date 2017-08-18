@@ -78,7 +78,7 @@ TESTDEF::RETPAIR test_psGeometry()
     //arc.SetOutlineColor(segment.IntersectLine(line.x1, line.y1, line.x2, line.y2) ? 0xFF00FF00 : 0xFFFFFFFF);
     //arc.SetOutlineColor(segment.IntersectCircle(circle3.GetPosition().x, circle3.GetPosition().y, circle3.GetDim().x * 0.5f) ? 0xFFFF0000 : 0xFFFFFFFF);
 
-    arc.SetOutlineColor(segment.CircleSegmentCollide(arc2.GetPosition().x, arc2.GetPosition().y, segment.inner, segment.outer, segment.min, segment.range) ? 0xFFFF0000 : 0xFFFFFFFF);
+    arc.SetOutlineColor(segment.CircleSectorCollide(arc2.GetPosition().x, arc2.GetPosition().y, segment.inner, segment.outer, segment.min, segment.range) ? 0xFFFF0000 : 0xFFFFFFFF);
   }
 
   ENDTEST;

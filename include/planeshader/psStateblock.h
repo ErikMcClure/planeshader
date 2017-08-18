@@ -1,5 +1,5 @@
 // Copyright ©2017 Black Sphere Studios
-// For conditions of distribution and use, see copyright notice in PlaneShader.h
+// For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __STATEBLOCK_H__PS__
 #define __STATEBLOCK_H__PS__
@@ -97,7 +97,7 @@ namespace planeshader {
       uint16_t sz=sb->Capacity();
       khint32_t r=0;
       for(uint16_t i = 0; i < sz; ++i)
-        r=bss::KH_INT64_HASHFUNC((((int64_t)bss::KH_INT64_HASHFUNC((*sb)[i].__vali64))<<32)|r);
+        r=bss::KH_INT_HASH((((int64_t)bss::KH_INT_HASH((*sb)[i].__vali64))<<32)|r);
       return r;
     }
     inline static bool SIEQUALITY(STATEINFOS* const& left, STATEINFOS* const& right)
@@ -111,7 +111,7 @@ namespace planeshader {
       return true;
     }
     static STATEINFOS* Exists(STATEINFOS* compare);
-    typedef bss::HashBase<STATEINFOS*, char, false, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
+    typedef bss::HashBase<STATEINFOS*, void, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
     static BLOCKHASH _blocks;
   };
 
