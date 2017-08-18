@@ -17,6 +17,8 @@ TESTDEF::RETPAIR test_psDirectX11()
   int fps = 0;
   //psTex* pslogo = psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_BOX, 0, FILTER_NONE, psVeciu(192));
   psTex* pslogo = psTex::Create("../media/pslogo.png", USAGE_SHADER_RESOURCE, FILTER_LINEAR, 0, FILTER_NONE, false);
+  if(!pslogo)
+    ENDTEST;
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
   globalcam.SetPosition(500, 500);

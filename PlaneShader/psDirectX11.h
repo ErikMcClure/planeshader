@@ -8,10 +8,15 @@
 #include "psShader.h"
 #include "bss-util/Stack.h"
 #include "bss-util/win32_includes.h"
-#include "directx/D3D11.h"
-#include "directx/D3DX11.h"
-#include "psDXGI.h"
 #include <array>
+#ifdef USE_DIRECTXTK
+#include <d3d11.h>
+#else
+#include "directx/d3d11.h"
+#endif
+#include "psDXGI.h"
+
+struct D3DX11_IMAGE_LOAD_INFO;
 
 namespace planeshader {
   class psMonitor;
@@ -169,9 +174,9 @@ namespace planeshader {
     static inline uint32_t _usagetobind(uint32_t types);
     static inline uint32_t _filtertodx11(FILTERS filter);
     static inline uint32_t _reverseusage(uint32_t usage, uint32_t misc, uint32_t bind, bool multisample); //reassembles DX11 flags into a generic usage flag
+    static void _getTextureInfo(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, FORMATS format, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB);
     static inline const char* _geterror(HRESULT err);
     static inline D3D11_PRIMITIVE_TOPOLOGY _getdx11topology(PRIMITIVETYPE type);
-    static void _loadtexture(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, FORMATS format, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB);
     static ID3D11Resource* _textotex2D(void* t);
     static bool _customfilter(FILTERS filter);
     psShader* _getfiltershader(FILTERS filter);
@@ -191,6 +196,7 @@ namespace planeshader {
     psVeciu _getrendertargetsize(ID3D11RenderTargetView* view);
     bool _checksnapshot(Snapshot& s);
     psBatchObj* _checkflush(psBatchObj* obj, uint32_t num);
+    void* _loadTexture(const char* path, size_t datasize, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB);
 
     ID3D11Device* _device;
     ID3D11DeviceContext* _context;

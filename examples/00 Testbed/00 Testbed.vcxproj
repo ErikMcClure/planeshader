@@ -420,7 +420,7 @@
     <ClCompile Include="text_psParticles.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\media\blank.rc" />
+    <ResourceCompile Include="..\blank.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="testbed.h" />

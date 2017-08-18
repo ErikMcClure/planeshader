@@ -11,6 +11,11 @@
 #include "bss-util/profiler.h"
 #include "psColor.h"
 #include "psCamera.h"
+#ifdef USE_DIRECTXTK
+#include "DirectXTK/WICTextureLoader.h"
+#else
+#include "directx/D3DX11.h"
+#endif
 
 #include "psDirectX11_quadVS_main.h"
 #include "psDirectX11_image_mainVS.h"
@@ -45,25 +50,36 @@
 using namespace planeshader;
 using namespace bss;
 
-#ifdef BSS_CPU_x86_64
+#ifdef USE_DIRECTXTK
+#pragma comment(lib, "d3d10_1.lib")
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "dxErr.lib")
+#pragma comment(lib, "DirectXTK.lib")
+#else
+#ifdef BSS_64BIT
+#pragma comment(lib, "../lib/dxlib/x64/d3d10.lib")
 #pragma comment(lib, "../lib/dxlib/x64/d3d11.lib")
-#pragma comment(lib, "../lib/dxlib/x64/dxguid.lib")
 #pragma comment(lib, "../lib/dxlib/x64/dxgi.lib")
-#pragma comment(lib, "../lib/dxlib/x64/DxErr.lib")
+#pragma comment(lib, "../lib/dxlib/x64/dxguid.lib")
+#pragma comment(lib, "../lib/dxlib/x64/dxErr.lib")
 #ifdef BSS_DEBUG
 #pragma comment(lib, "../lib/dxlib/x64/d3dx11d.lib")
 #else
 #pragma comment(lib, "../lib/dxlib/x64/d3dx11.lib")
 #endif
 #else
+#pragma comment(lib, "../lib/dxlib/d3d10.lib")
 #pragma comment(lib, "../lib/dxlib/d3d11.lib")
-#pragma comment(lib, "../lib/dxlib/dxguid.lib")
-#pragma comment(lib, "../lib/dxlib/DxErr.lib")
 #pragma comment(lib, "../lib/dxlib/dxgi.lib")
+#pragma comment(lib, "../lib/dxlib/dxguid.lib")
+#pragma comment(lib, "../lib/dxlib/dxErr.lib")
 #ifdef BSS_DEBUG
 #pragma comment(lib, "../lib/dxlib/d3dx11d.lib")
 #else
 #pragma comment(lib, "../lib/dxlib/d3dx11.lib")
+#endif
 #endif
 #endif
 
@@ -79,7 +95,7 @@ using namespace bss;
 #define LOGFAILURE(fn,...) LOGFAILURERET(fn,LOGEMPTY,__VA_ARGS__)
 #define LOGFAILURERETNULL(fn,...) LOGFAILURERET(fn,0,__VA_ARGS__)
 
-class IHeaderBlob : public ID3DBlob
+class IHeaderBlob : public ID3D10Blob
 {
 public:
   IHeaderBlob(const void* data, size_t len) : _data(data), _len(len) {}
@@ -89,8 +105,8 @@ public:
     *ppvObject = nullptr;
     HRESULT hr = S_OK;
 
-    if(riid == __uuidof(ID3DBlob))
-      *ppvObject = static_cast<ID3DBlob*>(this);
+    if(riid == IID_ID3D10Blob)
+      *ppvObject = static_cast<ID3D10Blob*>(this);
     else if(riid == __uuidof(IUnknown))
       *ppvObject = this;
     else
@@ -836,8 +852,8 @@ inline const char* psDirectX11::_geterror(HRESULT err)
   {
   case D3D11_ERROR_FILE_NOT_FOUND: return "D3D11_ERROR_FILE_NOT_FOUND";
   case D3D11_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS: return "D3D11_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS";
-  case D3DERR_INVALIDCALL: return "D3DERR_INVALIDCALL";
-  case D3DERR_WASSTILLDRAWING: return "D3DERR_WASSTILLDRAWING";
+  case D3D11_ERROR_TOO_MANY_UNIQUE_VIEW_OBJECTS: return "D3D11_ERROR_TOO_MANY_UNIQUE_VIEW_OBJECTS";
+  case D3D11_ERROR_DEFERRED_CONTEXT_MAP_WITHOUT_INITIAL_DISCARD: return "D3D11_ERROR_DEFERRED_CONTEXT_MAP_WITHOUT_INITIAL_DISCARD";
   }
   return GetDXGIError(err);
 }
@@ -859,26 +875,6 @@ void* psDirectX11::CreateTexture(psVeciu dim, FORMATS format, uint32_t usage, ui
     else if(usage&USAGE_DEPTH_STENCIL)
       *additionalview = _createdepthview(tex);
   return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
-}
-
-void psDirectX11::_loadtexture(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, FORMATS format, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB)
-{
-  memset(info, D3DX11_DEFAULT, sizeof(D3DX11_IMAGE_LOAD_INFO));
-  info->MipLevels = miplevels;
-  info->FirstMipLevel = 0;
-  info->Filter = _filtertodx11(loadfilter);
-  if(sRGB) info->Filter |= D3DX11_FILTER_SRGB_IN;
-  info->MipFilter = _filtertodx11(FILTERS(mipfilter&FILTER_MASK));
-  if(sRGB || (mipfilter&FILTER_SRGB_MIPMAP)) info->MipFilter |= D3DX11_FILTER_SRGB;
-  if(dim.x != 0) info->Width = dim.x;
-  if(dim.y != 0) info->Height = dim.y;
-  info->Usage = (D3D11_USAGE)_usagetodxtype(usage);
-  info->BindFlags = _usagetobind(usage);
-  info->CpuAccessFlags = _usagetocpuflag(usage);
-  info->MiscFlags = _usagetomisc(usage, false);
-  info->pSrcInfo = 0;
-  if(format != FMT_UNKNOWN) info->Format = FMTtoDXGI(format);
-  else if(sRGB) info->Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 }
 
 void psDirectX11::_applyloadshader(ID3D11Texture2D* tex, psShader* shader, bool sRGB)
@@ -971,15 +967,74 @@ void psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* shader)
   buftex->Release();
 }
 
-void* psDirectX11::LoadTexture(const char* path, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
+void psDirectX11::_getTextureInfo(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, FORMATS format, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB)
+{
+#ifndef USE_DIRECTXTK
+  memset(info, D3DX11_DEFAULT, sizeof(D3DX11_IMAGE_LOAD_INFO));
+  info->MipLevels = miplevels;
+  info->FirstMipLevel = 0;
+  info->Filter = _filtertodx11(loadfilter);
+  if(sRGB) info->Filter |= D3DX11_FILTER_SRGB_IN;
+  info->MipFilter = _filtertodx11(FILTERS(mipfilter&FILTER_MASK));
+  if(sRGB || (mipfilter&FILTER_SRGB_MIPMAP)) info->MipFilter |= D3DX11_FILTER_SRGB;
+  if(dim.x != 0) info->Width = dim.x;
+  if(dim.y != 0) info->Height = dim.y;
+  info->Usage = (D3D11_USAGE)_usagetodxtype(usage);
+  info->BindFlags = _usagetobind(usage);
+  info->CpuAccessFlags = _usagetocpuflag(usage);
+  info->MiscFlags = _usagetomisc(usage, false);
+  info->pSrcInfo = 0;
+  if(format != FMT_UNKNOWN) info->Format = FMTtoDXGI(format);
+  else if(sRGB) info->Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+#endif
+}
+
+void* psDirectX11::_loadTexture(const char* path, size_t datasize, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
   PROFILE_FUNC();
-  D3DX11_IMAGE_LOAD_INFO info;
-  if(_customfilter(mipfilter)) usage |= USAGE_SHADER_RESOURCE;
-  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
-
   ID3D11Resource* tex = 0;
-  LOGFAILURERETNULL(D3DX11CreateTextureFromFileW(_device, StrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path);
+  ID3D11ShaderResourceView* view = 0;
+  if(_customfilter(mipfilter)) usage |= USAGE_SHADER_RESOURCE;
+
+#ifndef USE_DIRECTXTK
+  D3DX11_IMAGE_LOAD_INFO info;
+  _getTextureInfo(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
+  if(datasize > 0)
+    LOGFAILURERETNULL(D3DX11CreateTextureFromMemory(_device, (const void*)path, datasize, &info, 0, &tex, 0), "LoadTexture failed for ", (const void*)path)
+  else
+    LOGFAILURERETNULL(D3DX11CreateTextureFromFileW(_device, StrW(path), &info, 0, &tex, 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path)
+
+  if(usage&USAGE_SHADER_RESOURCE)
+    view = static_cast<ID3D11ShaderResourceView*>(_createshaderview(tex));
+#else
+  if(datasize > 0)
+    LOGFAILURERETNULL(DirectX::CreateWICTextureFromMemoryEx(
+    _device,
+    _context,
+    (const uint8_t*)path,
+    datasize,
+    0,
+    (D3D11_USAGE)_usagetodxtype(usage),
+    _usagetobind(usage),
+    _usagetocpuflag(usage),
+    _usagetomisc(usage, false),
+    sRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_IGNORE_SRGB,
+    &tex,
+    &view), "LoadTexture failed for ", (const void*)path)
+  else
+    LOGFAILURERETNULL(DirectX::CreateWICTextureFromFileEx(
+      _device,
+      _context,
+      StrW(path).c_str(),
+      0,
+      (D3D11_USAGE)_usagetodxtype(usage),
+      _usagetobind(usage),
+      _usagetocpuflag(usage),
+      _usagetomisc(usage, false),
+      sRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_IGNORE_SRGB,
+      &tex,
+      &view), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path)
+#endif
 
   if(_customfilter(loadfilter))
     _applyloadshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(loadfilter), loadfilter == FILTER_PREMULTIPLY_SRGB);
@@ -988,37 +1043,26 @@ void* psDirectX11::LoadTexture(const char* path, uint32_t usage, FORMATS format,
     _applymipshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(mipfilter));
 
 #ifdef BSS_DEBUG
-  tex->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)strlen(path), path);
+  if(!datasize)
+    tex->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)strlen(path), path);
 #endif
   if(usage&USAGE_RENDERTARGET)
     *additionalview = _creatertview(tex);
   else if(usage&USAGE_DEPTH_STENCIL)
     *additionalview = _createdepthview(tex);
-  return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
+  return view ? (void*)view : new DX11_EmptyView(tex);
 }
 
 void* psDirectX11::LoadTextureInMemory(const void* data, size_t datasize, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
-  PROFILE_FUNC();
-  D3DX11_IMAGE_LOAD_INFO info;
-  if(_customfilter(mipfilter)) usage |= USAGE_SHADER_RESOURCE;
-  _loadtexture(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
-
-  ID3D11Resource* tex = 0;
-  LOGFAILURERETNULL(D3DX11CreateTextureFromMemory(_device, data, datasize, &info, 0, &tex, 0), "LoadTexture failed for ", data);
-
-  if(_customfilter(loadfilter))
-    _applyloadshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(loadfilter), loadfilter == FILTER_PREMULTIPLY_SRGB);
-
-  if(_customfilter(mipfilter))
-    _applymipshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(mipfilter));
-
-  if(usage&USAGE_RENDERTARGET)
-    *additionalview = _creatertview(tex);
-  else if(usage&USAGE_DEPTH_STENCIL)
-    *additionalview = _createdepthview(tex);
-  return ((usage&USAGE_SHADER_RESOURCE) != 0) ? _createshaderview(tex) : new DX11_EmptyView(tex);
+  return !datasize ? 0 : _loadTexture((const char*)data, datasize, usage, format, additionalview, miplevels, mipfilter, loadfilter, dim, texblock, sRGB);
 }
+
+void* psDirectX11::LoadTexture(const char* path, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
+{
+  return _loadTexture(path, 0, usage, format, additionalview, miplevels, mipfilter, loadfilter, dim, texblock, sRGB);
+}
+
 void psDirectX11::CopyTextureRect(const psRectiu* srcrect, psVeciu destpos, void* src, void* dest, uint8_t miplevel)
 {
   if(!srcrect)
@@ -1490,7 +1534,8 @@ void* psDirectX11::CompileShader(const char* source, SHADER_VER profile, const c
   PROFILE_FUNC();
   ID3D10Blob* ret = 0;
   ID3D10Blob* err = 0;
-  if(FAILED(_lasterr = D3DX11CompileFromMemory(source, strlen(source), 0, 0, 0, entrypoint, shader_profiles[profile], 0, 0, 0, &ret, &err, 0)))
+  
+  if(FAILED(_lasterr = D3D10CompileShader(source, strlen(source), 0, 0, 0, entrypoint, shader_profiles[profile], 0, &ret, &err)))
   {
     if(!err) PSLOG(2, "The effect could not be compiled! ERR: ", _geterror(_lasterr), " Source: \n", source);
     else if(_lasterr == 0x8007007e) PSLOG(2, "The effect cannot be loaded because a module cannot be found (?) Source: \n", source);
@@ -1802,6 +1847,7 @@ uint32_t psDirectX11::_reverseusage(uint32_t usage, uint32_t misc, uint32_t bind
 }
 inline uint32_t psDirectX11::_filtertodx11(FILTERS filter)
 {
+#ifndef USE_DIRECTXTK
   switch(filter)
   {
   case FILTER_NEAREST:
@@ -1814,17 +1860,20 @@ inline uint32_t psDirectX11::_filtertodx11(FILTERS filter)
     return D3DX11_FILTER_TRIANGLE;
   }
   return D3DX11_FILTER_NONE;
+#else
+  return 0;
+#endif
 }
 
 D3D11_PRIMITIVE_TOPOLOGY psDirectX11::_getdx11topology(PRIMITIVETYPE type)
 {
   switch(type)
   {
-  case POINTLIST: return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
-  case LINELIST: return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-  case LINESTRIP: return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-  case TRIANGLELIST: return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-  case TRIANGLESTRIP: return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+  case POINTLIST: return D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+  case LINELIST: return D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+  case LINESTRIP: return D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP;
+  case TRIANGLELIST: return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+  case TRIANGLESTRIP: return D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
   }
   return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }

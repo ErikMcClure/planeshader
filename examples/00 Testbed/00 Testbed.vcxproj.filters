@@ -50,7 +50,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\media\blank.rc">
+    <ResourceCompile Include="..\blank.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
