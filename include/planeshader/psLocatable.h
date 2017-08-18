@@ -15,7 +15,7 @@ namespace planeshader {
   public:
     psLocatable(const psLocatable& copy);
     explicit psLocatable(const psVec3D& position, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO);
-    virtual ~psLocatable();
+    ~psLocatable();
     // Gets the rotation 
     inline FNUM GetRotation() const { return rotation; }
     // Sets the rotation of this object 
