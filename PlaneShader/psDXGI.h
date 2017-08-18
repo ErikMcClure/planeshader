@@ -6,7 +6,11 @@
 
 #include "psDriver.h"
 #include "bss-util\win32_includes.h"
-#include "directx\DXGI.h"
+#ifdef USE_DIRECTXTK
+#include <dxgi.h>
+#else
+#include "directx/dxgi.h"
+#endif
 
 namespace planeshader {
   // Common interface to DXGI for DirectX10, DirectX11 and DirectX12

@@ -50,7 +50,7 @@ uint32_t psTileset::AutoGenDefs(psVec dim)
 {
   _defs.Clear();
   const psTex* base = GetTexture(0);
-  psVeci defs = base->GetDim() / dim;
+  psVeci defs = !base ? psVeci(0,0) : (base->GetDim() / dim);
   _defs.SetLength(defs.x*defs.y);
 
   for(int j = 0; j < defs.y; ++j)
