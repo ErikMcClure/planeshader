@@ -5,7 +5,7 @@
 #define __VECTOR_H__PS__
 
 #include "psSolid.h"
-#include "psColored.h"
+#include "psColor.h"
 #include "bss-util\DynArray.h"
 
 namespace planeshader {
@@ -36,7 +36,7 @@ namespace planeshader {
     bss::DynArray<QuadVertex, uint32_t> _verts;
   };
 
-  class PS_DLLEXPORT psQuadraticCurve : public psQuadraticHull, public psColored
+  class PS_DLLEXPORT psQuadraticCurve : public psQuadraticHull
   {
   public:
     psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness = 1.0f, uint32_t color = 0xFFFFFFFF);
@@ -47,13 +47,16 @@ namespace planeshader {
     inline void SetThickness(float thickness) { _thickness = thickness; }
     inline float GetThickness() const { return _thickness; }
     inline const psVec(&Get() const)[3] { return _p; }
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
   protected:
     psVec _p[3];
     float _thickness;
+    psColor32 _color;
   };
 
-  class PS_DLLEXPORT psCubicCurve : public psQuadraticHull, public psColored
+  class PS_DLLEXPORT psCubicCurve : public psQuadraticHull
   {
   public:
     psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness = 1.0f, uint32_t color = 0xFFFFFFFF, float maxerr = 1.0f);
@@ -64,15 +67,18 @@ namespace planeshader {
     inline void SetThickness(float thickness) { _thickness = thickness; }
     inline float GetThickness() const { return _thickness; }
     inline const psVec(&Get() const)[4] { return _p; }
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
   protected:
     void _addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2]);
     psVec _p[4];
     float _thickness;
     float _maxerr;
+    psColor32 _color;
   };
 
-  class PS_DLLEXPORT psRoundRect : public psSolid, public psColored, public psDriverHold
+  class PS_DLLEXPORT psRoundRect : public psSolid, public psDriverHold
   {
     struct RRVertex
     {
@@ -89,12 +95,14 @@ namespace planeshader {
     psRoundRect(psRoundRect&& mov);
     explicit psRoundRect(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, const psVec& scale = VEC_ONE);
     virtual ~psRoundRect();
-    const psRect& GetCorners() const { return _corners; }
-    void SetCorners(const psRect& corners) { _corners = corners; }
-    float GetOutline() const { return _edge; }
-    void SetOutline(float outline) { _edge = outline; }
-    psColor32 GetOutlineColor() const { return _outline; }
-    void SetOutlineColor(psColor32 color) { _outline = color; }
+    inline const psRect& GetCorners() const { return _corners; }
+    inline void SetCorners(const psRect& corners) { _corners = corners; }
+    inline float GetOutline() const { return _edge; }
+    inline void SetOutline(float outline) { _edge = outline; }
+    inline psColor32 GetOutlineColor() const { return _outline; }
+    inline void SetOutlineColor(psColor32 color) { _outline = color; }
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     static const int RRBUFSIZE = 64;
     static void DrawRoundRect(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
@@ -107,10 +115,11 @@ namespace planeshader {
 
     psRect _corners;
     psColor32 _outline;
+    psColor32 _color;
     float _edge;
   };
 
-  class PS_DLLEXPORT psRoundTri : public psSolid, public psColored, public psDriverHold
+  class PS_DLLEXPORT psRoundTri : public psSolid, public psDriverHold
   {
     struct RRVertex
     {
@@ -127,12 +136,14 @@ namespace planeshader {
     psRoundTri(psRoundTri&& mov);
     explicit psRoundTri(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, const psVec& scale = VEC_ONE);
     virtual ~psRoundTri();
-    const psRect& GetCorners() const { return _corners; }
-    void SetCorners(const psRect& corners) { _corners = corners; }
-    float GetOutline() const { return _edge; }
-    void SetOutline(float outline) { _edge = outline; }
-    psColor32 GetOutlineColor() const { return _outline; }
-    void SetOutlineColor(psColor32 color) { _outline = color; }
+    inline const psRect& GetCorners() const { return _corners; }
+    inline void SetCorners(const psRect& corners) { _corners = corners; }
+    inline float GetOutline() const { return _edge; }
+    inline void SetOutline(float outline) { _edge = outline; }
+    inline psColor32 GetOutlineColor() const { return _outline; }
+    inline void SetOutlineColor(psColor32 color) { _outline = color; }
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     static const int RTRIBUFSIZE = 64;
     static void DrawRoundTri(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& corners, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
@@ -145,10 +156,11 @@ namespace planeshader {
 
     psRect _corners;
     psColor32 _outline;
+    psColor32 _color;
     float _edge;
   };
 
-  class PS_DLLEXPORT psRenderCircle : public psSolid, public psColored, public psDriverHold
+  class PS_DLLEXPORT psRenderCircle : public psSolid, public psDriverHold
   {
     struct CircleVertex
     {
@@ -165,12 +177,14 @@ namespace planeshader {
     psRenderCircle(psRenderCircle&& mov);
     explicit psRenderCircle(float radius = 0, const psVec3D& position = VEC3D_ZERO, psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, const psVec& scale = VEC_ONE);
     virtual ~psRenderCircle();
-    const psRect& GetArcs() const { return _arcs; }
-    void SetArcs(const psRect& arcs) { _arcs = arcs; }
-    float GetOutline() const { return _edge; }
-    void SetOutline(float outline) { _edge = outline; }
-    psColor32 GetOutlineColor() const { return _outline; }
-    void SetOutlineColor(psColor32 color) { _outline = color; }
+    inline const psRect& GetArcs() const { return _arcs; }
+    inline void SetArcs(const psRect& arcs) { _arcs = arcs; }
+    inline float GetOutline() const { return _edge; }
+    inline void SetOutline(float outline) { _edge = outline; }
+    inline psColor32 GetOutlineColor() const { return _outline; }
+    inline void SetOutlineColor(psColor32 color) { _outline = color; }
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     static const int CIRCLEBUFSIZE = 64;
     static void DrawCircle(psShader* shader, psStateblock* stateblock, const psRectRotateZ& rect, const psRect& arcs, psFlag flags, psColor32 color32, psColor32 outline32, float edge);
@@ -183,6 +197,7 @@ namespace planeshader {
 
     psRect _arcs;
     psColor32 _outline;
+    psColor32 _color;
     float _edge;
   };
 }

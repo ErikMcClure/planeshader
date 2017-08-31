@@ -639,7 +639,7 @@ psBatchObj* psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateb
 }
 psBatchObj* psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  psMatrix m;
+  BSS_ALIGN(16) psMatrix m;
   Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
   PushTransform(m);
 
@@ -658,7 +658,7 @@ void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float 
 }
 psBatchObj* psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  psMatrix m;
+  BSS_ALIGN(16) psMatrix m;
   Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
   PushTransform(m);
 

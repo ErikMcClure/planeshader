@@ -6,17 +6,17 @@
 
 using namespace planeshader;
 
-psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), psColored(copy), _uvs(copy._uvs) {}
-psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), psColored(std::move(mov)), _uvs(std::move(mov._uvs)) {}
+psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), _color(copy._color), _uvs(copy._uvs) {}
+psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), _color(mov._color), _uvs(std::move(mov._uvs)) {}
 psImage::~psImage() {}
 psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale, uint32_t color) : 
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(tex), psColored(color)
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(tex), _color(color)
 {
   AddSource();
 }
 
 psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale, uint32_t color) :
-  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(file), psColored(color)
+  psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(file), _color(color)
 {
   AddSource();
 }
@@ -24,8 +24,8 @@ psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const
 psImage& psImage::operator =(const psImage& right)
 {
   psSolid::operator=(right);
-  psColored::operator=(right);
   psTextured::operator=(right);
+  _color = right._color;
   _uvs = right._uvs;
   return *this;
 }
@@ -33,8 +33,8 @@ psImage& psImage::operator =(const psImage& right)
 psImage& psImage::operator =(psImage&& right)
 {
   psSolid::operator=(std::move(right));
-  psColored::operator=(std::move(right));
   psTextured::operator=(std::move(right));
+  _color = right._color;
   _uvs = std::move(right._uvs);
   return *this;
 }

@@ -72,9 +72,6 @@
     <ClInclude Include="..\include\planeshader\psCullGroup.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\psColored.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\psTexFont.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -165,9 +162,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psFont.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="psColored.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psTextured.cpp">

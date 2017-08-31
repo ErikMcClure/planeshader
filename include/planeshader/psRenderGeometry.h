@@ -6,18 +6,20 @@
 
 #include "psRect.h"
 #include "psSolid.h"
-#include "psColored.h"
+#include "psColor.h"
 #include "psDriver.h"
 #include "psTextured.h"
 
 namespace planeshader {
-  class PS_DLLEXPORT psRenderEllipse : public psSolid, public psColored, public psDriverHold
+  class PS_DLLEXPORT psRenderEllipse : public psSolid, public psDriverHold
   {
   public:
     psRenderEllipse(const psRenderEllipse& copy);
     psRenderEllipse(psRenderEllipse&& mov);
     explicit psRenderEllipse(const psCircle& circle);
     explicit psRenderEllipse(const psEllipse& ellipse);
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     inline operator psEllipse() const { return psEllipse(position.x + _realdim.x, position.y + _realdim.y, _realdim.x/2, _realdim.y/2); }
     psRenderEllipse& operator =(const psRenderEllipse& right);
@@ -32,15 +34,19 @@ namespace planeshader {
 
   protected:
     virtual void _render(const psTransform2D& parent) override;
+
+    psColor32 _color;
   };
 
-  class PS_DLLEXPORT psRenderLine : public psLocatable, public psRenderable, public psColored, public psDriverHold
+  class PS_DLLEXPORT psRenderLine : public psLocatable, public psRenderable, public psDriverHold
   {
   public:
     psRenderLine(const psRenderLine& copy);
     psRenderLine(psRenderLine&& mov);
     explicit psRenderLine(const psLine3D& line);
     explicit psRenderLine(const psLine& line);
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     inline operator psLine3D() const { return psLine3D(position, _point); }
     psRenderLine& operator =(const psRenderLine& right);
@@ -55,15 +61,18 @@ namespace planeshader {
     virtual void _render(const psTransform2D& parent) override;
 
     psVec3D _point;
+    psColor32 _color;
   };
 
-  class PS_DLLEXPORT psRenderPolygon : public psLocatable, public psRenderable, public psPolygon, public psColored, public psDriverHold
+  class PS_DLLEXPORT psRenderPolygon : public psLocatable, public psRenderable, public psPolygon, public psDriverHold
   {
   public:
     psRenderPolygon(const psRenderPolygon& copy);
     psRenderPolygon(psRenderPolygon&& mov);
     explicit psRenderPolygon(const psPolygon& polygon, uint32_t color = 0xFFFFFFFF);
     explicit psRenderPolygon(psPolygon&& polygon, uint32_t color = 0xFFFFFFFF);
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     psRenderPolygon& operator =(const psRenderPolygon& right);
     psRenderPolygon& operator =(psRenderPolygon&& right);
@@ -74,18 +83,24 @@ namespace planeshader {
 
   protected:
     virtual void _render(const psTransform2D& parent) override;
+
+    psColor32 _color;
   };
 
-  class PS_DLLEXPORT psFullScreenQuad : public psRenderable, public psTextured, public psColored, public psDriverHold
+  class PS_DLLEXPORT psFullScreenQuad : public psRenderable, public psTextured, public psDriverHold
   {
     psFullScreenQuad(const psFullScreenQuad& copy);
     psFullScreenQuad(psFullScreenQuad&& mov);
     psFullScreenQuad();
     virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
     virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
   protected:
     virtual void _render(const psTransform2D& parent) override;
+
+    psColor32 _color;
   };
 }
 #endif

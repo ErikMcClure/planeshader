@@ -7,13 +7,13 @@
 
 using namespace planeshader;
 
-psRenderEllipse::psRenderEllipse(const psRenderEllipse& copy) : psSolid(copy), psColored(copy) {}
-psRenderEllipse::psRenderEllipse(psRenderEllipse&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)) {}
+psRenderEllipse::psRenderEllipse(const psRenderEllipse& copy) : psSolid(copy), _color(copy._color) {}
+psRenderEllipse::psRenderEllipse(psRenderEllipse&& mov) : psSolid(std::move(mov)), _color(mov._color) {}
 psRenderEllipse::psRenderEllipse(const psCircle& circle) : psSolid(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.CIRCLE, 0, VEC_ONE) { operator=(circle); }
 psRenderEllipse::psRenderEllipse(const psEllipse& ellipse) : psSolid(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.CIRCLE, 0, VEC_ONE) { operator=(ellipse); }
 
-psRenderEllipse& psRenderEllipse::operator =(const psRenderEllipse& right) { psSolid::operator=(right); psColored::operator=(right); return *this; }
-psRenderEllipse& psRenderEllipse::operator =(psRenderEllipse&& right) { psSolid::operator=(std::move(right)); psColored::operator=(std::move(right)); return *this; }
+psRenderEllipse& psRenderEllipse::operator =(const psRenderEllipse& right) { psSolid::operator=(right); _color = right._color; return *this; }
+psRenderEllipse& psRenderEllipse::operator =(psRenderEllipse&& right) { psSolid::operator=(std::move(right)); _color = right._color; return *this; }
 
 void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, uint32_t color)
 {
@@ -27,8 +27,8 @@ void psRenderEllipse::_render(const psTransform2D& parent)
   _driver->DrawRect(_driver->library.CIRCLE, GetStateblock(), GetCollisionRect(parent), 0, 0, GetColor(), GetFlags());
 }
 
-psRenderLine::psRenderLine(const psRenderLine& copy) : psLocatable(copy), psRenderable(copy), psColored(copy) {}
-psRenderLine::psRenderLine(psRenderLine&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), psColored(std::move(mov)) {}
+psRenderLine::psRenderLine(const psRenderLine& copy) : psLocatable(copy), psRenderable(copy), _color(copy._color) {}
+psRenderLine::psRenderLine(psRenderLine&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), _color(mov._color) {}
 psRenderLine::psRenderLine(const psLine3D& line) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.LINE, 0) { operator=(line); }
 psRenderLine::psRenderLine(const psLine& line) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.LINE, 0) { operator=(line); }
 
@@ -36,7 +36,7 @@ psRenderLine& psRenderLine::operator =(const psRenderLine& right)
 { 
   psLocatable::operator=(right);
   psRenderable::operator=(right);
-  psColored::operator=(right);
+  _color = right._color;
   _point = right._point;
   return *this; 
 }
@@ -44,7 +44,7 @@ psRenderLine& psRenderLine::operator =(psRenderLine&& right)
 { 
   psLocatable::operator=(std::move(right));
   psRenderable::operator=(std::move(right));
-  psColored::operator=(std::move(right));  
+  _color = right._color;  
   _point = right._point; 
   return *this; 
 }
@@ -64,17 +64,17 @@ void psRenderLine::_render(const psTransform2D& parent)
   _driver->DrawLines(obj, psLine(p.position.xy, _point.xy), p.position.z, _point.z, GetColor().color);
 }
 
-psRenderPolygon::psRenderPolygon(const psRenderPolygon& copy) : psLocatable(copy), psRenderable(copy), psPolygon(copy), psColored(copy) {}
-psRenderPolygon::psRenderPolygon(psRenderPolygon&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), psPolygon(std::move(mov)), psColored(std::move(mov)) {}
-psRenderPolygon::psRenderPolygon(const psPolygon& polygon, uint32_t color) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.POLYGON, 0), psPolygon(polygon), psColored(color) {}
-psRenderPolygon::psRenderPolygon(psPolygon&& polygon, uint32_t color) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.POLYGON, 0), psPolygon(std::move(polygon)), psColored(color) {}
+psRenderPolygon::psRenderPolygon(const psRenderPolygon& copy) : psLocatable(copy), psRenderable(copy), psPolygon(copy), _color(copy._color) {}
+psRenderPolygon::psRenderPolygon(psRenderPolygon&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), psPolygon(std::move(mov)), _color(mov._color) {}
+psRenderPolygon::psRenderPolygon(const psPolygon& polygon, uint32_t color) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.POLYGON, 0), psPolygon(polygon), _color(color) {}
+psRenderPolygon::psRenderPolygon(psPolygon&& polygon, uint32_t color) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.POLYGON, 0), psPolygon(std::move(polygon)), _color(color) {}
 
 psRenderPolygon& psRenderPolygon::operator =(const psRenderPolygon& right) 
 {
   psLocatable::operator=(right);
   psRenderable::operator=(right);
   psPolygon::operator=(right);
-  psColored::operator=(right);
+  _color = right._color;
   return *this;
 }
 psRenderPolygon& psRenderPolygon::operator =(psRenderPolygon&& right)
@@ -82,7 +82,7 @@ psRenderPolygon& psRenderPolygon::operator =(psRenderPolygon&& right)
   psLocatable::operator=(std::move(right));
   psRenderable::operator=(std::move(right));
   psPolygon::operator=(std::move(right));
-  psColored::operator=(std::move(right));
+  _color = right._color;
   return *this;
 }
 psRenderPolygon& psRenderPolygon::operator =(const psPolygon& polygon) { psPolygon::operator=(polygon); return *this; }

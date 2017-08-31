@@ -5,12 +5,12 @@
 #define __IMAGE_H__PS__
 
 #include "psTextured.h"
-#include "psColored.h"
+#include "psColor.h"
 #include "psSolid.h"
 
 namespace planeshader {
   // Represents a renderable image with UV source coordinates
-  class PS_DLLEXPORT psImage : public psSolid, public psTextured, public psColored, public psDriverHold
+  class PS_DLLEXPORT psImage : public psSolid, public psTextured, public psDriverHold
   {
   public:
     psImage(const psImage& copy);
@@ -30,6 +30,8 @@ namespace planeshader {
     virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
     virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
     void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     psImage& operator =(const psImage& right);
     psImage& operator =(psImage&& right);
@@ -40,6 +42,7 @@ namespace planeshader {
     void _recalcdim();
 
     bss::Array<psRect, uint8_t> _uvs;
+    psColor32 _color;
   };
 }
 

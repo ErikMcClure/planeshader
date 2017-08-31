@@ -99,8 +99,8 @@ void psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float t
   }
 }
 
-psQuadraticCurve::psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color) : psColored(color), _thickness(thickness) { Set(p0, p1, p2); }
-psQuadraticCurve::psQuadraticCurve(psVec(&p)[3], float thickness, uint32_t color) : psColored(color), _thickness(thickness) { Set(p); }
+psQuadraticCurve::psQuadraticCurve(psVec p0, psVec p1, psVec p2, float thickness, uint32_t color) : _color(color), _thickness(thickness) { Set(p0, p1, p2); }
+psQuadraticCurve::psQuadraticCurve(psVec(&p)[3], float thickness, uint32_t color) : _color(color), _thickness(thickness) { Set(p); }
 psQuadraticCurve::~psQuadraticCurve() {}
 void psQuadraticCurve::Set(psVec p0, psVec p1, psVec p2)
 {
@@ -147,8 +147,8 @@ inline static void IterateCubic(const T(&P0)[2], const T(&P1)[2], const T(&P2)[2
   fn(W0, C, W3);
 }
 
-psCubicCurve::psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness, uint32_t color, float maxerr) : psColored(color), _thickness(thickness), _maxerr(maxerr) { Set(p0, p1, p2, p3); }
-psCubicCurve::psCubicCurve(psVec(&p)[4], float thickness, uint32_t color) : psColored(color), _thickness(thickness) { Set(p); }
+psCubicCurve::psCubicCurve(psVec p0, psVec p1, psVec p2, psVec p3, float thickness, uint32_t color, float maxerr) : _color(color), _thickness(thickness), _maxerr(maxerr) { Set(p0, p1, p2, p3); }
+psCubicCurve::psCubicCurve(psVec(&p)[4], float thickness, uint32_t color) : _color(color), _thickness(thickness) { Set(p); }
 psCubicCurve::~psCubicCurve() {}
 void psCubicCurve::Set(psVec p0, psVec p1, psVec p2, psVec p3)
 {
@@ -170,8 +170,8 @@ void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const floa
   AppendQuadraticCurve(psVec(P0), psVec(P1), psVec(P2), _thickness, _color.color, !_verts.Length() | (psVec(P2) == _p[3])*2);
 }
 
-psRoundRect::psRoundRect(const psRoundRect& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
-psRoundRect::psRoundRect(psRoundRect&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
+psRoundRect::psRoundRect(const psRoundRect& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
+psRoundRect::psRoundRect(psRoundRect&& mov) : psSolid(std::move(mov)), _color(mov._color), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
 psRoundRect::psRoundRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
   !shader?_driver->library.ROUNDRECT:shader, pass, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
@@ -183,7 +183,7 @@ psRoundRect::~psRoundRect(){}
 psRoundRect& psRoundRect::operator=(const psRoundRect& copy)
 {
   psSolid::operator=(copy);
-  psColored::operator=(copy);
+  _color = copy._color;
   _outline = copy._outline;
   _edge = copy._edge;
   _corners = copy._corners;
@@ -192,7 +192,7 @@ psRoundRect& psRoundRect::operator=(const psRoundRect& copy)
 psRoundRect& psRoundRect::operator=(psRoundRect&& mov)
 {
   psSolid::operator=(std::move(mov));
-  psColored::operator=(std::move(mov));
+  _color = mov._color;
   _outline = mov._outline;
   _edge = mov._edge;
   _corners = mov._corners;
@@ -221,8 +221,8 @@ void psRoundRect::_render(const psTransform2D& parent)
   DrawRoundRect(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
 }
 
-psRoundTri::psRoundTri(const psRoundTri& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
-psRoundTri::psRoundTri(psRoundTri&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
+psRoundTri::psRoundTri(const psRoundTri& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
+psRoundTri::psRoundTri(psRoundTri&& mov) : psSolid(std::move(mov)), _color(mov._color), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
 psRoundTri::psRoundTri(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
     !shader ? _driver->library.ROUNDTRI : shader, pass, scale), _outline(0), _edge(-1), _corners(0, 0, 0, 0)
@@ -234,7 +234,7 @@ psRoundTri::~psRoundTri() {}
 psRoundTri& psRoundTri::operator=(const psRoundTri& copy)
 {
   psSolid::operator=(copy);
-  psColored::operator=(copy);
+  _color = copy._color;
   _outline = copy._outline;
   _edge = copy._edge;
   _corners = copy._corners;
@@ -243,7 +243,7 @@ psRoundTri& psRoundTri::operator=(const psRoundTri& copy)
 psRoundTri& psRoundTri::operator=(psRoundTri&& mov)
 {
   psSolid::operator=(std::move(mov));
-  psColored::operator=(std::move(mov));
+  _color = mov._color;
   _outline = mov._outline;
   _edge = mov._edge;
   _corners = mov._corners;
@@ -272,8 +272,8 @@ void psRoundTri::_render(const psTransform2D& parent)
   DrawRoundTri(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
 }
 
-psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), psColored(copy), _outline(copy._outline), _arcs(copy._arcs), _edge(copy._edge) {}
-psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), psColored(std::move(mov)), _outline(mov._outline), _arcs(mov._arcs), _edge(mov._edge) {}
+psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _arcs(copy._arcs), _edge(copy._edge) {}
+psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), _color(mov._color), _outline(mov._outline), _arcs(mov._arcs), _edge(mov._edge) {}
 psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
   psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, scale),
   _outline(0), _edge(0), _arcs(0, PI_DOUBLEf, 0, PI_DOUBLEf)
@@ -285,7 +285,7 @@ psRenderCircle::~psRenderCircle() {}
 psRenderCircle& psRenderCircle::operator=(const psRenderCircle& copy)
 {
   psSolid::operator=(copy);
-  psColored::operator=(copy);
+  _color = copy._color;
   _outline = copy._outline;
   _edge = copy._edge;
   _arcs = copy._arcs;
@@ -294,7 +294,7 @@ psRenderCircle& psRenderCircle::operator=(const psRenderCircle& copy)
 psRenderCircle& psRenderCircle::operator=(psRenderCircle&& mov)
 {
   psSolid::operator=(std::move(mov));
-  psColored::operator=(std::move(mov));
+  _color = mov._color;
   _outline = mov._outline;
   _edge = mov._edge;
   _arcs = mov._arcs;
