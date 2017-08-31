@@ -5,6 +5,7 @@
 #define __INTERFACE_H__PS__
 
 #include "ps_dec.h"
+#include <stdint.h>
 
 #ifdef  __cplusplus
 using namespace planeshader;
@@ -24,7 +25,6 @@ struct psStateblock;
 struct psInheritable;
 struct psSolid;
 struct psTextured;
-struct psColored;
 struct psImage;
 
 struct psVec {

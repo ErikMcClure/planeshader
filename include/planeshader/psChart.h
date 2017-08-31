@@ -6,7 +6,7 @@
 
 #include "psTexFont.h"
 #include "psSolid.h"
-#include "psColored.h"
+#include "psColor.h"
 #include "bss-util\Str.h"
 #include "bss-util\DynArray.h"
 
@@ -36,7 +36,7 @@ namespace planeshader {
   };
 
   // Renders a line graph of samples that must be sorted on the y-axis but not evenly spaced. You can render multiple line graphs on top of each other.
-  class psLineChart : public psChart, public psColored
+  class psLineChart : public psChart
   {
   public:
     psLineChart(const psLineChart&);
@@ -53,7 +53,7 @@ namespace planeshader {
   };
 
   // Renders a bar graph of several variables. You can render multiple bar graphs on top of each other or next to each other.
-  class psBarChart : public psChart, public psColored
+  class psBarChart : public psChart
   {
   public:
     psBarChart(const psBarChart&);
@@ -69,7 +69,7 @@ namespace planeshader {
   };
 
   // Simple assigns a point to each element of the dataset, which can be unordered and take on arbitrary values.
-  class psScatterChart : public psChart, public psColored
+  class psScatterChart : public psChart
   {
   public:
     psScatterChart(const psScatterChart&);
@@ -97,7 +97,7 @@ namespace planeshader {
   };
 
   // Acts as a container for multiple overlayed charts, and optionally renders a standard background.
-  class psChartContainer : public psSolid, public psDriverHold, public psColored
+  class psChartContainer : public psSolid, public psDriverHold
   {
   public:
     psChartContainer(psTexFont* font = 0);

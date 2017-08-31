@@ -6,12 +6,12 @@
 
 #include "psTexFont.h"
 #include "psSolid.h"
-#include "psColored.h"
+#include "psColor.h"
 #include "bss-util\Str.h"
 #include "bss-util\ArraySort.h"
 
 namespace planeshader {
-  class PS_DLLEXPORT psText : public psSolid, public psColored
+  class PS_DLLEXPORT psText : public psSolid
   {
   public:
     psText(const psText& copy);
@@ -36,6 +36,9 @@ namespace planeshader {
     // Get/Set per-character modification function
     inline const psTexFont::DELEGATE& GetFunc() const { return _func; }
     inline void SetFunc(psTexFont::DELEGATE func) { _func = func; }
+    // Get/set text color
+    inline psColor32 GetColor() const { return _color; }
+    inline void SetColor(psColor32 color) { _color = color; }
 
     psText& operator=(const psText& copy);
     psText& operator=(psText&& mov);
@@ -51,6 +54,7 @@ namespace planeshader {
     uint16_t _drawflags;
     psTexFont::DELEGATE _func;
     float _lineheight;
+    psColor32 _color;
   };
 }
 #endif

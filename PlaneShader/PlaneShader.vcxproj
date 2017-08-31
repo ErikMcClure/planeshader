@@ -494,7 +494,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psCamera.h" />
     <ClInclude Include="..\include\planeshader\psCircleSegment.h" />
     <ClInclude Include="..\include\planeshader\psColor.h" />
-    <ClInclude Include="..\include\planeshader\psColored.h" />
     <ClInclude Include="..\include\planeshader\psCullGroup.h" />
     <ClInclude Include="..\include\planeshader\psDriver.h" />
     <ClInclude Include="..\include\planeshader\psEffect.h" />
@@ -532,7 +531,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psCamera.cpp" />
     <ClCompile Include="psChart.cpp" />
     <ClCompile Include="psColor.cpp" />
-    <ClCompile Include="psColored.cpp" />
     <ClCompile Include="psCullGroup.cpp" />
     <ClCompile Include="psDirectX11.cpp" />
     <ClCompile Include="psDriver.cpp" />
