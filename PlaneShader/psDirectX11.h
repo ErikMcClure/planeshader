@@ -92,9 +92,8 @@ namespace planeshader {
     virtual psBatchObj* DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags) override;
     virtual psBatchObj* DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num) override;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) override;
-    virtual void PushCamera3D(const float(&m)[4][4], const psRectiu& viewport) override;
-    virtual void PopCamera() override;
+    virtual void SetCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) override;
+    virtual void SetCamera3D(const float(&m)[4][4], const psRectiu& viewport) override;
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     virtual psVec3D TransformPoint(const psVec3D& point) const override;
     virtual psVec3D ReversePoint(const psVec3D& point) const override;
@@ -116,7 +115,8 @@ namespace planeshader {
     virtual psRect PeekClipRect() override;
     virtual void PopClipRect() override;
     // Sets the rendertargets
-    virtual void SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil = 0) override;
+    virtual void SetRenderTargets(psTex* const* texes, uint8_t num, psTex* depthstencil = 0) override;
+    virtual std::pair<psTex* const*, uint8_t> GetRenderTargets() override;
     // Sets shader constants
     virtual void SetShaderConstants(void* constbuf, SHADER_VER shader) override;
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
@@ -137,7 +137,7 @@ namespace planeshader {
     virtual void GrabResource(void* p, RESOURCE_TYPE t) override;
     virtual void CopyResource(void* dest, void* src, RESOURCE_TYPE t) override;
     virtual void Resize(psVeciu dim, FORMATS format, char fullscreen) override;
-    virtual void Clear(uint32_t color) override;
+    virtual void Clear(psTex* t, uint32_t color) override;
     // Gets a pointer to the driver implementation
     inline virtual RealDriver GetRealDriver() override { RealDriver d; d.dx11 = this; d.type = RealDriver::DRIVERTYPE_DX11; return d; }
     inline virtual psTex* GetBackBuffer() const override { return _backbuffer; }
@@ -187,7 +187,7 @@ namespace planeshader {
     void _processdebugqueue();
     void _getbackbufferref();
     void _resetscreendim();
-    void _applycamera();
+    void _applycamera(const CamDef& cam);
     void _applyrendertargets();
     void _applysnapshot(const Snapshot& s);
     void _applyloadshader(ID3D11Texture2D* tex, psShader* shader, bool sRGB);
@@ -210,12 +210,12 @@ namespace planeshader {
     psVec _dpiscale;
     bool _zerocamrot;
     bool _vsync;
+    CamDef _curcam;
     bss::Stack<psRectl> _clipstack;
-    bss::Stack<CamDef> _camstack;
     bss::DynArray<Snapshot, uint32_t> _snapshotstack;
     bss::DynArray<void*, uint32_t> _texstack;
     std::array<bss::DynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
-    bss::DynArray<ID3D11RenderTargetView*, uint32_t> _lastrt;
+    bss::DynArray<psTex*, uint32_t> _lastrt;
     ID3D11DepthStencilView* _lastdepth;
     ID3D11VertexShader* _fsquadVS;
     ID3D11VertexShader* _defaultVS;

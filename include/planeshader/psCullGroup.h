@@ -8,7 +8,7 @@
 #include "bss-util/KDTree.h"
 #include "bss-util/LLBase.h"
 #include "psSolid.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 namespace planeshader {
   // Used to efficiently cull a group of images that are static relative to each other. Intended for static level geometry.
@@ -16,7 +16,7 @@ namespace planeshader {
   {
   public:
     psCullGroup(psCullGroup&& mov);
-    explicit psCullGroup(psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0);
+    explicit psCullGroup(psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psLayer* pass = 0);
     ~psCullGroup();
     // Inserts a solid that must not move relative to the other images in this culling group and removes it from the internal pass list
     void Insert(psSolid* img, bool recalc = false);
@@ -36,7 +36,7 @@ namespace planeshader {
   protected:
     BSS_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic().ltrb; }
     BSS_FORCEINLINE static bss::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bss::LLBase<psSolid>*)&p->_llist); }
-    BSS_FORCEINLINE static void CF_MERGE(psSolid* p) { if(!p->GetPass()) psPass::CurPass->_sort(p); else p->GetPass()->_sort(p); }
+    BSS_FORCEINLINE static void CF_MERGE(psSolid* p) { if(!p->GetLayer()) psLayer::CurLayers.Peek()->_sort(p); else p->GetLayer()->_sort(p); }
     BSS_FORCEINLINE static bss::KDNode<psSolid>*& CF_FNODE(psSolid* p) { return p->_kdnode; }
     BSS_FORCEINLINE static void AdjustRect(const float(&rect)[4], float camZ, float(&rcull)[4])
     {
@@ -47,9 +47,9 @@ namespace planeshader {
     }
     virtual void _render(const psTransform2D& parent) override;
 
-    psPass::ALLOC _alloc;
+    psLayer::ALLOC _alloc;
     bss::KDTree<psSolid, KDNODE_ALLOC, CF_FRECT, CF_FLIST, CF_FNODE> _tree;
-    bss::TRBtree<psRenderable*, psPass::StandardCompare, psPass::ALLOC> _list;
+    bss::TRBtree<psRenderable*, psRenderable::StandardCompare, psLayer::ALLOC> _list;
     KDNODE_ALLOC _nodealloc;
   };
 }

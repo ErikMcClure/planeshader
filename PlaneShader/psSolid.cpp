@@ -2,7 +2,7 @@
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psSolid.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 using namespace planeshader;
 using namespace bss;
@@ -10,7 +10,7 @@ using namespace bss;
 psSolid::psSolid(const psSolid& copy) : psLocatable(copy), psRenderable(copy), _scale(copy._scale), _dim(copy._dim), _realdim(copy._realdim),  _boundingrect(copy._boundingrect) { }
 psSolid::psSolid(psSolid&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _boundingrect(mov._boundingrect) { }
 
-psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale) :
   psLocatable(position, rotation, pivot), psRenderable(flags, zorder, stateblock, shader, pass), _dim(VEC_ONE), _realdim(VEC_ONE), _scale(VEC_ONE)
 {
   psSolid::SetScale(scale);
@@ -19,9 +19,9 @@ psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psF
 psSolid::~psSolid() { }
 void psSolid::Render(const psTransform2D* parent)
 {
-  psPass* pass = !_pass ? psPass::CurPass : _pass;
+  psLayer* pass = !_layer ? psLayer::CurLayer() : _layer;
   if(pass != 0)
-    if(!pass->GetCamera()->Cull(this, parent))
+    if(!pass->Cull(this, parent))
       psRenderable::Render(parent);
 }
 

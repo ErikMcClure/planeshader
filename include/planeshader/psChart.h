@@ -49,7 +49,7 @@ namespace planeshader {
     psColor32 _outline;
     psColor32 _fill;
     float _width;
-    psTex* _data;
+    bss::ref_ptr<psTex> _data;
   };
 
   // Renders a bar graph of several variables. You can render multiple bar graphs on top of each other or next to each other.
@@ -65,7 +65,7 @@ namespace planeshader {
   protected:
     psColor32 _fill;
     float _width;
-    psTex* _data;
+    bss::ref_ptr<psTex> _data;
   };
 
   // Simple assigns a point to each element of the dataset, which can be unordered and take on arbitrary values.
@@ -93,7 +93,7 @@ namespace planeshader {
     inline virtual psPieChart* Clone() const { return new psPieChart(*this); }
 
   protected:
-    psTex* _data;
+    bss::ref_ptr<psTex> _data;
   };
 
   // Acts as a container for multiple overlayed charts, and optionally renders a standard background.

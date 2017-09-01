@@ -61,7 +61,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
       topleft.y = area.top;
 
     curwidth = 0.0f;
-    _driver->SetTextures(&_textures[i], 1);
+    _driver->SetTextures(reinterpret_cast<psTex**>(&_textures[i]), 1);
     psBatchObj* obj = _driver->DrawRectBatchBegin(shader, stateblock, 1, flags);
     texdim = _textures[i]->GetDim();
 
@@ -319,7 +319,7 @@ void psTexFont::AddKerning(int prev, int character, float kerning)
   _kerning.Insert(uint64_t(character) | (uint64_t(prev) << 32), kerning);
 }
 
-uint8_t psTexFont::AddTexture(psTex* tex){ tex->Grab(); _textures.Insert(tex, _textures.Capacity()); return _textures.Capacity()-1; }
+uint8_t psTexFont::AddTexture(psTex* tex){ _textures.Insert(tex, _textures.Capacity()); return _textures.Capacity()-1; }
 void psTexFont::DestroyThis(){ delete this; }
 
 psTexFont* psTexFont::CreateTexFont(psTex* tex, float lineheight, float ascender, float descender)
@@ -330,10 +330,7 @@ psTexFont* psTexFont::CreateTexFont(psTex* tex, float lineheight, float ascender
 psTexFont::psTexFont(const psTexFont& copy) : _glyphs(copy._glyphs)
 {
   for(int i = 0; i < copy._textures.Capacity(); ++i)
-  {
-    copy._textures[i]->Grab();
     _textures.Insert(copy._textures[i], _textures.Capacity());
-  }
 }
 psTexFont::psTexFont(psTexFont&& mov) : _textures(std::move(mov._textures)), _glyphs(std::move(mov._glyphs)), _fontlineheight(mov._fontlineheight),
   _fontascender(mov._fontascender), _fontdescender(mov._fontdescender)
@@ -342,12 +339,10 @@ psTexFont::psTexFont(psTex* tex, float lineheight, float ascender, float descend
   _fontdescender(descender)
 { 
   _textures[0] = tex;
-  if(_textures[0])
-    _textures[0]->Grab();
   Grab();
 }
 psTexFont::psTexFont() : _fontlineheight(0), _fontascender(0), _fontdescender(0) { Grab(); }
-psTexFont::~psTexFont() { for(uint32_t i = 0; i < _textures.Capacity(); ++i) _textures[i]->Drop(); }
+psTexFont::~psTexFont() { }
 
 std::pair<size_t, psVec> psTexFont::GetIndex(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec pos)
 {

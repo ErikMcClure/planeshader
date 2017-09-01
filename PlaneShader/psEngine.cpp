@@ -2,7 +2,7 @@
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include "psTex.h"
 #include "psDirectX11.h"
 #include "psVulkan.h"
@@ -29,13 +29,13 @@ using namespace bss;
 psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
 const char* psEngine::LOGSOURCE = "ps";
-const float psDriver::identity[4][4] ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+const psMatrix psDriver::identity ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 const bssVersionInfo psEngine::Version = { 0, PS_VERSION_REVISION, PS_VERSION_MINOR, PS_VERSION_MAJOR };
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
-psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShader.log":0, log), _curpass(0), _passes(1),
-  _mainpass(0),  _frameprofiler(0)
+psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShader.log":0, log), _curlayer(0), _layers(1),
+  _mainlayer(0),  _frameprofiler(0)
 {
   PROFILE_FUNC();
   if(_instance!=0) // If you try to make another instance, it violently explodes.
@@ -79,37 +79,26 @@ psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShad
   
   //if(_guiflags&PSMONITOR_LOCKCURSOR) // Ensure the mouse cursor is actually locked
   //  _dolockcursor(_window);
-  _mainpass = new psPass(&_monitors[0]);
-  _passes[0] = _mainpass;
+
+  _mainlayer = new psLayer(_monitors[0].GetBackBuffer());
+  _layers[0] = _mainlayer;
 }
 psEngine::~psEngine()
 {
   PROFILE_FUNC();
 
+  if(_mainlayer)
+    delete _mainlayer;
+  _mainlayer = 0;
+
+  _monitors.Clear(); // We must clear and destroy all monitors BEFORE we destroy the fgroot instance
+
   if(_driver)
     delete _driver;
   _driver=0;
 
-  if(_mainpass)
-    delete _mainpass;
-  _mainpass=0;
-
-  _monitors.Clear(); // We must clear and destroy all monitors BEFORE we destroy the fgroot instance
   fgRoot_Destroy(&_root);
   _instance = 0;
-}
-bool psEngine::Begin(uint32_t clearcolor)
-{
-  PROFILE_FUNC();
-  if(GetQuit())
-    return false;
-  if(!_driver->Begin()) //lost device (DX9 only)
-    return false;
-  _frameprofiler = HighPrecisionTimer::OpenProfiler();
-  _curpass = 0;
-  _driver->Clear(clearcolor);
-  _passes[0]->Begin();
-  return true;
 }
 bool psEngine::Begin()
 {
@@ -119,14 +108,14 @@ bool psEngine::Begin()
   if(!_driver->Begin()) //lost device (DX9 only)
     return false;
   _frameprofiler = HighPrecisionTimer::OpenProfiler();
-  _curpass=0;
-  _passes[0]->Begin();
+  _curlayer=0;
+  _layers[0]->Push();
   return true;
 }
 uint64_t psEngine::End()
 {
   PROFILE_FUNC();
-  while(NextPass());
+  while(NextLayer());
 
   //if(_realdriver.dx9->_mousehittest!=0) //if this is nonzero we need to toggle transparency based on a system wide mouse hit test
   //  if(_realdriver.dx9->MouseHitTest(GetMouseExact(), _alphacutoff))
@@ -137,32 +126,32 @@ uint64_t psEngine::End()
   _driver->End();
   return _frameprofiler;
 }
-bool psEngine::NextPass()
+bool psEngine::NextLayer()
 {
   PROFILE_FUNC();
-  if(_curpass >= _passes.Capacity()) return false;
-  _passes[_curpass]->End();
-  if(++_curpass >= _passes.Capacity()) return false;
-  _passes[_curpass]->Begin();
+  if(_curlayer >= _layers.Capacity()) return false;
+  _layers[_curlayer]->Pop();
+  if(++_curlayer >= _layers.Capacity()) return false;
+  _layers[_curlayer]->Push();
   return true;
 }
 psEngine* psEngine::Instance()
 {
   return _instance;
 }
-bool psEngine::InsertPass(psPass& pass, uint16_t index)
+bool psEngine::InsertLayer(psLayer& layer, uint16_t index)
 {
   if(index == (uint16_t)~0)
-    index = _passes.Capacity();
-  if(index > _passes.Capacity())
+    index = _layers.Capacity();
+  if(index > _layers.Capacity())
     return false;
-  _passes.Insert(&pass, index);
+  _layers.Insert(&layer, index);
   return true;
 }
-bool psEngine::RemovePass(uint16_t index)
+bool psEngine::RemoveLayer(uint16_t index)
 {
-  if(!index || index>=_passes.Capacity()) return false;
-  _passes.Remove(index);
+  if(!index || index>= _layers.Capacity()) return false;
+  _layers.Remove(index);
   return true;
 }
 void psEngine::_onresize(psVeciu dim, bool fullscreen)

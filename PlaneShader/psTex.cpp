@@ -18,6 +18,7 @@ psTex::psTex(psTex&& mov) : _res(mov._res), _view(mov._view), _dim(mov._dim), _f
 {
   mov._res=0;
   mov._view=0;
+  Grab();
 }
 
 psTex::psTex(const psTex& copy) : _texblock(copy._texblock), _dpi(copy._dpi), _view(0)

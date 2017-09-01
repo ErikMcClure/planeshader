@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psImage.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include "psRenderGeometry.h"
 
 using namespace bss;
@@ -23,12 +23,12 @@ TESTDEF::RETPAIR test_psPass()
   psImage image2(psTex::Create("../media/pslogo192.png", USAGE_SHADER_RESOURCE, FILTER_ALPHABOX, 0, FILTER_NONE, false));
   psImage image3(psTex::Create("../media/blendtest.png", USAGE_SHADER_RESOURCE, FILTERS(FILTER_LINEAR | FILTER_SRGB_MIPMAP), 0, FILTER_NONE, false));
   psRenderLine line(psLine3D(0, 0, 0, 100, 100, 4));
-  //engine->GetPass(0)->Insert(&image2);
-  engine->GetPass(0)->Insert(&image);
-  //engine->GetPass(0)->Insert(&image3);
-  //engine->GetPass(0)->Insert(&line);
-  engine->GetPass(0)->SetClearColor(0xFF000000);
-  engine->GetPass(0)->SetCamera(&globalcam);
+  //engine->GetLayer(0)->Insert(&image2);
+  engine->GetLayer(0)->Insert(&image);
+  //engine->GetLayer(0)->Insert(&image3);
+  //engine->GetLayer(0)->Insert(&line);
+  engine->GetLayer(0)->SetClearColor(0xFF000000);
+  engine->GetLayer(0)->SetCamera(&globalcam);
   //globalcam.SetPositionZ(-4.0);
   image3.SetScale(psVec(0.5));
 
@@ -56,7 +56,7 @@ TESTDEF::RETPAIR test_psPass()
     { 400,100,0,1,0xFF0000FF },
   };
 
-  while(!gotonext && engine->Begin(0))
+  while(!gotonext && engine->Begin())
   {
     for(int i = 0; i < 200; ++i)
     {

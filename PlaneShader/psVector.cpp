@@ -172,9 +172,9 @@ void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const floa
 
 psRoundRect::psRoundRect(const psRoundRect& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
 psRoundRect::psRoundRect(psRoundRect&& mov) : psSolid(std::move(mov)), _color(mov._color), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
-psRoundRect::psRoundRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+psRoundRect::psRoundRect(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
-  !shader?_driver->library.ROUNDRECT:shader, pass, scale), _outline(0), _edge(-1), _corners(0,0,0,0)
+  !shader?_driver->library.ROUNDRECT:shader, pass, scale), _outline(0), _edge(-1), _corners(0,0,0,0), _color(0xFFFFFFFF)
 {
   SetDim(rect.Dim());
 }
@@ -223,9 +223,9 @@ void psRoundRect::_render(const psTransform2D& parent)
 
 psRoundTri::psRoundTri(const psRoundTri& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}
 psRoundTri::psRoundTri(psRoundTri&& mov) : psSolid(std::move(mov)), _color(mov._color), _outline(mov._outline), _corners(mov._corners), _edge(mov._edge) {}
-psRoundTri::psRoundTri(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+psRoundTri::psRoundTri(const psRectRotateZ& rect, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale) :
   psSolid(psVec3D(rect.left, rect.top, rect.z), rect.rotation, rect.pivot, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock,
-    !shader ? _driver->library.ROUNDTRI : shader, pass, scale), _outline(0), _edge(-1), _corners(0, 0, 0, 0)
+    !shader ? _driver->library.ROUNDTRI : shader, pass, scale), _outline(0), _edge(-1), _corners(0, 0, 0, 0), _color(0xFFFFFFFF)
 {
   SetDim(rect.Dim());
 }
@@ -274,9 +274,9 @@ void psRoundTri::_render(const psTransform2D& parent)
 
 psRenderCircle::psRenderCircle(const psRenderCircle& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _arcs(copy._arcs), _edge(copy._edge) {}
 psRenderCircle::psRenderCircle(psRenderCircle&& mov) : psSolid(std::move(mov)), _color(mov._color), _outline(mov._outline), _arcs(mov._arcs), _edge(mov._edge) {}
-psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+psRenderCircle::psRenderCircle(float radius, const psVec3D& position, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale) :
   psSolid(position, 0, VEC_HALF, flags, zorder, !stateblock ? STATEBLOCK_LIBRARY::PREMULTIPLIED : stateblock, !shader ? _driver->library.CIRCLE : shader, pass, scale),
-  _outline(0), _edge(0), _arcs(0, PI_DOUBLEf, 0, PI_DOUBLEf)
+  _outline(0), _edge(0), _arcs(0, PI_DOUBLEf, 0, PI_DOUBLEf), _color(0xFFFFFFFF)
 {
   SetDim(psVec(radius*2));
 }

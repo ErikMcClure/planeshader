@@ -61,7 +61,7 @@ namespace planeshader {
     uint8_t _curtex;
     bss::Str _path;
     bss::Str _hash;
-    bss::Array<psTex*, uint8_t> _staging;
+    bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _staging;
     bool _haskerning;
 
     static bss::Hash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.

@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psTex.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 using namespace bss;
 using namespace planeshader;
@@ -10,12 +10,12 @@ using namespace planeshader;
 TESTDEF::RETPAIR test_psEffect()
 {
   BEGINTEST;
-  int fps = 0;
+  /*int fps = 0;
   auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
   psTex* gamma = psTex::Create(driver->GetBackBuffer()->GetDim(), FMT_R8G8B8A8_SRGB, USAGE_RENDERTARGET | USAGE_SHADER_RESOURCE, 1);
-  engine->GetPass(0)->SetRenderTarget(gamma);
+  engine->GetLayer(0)->SetRenderTarget(gamma);
 
   while(!gotonext && engine->Begin(0))
   {
@@ -32,7 +32,7 @@ TESTDEF::RETPAIR test_psEffect()
     engine->End();
     engine->FlushMessages();
     updatefpscount(timer, fps);
-  }
+  }*/
 
   ENDTEST;
 }

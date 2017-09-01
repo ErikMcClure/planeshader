@@ -24,21 +24,21 @@ BSS_FORCEINLINE void r_adjust(sseVec& window, const sseVec& winhold, const sseVe
   }
 }
 
-psCamera::psCamera(const psCamera& copy) : psLocatable(copy), _viewport(copy._viewport), _extent(copy._extent), _cache(copy._cache)
+psCamera::psCamera(const psCamera& copy) : psLocatable(copy), _viewport(copy._viewport), _extent(copy._extent)
 {
+  Grab();
 }
 psCamera::psCamera(const psVec3D& position, FNUM rotation, const psVec& pivot, const psVec& extent) : psLocatable(position, rotation, VEC_ZERO), _viewport(RECT_UNITRECT), _extent(extent)
 {
+  Grab();
 }
 psCamera::~psCamera() {}
 
 // Gets the absolute mouse coordinates with respect to this camera.
-psVec psCamera::GetMouseAbsolute(const psTex* rt) const
+psVec psCamera::GetMouseAbsolute(const psVeciu& rawdim) const
 {
-  if(!rt) rt = _driver->GetBackBuffer();
-
   // We have to adjust the mouse coordinates for the vanishing point in the center of the screen - this adjustment has nothing to do with the camera pivot or the pivot shift.
-  psVec dim = _viewport.bottomright*rt->GetRawDim();
+  psVec dim = _viewport.bottomright*rawdim;
   Vector<float, 4> p(psEngine::Instance()->GetMouse().x - dim.x, psEngine::Instance()->GetMouse().y - dim.y, 0, 1);
 
   BSS_ALIGN(16) Matrix<float, 4, 4> cam;
@@ -46,62 +46,46 @@ psVec psCamera::GetMouseAbsolute(const psTex* rt) const
   p = p*cam.Inverse();
   return psVec(p.x*p.z + dim.x, p.y*p.z + dim.y);
 }
-void psCamera::SetPivotAbs(const psVec& pivot, const psTex* rt)
-{
-  if(!rt) rt = _driver->GetBackBuffer();
-  SetPivot((pivot / rt->GetDim()) * _viewport.Dim());
-}
 
 // Gets a rect representing the visible area of this camera in absolute coordinates given the provided flags.
 const psRectRotate psCamera::GetScreenRect(psFlag flags) const
 {
   return psRectRotate(0, 0, 0, 0, 0);
 }
-void psCamera::SetViewPortAbs(const psRect& vp, const psTex* rt)
+void psCamera::SetViewPortAbs(const psRect& vp, const psVeciu& dim)
 {
   PROFILE_FUNC();
-  if(!rt) rt = _driver->GetBackBuffer();
-  const psVec& dim = rt->GetDim();
   _viewport.topleft = vp.topleft/dim;
   _viewport.bottomright = (vp.bottomright-vp.topleft)/dim;
 }
-inline const psRect& psCamera::Apply(const psTex* rt) const
+inline psCamera::Culling psCamera::Apply(const psVeciu& dim) const
 {
-  psVeciu dim = rt->GetRawDim();
   auto& vp = GetViewPort();
   psRectiu realvp = { (uint32_t)bss::fFastRound(vp.left*dim.x), (uint32_t)bss::fFastRound(vp.top*dim.y), (uint32_t)bss::fFastRound(vp.right*dim.x), (uint32_t)bss::fFastRound(vp.bottom*dim.y) };
   psVec pivot = GetPivot()*psVec(dim);
-  _driver->PushCamera(position, pivot, GetRotation(), realvp, GetExtent());
+  _driver->SetCamera(position, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = position.xy - pivot;
-  _cache.full = psRectRotateZ(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot, position.z);
-  _cache.window = _cache.full.BuildAABB();
-  _cache.winfixed = realvp;
-  _cache.lastfixed = 0;
-  _cache.last = 0;
-  _cache.SetSSE();
+  Culling cache;
+  cache.full = psRectRotateZ(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot, position.z);
+  cache.window = cache.full.BuildAABB();
+  cache.winfixed = realvp;
+  cache.lastfixed = 0;
+  cache.last = 0;
+  cache.z = position.z;
+  cache.SetSSE();
   //_driver->DrawRect(_driver->library.IMAGE0, 0, psRectRotate(_cache.window, 0, VEC_ZERO), 0, 0, 0x88FFFFFF, 0);
-  return _cache.window;
+  return cache;
 }
-inline bool psCamera::Cull(psSolid* solid, const psTransform2D* parent) const
+inline psRectRotateZ psCamera::Culling::Resolve(const psRectRotateZ& rect) const
 {
-  if((solid->GetFlags()&PSFLAG_DONOTCULL) != 0) return false; // Don't cull if it has a DONOTCULL flag
-  return _cache.Cull(solid->GetBoundingRect((!parent)?(psTransform2D::Zero):(*parent)), solid->GetPosition().z + (!parent ? 0 : parent->position.z), position.z, solid->GetFlags());
+  return rect.RelativeTo(psVec3D(full.left, full.top, full.z), full.rotation, full.pivot);
 }
-inline bool psCamera::Cull(const psRectRotateZ& rect, const psTransform2D* parent, psFlag flags) const
+inline psTransform2D psCamera::Culling::Resolve(const psTransform2D& rect) const
 {
-  if((flags&PSFLAG_DONOTCULL) != 0) return false;
-  return _cache.Cull(rect.BuildAABB(), rect.z, position.z, flags);
-}
-inline psRectRotateZ psCamera::Resolve(const psRectRotateZ& rect) const
-{
-  return rect.RelativeTo(psVec3D(_cache.full.left, _cache.full.top, _cache.full.z), _cache.full.rotation, _cache.full.pivot);
-}
-inline psTransform2D psCamera::Resolve(const psTransform2D& rect) const
-{
-  return psTransform2D{ { _cache.full.left, _cache.full.top, _cache.full.z }, _cache.full.rotation, _cache.full.pivot }.Push(rect.position, rect.rotation, rect.pivot);
+  return psTransform2D{ { full.left, full.top, full.z }, full.rotation, full.pivot }.Push(rect.position, rect.rotation, rect.pivot);
 }
 
-inline void psCamera::CamCache::SetSSE()
+inline void psCamera::Culling::SetSSE()
 {
   SSEwindow = sseVec(window.ltrb);
   SSEwindow_center = sseVec((SSEwindow + sseVec::Shuffle<0x4E>(SSEwindow))*sseVec(0.5f));
@@ -111,7 +95,7 @@ inline void psCamera::CamCache::SetSSE()
   SSEfixed_center = sseVec((SSEfixed + sseVec::Shuffle<0x4E>(SSEfixed))*sseVec(0.5f));
   SSEfixed_hold = sseVec(SSEfixed - SSEfixed_center);
 }
-bool psCamera::CamCache::Cull(const psRect& rect, float rectz, float camz, psFlag flags)
+bool psCamera::Culling::Cull(const psRect& rect, float rectz, float camz, psFlag flags) const
 {
   if(flags&PSFLAG_FIXED) // This is the fixed case
   {
@@ -128,9 +112,9 @@ bool psCamera::CamCache::Cull(const psRect& rect, float rectz, float camz, psFla
 }
 
 
-psCamera::CamCache::CamCache(const CamCache& copy) : SSEwindow(copy.SSEwindow), SSEwindow_center(copy.SSEwindow_center), SSEwindow_hold(copy.SSEwindow_hold),
+psCamera::Culling::Culling(const Culling& copy) : SSEwindow(copy.SSEwindow), SSEwindow_center(copy.SSEwindow_center), SSEwindow_hold(copy.SSEwindow_hold),
   SSEfixed(copy.SSEfixed), SSEfixed_center(copy.SSEfixed_center), SSEfixed_hold(copy.SSEfixed_hold), last(copy.last), lastfixed(copy.lastfixed),
   window(copy.window), winfixed(copy.winfixed)
 {}
-psCamera::CamCache::CamCache() : SSEwindow(0), SSEwindow_center(0), SSEwindow_hold(0), SSEfixed(0), SSEfixed_center(0), SSEfixed_hold(0), last(0), lastfixed(0)
+psCamera::Culling::Culling() : SSEwindow(0), SSEwindow_center(0), SSEwindow_hold(0), SSEfixed(0), SSEfixed_center(0), SSEfixed_hold(0), last(0), lastfixed(0)
 {}

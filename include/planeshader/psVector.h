@@ -93,7 +93,7 @@ namespace planeshader {
   public:
     psRoundRect(const psRoundRect& copy);
     psRoundRect(psRoundRect&& mov);
-    explicit psRoundRect(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, const psVec& scale = VEC_ONE);
+    explicit psRoundRect(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psLayer* pass = 0, const psVec& scale = VEC_ONE);
     virtual ~psRoundRect();
     inline const psRect& GetCorners() const { return _corners; }
     inline void SetCorners(const psRect& corners) { _corners = corners; }
@@ -134,7 +134,7 @@ namespace planeshader {
   public:
     psRoundTri(const psRoundTri& copy);
     psRoundTri(psRoundTri&& mov);
-    explicit psRoundTri(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, const psVec& scale = VEC_ONE);
+    explicit psRoundTri(const psRectRotateZ& rect = psRectRotateZ(0, 0, 0, 0, 0, VEC_ZERO, 0), psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psLayer* pass = 0, const psVec& scale = VEC_ONE);
     virtual ~psRoundTri();
     inline const psRect& GetCorners() const { return _corners; }
     inline void SetCorners(const psRect& corners) { _corners = corners; }
@@ -175,7 +175,7 @@ namespace planeshader {
   public:
     psRenderCircle(const psRenderCircle& copy);
     psRenderCircle(psRenderCircle&& mov);
-    explicit psRenderCircle(float radius = 0, const psVec3D& position = VEC3D_ZERO, psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psPass* pass = 0, const psVec& scale = VEC_ONE);
+    explicit psRenderCircle(float radius = 0, const psVec3D& position = VEC3D_ZERO, psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psLayer* pass = 0, const psVec& scale = VEC_ONE);
     virtual ~psRenderCircle();
     inline const psRect& GetArcs() const { return _arcs; }
     inline void SetArcs(const psRect& arcs) { _arcs = arcs; }

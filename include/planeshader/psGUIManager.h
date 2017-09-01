@@ -60,7 +60,6 @@ namespace planeshader {
     static const uint16_t NUMKEYS=256; //256 possible keyboard IDs
     static const uint8_t NUMJOY=16; //Windows supports a max of 15 joysticks but the drivers claim they can support 16.
     static const uint8_t NUMAXIS=JOY_DEVCAPS::NUMAXIS; //Max number of axis accounted for
-    static const uint32_t BASE_DPI = 96;
 
   protected:
     // Creates the window and actually sets everything up (otherwise we get pointer problems)

@@ -42,9 +42,6 @@
     <ClInclude Include="..\include\planeshader\psVec.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\psPass.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\psTex.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -123,6 +120,9 @@
     <ClInclude Include="..\include\planeshader\psCircleSegment.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\planeshader\psLayer.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="psEngine.cpp">
@@ -135,9 +135,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psRenderable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="psPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psStateblock.cpp">
@@ -213,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psTransform2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="psLayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

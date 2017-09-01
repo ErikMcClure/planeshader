@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psTex.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 using namespace bss;
 using namespace planeshader;
@@ -31,8 +31,8 @@ TESTDEF::RETPAIR test_psParticles()
   while(!gotonext && engine->Begin())
   {
     processGUI();
-    driver->Clear(0);
-    driver->PushCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->GetBackBuffer()->GetRawDim()), psCamera::default_extent);
+    driver->Clear(engine->GetMonitor(0)->GetBackBuffer(), 0);
+    driver->SetCamera(globalcam.GetPosition(), globalcam.GetPivot(), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->GetBackBuffer()->GetRawDim()), psCamera::default_extent);
 
     for(int i = 0; i < 5000; ++i)
     {

@@ -409,7 +409,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _defaultSB = (DX11_SB*)CreateStateblock(0, 0);
   _defaultSS = (ID3D11SamplerState*)CreateTexblock(0, 0);
   SetStateblock(NULL);
-  Clear(0x00000000);
+  Clear(_backbuffer, 0x00000000);
   monitor->SetBackBuffer(_backbuffer);
   _swapchain->Present(0, 0);
 }
@@ -527,7 +527,7 @@ psBatchObj* psDirectX11::FlushPreserve()
   assert(_jobstack.Length() > 0);
 
   psBatchObj obj(_jobstack.Back());
-  float m[4][4];
+  psMatrix m;
   MEMCPY(m, 4 * 4 * sizeof(float), &obj.transform, 4 * 4 * sizeof(float));
   Flush();
   MEMCPY(PushMatrix(), 4 * 4 * sizeof(float), &m, 4 * 4 * sizeof(float));
@@ -546,7 +546,7 @@ void psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][
 
   ID3D11Buffer* cam = (flags&PSFLAG_FIXED) ? _proj_def : _cam_def;
   if(transform != identity)
-    _setcambuf(cam = ((flags&PSFLAG_FIXED) ? _proj_usr : _cam_usr), _camstack.Peek().viewproj.v, transform);
+    _setcambuf(cam = ((flags&PSFLAG_FIXED) ? _proj_usr : _cam_usr), _curcam.viewproj.v, transform);
 
   _context->VSSetConstantBuffers(0, 1, (ID3D11Buffer**)&cam);
   _context->GSSetConstantBuffers(0, 1, (ID3D11Buffer**)&cam);
@@ -690,7 +690,7 @@ psBatchObj* psDirectX11::DrawCurve(psBatchObj*& o, const psVertex* curve, uint32
 
 
 
-void psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
+void psDirectX11::SetCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)
 {
   PROFILE_FUNC();
 
@@ -729,20 +729,17 @@ void psDirectX11::PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotati
   BSS_ALIGN(16) Matrix<float, 4, 4> defaultCam;
   Matrix<float, 4, 4>::Translation_T(viewport.right*-0.5f, viewport.bottom*-0.5f, 1, defaultCam);
 
-  CamDef camdef = { matView * matProj, defaultCam*matProj, matView, viewport };
-  _camstack.Push(camdef);
-  _applycamera();
+  _applycamera(CamDef{ matView * matProj, defaultCam*matProj, matView, viewport });
 }
-void psDirectX11::PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)
+void psDirectX11::SetCamera3D(const float(&m)[4][4], const psRectiu& viewport)
 {
   PROFILE_FUNC();
-  CamDef camdef = { Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(identity), viewport };
-  _camstack.Push(camdef);
-  _applycamera();
+  _applycamera(CamDef{ Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(m), Matrix<float, 4, 4>(identity), viewport });
 }
-void psDirectX11::_applycamera()
+void psDirectX11::_applycamera(const CamDef& def)
 {
-  const psRectiu& viewport = _camstack.Peek().viewport; // We can't make this viewport dynamic because half the problem is the projection has the width/height embedded, and that has to be adjusted to the rendertarget as well.
+  _curcam = def;
+  const psRectiu& viewport = _curcam.viewport; // We can't make this viewport dynamic because half the problem is the projection has the width/height embedded, and that has to be adjusted to the rendertarget as well.
   D3D11_VIEWPORT vp = { viewport.left, viewport.top, viewport.right, viewport.bottom, 0.0f, 1.0f };
   _context->RSSetViewports(1, &vp);
 
@@ -754,30 +751,23 @@ void psDirectX11::_applycamera()
   if(_clipstack.Length() <= 1) // if we are currently using the default clip rect, re-apply with new dimensions
     _context->RSSetScissorRects(1, (D3D11_RECT*)&_clipstack[0]);
 
-  _setcambuf(_cam_def, _camstack.Peek().viewproj.v, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
-  _setcambuf(_cam_usr, _camstack.Peek().viewproj.v, identity);
-  _setcambuf(_proj_def, _camstack.Peek().proj.v, identity);
-  _setcambuf(_proj_usr, _camstack.Peek().proj.v, identity);
+  _setcambuf(_cam_def, _curcam.viewproj.v, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
+  _setcambuf(_cam_usr, _curcam.viewproj.v, identity);
+  _setcambuf(_proj_def, _curcam.proj.v, identity);
+  _setcambuf(_proj_usr, _curcam.proj.v, identity);
 }
-void psDirectX11::PopCamera()
-{
-  if(_camstack.Length() > 1)
-  {
-    _camstack.Discard();
-    _applycamera();
-  }
-}
+
 // Applies the camera transform (or it's inverse) according to the flags to a point.
 psVec3D psDirectX11::TransformPoint(const psVec3D& point) const
 {
   Vector<float, 4> v = { point.x, point.y, point.z, 1 };
-  Vector<float, 4> out = v * _camstack.Peek().view;
+  Vector<float, 4> out = v * _curcam.view;
   return out.xyz;
 }
 psVec3D psDirectX11::ReversePoint(const psVec3D& point) const
 {
   Vector<float, 4> v = { point.x, point.y, point.z, 1 };
-  Vector<float, 4> out = v * _camstack.Peek().view.Inverse();
+  Vector<float, 4> out = v * _curcam.view.Inverse();
   return out.xyz;
 }
 void psDirectX11::DrawFullScreenQuad()
@@ -900,9 +890,10 @@ void psDirectX11::_applyloadshader(ID3D11Texture2D* tex, psShader* shader, bool 
   _context->OMSetRenderTargets(1, &rtview, 0);
   SetStateblock(STATEBLOCK_LIBRARY::REPLACE->GetSB());
   shader->Activate();
-  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc.Width, desc.Height), psCamera::default_extent);
+  CamDef old = _curcam;
+  SetCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc.Width, desc.Height), psCamera::default_extent);
   DrawFullScreenQuad();
-  PopCamera();
+  _applycamera(old);
   _applyrendertargets(); //re-apply whatever render target we had before
   ID3D11ShaderResourceView* loadview = static_cast<ID3D11ShaderResourceView*>(_createshaderview(loadtex));
   _context->GenerateMips(loadview);
@@ -953,9 +944,10 @@ void psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* shader)
     _context->PSSetShaderResources(0, 1, &view);
     _context->PSSetSamplers(0, 1, &samp);
     _context->OMSetRenderTargets(1, &rtview, 0);
-    PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc2d.Width/(1<<i), desc2d.Height/(1<<i)), psCamera::default_extent);
+    CamDef old = _curcam;
+    SetCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, desc2d.Width/(1<<i), desc2d.Height/(1<<i)), psCamera::default_extent);
     DrawFullScreenQuad();
-    PopCamera();
+    _applycamera(old);
     _applyrendertargets();
 
     // Copy the subresource back to our real texture and release views
@@ -1104,14 +1096,19 @@ void psDirectX11::PopClipRect()
     _clipstack.Discard();
 }
 
-void psDirectX11::SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil)
+void psDirectX11::SetRenderTargets(psTex* const* texes, uint8_t num, psTex* depthstencil)
 {
   PROFILE_FUNC();
   _lastdepth = !depthstencil ? 0 : (ID3D11DepthStencilView*)depthstencil->GetView(); 
   _lastrt.SetLength(num);
-  for(uint8_t i = 0; i < num; ++i) _lastrt[i] = (ID3D11RenderTargetView*)texes[i]->GetView();
+  for(uint8_t i = 0; i < num; ++i) _lastrt[i] = texes[i];
 }
-
+std::pair<psTex* const*, uint8_t> psDirectX11::GetRenderTargets()
+{
+  if(!_lastrt.Length())
+    return { &_backbuffer, 1 };
+  return { _lastrt.begin(), _lastrt.Length() };
+}
 void psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER shader)
 {
   PROFILE_FUNC();
@@ -1445,9 +1442,8 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
   {
     if(_backbuffer)
     {
-      ID3D11RenderTargetView* prev = (ID3D11RenderTargetView*)_backbuffer->GetView();
       for(uint32_t i = 0; i < _lastrt.Length(); ++i)
-        if(_lastrt[i] == prev)
+        if(_lastrt[i] == _backbuffer)
           _lastrt[i] = 0;
       _backbuffer->~psTex();
     }
@@ -1457,7 +1453,7 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
     _getbackbufferref();
     for(uint32_t i = 0; i < _lastrt.Length(); ++i)
       if(!_lastrt[i])
-        _lastrt[i] = (ID3D11RenderTargetView*)_backbuffer->GetView();
+        _lastrt[i] = _backbuffer;
 
     _resetscreendim();
     SetStateblock(NULL);
@@ -1489,7 +1485,7 @@ void psDirectX11::_getbackbufferref()
     (USAGETYPES)_reverseusage(backbuffer_desc.Usage, backbuffer_desc.MiscFlags, backbuffer_desc.BindFlags,backbuffer_desc.SampleDesc.Count == 1),
     backbuffer_desc.MipLevels,
     0,
-    psVeciu(psGUIManager::BASE_DPI));
+    psVeciu(BASE_DPI));
 
   backbuffer->Release();
   SetDPIScale(_dpiscale); // Resets the backbuffer dpi, just in case.
@@ -1497,8 +1493,7 @@ void psDirectX11::_getbackbufferref()
 void psDirectX11::_resetscreendim()
 {
   _applyrendertargets();
-  _camstack.Clear();
-  PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, _backbuffer->GetRawDim().x, _backbuffer->GetRawDim().y), psCamera::default_extent);
+  SetCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, _backbuffer->GetRawDim().x, _backbuffer->GetRawDim().y), psCamera::default_extent);
 }
 void psDirectX11::_applyrendertargets()
 {
@@ -1507,26 +1502,31 @@ void psDirectX11::_applyrendertargets()
     _context->OMSetRenderTargets(1, &v, _lastdepth);
   }
   else
-    _context->OMSetRenderTargets(_lastrt.Length(), _lastrt.begin(), _lastdepth);
+  {
+    DYNARRAY(ID3D11RenderTargetView*, lastrt, _lastrt.Length());
+    for(size_t i = 0; i < _lastrt.Length(); ++i)
+      lastrt[i] = (ID3D11RenderTargetView*)_lastrt[i]->GetView();
+    _context->OMSetRenderTargets(_lastrt.Length(), lastrt, _lastdepth);
+  }
 }
-void psDirectX11::Clear(uint32_t color)
+void psDirectX11::Clear(psTex* t, uint32_t color)
 {
   PROFILE_FUNC();
-  psColor colors = psColor(color).rgba();
-  ID3D11RenderTargetView* views[8];
+  ID3D11View* view = (ID3D11View*)t->GetView();
+  ID3D11RenderTargetView* rtview;
   ID3D11DepthStencilView* dview;
-  _context->OMGetRenderTargets(8, views, &dview);
+  view->QueryInterface<ID3D11RenderTargetView>(&rtview);
+  view->QueryInterface<ID3D11DepthStencilView>(&dview);
+  if(rtview)
+  {
+    _context->ClearRenderTargetView(rtview, psColor(color).rgba());
+    rtview->Release();
+  }
   if(dview)
   {
     _context->ClearDepthStencilView(dview, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    dview->Release(); // GetRenderTargets calls Get on everything
+    dview->Release();
   }
-  for(uint8_t i = 0; i < 8; ++i)
-    if(views[i])
-    {
-      _context->ClearRenderTargetView(views[i], colors);
-      views[i]->Release(); // GetRenderTargets calls Get on everything
-    }
 }
 
 void* psDirectX11::CompileShader(const char* source, SHADER_VER profile, const char* entrypoint)
@@ -1633,7 +1633,7 @@ bool psDirectX11::ShaderSupported(SHADER_VER profile) //With DX11 shader support
 void psDirectX11::SetDPIScale(psVec dpiscale)
 {
   _dpiscale = dpiscale;
-  psVec dpi = psVec(psGUIManager::BASE_DPI) * dpiscale;
+  psVec dpi = psVec(BASE_DPI) * dpiscale;
   _backbuffer->SetDPI(psVeciu(fFastTruncate(dpi.x), fFastTruncate(dpi.y)));
 }
 psVec psDirectX11::GetDPIScale() const
@@ -1677,7 +1677,7 @@ uint32_t psDirectX11::GetSnapshot()
   s.depth = _lastdepth;
   s.nrt = _lastrt.Length();
   s.rt = _texstack.Length();
-  for(uint32_t i = 0; i < s.nrt; ++i) _texstack.Add(_lastrt[i]);
+  for(uint32_t i = 0; i < s.nrt; ++i) _texstack.Add(_lastrt[i]->GetView());
   for(uint32_t j = 0; j < 3; ++j)
   {
     s.ntex[j] = _lasttex[j].Length();

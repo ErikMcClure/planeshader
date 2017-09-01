@@ -16,7 +16,7 @@ struct PSINIT;
 struct psEngine;
 struct psDriver;
 struct psCamera;
-struct psPass;
+struct psLayer;
 struct psLocatable;
 struct psRenderable;
 struct psShader;
@@ -61,33 +61,6 @@ struct psRectl {
   long right;
   long bottom;
 };
-
-struct psColor {
-  float r;
-  float g;
-  float b;
-  float a;
-};
-
-struct psGUIEvent {
-  union {
-    struct { int x; int y; uint8_t button; uint8_t allbtn; }; // Mouse events
-    struct { short scrolldelta; }; // Mouse scroll
-    struct {  // Keys
-      int keychar; //Only used by KEYCHAR, represents a utf32 character
-      uint8_t keycode; //only used by KEYDOWN/KEYUP, represents an actual keycode, not a character
-      char keydown;
-      char sigkeys;
-    };
-    struct { float joyvalue; short joyaxis; }; // JOYAXIS
-    struct { char joydown; short joybutton; }; // JOYBUTTON
-  };
-  uint8_t type;
-  uint64_t time;
-};
-
-struct cEngine* cEngine_new(struct cEngine* ptr, const PSINIT* args);
-void cEngine_delete(struct cEngine* ptr);
 
 
 

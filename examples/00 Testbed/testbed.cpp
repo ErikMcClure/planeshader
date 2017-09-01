@@ -155,7 +155,7 @@ int main(int argc, char** argv)
     { "psDirectX11", &test_psDirectX11 },
     { "psTileset", &test_psTileset },
     { "psVector", &test_psVector },
-    { "psPass", &test_psPass },
+    { "psLayer", &test_psPass },
     { "psCircle", &test_psCircle },
     { "psEffect", &test_psEffect },
     { "psRect", &test_psRect },

@@ -14,7 +14,7 @@ psTileset::psTileset(psTileset&& mov) : psSolid(std::move(mov)), psTextured(std:
   mov._rowlength = 0;
 }
 
-psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+psTileset::psTileset(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), _rowlength(0), _tiledim(VEC_ZERO)
 {
 }

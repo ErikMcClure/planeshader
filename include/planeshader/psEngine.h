@@ -17,7 +17,7 @@
 #define PSLOGP(level,format,...) psEngine::Instance()->PrintLog(__FILE__,__LINE__,(level),format,__VA_ARGS__)
 
 namespace planeshader {
-  class psPass;
+  class psLayer;
   class psDriver;
   class psRoot;
 
@@ -58,11 +58,10 @@ namespace planeshader {
     ~psEngine();
     // Begins a frame. Returns false if rendering should stop.
     bool Begin();
-    bool Begin(uint32_t clearcolor);
     // Ends a frame, returning the number of nanoseconds between Begin() and End(), before the vsync happened.
     uint64_t End();
-    // Renders the next pass, returns false if there are no more passes to render.
-    bool NextPass();
+    // Renders the next layer, returns false if there are no more top-level layers to render.
+    bool NextLayer();
     // Begins and ends a frame, returning false if rendering should stop.
     inline bool Render() {
       if(!Begin()) return false;
@@ -70,13 +69,13 @@ namespace planeshader {
       FlushMessages(); // For best results, calculate the frame delta right before flushing the messages
       return true;
     }
-    // Insert a pass 
-    bool InsertPass(psPass& pass, uint16_t index=-1);
-    // Remove pass 
-    bool RemovePass(uint16_t index);
-    // Gets a pass. The 0th pass always exists.
-    inline psPass* GetPass(uint16_t index=0) const { return index<_passes.Capacity()?_passes[index]:0; }
-    inline uint16_t NumPass() const { return _passes.Capacity(); }
+    // Insert a layer 
+    bool InsertLayer(psLayer& layer, uint16_t index=-1);
+    // Remove layer 
+    bool RemoveLayer(uint16_t index);
+    // Gets a layer. The 0th layer always exists.
+    inline psLayer* GetLayer(uint16_t index=0) const { return index<_layers.Capacity()? _layers[index]:0; }
+    inline uint16_t NumLayers() const { return _layers.Capacity(); }
     inline psMonitor::MODE GetMode() const { return _mode; }
     inline bss::Logger& GetLog() { return _log; }
 
@@ -94,8 +93,8 @@ namespace planeshader {
     template<typename... Args>
     BSS_FORCEINLINE void LogFormat(const char* file, uint32_t line, uint8_t level, const char* format, Args... args) { _log.LogFormat<Args...>(LOGSOURCE, file, line, level, format, args...); }
 
-    psPass& operator [](uint16_t index) { assert(index<_passes.Capacity()); return *_passes[index]; }
-    const psPass& operator [](uint16_t index) const { assert(index<_passes.Capacity()); return *_passes[index]; }
+    psLayer& operator [](uint16_t index) { assert(index<_layers.Capacity()); return *_layers[index]; }
+    const psLayer& operator [](uint16_t index) const { assert(index<_layers.Capacity()); return *_layers[index]; }
 
     static psEngine* Instance(); // Cannot be inline'd for DLL reasons.
     static const char* LOGSOURCE;
@@ -104,9 +103,9 @@ namespace planeshader {
   protected:
     virtual void _onresize(psVeciu dim, bool fullscreen) override;
 
-    bss::Array<psPass*, uint16_t> _passes;
-    uint16_t _curpass;
-    psPass* _mainpass;
+    bss::Array<psLayer*, uint16_t> _layers;
+    uint16_t _curlayer;
+    psLayer* _mainlayer;
     psMonitor::MODE _mode;
     uint64_t _frameprofiler;
     bss::Logger _log;
