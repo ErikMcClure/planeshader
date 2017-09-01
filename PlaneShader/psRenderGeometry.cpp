@@ -9,8 +9,8 @@ using namespace planeshader;
 
 psRenderEllipse::psRenderEllipse(const psRenderEllipse& copy) : psSolid(copy), _color(copy._color) {}
 psRenderEllipse::psRenderEllipse(psRenderEllipse&& mov) : psSolid(std::move(mov)), _color(mov._color) {}
-psRenderEllipse::psRenderEllipse(const psCircle& circle) : psSolid(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.CIRCLE, 0, VEC_ONE) { operator=(circle); }
-psRenderEllipse::psRenderEllipse(const psEllipse& ellipse) : psSolid(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.CIRCLE, 0, VEC_ONE) { operator=(ellipse); }
+psRenderEllipse::psRenderEllipse(const psCircle& circle) : psSolid(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.CIRCLE, 0, VEC_ONE), _color(0xFFFFFFFF) { operator=(circle); }
+psRenderEllipse::psRenderEllipse(const psEllipse& ellipse) : psSolid(VEC3D_ZERO, 0, VEC_ZERO, 0, 0, 0, _driver->library.CIRCLE, 0, VEC_ONE), _color(0xFFFFFFFF) { operator=(ellipse); }
 
 psRenderEllipse& psRenderEllipse::operator =(const psRenderEllipse& right) { psSolid::operator=(right); _color = right._color; return *this; }
 psRenderEllipse& psRenderEllipse::operator =(psRenderEllipse&& right) { psSolid::operator=(std::move(right)); _color = right._color; return *this; }
@@ -29,8 +29,8 @@ void psRenderEllipse::_render(const psTransform2D& parent)
 
 psRenderLine::psRenderLine(const psRenderLine& copy) : psLocatable(copy), psRenderable(copy), _color(copy._color) {}
 psRenderLine::psRenderLine(psRenderLine&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), _color(mov._color) {}
-psRenderLine::psRenderLine(const psLine3D& line) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.LINE, 0) { operator=(line); }
-psRenderLine::psRenderLine(const psLine& line) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.LINE, 0) { operator=(line); }
+psRenderLine::psRenderLine(const psLine3D& line) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.LINE, 0), _color(0xFFFFFFFF) { operator=(line); }
+psRenderLine::psRenderLine(const psLine& line) : psLocatable(VEC3D_ZERO, 0, VEC_ZERO), psRenderable(0, 0, 0, _driver->library.LINE, 0), _color(0xFFFFFFFF) { operator=(line); }
 
 psRenderLine& psRenderLine::operator =(const psRenderLine& right)
 { 
@@ -100,14 +100,11 @@ void psRenderPolygon::_render(const psTransform2D& parent)
   _driver->PopTransform();
 }
 
-psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy) : psRenderable(copy) {}
-psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov) : psRenderable(std::move(mov)) {}
-psFullScreenQuad::psFullScreenQuad(){}
+psFullScreenQuad::psFullScreenQuad(const psFullScreenQuad& copy) : psRenderable(copy), _color(copy._color) {}
+psFullScreenQuad::psFullScreenQuad(psFullScreenQuad&& mov) : psRenderable(std::move(mov)), _color(mov._color) {}
+psFullScreenQuad::psFullScreenQuad() : psRenderable(PSFLAG_FIXED), _color(0xFFFFFFFF) {}
 void psFullScreenQuad::_render(const psTransform2D& parent)
 {
-  psVec dim = GetRenderTargets()[0]->GetDim();
-  _driver->PushCamera(psVec3D(0, 0, -1.0f), VEC_ZERO, 0, psRectiu(0, 0, dim.x, dim.y), psCamera::default_extent);
   _driver->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
   _driver->DrawFullScreenQuad();
-  _driver->PopCamera();
 }

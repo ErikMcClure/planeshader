@@ -14,19 +14,19 @@
 namespace planeshader {
   class PS_DLLEXPORT psRenderable
   {
-    friend class psPass;
+    friend class psLayer;
     friend class psCullGroup;
 
   public:
     psRenderable(const psRenderable& copy);
     psRenderable(psRenderable&& mov);
-    explicit psRenderable(psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass=0);
+    explicit psRenderable(psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psLayer* pass=0);
     virtual ~psRenderable();
     virtual void Render(const psTransform2D* parent);
     int GetZOrder() const { return _zorder; }
     void SetZOrder(int zorder);
-    inline psPass* GetPass() const { return _pass; }
-    void SetPass(psPass* pass);
+    inline psLayer* GetLayer() const { return _layer; }
+    void SetPass(psLayer* pass);
     void SetPass(); // Sets the pass to the 0th pass.
     inline bss::BitField<psFlag>& GetFlags() { return _flags; }
     inline psFlag GetFlags() const { return _flags; }
@@ -37,14 +37,17 @@ namespace planeshader {
     void SetStateblock(psStateblock* stateblock);
     virtual psTex* const* GetTextures() const;
     virtual uint8_t NumTextures() const;
-    virtual psTex* const* GetRenderTargets() const;
-    virtual uint8_t NumRT() const;
-    virtual void SetRenderTarget(psTex* rt, uint32_t index = 0);
-    void ClearRenderTargets();
     virtual psRenderable* Clone() const { return 0; }
 
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);
+
+    static BSS_FORCEINLINE bss::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
+    static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r)
+    {
+      char c = SGNCOMPARE(l->_zorder, r->_zorder);
+      return !c ? SGNCOMPARE(l, r) : c;
+    }
 
     void Activate();
     virtual void _render(const psTransform2D& parent) = 0;
@@ -55,14 +58,13 @@ namespace planeshader {
     void _invalidate();
 
     bss::BitField<psFlag> _flags;
-    psPass* _pass; // Stores what pass we are in
+    psLayer* _layer; // Stores what pass we are in
     int _zorder;
     uint8_t _internalflags;
     bss::ref_ptr<psStateblock> _stateblock;
     bss::ref_ptr<psShader> _shader;
     bss::LLBase<psRenderable> _llist;
     bss::TRB_Node<psRenderable*>* _psort;
-    bss::Array<psTex*, uint8_t> _rts;
 
     enum INTERNALFLAGS : uint8_t
     {

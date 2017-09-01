@@ -3,7 +3,7 @@
 
 #include "psGroup.h"
 #include "bss-util/profiler.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include <algorithm>
 
 using namespace planeshader;
@@ -16,7 +16,7 @@ psGroup::psGroup(const psGroup& copy) : psRenderable(copy), psLocatable(copy), _
 }
 psGroup::psGroup(psGroup&& mov) : psRenderable(std::move(mov)), psLocatable(std::move(mov)), _children(std::move(_children))
 {}
-psGroup::psGroup(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass) :
+psGroup::psGroup(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass) :
   psRenderable(flags, zorder, stateblock, shader, pass), psLocatable(position, rotation, pivot), _children(0)
 {}
 psGroup::~psGroup()
@@ -27,7 +27,7 @@ psGroup::~psGroup()
 psRenderable* psGroup::Add(const psRenderable* renderable)
 {
   psRenderable* r = renderable->Clone();
-  r->SetPass(GetPass());
+  r->SetPass(GetLayer());
   _children.Insert(r);
   return r;
 }

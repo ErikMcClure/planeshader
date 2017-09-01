@@ -32,11 +32,13 @@ _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
 {
   if(!PTRLIB) FT_Init_FreeType(&PTRLIB);
 
-  if(!_dpi.x) _dpi.x = psGUIManager::BASE_DPI;
-  if(!_dpi.y) _dpi.y = psGUIManager::BASE_DPI;
+  if(!_dpi.x) _dpi.x = BASE_DPI;
+  if(!_dpi.y) _dpi.y = BASE_DPI;
   psVec scale(_dpi.x / 72.0f, _dpi.y / 72.0f); // points are defined as 1/72 inches, so the scaling factor is DPI/72.0f to get the true glyph size. Example: a 12 point font at 96 DPI is 12 * 96/72 = 16 pixels high
   _textures.Insert(new psTex(psVeciu(fFastRound(psize * 8 * scale.x), fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_RENDERTARGET, 0, 0, _dpi), 0);
+  _textures[0]->Drop();
   _staging.Insert(new psTex(psVeciu(fFastRound(psize * 8 * scale.x), fFastRound(psize * 8 * scale.y)), FMT_R8G8B8A8, USAGE_STAGING, 1, 0, _dpi), 0);
+  _staging[0]->Drop();
 
   if(!FileExists(_path)) //we only adjust the path if our current path doesn't exist
   {
@@ -215,7 +217,7 @@ void psFont::_loadfont()
     }
   }
 
-  float invdpiscale = (_dpi == psGUIManager::BASE_DPI ? 1.0f : (psGUIManager::BASE_DPI / (float)_dpi.y)); // y-axis DPI scaling
+  float invdpiscale = (_dpi == BASE_DPI ? 1.0f : (BASE_DPI / (float)_dpi.y)); // y-axis DPI scaling
 
   if(_ft2face->face_flags & FT_FACE_FLAG_SCALABLE) //now account for scalability 
   {
@@ -312,7 +314,7 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
 
   if(!lockbytes) return retval;
 
-  psVec invdpiscale(psVec(psGUIManager::BASE_DPI) / _dpi);
+  psVec invdpiscale(psVec(BASE_DPI) / _dpi);
   psVec dim = _staging[_curtex]->GetRawDim();
   retval->uv = psRect(_curpos.x / dim.x, _curpos.y / dim.y, (_curpos.x + width) / dim.x, (_curpos.y + height) / dim.y);
   retval->advance = (_ft2face->glyph->advance.x * FT_COEF * invdpiscale.x);

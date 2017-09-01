@@ -14,7 +14,7 @@ namespace planeshader {
   public:
     psGroup(const psGroup& copy);
     psGroup(psGroup&& mov);
-    explicit psGroup(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0);
+    explicit psGroup(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psLayer* pass = 0);
     virtual ~psGroup();
     // Gets all the children
     inline psRenderable* const* GetChildren() const { return _children.begin(); }

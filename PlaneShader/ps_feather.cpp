@@ -161,9 +161,9 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   psDriver* driver = psDriverHold::GetDriver();
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
-  float m[4][4];
+  psMatrix m;
   bss::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
-  float ms[4][4];
+  psMatrix ms;
   bss::Matrix<float, 4, 4>::AffineScaling(scale->x * (data->dpi.x / 96.0f), scale->y * (data->dpi.y / 96.0f), 1.0f, ms);
   bss::MatrixMultiply<float, 4, 4, 4>(m, ms, m);
   driver->PushTransform(m);
@@ -428,7 +428,7 @@ psRoot::psRoot() : _psInject(0, 0)
     &fgTerminateDefault,
   };
 
-  AbsVec dpi = { psGUIManager::BASE_DPI, psGUIManager::BASE_DPI };
+  AbsVec dpi = { BASE_DPI, BASE_DPI };
   fgRoot_Init(this, &area, &dpi, &BACKEND);
   DWORD blinkrate = 0;
   int64_t sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);

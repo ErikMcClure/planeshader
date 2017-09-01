@@ -14,7 +14,7 @@ psText::psText(psText&& mov) : psSolid(std::move(mov)), _color(mov._color), _tex
 _letterspacing(mov._letterspacing), _drawflags(mov._drawflags), _func(mov._func), _lineheight(mov._lineheight)
 {
 }
-psText::psText(psTexFont* font, const char* text, float lineheight, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale) :
+psText::psText(psTexFont* font, const char* text, float lineheight, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), _color(0xFFFFFFFF), _text(text), _font(font), _textdim(-1, -1),
   _letterspacing(0), _drawflags(0), _func(0, 0), _lineheight((lineheight) == 0.0f ? (font ? font->GetLineHeight() : 0.0f) : lineheight)
 {

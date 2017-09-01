@@ -12,12 +12,12 @@ namespace bss { template<typename T> struct KDNode; }
 
 namespace planeshader {
   // A solid is an inheritable with dimensions. Only objects inheriting from psSolid can be culled.
-  class PS_DLLEXPORT psSolid : public psLocatable, public psRenderable
+  class PS_DLLEXPORT psSolid : public psRenderable, public psLocatable
   {
   public:
     psSolid(const psSolid& copy);
     psSolid(psSolid&& mov);
-    explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psPass* pass = 0, const psVec& scale=VEC_ONE);
+    explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psLayer* pass = 0, const psVec& scale=VEC_ONE);
     virtual ~psSolid();
     virtual void Render(const psTransform2D* parent) override;
     // Generates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 

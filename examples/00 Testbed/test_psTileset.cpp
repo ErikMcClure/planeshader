@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psTex.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include "psTileset.h"
 
 using namespace bss;
@@ -68,21 +68,22 @@ TESTDEF::RETPAIR test_psTileset()
       //map[j][i].index = pos.x + (pos.y * 4);
     }
 
-  psTileset tiles(VEC3D_ZERO, 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
+  psTileset tiles(VEC3D_ZERO, 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetLayer(0));
   tiles.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
   if(!tiles.AutoGenDefs(psVeciu(8, 8)))
     ENDTEST;
   tiles.SetTiles(map.get(), dimx*dimy, dimx);
 
-  psTileset tiles2(psVec3D(0, 0, 1), 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetPass(0));
+  psTileset tiles2(psVec3D(0, 0, 1), 0, VEC_ZERO, PSFLAG_DONOTCULL, 0, 0, driver->library.IMAGE, engine->GetLayer(0));
   tiles2.SetTexture(psTex::Create("../media/wang2.png", 64U, FILTER_TRIANGLE, 0, FILTER_NONE, false, STATEBLOCK_LIBRARY::POINTSAMPLE));
   if(!tiles2.AutoGenDefs(psVeciu(8, 8)))
     ENDTEST;
   tiles2.SetTiles(map.get(), dimx*dimy, dimx);
 
-  engine->GetPass(0)->SetCamera(&globalcam);
+  engine->GetLayer(0)->SetClearColor(0);
+  engine->GetLayer(0)->SetCamera(&globalcam);
 
-  while(!gotonext && engine->Begin(0))
+  while(!gotonext && engine->Begin())
   {
     updatefpscount(timer, fps);
     processGUI();

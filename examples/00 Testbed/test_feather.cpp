@@ -3,6 +3,7 @@
 #include "testbed.h"
 #include "psTex.h"
 #include "psFont.h"
+#include "psLayer.h"
 #include "feathergui/fgButton.h"
 #include "feathergui/fgResource.h"
 #include "feathergui/fgCurve.h"
@@ -73,10 +74,10 @@ TESTDEF::RETPAIR test_feather()
   };
 
   engine->SetPreprocess(guicallback);*/
-  
+  engine->GetLayer(0)->SetClearColor(0xFF000000);
+
   while(!gotonext && engine->Begin())
   {
-    engine->GetDriver()->Clear(0xFF000000);
     engine->GetGUI().Render(0);
     engine->End();
     engine->FlushMessages();

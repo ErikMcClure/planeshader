@@ -2,20 +2,20 @@
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psImage.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 using namespace planeshader;
 
 psImage::psImage(const psImage& copy) : psSolid(copy), psTextured(copy), _color(copy._color), _uvs(copy._uvs) {}
 psImage::psImage(psImage&& mov) : psSolid(std::move(mov)), psTextured(std::move(mov)), _color(mov._color), _uvs(std::move(mov._uvs)) {}
 psImage::~psImage() {}
-psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale, uint32_t color) : 
+psImage::psImage(psTex* tex, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale, uint32_t color) : 
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(tex), _color(color)
 {
   AddSource();
 }
 
-psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass, const psVec& scale, uint32_t color) :
+psImage::psImage(const char* file, const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass, const psVec& scale, uint32_t color) :
   psSolid(position, rotation, pivot, flags, zorder, stateblock, shader, pass, scale), psTextured(file), _color(color)
 {
   AddSource();

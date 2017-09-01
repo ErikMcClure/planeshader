@@ -503,8 +503,8 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psGUIManager.h" />
     <ClInclude Include="..\include\planeshader\psImage.h" />
     <ClInclude Include="..\include\planeshader\psGroup.h" />
+    <ClInclude Include="..\include\planeshader\psLayer.h" />
     <ClInclude Include="..\include\planeshader\psLocatable.h" />
-    <ClInclude Include="..\include\planeshader\psPass.h" />
     <ClInclude Include="..\include\planeshader\psRect.h" />
     <ClInclude Include="..\include\planeshader\psRenderable.h" />
     <ClInclude Include="..\include\planeshader\psRenderGeometry.h" />
@@ -541,9 +541,9 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psGUIManager.cpp" />
     <ClCompile Include="psImage.cpp" />
     <ClCompile Include="psGroup.cpp" />
+    <ClCompile Include="psLayer.cpp" />
     <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psMonitor.cpp" />
-    <ClCompile Include="psPass.cpp" />
     <ClCompile Include="psRenderable.cpp" />
     <ClCompile Include="psRenderGeometry.cpp" />
     <ClCompile Include="psShader.cpp" />

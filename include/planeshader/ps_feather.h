@@ -7,6 +7,7 @@
 #include "feathergui/fgRoot.h"
 #include "feathergui/fgMonitor.h"
 #include "psRenderable.h"
+#include "psTex.h"
 #include "bss-util/Delegate.h"
 
 struct HWND__;
@@ -76,7 +77,7 @@ namespace planeshader {
     inline MODE GetMode() const { return _mode; }
     void Resize(psVeciu dim, MODE mode);
     inline void SetBackBuffer(psTex* backbuffer) { _backbuffer = backbuffer; }
-    inline psTex* const* GetBackBuffer() { return !_backbuffer ? 0 : &_backbuffer; }
+    inline psTex* GetBackBuffer() { return _backbuffer; }
 
     static void WndRegister(HINSTANCE__* instance, const wchar_t* icon, HICON__* iconrc);
     static void CheckDesktopComposition();
@@ -97,7 +98,7 @@ namespace planeshader {
 
     HWND__* _window;
     psGUIManager* _manager;
-    psTex* _backbuffer;
+    bss::ref_ptr<psTex> _backbuffer;
     MODE _mode;
     bss::BitField<uint8_t> _guiflags;
   };

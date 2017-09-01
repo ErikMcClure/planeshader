@@ -2,7 +2,7 @@
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psCullGroup.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include "bss-util\Delegate.h"
 
 using namespace planeshader;
@@ -10,15 +10,15 @@ using namespace planeshader;
 psCullGroup::psCullGroup(psCullGroup&& mov) : psRenderable(std::move(mov)), _tree(std::move(mov._tree)), _nodealloc(std::move(mov._nodealloc)),
   _list(&_alloc), _alloc(std::move(mov._alloc))
 {}
-psCullGroup::psCullGroup(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass) :
+psCullGroup::psCullGroup(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass) :
   psRenderable(flags, zorder, stateblock, shader, pass)
 {}
 psCullGroup::~psCullGroup() { SetPass(0); Clear(); }
 void psCullGroup::Insert(psSolid* img, bool recalc)
 { 
-  img->SetPass(_pass); // Set pass to our pass
-  if(_pass != 0)
-    _pass->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _pass)
+  img->SetPass(_layer); // Set pass to our pass
+  if(_layer != 0)
+    _layer->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _layer)
   img->GetBoundingRect(psTransform2D::Zero); // Make sure the bounding rect is up to date
   if(recalc)
     _tree.Insert(img);
@@ -31,16 +31,16 @@ void psCullGroup::Clear() { _tree.Clear(); }
 
 void psCullGroup::Render(const psTransform2D* parent)
 {
-  psPass* pass = !_pass ? psPass::CurPass : _pass;
-  if(!pass)
+  psLayer* layer = !_layer ? psLayer::CurLayer() : _layer;
+  if(!layer)
     return;
 
-  float camZ = pass->GetCamera()->GetPosition().z;
+  float camZ = layer->GetCulling().z;
   BSS_ALIGN(16) float rcull[4];
   if(!parent)
-    AdjustRect(pass->GetCamera()->GetCache().window.ltrb, camZ, rcull);
+    AdjustRect(layer->GetCulling().window.ltrb, camZ, rcull);
   else
-    AdjustRect(pass->GetCamera()->GetCache().full.RelativeTo(parent->position, parent->rotation, parent->pivot).BuildAABB().ltrb, camZ, rcull);
+    AdjustRect(layer->GetCulling().full.RelativeTo(parent->position, parent->rotation, parent->pivot).BuildAABB().ltrb, camZ, rcull);
 
   if(!parent)
   {
@@ -71,10 +71,10 @@ void psCullGroup::_render(const psTransform2D& parent)
     }
     else
     {
-      if(node->value->_pass == psPass::CurPass)
+      if(node->value->_layer == psLayer::CurLayer())
         node->value->_render(parent);
       else
-        node->value->_pass->Defer(node->value, parent);
+        node->value->_layer->Defer(node->value, parent);
       node->value->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
       node = node->next;
     }

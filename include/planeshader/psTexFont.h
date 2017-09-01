@@ -6,6 +6,7 @@
 
 #include "psRect.h"
 #include "psDriver.h"
+#include "psTex.h"
 #include "bss-util/RefCounter.h"
 #include "bss-util/Hash.h"
 #include "bss-util/Array.h"
@@ -80,7 +81,7 @@ namespace planeshader {
 
     bss::Hash<uint64_t, float> _kerning;
     bss::Hash<uint32_t, psGlyph> _glyphs;
-    bss::Array<psTex*, uint8_t> _textures;
+    bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _textures;
     float _fontlineheight;
     float _fontascender;
     float _fontdescender;

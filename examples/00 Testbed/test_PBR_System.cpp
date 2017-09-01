@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psImage.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 using namespace planeshader;
 using namespace bss;
@@ -40,10 +40,10 @@ TESTDEF::RETPAIR test_PBR_System()
 
 
 
-  engine->GetPass(0)->SetClearColor(0);
-  engine->GetPass(0)->SetCamera(&globalcam);
+  engine->GetLayer(0)->SetClearColor(0);
+  engine->GetLayer(0)->SetCamera(&globalcam);
 
-  while(!gotonext && engine->Begin(0))
+  while(!gotonext && engine->Begin())
   {
     processGUI();
     engine->End();

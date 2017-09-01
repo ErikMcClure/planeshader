@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psRenderGeometry.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include "psVector.h"
 #include "psImage.h"
 
@@ -39,22 +39,22 @@ TESTDEF::RETPAIR test_psGeometry()
   circle2.SetColor(psColor32(255, 255, 0, 0));
   circle.SetOutlineColor(0xFFFFFFFF);
 
-  engine->GetPass(0)->Insert(&arc);
-  engine->GetPass(0)->Insert(&arc2);
-  engine->GetPass(0)->Insert(&circle);
-  engine->GetPass(0)->Insert(&circle1);
-  engine->GetPass(0)->Insert(&circle2);
-  //engine->GetPass(0)->Insert(&circle3);
-  engine->GetPass(0)->SetClearColor(0xFF999999);
-  engine->GetPass(0)->SetCamera(&globalcam);
+  engine->GetLayer(0)->Insert(&arc);
+  engine->GetLayer(0)->Insert(&arc2);
+  engine->GetLayer(0)->Insert(&circle);
+  engine->GetLayer(0)->Insert(&circle1);
+  engine->GetLayer(0)->Insert(&circle2);
+  //engine->GetLayer(0)->Insert(&circle3);
+  engine->GetLayer(0)->SetClearColor(0xFF999999);
+  engine->GetLayer(0)->SetCamera(&globalcam);
 
-  while(!gotonext && engine->Begin(0))
+  while(!gotonext && engine->Begin())
   {
     processGUI();
     psRenderLine::DrawLine(line, 0xFFFFFFFF);
     psVec out[2];
     int n = bss::LineSegmentRadiusIntersect<float>(line.x1 - circle.GetPosition().x, line.y1 - circle.GetPosition().y, line.x2 - circle.GetPosition().x, line.y2 - circle.GetPosition().y, circle.GetDim().x / 2, out);
-    line.p2 = globalcam.GetMouseAbsolute();
+    line.p2 = globalcam.GetMouseAbsolute(engine->GetLayer(0)->GetTargets()[0]->GetRawDim());
     //circle3.SetPosition(line.p2);
     arc2.SetPosition(line.p2);
     n = bss::CircleRadiusIntersect<float>(segment.outer, line.p2.x - arc.GetPosition().x, line.p2.y - arc.GetPosition().y, segment.outer, out);

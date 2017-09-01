@@ -62,9 +62,8 @@ namespace planeshader {
     virtual psBatchObj* DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags) { return 0; }
     virtual psBatchObj* DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num) override { return 0; }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) {}
-    virtual void PushCamera3D(const float(&m)[4][4], const psRectiu& viewport){}
-    virtual void PopCamera(){}
+    virtual void SetCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent) {}
+    virtual void SetCamera3D(const float(&m)[4][4], const psRectiu& viewport){}
     // Applies the camera transform (or it's inverse) according to the flags to a point.
     virtual psVec3D TransformPoint(const psVec3D& point) const { return VEC3D_ZERO; }
     virtual psVec3D ReversePoint(const psVec3D& point) const { return VEC3D_ZERO; }
@@ -86,7 +85,8 @@ namespace planeshader {
     virtual psRect PeekClipRect() { return psRect(0, 0, 0, 0); }
     virtual void PopClipRect() {}
     // Sets the current rendertargets, setting all the rest to null.
-    virtual void SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil = 0) {}
+    virtual void SetRenderTargets(psTex* const* texes, uint8_t num, psTex* depthstencil = 0) {}
+    virtual std::pair<psTex* const*, uint8_t> GetRenderTargets() { return { 0,0 }; }
     // Sets shader constants
     virtual void SetShaderConstants(void* constbuf, SHADER_VER shader) {}
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
@@ -107,7 +107,7 @@ namespace planeshader {
     virtual void CopyResource(void* dest, void* src, RESOURCE_TYPE t) {}
     virtual void Resize(psVeciu dim, FORMATS format, char fullscreen) {}
     // Clears everything to a specified color
-    virtual void Clear(uint32_t color) {}
+    virtual void Clear(psTex* t, uint32_t color) {}
     // Gets the backbuffer texture
     virtual psTex* GetBackBuffer() const { return _backbuffer; }
     // Gets a pointer to the driver implementation

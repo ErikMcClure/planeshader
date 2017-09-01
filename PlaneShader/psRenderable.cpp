@@ -3,33 +3,31 @@
 
 #include "psRenderable.h"
 #include "psEngine.h"
-#include "psPass.h"
+#include "psLayer.h"
 #include "psTex.h"
 #include "bss-util/profiler.h"
 
 using namespace planeshader;
 
-psRenderable::psRenderable(const psRenderable& copy) : _flags(copy._flags), _pass(copy._pass), _internalflags(copy._internalflags), _zorder(copy._zorder),
-  _stateblock(copy._stateblock), _shader(psShader::CreateShader(copy._shader)), _rts(copy._rts), _psort(0)
+psRenderable::psRenderable(const psRenderable& copy) : _flags(copy._flags), _layer(copy._layer), _internalflags(copy._internalflags), _zorder(copy._zorder),
+  _stateblock(copy._stateblock), _shader(psShader::CreateShader(copy._shader)), _psort(0)
 {
   _llist.next = _llist.prev = 0;
-  for(uint32_t i = 0; i < _rts.Capacity(); ++i)
-    _rts[i]->Grab();
   _copyinsert(copy);
 }
-psRenderable::psRenderable(psRenderable&& mov) : _flags(mov._flags), _pass(mov._pass), _internalflags(mov._internalflags), _zorder(mov._zorder),
-  _stateblock(std::move(mov._stateblock)), _shader(std::move(mov._shader)), _rts(std::move(mov._rts)), _psort(0)
+psRenderable::psRenderable(psRenderable&& mov) : _flags(mov._flags), _layer(mov._layer), _internalflags(mov._internalflags), _zorder(mov._zorder),
+  _stateblock(std::move(mov._stateblock)), _shader(std::move(mov._shader)), _psort(0)
 { 
   _llist.next=_llist.prev=0;
   _copyinsert(mov);
 
-  if(mov._pass != 0) // We deliberately don't call SetPass(0), because we don't WANT to propagate this change down to mov's children - there's no point, because the children aren't being moved!
-    mov._pass->Remove(&mov);
-  mov._pass = 0;
+  if(mov._layer != 0) // We deliberately don't call SetPass(0), because we don't WANT to propagate this change down to mov's children - there's no point, because the children aren't being moved!
+    mov._layer->Remove(&mov);
+  mov._layer = 0;
 }
 
-psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psPass* pass) : _flags(flags), _zorder(zorder),
-  _stateblock(stateblock), _shader(psShader::CreateShader(shader)), _pass(0), _internalflags(0), _psort(0)
+psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass) : _flags(flags), _zorder(zorder),
+  _stateblock(stateblock), _shader(psShader::CreateShader(shader)), _layer(0), _internalflags(0), _psort(0)
 { 
   _llist.next=_llist.prev=0;
   SetPass(pass);
@@ -40,16 +38,16 @@ void psRenderable::Render(const psTransform2D* parent)
 {
   if(!parent)
   {
-    if(_pass)
-      _pass->_sort(this);
-    else if(psPass::CurPass)
-      psPass::CurPass->_sort(this);
+    if(_layer)
+      _layer->_sort(this);
+    else if(psLayer::CurLayers.Length())
+      psLayer::CurLayers.Peek()->_sort(this);
   }
   else
   {
-    if(_pass != 0 && _pass != psPass::CurPass)
-      _pass->Defer(this, *parent);
-    else if(psPass::CurPass != 0)
+    if(_layer != 0 && psLayer::CurLayers.Length() > 0 && _layer != psLayer::CurLayers.Peek())
+      _layer->Defer(this, *parent);
+    else if(psLayer::CurLayers.Length() > 0)
       _render(*parent);
   }
 }
@@ -60,15 +58,15 @@ void psRenderable::SetZOrder(int zorder)
 }
 void psRenderable::SetPass()
 {
-  SetPass(psEngine::Instance()->GetPass(0));
+  SetPass(psEngine::Instance()->GetLayer(0));
 }
-void psRenderable::SetPass(psPass* pass)
+void psRenderable::SetPass(psLayer* layer)
 {
   PROFILE_FUNC();
-  if(pass == _pass || !psEngine::Instance()) return; // If a renderable is deleted after the engine is deleted, make sure we don't blow everything up
-  if(_pass != 0)
-    _pass->Remove(this);
-  _pass = pass;
+  if(layer == _layer || !psEngine::Instance()) return; // If a renderable is deleted after the engine is deleted, make sure we don't blow everything up
+  if(_layer != 0)
+    _layer->Remove(this);
+  _layer = layer;
 }
 
 void psRenderable::SetStateblock(psStateblock* stateblock)
@@ -79,42 +77,17 @@ void psRenderable::SetStateblock(psStateblock* stateblock)
 
 psTex* const* psRenderable::GetTextures() const { return 0; } // these aren't inline because they're virtual
 uint8_t psRenderable::NumTextures() const { return 0; }
-inline psTex* const* psRenderable::GetRenderTargets() const
-{
-  if(_rts.Capacity())
-    return _rts;
-  psPass* pass = !_pass ? psPass::CurPass : _pass;
-  return !pass ? 0 : pass->GetRenderTarget();
-}
-inline uint8_t psRenderable::NumRT() const { return !_rts.Capacity() ? (GetRenderTargets() != 0) : _rts.Capacity(); }
-void psRenderable::SetRenderTarget(psTex* rt, uint32_t index)
-{
-  uint32_t oldsize = _rts.Capacity();
-  if(index >= oldsize)
-    _rts.SetCapacity(index + 1);
-  for(uint32_t i = oldsize; i < index; ++i)
-    _rts[i] = 0;
-  if(_rts[index]) _rts[index]->Drop();
-  _rts[index] = rt;
-  if(_rts[index]) _rts[index]->Grab();
-}
-void psRenderable::ClearRenderTargets() {
-  for(uint32_t i = 0; i < _rts.Capacity(); ++i)
-    _rts[i]->Drop();
-  _rts.Clear();
-}
 
 void psRenderable::_destroy()
 {
   SetPass(0);
-  ClearRenderTargets();
 }
 
 void psRenderable::_invalidate()
 {
-  if(_psort!=0 && ((_psort->prev!=0 && psPass::StandardCompare(_psort->prev->value, this)>0) || (_psort->next && psPass::StandardCompare(this, _psort->next->value)<0)))
+  if(_psort!=0 && ((_psort->prev!=0 && StandardCompare(_psort->prev->value, this)>0) || (_psort->next && StandardCompare(this, _psort->next->value)<0)))
   { // We only invalidate if the new parameters actually invalidate the object's position.
-    _pass->_renderlist.Remove(_psort);
+    _layer->_renderlist.Remove(_psort);
     _psort = 0;
   }
 }
@@ -128,14 +101,9 @@ psRenderable& psRenderable::operator =(const psRenderable& right)
   _zorder=right._zorder;
   _stateblock=right._stateblock;
   _shader=psShader::CreateShader(right._shader);
-  _rts = right._rts;
-
-  for(uint32_t i = 0; i < _rts.Capacity(); ++i)
-    _rts[i]->Grab();
-
   _psort = 0;
   _llist.next=_llist.prev=0;
-  _pass = right._pass; // We can do this because _destroy already removed us from any previous pass
+  _layer = right._layer; // We can do this because _destroy already removed us from any previous pass
   _copyinsert(right);
   return *this;
 }
@@ -149,27 +117,25 @@ psRenderable& psRenderable::operator =(psRenderable&& right)
   _zorder=right._zorder;
   _stateblock=std::move(right._stateblock);
   _shader=std::move(right._shader);
-  _rts = std::move(right._rts);
   _psort = 0;
 
   _llist.next=_llist.prev=0;
-  _pass = right._pass;
+  _layer = right._layer;
   _copyinsert(right);
 
-  if(right._pass != 0) // We should have already removed right's children, but just in case we avoid calling SetPass anyway.
-    right._pass->Remove(&right);
-  right._pass = 0;
+  if(right._layer != 0) // We should have already removed right's children, but just in case we avoid calling SetPass anyway.
+    right._layer->Remove(&right);
+  right._layer = 0;
   return *this;
 }
 
 void psRenderable::Activate()
 {
-  psDriverHold::GetDriver()->SetRenderTargets(GetRenderTargets(), NumRT(), 0);
   psDriverHold::GetDriver()->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
 }
 
 void psRenderable::_copyinsert(const psRenderable& r)
 {
-  if(r._pass != 0 && (r._llist.prev != 0 || r._pass->_renderables == &r)) // Check if r was in the internal pass list. If so, add ourselves to it.
-    r._pass->Insert(this);
+  if(r._layer != 0 && (r._llist.prev != 0 || r._layer->_renderables == &r)) // Check if r was in the internal pass list. If so, add ourselves to it.
+    r._layer->Insert(this);
 }

@@ -21,7 +21,7 @@ namespace planeshader {
 
   public:
     // Constructor - note that psEffect ignores it's shader and stateblock as it does not actually render anything itself.
-    explicit psEffect(const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, psFlag flags = 0, int zorder = 0, psPass* pass = 0);
+    explicit psEffect(const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, psFlag flags = 0, int zorder = 0, psLayer* pass = 0);
     // Links the output of one shader to the input of another and recalculates the topological ordering. Fails if this creates a cycle in the directed graph.
     bool Link(psRenderable* src, uint8_t srcindex, psRenderable* dest, uint8_t destindex);
 

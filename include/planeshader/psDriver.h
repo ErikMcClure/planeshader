@@ -20,7 +20,7 @@ namespace planeshader {
   struct psBatchObj;
   class psStateblock;
 
-  typedef float psMatrix[4][4];
+  typedef BSS_ALIGN(16) float psMatrix[4][4];
 
   struct BSS_COMPILER_DLLEXPORT RealDriver
   {
@@ -350,9 +350,8 @@ namespace planeshader {
     virtual psBatchObj* DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags) = 0;
     virtual psBatchObj* DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num) = 0;
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)
-    virtual void PushCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)=0;
-    virtual void PushCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
-    virtual void PopCamera() = 0;
+    virtual void SetCamera(const psVec3D& pos, const psVec& pivot, FNUM rotation, const psRectiu& viewport, const psVec& extent)=0;
+    virtual void SetCamera3D(const float(&m)[4][4], const psRectiu& viewport)=0;
     void PushTransform(const psMatrix& xform);
     const psMatrix& PeekTransform();
     void PopTransform();
@@ -381,7 +380,9 @@ namespace planeshader {
     // pushes a clip rect on to the stack, but does not allow it to be bigger than the current clip rect on the stack.
     virtual void MergeClipRect(const psRect& rect);
     // Sets the current rendertargets, setting all the rest to null.
-    virtual void SetRenderTargets(const psTex* const* texes, uint8_t num, const psTex* depthstencil=0)=0;
+    virtual void SetRenderTargets(psTex* const* texes, uint8_t num, psTex* depthstencil=0)=0;
+    // Gets current rendertargets
+    virtual std::pair<psTex* const*, uint8_t> GetRenderTargets() = 0;
     // Sets shader constants
     virtual void SetShaderConstants(void* constbuf, SHADER_VER shader)=0;
     // Sets textures for a given type of shader (in DX9 this is completely ignored)
@@ -403,7 +404,7 @@ namespace planeshader {
     virtual void CopyResource(void* dest, void* src, RESOURCE_TYPE t)=0;
     virtual void Resize(psVeciu dim, FORMATS format, char fullscreen)=0;
     // Clears everything to a specified color
-    virtual void Clear(uint32_t color)=0;
+    virtual void Clear(psTex* t, uint32_t color) = 0;
     // Gets the backbuffer texture
     virtual psTex* GetBackBuffer() const=0;
     // Gets a pointer to the driver implementation
@@ -466,7 +467,7 @@ namespace planeshader {
     BSS_FORCEINLINE static void _MatrixRotateZ(float(&out)[4][4], float angle) { float ca=cos(angle); float sa=sin(angle); out[0][0]=ca; out[1][0]=-sa; out[0][1]=sa; out[1][1]=ca; } //Again, we need the transpose
     BSS_FORCEINLINE static void _inversetransform(float(&mat)[4][4]) { mat[3][0]=(-mat[3][0]); mat[3][1]=(-mat[3][1]); }
     BSS_FORCEINLINE static void _inversetransformadd(float(&mat)[4][4], const float(&add)[4][4]) { mat[3][0]=add[3][0]-mat[3][0]; mat[3][1]=add[3][1]-mat[3][1]; mat[3][2]=add[3][2]; }
-    static const float identity[4][4];
+    static const psMatrix identity;
 
     struct SHADER_LIBRARY
     {
@@ -490,7 +491,7 @@ namespace planeshader {
 
   protected:
     bss::DynArray<psBatchObj> _jobstack;
-    bss::DynArray<float[4][4]> _matrixstack;
+    bss::DynArray<psMatrix, size_t, bss::ARRAY_SIMPLE, bss::AlignedStaticAllocPolicy<psMatrix>> _matrixstack;
     bss::DynArray<const float(*)[4][4]> _transformstack;
   };
 

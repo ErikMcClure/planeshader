@@ -6,7 +6,7 @@
 
 using namespace planeshader;
 
-psEffect::psEffect(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psPass* pass) :
+psEffect::psEffect(const psVec3D& position, FNUM rotation, const psVec& pivot, psFlag flags, int zorder, psLayer* pass) :
   psGroup(position, rotation, pivot, flags, zorder, 0, 0, pass)
 {
 
@@ -26,13 +26,14 @@ bool psEffect::Link(psRenderable* src, uint8_t srcindex, psRenderable* dest, uin
     return false;
   }
 
-  src->SetRenderTarget(dest->GetTextures()[srcindex], destindex);
+  assert(false);
+  /*src->SetRenderTarget(dest->GetTextures()[srcindex], destindex);
   if(destindex >= src->NumRT() || src->GetRenderTargets()[destindex] != dest->GetTextures()[srcindex])
   { 
     _edges.Remove(ind);
     _sort();
     return false; // If this happens, we weren't able to set the render target, usually because you passed in something that can't hold any.
-  }
+  }*/
 
   return true;
 }

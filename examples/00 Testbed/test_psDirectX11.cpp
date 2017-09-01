@@ -2,7 +2,7 @@
 
 #include "testbed.h"
 #include "psTex.h"
-#include "psPass.h"
+#include "psLayer.h"
 
 using namespace bss;
 using namespace planeshader;
@@ -22,7 +22,7 @@ TESTDEF::RETPAIR test_psDirectX11()
   const int NUMBATCH = 30;
   psDriver* driver = engine->GetDriver();
   globalcam.SetPosition(500, 500);
-  globalcam.SetPivotAbs(psVec(300, 300));
+  globalcam.SetPivotAbs(psVec(300, 300), engine->GetLayer(0)->GetTargets()[0]->GetDim());
 
   psVec3D imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->GetBackBuffer()->GetRawDim().x), RANDINTGEN(0, driver->GetBackBuffer()->GetRawDim().y), RANDFLOATGEN(0, PI_DOUBLEf));
@@ -30,9 +30,9 @@ TESTDEF::RETPAIR test_psDirectX11()
   while(!gotonext && engine->Begin())
   {
     processGUI();
-    driver->Clear(0);
+    driver->Clear(engine->GetMonitor(0)->GetBackBuffer(), 0);
     //driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->GetBackBuffer()->GetRawDim()), psCamera::default_extent);
-    globalcam.Apply(*engine->GetPass(0)->GetRenderTarget());
+    globalcam.Apply(engine->GetLayer(0)->GetTargets()[0]->GetRawDim());
     driver->SetTextures(&pslogo, 1);
 
     //psVec pt = psVec(engine->GetMouse() - (driver->GetBackBuffer()->GetRawDim() / 2u)) * (-driver->ReversePoint(VEC3D_ZERO).z);
@@ -66,11 +66,10 @@ TESTDEF::RETPAIR test_psDirectX11()
     auto ptest4 = driver->DrawPolygon(driver->library.LINE, 0, polygon3, 4, VEC3D_ZERO, 0xFFFFFFFF, PSFLAG_FIXED);
     engine->End();
     engine->FlushMessages();
-    driver->PopCamera();
 
     updatefpscount(timer, fps);
   }
 
-  globalcam.SetPivotAbs(psVec(0));
+  globalcam.SetPivotAbs(psVec(0), engine->GetLayer(0)->GetTargets()[0]->GetDim());
   ENDTEST;
 }
