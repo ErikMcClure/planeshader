@@ -118,7 +118,7 @@ void psMonitor::WndRegister(HINSTANCE instance, const wchar_t* icon, HICON iconr
 
   //Register class
   WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW),              // cbSize
-    CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS,
+    CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_OWNDC,
     (WNDPROC)psMonitor::WndProc,                      // lpfnWndProc
     NULL,                            // cbClsExtra
     NULL,                            // cbWndExtra

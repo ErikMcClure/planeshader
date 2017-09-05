@@ -17,13 +17,13 @@ namespace planeshader {
     psTextured(psTextured&& mov);
     explicit psTextured(const char* file);
     explicit psTextured(psTex* tex = 0);
-    virtual ~psTextured();
+    ~psTextured();
 
     virtual void SetTexture(psTex* tex, uint32_t index = 0);
     void ClearTextures();
     inline const psTex* GetTexture(uint32_t index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
-    virtual inline psTex* const* GetTextures() const { return _tex; }
-    virtual inline uint8_t NumTextures() const { return _tex.Capacity(); }
+    inline psTex* const* GetTextures() const { return _tex; }
+    inline uint8_t NumTextures() const { return _tex.Capacity(); }
 
     psTextured& operator=(const psTextured& right);
     psTextured& operator=(psTextured&& right);

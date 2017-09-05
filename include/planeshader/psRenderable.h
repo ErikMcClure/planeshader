@@ -22,7 +22,7 @@ namespace planeshader {
     psRenderable(psRenderable&& mov);
     explicit psRenderable(psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psLayer* pass=0);
     virtual ~psRenderable();
-    virtual void Render(const psTransform2D* parent);
+    virtual void Render(const psTransform2D& parent);
     int GetZOrder() const { return _zorder; }
     void SetZOrder(int zorder);
     inline psLayer* GetLayer() const { return _layer; }
@@ -35,9 +35,8 @@ namespace planeshader {
     inline void SetShader(psShader* shader) { _shader=shader; }
     inline const psStateblock* GetStateblock() const { return _stateblock; }
     void SetStateblock(psStateblock* stateblock);
-    virtual psTex* const* GetTextures() const;
-    virtual uint8_t NumTextures() const;
     virtual psRenderable* Clone() const { return 0; }
+    virtual bool Cull(const psTransform2D& parent) { return false; }
 
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);
@@ -49,7 +48,6 @@ namespace planeshader {
       return !c ? SGNCOMPARE(l, r) : c;
     }
 
-    void Activate();
     virtual void _render(const psTransform2D& parent) = 0;
 
   protected:
@@ -64,7 +62,7 @@ namespace planeshader {
     bss::ref_ptr<psStateblock> _stateblock;
     bss::ref_ptr<psShader> _shader;
     bss::LLBase<psRenderable> _llist;
-    bss::TRB_Node<psRenderable*>* _psort;
+    bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>>* _psort;
 
     enum INTERNALFLAGS : uint8_t
     {

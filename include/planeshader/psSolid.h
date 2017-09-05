@@ -19,7 +19,6 @@ namespace planeshader {
     psSolid(psSolid&& mov);
     explicit psSolid(const psVec3D& position=VEC3D_ZERO, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO, psFlag flags=0, int zorder=0, psStateblock* stateblock=0, psShader* shader=0, psLayer* pass = 0, const psVec& scale=VEC_ONE);
     virtual ~psSolid();
-    virtual void Render(const psTransform2D* parent) override;
     // Generates a rotated rectangle for point collisions (rect-to-rect collisions should be done with an AABB bounding rect from GetBoundingRect()) 
     inline psRectRotateZ GetCollisionRect(const psTransform2D& parent)
     {
@@ -30,7 +29,7 @@ namespace planeshader {
     // Generates an AABB bounding rect for general collisions (will also update the collision rect) 
     inline const psRect& GetBoundingRect(const psTransform2D& parent) { return _boundingrect = GetCollisionRect(parent).BuildAABB(); }
     // Gets the cached bounding rect (used by KD-trees)
-    inline const psRect& GetBoundingRectStatic() { return _boundingrect; }
+    inline const psRect& GetBoundingRectStatic() const { return _boundingrect; }
     // Gets the dimensions of the object 
     inline const psVec& GetDim() const { return _dim; }
     inline const psVec& GetUnscaledDim() const { return _realdim; }
@@ -46,6 +45,7 @@ namespace planeshader {
     // Generates a matrix transform using the solid's position, rotation, pivot, and scaling (used when the actual dimensions are implicit)
     void GetMatrix(psMatrix& matrix, const psTransform2D* parent);
     virtual psSolid* Clone() const override { return 0; }
+    virtual bool Cull(const psTransform2D& parent) override;
 
     psSolid& operator =(const psSolid& right);
     psSolid& operator =(psSolid&& right);

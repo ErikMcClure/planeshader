@@ -71,7 +71,7 @@ void psText::_recalcdim()
 {
   psVec d(_textdim);
   if(_font)
-    _font->CalcTextDim(_text.c_str(), d, _lineheight, _drawflags, _letterspacing);
+    _font->CalcTextDim(_text.c_str(), d, _lineheight, _letterspacing, _drawflags);
   if(_textdim.x >= 0)
     d.x = _textdim.x;
   if(_textdim.y >= 0)

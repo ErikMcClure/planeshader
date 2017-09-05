@@ -29,14 +29,12 @@ namespace planeshader {
     // Gets or sets the rebalance threshold
     BSS_FORCEINLINE uint32_t GetRBThreshold() const { return _tree.GetRBThreshold(); }
     BSS_FORCEINLINE void SetRBThreshold(uint32_t rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
-    virtual void Render(const psTransform2D* parent) override;
 
     typedef bss::BlockPolicy<bss::KDNode<psSolid>> KDNODE_ALLOC;
 
   protected:
     BSS_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic().ltrb; }
     BSS_FORCEINLINE static bss::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bss::LLBase<psSolid>*)&p->_llist); }
-    BSS_FORCEINLINE static void CF_MERGE(psSolid* p) { if(!p->GetLayer()) psLayer::CurLayers.Peek()->_sort(p); else p->GetLayer()->_sort(p); }
     BSS_FORCEINLINE static bss::KDNode<psSolid>*& CF_FNODE(psSolid* p) { return p->_kdnode; }
     BSS_FORCEINLINE static void AdjustRect(const float(&rect)[4], float camZ, float(&rcull)[4])
     {
@@ -49,7 +47,7 @@ namespace planeshader {
 
     psLayer::ALLOC _alloc;
     bss::KDTree<psSolid, KDNODE_ALLOC, CF_FRECT, CF_FLIST, CF_FNODE> _tree;
-    bss::TRBtree<psRenderable*, psRenderable::StandardCompare, psLayer::ALLOC> _list;
+    bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*,psRenderable::StandardCompare>, psLayer::ALLOC> _list;
     KDNODE_ALLOC _nodealloc;
   };
 }

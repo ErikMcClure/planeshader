@@ -17,12 +17,11 @@ psSolid::psSolid(const psVec3D& position, FNUM rotation, const psVec& pivot, psF
 }
 
 psSolid::~psSolid() { }
-void psSolid::Render(const psTransform2D* parent)
+bool psSolid::Cull(const psTransform2D& parent)
 {
-  psLayer* pass = !_layer ? psLayer::CurLayer() : _layer;
-  if(pass != 0)
-    if(!pass->Cull(this, parent))
-      psRenderable::Render(parent);
+  assert(psLayer::CurLayer() != 0);
+  assert(!_layer || psLayer::CurLayer() == _layer);
+  return psLayer::CurLayer()->Cull(this, &parent);
 }
 
 void psSolid::SetDim(const psVec& dim) { _realdim = dim; _setdim(_scale*_realdim); }

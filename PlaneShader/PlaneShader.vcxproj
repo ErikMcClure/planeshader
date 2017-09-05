@@ -492,17 +492,14 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\planeshader\psCamera.h" />
-    <ClInclude Include="..\include\planeshader\psCircleSegment.h" />
     <ClInclude Include="..\include\planeshader\psColor.h" />
     <ClInclude Include="..\include\planeshader\psCullGroup.h" />
     <ClInclude Include="..\include\planeshader\psDriver.h" />
-    <ClInclude Include="..\include\planeshader\psEffect.h" />
     <ClInclude Include="..\include\planeshader\psEngine.h" />
     <ClInclude Include="..\include\planeshader\psFont.h" />
     <ClInclude Include="..\include\planeshader\psChart.h" />
     <ClInclude Include="..\include\planeshader\psGUIManager.h" />
     <ClInclude Include="..\include\planeshader\psImage.h" />
-    <ClInclude Include="..\include\planeshader\psGroup.h" />
     <ClInclude Include="..\include\planeshader\psLayer.h" />
     <ClInclude Include="..\include\planeshader\psLocatable.h" />
     <ClInclude Include="..\include\planeshader\psRect.h" />
@@ -521,7 +518,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psVector.h" />
     <ClInclude Include="..\include\planeshader\ps_dec.h" />
     <ClInclude Include="..\include\planeshader\ps_feather.h" />
-    <ClInclude Include="..\include\planeshader\ps_interface.h" />
     <ClInclude Include="psDirectX11.h" />
     <ClInclude Include="psDXGI.h" />
     <ClInclude Include="psNullDriver.h" />
@@ -535,12 +531,10 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psDirectX11.cpp" />
     <ClCompile Include="psDriver.cpp" />
     <ClCompile Include="psDXGI.cpp" />
-    <ClCompile Include="psEffect.cpp" />
     <ClCompile Include="psEngine.cpp" />
     <ClCompile Include="psFont.cpp" />
     <ClCompile Include="psGUIManager.cpp" />
     <ClCompile Include="psImage.cpp" />
-    <ClCompile Include="psGroup.cpp" />
     <ClCompile Include="psLayer.cpp" />
     <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psMonitor.cpp" />

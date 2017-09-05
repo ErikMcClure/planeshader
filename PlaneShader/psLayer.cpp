@@ -14,26 +14,63 @@ using namespace bss;
 
 bss::Stack<psLayer*> psLayer::CurLayers;
 
+psLayer::psLayer(psLayer&& mov) : psRenderable(std::move(mov)), _cam(std::move(mov._cam)), _cull(mov._cull), _renderables(mov._renderables), 
+  _renderalloc(std::move(mov._renderalloc)), _dpi(mov._dpi), _clearcolor(mov._clearcolor), _clear(mov._clear), _defer(std::move(mov._defer)),
+  _renderlist(std::move(mov._renderlist)), _targets(std::move(mov._targets))
+{
+  mov._renderables = 0;
+  mov._dpi = { 0,0 };
+}
+
+psLayer& psLayer::operator=(psLayer&& mov)
+{
+  while(_renderables) _renderables->SetPass(0);
+
+  _cam = std::move(mov._cam);
+  _cam = mov._cam;
+  _renderalloc = std::move(mov._renderalloc);
+  _renderables = mov._renderables;
+  _dpi = mov._dpi;
+  _clearcolor = mov._clearcolor;
+  _clear = mov._clear;
+  _defer = std::move(mov._defer);
+  _renderlist = std::move(mov._renderlist);
+  _targets = std::move(mov._targets);
+  
+  mov._renderables = 0;
+  mov._dpi = { 0,0 };
+  return *this;
+}
 psLayer::~psLayer()
 {
   while(_renderables) _renderables->SetPass(0);
+  for(auto p = _renderlist.Front(); p != 0; p = p->next)
+    p->value.first->_psort = 0; // Make sure any deferred renderables don't still point to this tree.
+  _renderlist.Clear();
 }
 
-void psLayer::Push()
+void psLayer::Push(const psTransform2D& parent)
 {
   PROFILE_FUNC();
-  CurLayers.Push(this);
-  _applytop();
+  if(!CurLayers.Length() || CurLayers.Peek() != this)
+  {
+    CurLayers.Push(this);
+    _applytop();
+  }
   if(_clear)
   {
     auto targets = _driver->GetRenderTargets();
     for(uint8_t i = 0; i < targets.second; ++i)
       _driver->Clear(targets.first[i], _clearcolor);
   }
-  // We go through all the renderables and solids when the pass begins because we've already applied
-  // the camera, and this allows you to do proper post-processing with immediate render commands.
+
+  // Insert all deferred renderables into the tree. Don't clear the defered queue yet, because it's storing our transforms
+  for(auto& r : _defer)
+    _sort(r.first, r.second);
+
+  // Insert all renderables into the tree
   for(psRenderable* cur = _renderables; cur != 0; cur = cur->_llist.next)
-    cur->Render(0);
+    _sort(cur, parent);
 }
 void psLayer::_applytop()
 {
@@ -48,33 +85,44 @@ void psLayer::_applytop()
   {
     auto targets = _driver->GetRenderTargets();
     if(targets.first)
-      cur._cam->Apply(targets.first[0]->GetRawDim());
+      cur._cam->Apply(targets.first[0]->GetRawDim(), cur._cull);
+    else if(CurLayers.Length() > 1)
+      cur._cull = CurLayers[CurLayers.Length() - 2]->_cull;
+    else
+      assert(false);
   }
+  else if(CurLayers.Length() > 1)
+    cur._cull = CurLayers[CurLayers.Length() - 2]->_cull;
+  else // All root layers must have cameras
+    assert(false);
 }
 
 void psLayer::Pop()
 {
+  assert(CurLayers.Peek() == this);
   // Go through our sorted list of renderables and render them all.
   auto node = _renderlist.Front();
   auto next = node;
   while(node)
   {
-    if(!(node->value->_internalflags&psRenderable::INTERNALFLAG_ACTIVE))
+    if(!(node->value.first->_internalflags&psRenderable::INTERNALFLAG_ACTIVE))
     {
       next = node->next;
-      node->value->_psort = 0;
+      node->value.first->_psort = 0;
       _renderlist.Remove(node);
       node = next;
     }
     else
     {
-      node->value->_render(psTransform2D::Zero);
-      node->value->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
+      if(!node->value.first->Cull(*node->value.second))
+        node->value.first->_render(*node->value.second);
+      node->value.first->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
       node = node->next;
     }
   }
 
   _driver->Flush();
+  _defer.Clear(); // Now we can clear the deferred array because we aren't using the transforms anymore
   CurLayers.Pop();
   _applytop();
   PROFILE_FUNC();
@@ -111,7 +159,7 @@ void psLayer::SetTargets(psTex* const* targets, uint8_t num)
     _targets[i] = targets[i];
 }
 
-void psLayer::_sort(psRenderable* r)
+void psLayer::_sort(psRenderable* r, const psTransform2D& t)
 {
   if(r->_layer != this)
   {
@@ -119,12 +167,12 @@ void psLayer::_sort(psRenderable* r)
       r->_layer->Remove(r);
     r->_layer = this;
   }
-  if(!r->_psort) r->_psort = _renderlist.Insert(r);
+  if(!r->_psort) r->_psort = _renderlist.Insert(std::pair<psRenderable*, const psTransform2D*>(r, &t));
   r->_internalflags |= psRenderable::INTERNALFLAG_ACTIVE;
 }
 void psLayer::_render(const psTransform2D& parent)
 {
-  Push();
+  Push(parent);
   Pop();
 }
 

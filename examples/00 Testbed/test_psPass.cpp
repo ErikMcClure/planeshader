@@ -60,11 +60,11 @@ TESTDEF::RETPAIR test_psPass()
   {
     for(int i = 0; i < 200; ++i)
     {
-      image3.Render(0);
-      image.Render(0);
+      image3.Render(psTransform2D::Zero);
+      image.Render(psTransform2D::Zero);
     }
     psRenderPolygon::DrawPolygon(rect2, 4);
-    image4.Render(0);
+    image4.Render(psTransform2D::Zero);
     psRenderPolygon::DrawPolygon(rect, 4);
     processGUI();
     engine->End();

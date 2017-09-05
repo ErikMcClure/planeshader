@@ -34,22 +34,17 @@ psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, p
 }
 
 psRenderable::~psRenderable() { _destroy(); }
-void psRenderable::Render(const psTransform2D* parent)
+void psRenderable::Render(const psTransform2D& parent)
 {
-  if(!parent)
+  if(psLayer::CurLayers.Length() > 0)
   {
-    if(_layer)
-      _layer->_sort(this);
-    else if(psLayer::CurLayers.Length())
-      psLayer::CurLayers.Peek()->_sort(this);
+    if(_layer != 0 && _layer != psLayer::CurLayers.Peek())
+      _layer->Defer(this, parent);
+    else if(!Cull(parent))
+      _render(parent);
   }
   else
-  {
-    if(_layer != 0 && psLayer::CurLayers.Length() > 0 && _layer != psLayer::CurLayers.Peek())
-      _layer->Defer(this, *parent);
-    else if(psLayer::CurLayers.Length() > 0)
-      _render(*parent);
-  }
+    assert(false);
 }
 void psRenderable::SetZOrder(int zorder)
 { 
@@ -75,9 +70,6 @@ void psRenderable::SetStateblock(psStateblock* stateblock)
   _stateblock = stateblock;
 }
 
-psTex* const* psRenderable::GetTextures() const { return 0; } // these aren't inline because they're virtual
-uint8_t psRenderable::NumTextures() const { return 0; }
-
 void psRenderable::_destroy()
 {
   SetPass(0);
@@ -85,7 +77,7 @@ void psRenderable::_destroy()
 
 void psRenderable::_invalidate()
 {
-  if(_psort!=0 && ((_psort->prev!=0 && StandardCompare(_psort->prev->value, this)>0) || (_psort->next && StandardCompare(this, _psort->next->value)<0)))
+  if(_psort!=0 && ((_psort->prev!=0 && StandardCompare(_psort->prev->value.first, this)>0) || (_psort->next && StandardCompare(this, _psort->next->value.first)<0)))
   { // We only invalidate if the new parameters actually invalidate the object's position.
     _layer->_renderlist.Remove(_psort);
     _psort = 0;
@@ -127,11 +119,6 @@ psRenderable& psRenderable::operator =(psRenderable&& right)
     right._layer->Remove(&right);
   right._layer = 0;
   return *this;
-}
-
-void psRenderable::Activate()
-{
-  psDriverHold::GetDriver()->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
 }
 
 void psRenderable::_copyinsert(const psRenderable& r)

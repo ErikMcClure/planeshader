@@ -78,7 +78,7 @@ TESTDEF::RETPAIR test_feather()
 
   while(!gotonext && engine->Begin())
   {
-    engine->GetGUI().Render(0);
+    engine->GetGUI().Render(psTransform2D::Zero);
     engine->End();
     engine->FlushMessages();
     fgRoot_Update(fgSingleton(), time.Update()*0.001);

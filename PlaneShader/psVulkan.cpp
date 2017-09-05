@@ -18,19 +18,8 @@ using namespace planeshader;
   }
 
 psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor) : psDriver()
-{ // Note: can't use memset() because it destroys all the psDriver stuff.
-  _instance = 0;
-  _gpu = 0;
-  _device = 0;
-  _queue = 0;
-  _surface = 0;
-  _swapchain = 0;
-  enabled_extension_count = 0;
-  enabled_layer_count = 0;
-  graphics_queue_node_index = 0;
-  memset(extension_names, 0, sizeof(extension_names));
-  queue_count = 0;
-  _backbuffer = 0;
+{
+  bss::memsubset<psVulkan, psDriver>(this, 0);
 
   VkResult err;
   uint32_t instance_extension_count = 0;

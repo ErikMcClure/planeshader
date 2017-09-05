@@ -157,7 +157,6 @@ int main(int argc, char** argv)
     { "psVector", &test_psVector },
     { "psLayer", &test_psPass },
     { "psCircle", &test_psCircle },
-    { "psEffect", &test_psEffect },
     { "psRect", &test_psRect },
     { "psColor", &test_psColor },
     { "psParticles", &test_psParticles },

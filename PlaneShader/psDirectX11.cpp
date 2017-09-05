@@ -596,7 +596,7 @@ void psDirectX11::DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const
   memcpy(buf + 1, uv, sizeof(psRect)*numuv);
   ++o->buffer.nvert;
 }
-psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags)
+psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, uint32_t color, psFlag flags)
 {
   psBatchObj* obj = DrawBatchBegin(shader, !stateblock ? 0 : stateblock->GetSB(), flags|PSFLAG_DONOTBATCH, &_batchvertbuf, &_batchindexbuf, TRIANGLELIST, PeekTransform(), num);
   psBufferObj* v = obj->buffer.verts;
@@ -610,7 +610,7 @@ psBatchObj* psDirectX11::DrawPolygon(psShader* shader, const psStateblock* state
     buf[i].y = verts[i].y + offset.y;
     buf[i].z = offset.z;
     buf[i].w = 1;
-    buf[i].color = vertexcolor;
+    buf[i].color = color;
   }
   obj->buffer.nvert += num;
   obj->buffer.indice = 0;
@@ -647,13 +647,13 @@ psBatchObj* psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* st
   PopTransform();
   return obj;
 }
-void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float Z2, unsigned long vertexcolor)
+void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float Z2, uint32_t color)
 {
   o = _checkflush(o, 2);
 
   DX11_simplevert* linebuf = (DX11_simplevert*)o->buffer.get();
-  linebuf[0] = { line.x1, line.y1, Z1, 1, vertexcolor }; // DirectX renders lines in a REALLY WEIRD way. This is as close as we can get to a pixel perfect line.
-  linebuf[1] = { line.x2, line.y2, Z2, 1, vertexcolor };
+  linebuf[0] = { line.x1, line.y1, Z1, 1, color }; // DirectX renders lines in a REALLY WEIRD way. This is as close as we can get to a pixel perfect line.
+  linebuf[1] = { line.x2, line.y2, Z2, 1, color };
   o->buffer.nvert += 2;
 }
 psBatchObj* psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
