@@ -14,7 +14,6 @@ psQuadraticHull::~psQuadraticHull() {}
 void psQuadraticHull::_render(const psTransform2D& parent)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CURVEBUFSIZE, sizeof(QuadVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
-  Activate();
   if(parent == psTransform2D::Zero)
     _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
   else
@@ -217,7 +216,6 @@ void psRoundRect::DrawRoundRect(psShader* shader, psStateblock* stateblock, cons
 }
 void psRoundRect::_render(const psTransform2D& parent)
 {
-  Activate();
   DrawRoundRect(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
 }
 
@@ -268,7 +266,6 @@ void psRoundTri::DrawRoundTri(psShader* shader, psStateblock* stateblock, const 
 }
 void psRoundTri::_render(const psTransform2D& parent)
 {
-  Activate();
   DrawRoundTri(GetShader(), _stateblock, GetCollisionRect(parent), _corners, GetFlags(), _color, _outline, _edge);
 }
 
@@ -319,6 +316,5 @@ void psRenderCircle::DrawCircle(psShader* shader, psStateblock* stateblock, cons
 
 void psRenderCircle::_render(const psTransform2D& parent)
 {
-  Activate();
   DrawCircle(GetShader(), _stateblock, GetCollisionRect(parent), _arcs, GetFlags(), _color, _outline, _edge);
 }

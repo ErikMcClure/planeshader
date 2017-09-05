@@ -26,13 +26,14 @@ TESTDEF::RETPAIR test_psDirectX11()
 
   psVec3D imgpos[NUMBATCH];
   for(int i = 0; i < NUMBATCH; ++i) imgpos[i] = psVec3D(RANDINTGEN(0, driver->GetBackBuffer()->GetRawDim().x), RANDINTGEN(0, driver->GetBackBuffer()->GetRawDim().y), RANDFLOATGEN(0, PI_DOUBLEf));
+  psCamera::Culling cache;
 
   while(!gotonext && engine->Begin())
   {
     processGUI();
     driver->Clear(engine->GetMonitor(0)->GetBackBuffer(), 0);
     //driver->PushCamera(globalcam.GetPosition(), psVec(300,300), globalcam.GetRotation(), psRectiu(VEC_ZERO, driver->GetBackBuffer()->GetRawDim()), psCamera::default_extent);
-    globalcam.Apply(engine->GetLayer(0)->GetTargets()[0]->GetRawDim());
+    globalcam.Apply(engine->GetLayer(0)->GetTargets()[0]->GetRawDim(), cache);
     driver->SetTextures(&pslogo, 1);
 
     //psVec pt = psVec(engine->GetMouse() - (driver->GetBackBuffer()->GetRawDim() / 2u)) * (-driver->ReversePoint(VEC3D_ZERO).z);

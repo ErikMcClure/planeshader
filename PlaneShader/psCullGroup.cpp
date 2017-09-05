@@ -15,10 +15,9 @@ psCullGroup::psCullGroup(psFlag flags, int zorder, psStateblock* stateblock, psS
 {}
 psCullGroup::~psCullGroup() { SetPass(0); Clear(); }
 void psCullGroup::Insert(psSolid* img, bool recalc)
-{ 
-  img->SetPass(_layer); // Set pass to our pass
-  if(_layer != 0)
-    _layer->Remove(img); // In case the pass was already set to our pass, ensure that we are NOT on the internal renderlist (this does not change img's _layer)
+{
+  if(img->_layer != 0) // Ensure the image is not actually in the layer's render list, if it has a layer set
+    img->_layer->Remove(img);
   img->GetBoundingRect(psTransform2D::Zero); // Make sure the bounding rect is up to date
   if(recalc)
     _tree.Insert(img);
@@ -27,55 +26,56 @@ void psCullGroup::Insert(psSolid* img, bool recalc)
 }
 void psCullGroup::Remove(psSolid* img) { _tree.Remove(img); }
 void psCullGroup::Solve() { _tree.Solve(); }
-void psCullGroup::Clear() { _tree.Clear(); }
-
-void psCullGroup::Render(const psTransform2D* parent)
+void psCullGroup::Clear()
 {
-  psLayer* layer = !_layer ? psLayer::CurLayer() : _layer;
-  if(!layer)
-    return;
-
-  float camZ = layer->GetCulling().z;
-  BSS_ALIGN(16) float rcull[4];
-  if(!parent)
-    AdjustRect(layer->GetCulling().window.ltrb, camZ, rcull);
-  else
-    AdjustRect(layer->GetCulling().full.RelativeTo(parent->position, parent->rotation, parent->pivot).BuildAABB().ltrb, camZ, rcull);
-
-  if(!parent)
-  {
-    _list.Clear();
-    _tree.Traverse<CF_MERGE>(rcull);
-  }
-  else
-  {
-    _tree.TraverseAction(rcull, [this](psSolid* p) {
-      if(!p->_psort) p->_psort = _list.Insert(p);
-      p->_internalflags |= psRenderable::INTERNALFLAG_ACTIVE;
-    });
-    psRenderable::Render(parent);
-  }
+  for(auto p = _list.Front(); p != 0; p = p->next)
+    p->value.first->_psort = 0;
+  _tree.TraverseAll([](psSolid* p) {
+    if(p->_layer) // Re-insert any renderables with a layer back into their appropriate layer or we'll lose them.
+      p->_layer->Insert(p);
+  });
+  _tree.Clear();
 }
+
 void psCullGroup::_render(const psTransform2D& parent)
 {
-  auto node = _list.Front(); // If this is nonzero then we didn't interweave with a pass, so we manually render our children
+  psLayer* cur = psLayer::CurLayer();
+  assert(cur);
+  float camZ = cur->GetCulling().z;
+  BSS_ALIGN(16) float rcull[4];
+  AdjustRect(cur->GetCulling().full.RelativeTo(parent.position, parent.rotation, parent.pivot).BuildAABB().ltrb, camZ, rcull);
+
+  _tree.TraverseAction(rcull, [this,cur,parent](psSolid* p) {
+    if(!p->_layer)
+    {
+      if(!p->_psort)
+        p->_psort = _list.Insert(std::pair<psRenderable*, const psTransform2D*>(p, 0));
+      p->_internalflags |= psRenderable::INTERNALFLAG_ACTIVE;
+    }
+    else if(p->_layer == cur)
+      p->_render(parent);
+    else
+      p->_layer->_sort(p, parent);
+  });
+
+  auto node = _list.Front(); // Render any children that did not interweave with the pass
   auto next = node;
   while(node)
   {
-    if(!(node->value->_internalflags&psRenderable::INTERNALFLAG_ACTIVE))
+    if(!(node->value.first->_internalflags&psRenderable::INTERNALFLAG_ACTIVE))
     {
       next = node->next;
-      node->value->_psort = 0;
+      node->value.first->_psort = 0;
       _list.Remove(node);
       node = next;
     }
     else
     {
-      if(node->value->_layer == psLayer::CurLayer())
-        node->value->_render(parent);
+      if(node->value.first->_layer == psLayer::CurLayer())
+        node->value.first->_render(parent);
       else
-        node->value->_layer->Defer(node->value, parent);
-      node->value->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
+        node->value.first->_layer->Defer(node->value.first, parent);
+      node->value.first->_internalflags &= ~psRenderable::INTERNALFLAG_ACTIVE;
       node = node->next;
     }
   }

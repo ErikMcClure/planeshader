@@ -27,9 +27,6 @@
     <ClCompile Include="test_psPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test_psEffect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="test_feather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

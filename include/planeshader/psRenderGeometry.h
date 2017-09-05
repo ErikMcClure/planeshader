@@ -92,8 +92,6 @@ namespace planeshader {
     psFullScreenQuad(const psFullScreenQuad& copy);
     psFullScreenQuad(psFullScreenQuad&& mov);
     psFullScreenQuad();
-    virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
-    virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
     inline psColor32 GetColor() const { return _color; }
     inline void SetColor(psColor32 color) { _color = color; }
 

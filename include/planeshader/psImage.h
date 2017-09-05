@@ -27,8 +27,6 @@ namespace planeshader {
     inline void SetSource(const psRect& uv, uint32_t index=0) { _setuvs(index+1); _uvs[index] = uv/_tex[index]->GetDim(); if(!index) _recalcdim(); }
     uint8_t NumSources() const { return _uvs.Capacity(); }
     virtual void SetTexture(psTex* tex, uint32_t index = 0) override;
-    virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
-    virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
     void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
     inline psColor32 GetColor() const { return _color; }
     inline void SetColor(psColor32 color) { _color = color; }

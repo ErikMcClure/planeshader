@@ -80,7 +80,9 @@ psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShad
   //if(_guiflags&PSMONITOR_LOCKCURSOR) // Ensure the mouse cursor is actually locked
   //  _dolockcursor(_window);
 
-  _mainlayer = new psLayer(_monitors[0].GetBackBuffer());
+  _mainlayer = (psLayer*)ALIGNEDALLOC(sizeof(psLayer), alignof(psLayer));
+  new (_mainlayer) psLayer(_monitors[0].GetBackBuffer()); // Attempting to override new in the class itself breaks placement new elsewhere
+  _mainlayer->SetCamera(&psCamera::default_camera);
   _layers[0] = _mainlayer;
 }
 psEngine::~psEngine()
@@ -88,7 +90,10 @@ psEngine::~psEngine()
   PROFILE_FUNC();
 
   if(_mainlayer)
-    delete _mainlayer;
+  {
+    _mainlayer->~psLayer();
+    ALIGNEDFREE(_mainlayer);
+  }
   _mainlayer = 0;
 
   _monitors.Clear(); // We must clear and destroy all monitors BEFORE we destroy the fgroot instance
@@ -109,7 +114,7 @@ bool psEngine::Begin()
     return false;
   _frameprofiler = HighPrecisionTimer::OpenProfiler();
   _curlayer=0;
-  _layers[0]->Push();
+  _layers[0]->Push(psTransform2D::Zero);
   return true;
 }
 uint64_t psEngine::End()
@@ -132,7 +137,7 @@ bool psEngine::NextLayer()
   if(_curlayer >= _layers.Capacity()) return false;
   _layers[_curlayer]->Pop();
   if(++_curlayer >= _layers.Capacity()) return false;
-  _layers[_curlayer]->Push();
+  _layers[_curlayer]->Push(psTransform2D::Zero);
   return true;
 }
 psEngine* psEngine::Instance()

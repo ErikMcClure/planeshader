@@ -112,7 +112,7 @@ void psTileset::_render(const psTransform2D& parent)
   psMatrix m;
   GetMatrix(m, &parent);
   _driver->PushTransform(m);
-  Activate();
+  _driver->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
 
   psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetFlags());
 

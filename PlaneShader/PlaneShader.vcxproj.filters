@@ -60,9 +60,6 @@
     <ClInclude Include="..\include\planeshader\psColor.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\ps_interface.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\psSolid.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -96,9 +93,6 @@
     <ClInclude Include="psDXGI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\psEffect.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\ps_feather.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -111,13 +105,7 @@
     <ClInclude Include="psVulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\planeshader\psGroup.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\planeshader\psTransform2D.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\planeshader\psCircleSegment.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\include\planeshader\psLayer.h">
@@ -185,9 +173,6 @@
     <ClCompile Include="psDXGI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="psEffect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ps_feather.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -204,9 +189,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psVulkan.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="psGroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="psTransform2D.cpp">

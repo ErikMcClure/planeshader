@@ -40,9 +40,6 @@ namespace planeshader {
     inline psVeci GetDimIndex() const { return psVeci(_rowlength, _tiles.Length()/_rowlength); }
     void SetDimIndex(psVeci dim);
 
-    virtual psTex* const* GetTextures() const override { return psTextured::GetTextures(); }
-    virtual uint8_t NumTextures() const override { return psTextured::NumTextures(); }
-
     static inline uint32_t WangTile1D(uint32_t e1, uint32_t e2) {
       if(e1 < e2) return 2 * e1 + e2*e2;
       if(e1 == e2) return (e1 > 0) ? ((e1 + 1) * (e1 + 1) - 2) : 0;

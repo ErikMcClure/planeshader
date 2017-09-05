@@ -23,7 +23,6 @@ void psRenderEllipse::DrawEllipse(float x, float y, float a, float b, uint32_t c
 
 void psRenderEllipse::_render(const psTransform2D& parent)
 {
-  Activate();
   _driver->DrawRect(_driver->library.CIRCLE, GetStateblock(), GetCollisionRect(parent), 0, 0, GetColor(), GetFlags());
 }
 
@@ -58,7 +57,6 @@ void psRenderLine::DrawLine(const psLine3D& p, uint32_t color)
 
 void psRenderLine::_render(const psTransform2D& parent)
 {
-  Activate();
   psBatchObj* obj = _driver->DrawLinesStart(_driver->library.LINE, GetStateblock(), GetFlags());
   psTransform2D p = parent.Push(*this);
   _driver->DrawLines(obj, psLine(p.position.xy, _point.xy), p.position.z, _point.z, GetColor().color);
@@ -94,7 +92,6 @@ void psRenderPolygon::_render(const psTransform2D& parent)
 {
   psMatrix m;
   parent.Push(*this).GetMatrix(m);
-  Activate();
   _driver->PushTransform(m);
   _driver->DrawPolygon(GetShader(), GetStateblock(), _verts, _verts.Capacity(), VEC3D_ZERO, GetColor().color, GetFlags());
   _driver->PopTransform();

@@ -53,7 +53,7 @@ void psImage::_setuvs(uint32_t size)
 
 void psImage::_render(const psTransform2D& parent)
 {
-  Activate();
+  _driver->SetTextures(GetTextures(), NumTextures(), PIXEL_SHADER_1_1);
   _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(parent), _uvs, NumSources(), GetColor().color, GetFlags());
 }
 

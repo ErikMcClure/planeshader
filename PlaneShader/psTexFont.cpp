@@ -10,7 +10,6 @@ using namespace planeshader;
 psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, const int* text, float lineheight, float letterspacing, const psRectRotateZ& prearea, uint32_t color, psFlag flags, DELEGATE d)
 {
   if(!text) return VEC_ZERO;
-  float linewidth;
   float curwidth = 0.0f;
   psVec pen;
   const psGlyph* g;

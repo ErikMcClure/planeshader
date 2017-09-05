@@ -75,7 +75,7 @@ namespace planeshader {
       bool Cull(const psRect& rect, float rectz, float camz, psFlag flags) const;
     };
 
-    inline Culling Apply(const psVeciu& rawdim) const;
+    inline void Apply(const psVeciu& rawdim, Culling& culling) const;
 
   protected:
     psRect _viewport; // This is NOT an actual rectangle, it stores left/top/width/height

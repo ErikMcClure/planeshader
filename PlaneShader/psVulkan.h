@@ -39,13 +39,13 @@ namespace planeshader {
     virtual psBatchObj* DrawRectBatchBegin(psShader* shader, const psStateblock* stateblock, uint8_t numuv, psFlag flags) { return 0; }
     virtual void DrawRectBatch(psBatchObj*& o, const psRectRotateZ& rect, const psRect* uv, uint32_t color) { }
     // Draws a polygon
-    virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, unsigned long vertexcolor, psFlag flags) { return 0; }
+    virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVec* verts, uint32_t num, psVec3D offset, uint32_t color, psFlag flags) { return 0; }
     virtual psBatchObj* DrawPolygon(psShader* shader, const psStateblock* stateblock, const psVertex* verts, uint32_t num, psFlag flags) { return 0; }
     // Draws points
     virtual psBatchObj* DrawPoints(psShader* shader, const psStateblock* stateblock, psVertex* particles, uint32_t num, psFlag flags) { return 0; }
     // Draws lines
     virtual psBatchObj* DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags) { return 0; }
-    virtual void DrawLines(psBatchObj*& obj, const psLine& line, float Z1, float Z2, unsigned long vertexcolor) {}
+    virtual void DrawLines(psBatchObj*& obj, const psLine& line, float Z1, float Z2, uint32_t color) {}
     virtual psBatchObj* DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags) { return 0; }
     virtual psBatchObj* DrawCurve(psBatchObj*& o, const psVertex* curve, uint32_t num) override { return 0; }
     // Applies a camera (if you need the current camera, look at the pass you belong to, not the driver)

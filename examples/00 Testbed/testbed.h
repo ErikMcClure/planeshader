@@ -54,7 +54,6 @@ extern void updatefpscount(uint64_t& timer, int& fps);
 
 extern TESTDEF::RETPAIR test_feather();
 extern TESTDEF::RETPAIR test_psDirectX11();
-extern TESTDEF::RETPAIR test_psEffect();
 extern TESTDEF::RETPAIR test_psFont();
 extern TESTDEF::RETPAIR test_psPass();
 extern TESTDEF::RETPAIR test_psTileset();

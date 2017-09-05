@@ -58,14 +58,14 @@ void psCamera::SetViewPortAbs(const psRect& vp, const psVeciu& dim)
   _viewport.topleft = vp.topleft/dim;
   _viewport.bottomright = (vp.bottomright-vp.topleft)/dim;
 }
-inline psCamera::Culling psCamera::Apply(const psVeciu& dim) const
+
+inline void psCamera::Apply(const psVeciu& dim, Culling& cache) const
 {
   auto& vp = GetViewPort();
   psRectiu realvp = { (uint32_t)bss::fFastRound(vp.left*dim.x), (uint32_t)bss::fFastRound(vp.top*dim.y), (uint32_t)bss::fFastRound(vp.right*dim.x), (uint32_t)bss::fFastRound(vp.bottom*dim.y) };
   psVec pivot = GetPivot()*psVec(dim);
   _driver->SetCamera(position, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = position.xy - pivot;
-  Culling cache;
   cache.full = psRectRotateZ(realvp.left + pos.x, realvp.top + pos.y, realvp.right + pos.x, realvp.bottom + pos.y, GetRotation(), pivot, position.z);
   cache.window = cache.full.BuildAABB();
   cache.winfixed = realvp;
@@ -74,7 +74,6 @@ inline psCamera::Culling psCamera::Apply(const psVeciu& dim) const
   cache.z = position.z;
   cache.SetSSE();
   //_driver->DrawRect(_driver->library.IMAGE0, 0, psRectRotate(_cache.window, 0, VEC_ZERO), 0, 0, 0x88FFFFFF, 0);
-  return cache;
 }
 inline psRectRotateZ psCamera::Culling::Resolve(const psRectRotateZ& rect) const
 {
