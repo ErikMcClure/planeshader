@@ -227,6 +227,7 @@ namespace planeshader {
     ID3D11HullShader* _lastHS;
     ID3D11PixelShader* _defaultPS; //single texture pixel shader
     ID3D11SamplerState* _defaultSS; //default sampler state
+    ID3D11Buffer* _lastvertbuffer;
     DX11_SB* _defaultSB; // default stateblock
     ID3D11Buffer* _cam_def; //viewproj matrix and identity world matrix
     ID3D11Buffer* _cam_usr; //viewproj matrix and custom world matrix

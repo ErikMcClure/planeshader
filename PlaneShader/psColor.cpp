@@ -123,13 +123,13 @@ uint16_t float_to_half(float f)
     uint32_t ui;
   };
 
-  static int const shift = 13;
-  static int32_t const infN = 0x7F800000; // flt32 infinity
-  static int32_t const maxN = 0x477FE000; // max flt16 normal as a flt32
-  static int32_t const minN = 0x38800000; // min flt16 normal as a flt32
-  static int32_t const subC = 0x003FF; // max flt32 subnormal down shifted
-  static int32_t const maxD = (infN >> shift) - (maxN >> shift) - 1;
-  static int32_t const minD = (minN >> shift) - subC - 1;
+  static const int shift = 13;
+  static const int32_t infN = 0x7F800000; // flt32 infinity
+  static const int32_t maxN = 0x477FE000; // max flt16 normal as a flt32
+  static const int32_t minN = 0x38800000; // min flt16 normal as a flt32
+  static const int32_t subC = 0x003FF; // max flt32 subnormal down shifted
+  static const int32_t maxD = (infN >> shift) - (maxN >> shift) - 1;
+  static const int32_t minD = (minN >> shift) - subC - 1;
 
   Bits v, s;
   v.f = f;

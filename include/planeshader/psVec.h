@@ -14,10 +14,10 @@ namespace planeshader {
   typedef bss::Vector<double, 2> psVecd;
   typedef bss::Vector<uint32_t, 2> psVeciu;
 
-  static psVec const VEC_ZERO(0, 0);
-  static psVec const VEC_ONE(1, 1);
-  static psVec const VEC_HALF(0.5f, 0.5f);
-  static psVec const VEC_NEGHALF(-0.5f, -0.5f);
+  static const psVec VEC_ZERO(0, 0);
+  static const psVec VEC_ONE(1, 1);
+  static const psVec VEC_HALF(0.5f, 0.5f);
+  static const psVec VEC_NEGHALF(-0.5f, -0.5f);
 
   typedef bss::Vector<float, 3> psVec3D; //default typedef
   typedef bss::Vector<float, 3> psVector3D;
@@ -25,8 +25,8 @@ namespace planeshader {
   typedef bss::Vector<double, 3> psVec3Dd;
   typedef bss::Vector<uint32_t, 3> psVec3Diu;
 
-  static psVec3D const VEC3D_ZERO(0, 0, 0);
-  static psVec3D const VEC3D_ONE(1, 1, 1);
+  static const psVec3D VEC3D_ZERO(0, 0, 0);
+  static const psVec3D VEC3D_ONE(1, 1, 1);
 
   typedef bss::Rect<FNUM> psRect; //Default typedef
   typedef bss::Rect<int> psRecti;
@@ -34,8 +34,8 @@ namespace planeshader {
   typedef bss::Rect<long> psRectl;
   typedef bss::Rect<uint32_t> psRectiu;
 
-  psRect const RECT_ZERO(0, 0, 0, 0);
-  psRect const RECT_UNITRECT(0, 0, 1, 1);
+  static const psRect RECT_ZERO(0, 0, 0, 0);
+  static const psRect RECT_UNITRECT(0, 0, 1, 1);
 
   typedef bss::Line<float> psLine; //default typedef
   typedef bss::Line<double> psLined;
