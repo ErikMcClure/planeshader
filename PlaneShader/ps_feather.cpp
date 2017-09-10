@@ -217,19 +217,19 @@ void  fgDirtyElementPS(fgElement* e)
 
 void  fgSetCursorPS(uint32_t type, void* custom)
 {
-  static HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
-  static HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
-  static HCURSOR hCross = LoadCursor(NULL, IDC_CROSS);
-  static HCURSOR hWait = LoadCursor(NULL, IDC_WAIT);
-  static HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
-  static HCURSOR hSizeNS = LoadCursor(NULL, IDC_SIZENS);
-  static HCURSOR hSizeWE = LoadCursor(NULL, IDC_SIZEWE);
-  static HCURSOR hSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
-  static HCURSOR hSizeNESW = LoadCursor(NULL, IDC_SIZENESW);
-  static HCURSOR hSizeAll = LoadCursor(NULL, IDC_SIZEALL);
-  static HCURSOR hNo = LoadCursor(NULL, IDC_NO);
-  static HCURSOR hHelp = LoadCursor(NULL, IDC_HELP);
-  static HCURSOR hDrag = hSizeAll;
+  static const HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
+  static const HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
+  static const HCURSOR hCross = LoadCursor(NULL, IDC_CROSS);
+  static const HCURSOR hWait = LoadCursor(NULL, IDC_WAIT);
+  static const HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
+  static const HCURSOR hSizeNS = LoadCursor(NULL, IDC_SIZENS);
+  static const HCURSOR hSizeWE = LoadCursor(NULL, IDC_SIZEWE);
+  static const HCURSOR hSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
+  static const HCURSOR hSizeNESW = LoadCursor(NULL, IDC_SIZENESW);
+  static const HCURSOR hSizeAll = LoadCursor(NULL, IDC_SIZEALL);
+  static const HCURSOR hNo = LoadCursor(NULL, IDC_NO);
+  static const HCURSOR hHelp = LoadCursor(NULL, IDC_HELP);
+  static const HCURSOR hDrag = hSizeAll;
 
   switch(type)
   {
@@ -391,7 +391,7 @@ psRoot::psRoot() : _psInject(0, 0)
 {
   AbsRect area = { 0, 0, 1, 1 };
 
-  static fgBackend BACKEND = {
+  static const fgBackend BACKEND = {
     FGTEXTFMT_UTF32,
     &fgCreateFontPS,
     &fgCloneFontPS,

@@ -145,6 +145,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _lastCS = 0;
   _lastDS = 0;
   _lastHS = 0;
+  _lastvertbuffer = 0;
   _driver = this;
 
 #ifdef BSS_DEBUG
@@ -536,12 +537,11 @@ psBatchObj* psDirectX11::FlushPreserve()
 
 void psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4])
 {
-  static ID3D11Buffer* lastvert = 0;
   PROFILE_FUNC();
   uint32_t offset = 0;
 
   //if(buf->verts->buffer != lastvert) // NOTE: This might need to be reset when Resize() is called
-    _context->IASetVertexBuffers(0, 1, &(lastvert = (ID3D11Buffer*)buf->verts->buffer), &buf->verts->element, &offset);
+    _context->IASetVertexBuffers(0, 1, &(_lastvertbuffer = (ID3D11Buffer*)buf->verts->buffer), &buf->verts->element, &offset);
   _context->IASetPrimitiveTopology(_getdx11topology(buf->mode));
 
   ID3D11Buffer* cam = (flags&PSFLAG_FIXED) ? _proj_def : _cam_def;
