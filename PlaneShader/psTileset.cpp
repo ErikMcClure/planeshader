@@ -134,7 +134,7 @@ void psTileset::_render(const psTransform2D& parent)
 
   uint32_t skipped = 0;
   uint32_t bytecount = T_NEXTMULTIPLE(_tiles.Length(), 7) >> 3;
-  DYNARRAY(uint8_t, drawn, bytecount);
+  VARARRAY(uint8_t, drawn, bytecount);
   memset(drawn, 0, bytecount);
 
   do
@@ -143,14 +143,14 @@ void psTileset::_render(const psTransform2D& parent)
       for(uint32_t i = window.left; i < (uint32_t)window.right; ++i)
       {
         uint32_t k = i + (j*_rowlength);
-        if(bss::bssGetBit(drawn, k))
+        if(bss::bssGetBit<uint8_t>(drawn, k))
           continue; // if we drew this tile already don't draw it again
 
         psTileDef& def = _defs[_tiles[k].index];
-        if(_drawcheck(drawn, k + 1, def.level) ||  // There are four tiles that we must check the levels of in case they need to render first
-          _drawcheck(drawn, k + _rowlength - 1, def.level) ||
-          _drawcheck(drawn, k + _rowlength + 0, def.level) ||
-          _drawcheck(drawn, k + _rowlength + 1, def.level))
+        if(_drawcheck<uint8_t>(drawn, k + 1, def.level) ||  // There are four tiles that we must check the levels of in case they need to render first
+          _drawcheck<uint8_t>(drawn, k + _rowlength - 1, def.level) ||
+          _drawcheck<uint8_t>(drawn, k + _rowlength + 0, def.level) ||
+          _drawcheck<uint8_t>(drawn, k + _rowlength + 1, def.level))
         {
           ++skipped;
           continue;

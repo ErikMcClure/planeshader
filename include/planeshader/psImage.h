@@ -20,13 +20,13 @@ namespace planeshader {
     virtual ~psImage();
     void AddSource(const psRect& r = RECT_UNITRECT);
     void ClearSources();
-    inline psRect GetSource(uint32_t index=0) const { if(index>=_uvs.Capacity() || index >= _tex.Capacity()) return RECT_ZERO; return _uvs[index]*_tex[index]->GetDim(); }
-    inline const psRect& GetRelativeSource(uint32_t index=0) const { return _uvs[index]; }
+    inline psRect GetSource(size_t index=0) const { if(index>=_uvs.Capacity() || index >= _tex.Capacity()) return RECT_ZERO; return _uvs[index]*_tex[index]->GetDim(); }
+    inline const psRect& GetRelativeSource(size_t index=0) const { return _uvs[index]; }
     inline const psRect* GetRelativeSources() const { return _uvs; }
-    inline void SetRelativeSource(const psRect& uv, uint32_t index = 0) { _setuvs(index+1); _uvs[index] = uv; if(!index) _recalcdim(); }
-    inline void SetSource(const psRect& uv, uint32_t index=0) { _setuvs(index+1); _uvs[index] = uv/_tex[index]->GetDim(); if(!index) _recalcdim(); }
-    uint8_t NumSources() const { return _uvs.Capacity(); }
-    virtual void SetTexture(psTex* tex, uint32_t index = 0) override;
+    inline void SetRelativeSource(const psRect& uv, size_t index = 0) { _setuvs(index+1); _uvs[index] = uv; if(!index) _recalcdim(); }
+    inline void SetSource(const psRect& uv, size_t index=0) { _setuvs(index+1); _uvs[index] = uv/_tex[index]->GetDim(); if(!index) _recalcdim(); }
+    size_t NumSources() const { return _uvs.Capacity(); }
+    virtual void SetTexture(psTex* tex, size_t index = 0) override;
     void ApplyEdgeBuffer(); // Applies a 1 pixel edge buffer to the image by expanding the UV coordinate out by one pixel at the border to prevent artifacts caused by rasterization.
     inline psColor32 GetColor() const { return _color; }
     inline void SetColor(psColor32 color) { _color = color; }
@@ -37,10 +37,10 @@ namespace planeshader {
 
   protected:
     virtual void _render(const psTransform2D& parent) override;
-    void _setuvs(uint32_t size);
+    void _setuvs(size_t size);
     void _recalcdim();
 
-    bss::Array<psRect, uint8_t> _uvs;
+    bss::CompactArray<psRect> _uvs;
     psColor32 _color;
   };
 }

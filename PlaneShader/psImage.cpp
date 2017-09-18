@@ -39,15 +39,15 @@ psImage& psImage::operator =(psImage&& right)
   return *this;
 }
 
-void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.Capacity()); if(_uvs.Capacity()==1) _recalcdim(); }
-void psImage::ClearSources() { _uvs.SetCapacityDiscard(0); }
+void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.Length()); if(_uvs.Length()==1) _recalcdim(); }
+void psImage::ClearSources() { _uvs.SetLength(0); }
 
-void psImage::_setuvs(uint32_t size)
+void psImage::_setuvs(size_t size)
 {
-  uint32_t oldsize = _uvs.Capacity();
+  uint32_t oldsize = _uvs.Length();
   if(size>oldsize)
-    _uvs.SetCapacity(size);
-  for(uint32_t i = oldsize; i < _uvs.Capacity(); ++i)
+    _uvs.SetLength(size);
+  for(uint32_t i = oldsize; i < _uvs.Length(); ++i)
     _uvs[i]=RECT_UNITRECT;
 }
 
@@ -57,7 +57,7 @@ void psImage::_render(const psTransform2D& parent)
   _driver->DrawRect(GetShader(), GetStateblock(), GetCollisionRect(parent), _uvs, NumSources(), GetColor().color, GetFlags());
 }
 
-void psImage::SetTexture(psTex* tex, uint32_t index)
+void psImage::SetTexture(psTex* tex, size_t index)
 {
   psTextured::SetTexture(tex, index);
   if(!index) _recalcdim();
@@ -65,13 +65,13 @@ void psImage::SetTexture(psTex* tex, uint32_t index)
 
 void psImage::_recalcdim()
 {
-  if(_tex.Capacity() > 0 && _tex[0])
-    SetDim((_uvs.Capacity()>0)?(_tex[0]->GetDim()*_uvs[0].Dim()):_tex[0]->GetDim());
+  if(_tex.Length() > 0 && _tex[0])
+    SetDim((_uvs.Length()>0)?(_tex[0]->GetDim()*_uvs[0].Dim()):_tex[0]->GetDim());
 }
 
 void psImage::ApplyEdgeBuffer()
 {
-  if(_tex.Capacity() > 0 && _tex[0])
+  if(_tex.Length() > 0 && _tex[0])
   {
     if(!NumSources()) AddSource();
     SetSource(GetSource(0).Inflate(1.0f));

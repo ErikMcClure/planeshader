@@ -175,7 +175,7 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   }
   else
   {
-    DYNARRAY(psVertex, verts, n);
+    VARARRAY(psVertex, verts, n);
     for(uint32_t i = 0; i < n; ++i)
       verts[i] = { p[i].x, p[i].y, 0, 1, vertexcolor };
 
@@ -434,8 +434,8 @@ psRoot::psRoot() : _psInject(0, 0)
   int64_t sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
   if(sz > 0)
   {
-    DYNARRAY(wchar_t, buf, sz / 2);
-    sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", (unsigned char*)buf, sz);
+    VARARRAY(wchar_t, buf, sz / 2);
+    sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", reinterpret_cast<unsigned char*>((wchar_t*)buf), sz);
     if(sz > 0)
       cursorblink = atoi(bss::Str(buf, sz / 2)) / 1000.0;
   }
