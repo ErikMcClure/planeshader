@@ -1236,7 +1236,7 @@ void* psDirectX11::CreateLayout(void* shader, const ELEMENT_DESC* elements, uint
 void* psDirectX11::CreateLayout(void* shader, size_t sz, const ELEMENT_DESC* elements, uint8_t num)
 {
   PROFILE_FUNC();
-  DYNARRAY(D3D11_INPUT_ELEMENT_DESC, descs, num);
+  VARARRAY(D3D11_INPUT_ELEMENT_DESC, descs, num);
 
   for(uint8_t i = 0; i < num; ++i)
   {
@@ -1503,7 +1503,7 @@ void psDirectX11::_applyrendertargets()
   }
   else
   {
-    DYNARRAY(ID3D11RenderTargetView*, lastrt, _lastrt.Length());
+    VARARRAY(ID3D11RenderTargetView*, lastrt, _lastrt.Length());
     for(size_t i = 0; i < _lastrt.Length(); ++i)
       lastrt[i] = (ID3D11RenderTargetView*)_lastrt[i]->GetView();
     _context->OMSetRenderTargets(_lastrt.Length(), lastrt, _lastdepth);
@@ -1693,8 +1693,8 @@ void psDirectX11::_applysnapshot(const Snapshot& s)
   for(int k = 0; k < 3; ++k)
   {
     int num = s.ntex[k];
-    DYNARRAY(ID3D11ShaderResourceView*, views, num);
-    DYNARRAY(ID3D11SamplerState*, states, num);
+    VARARRAY(ID3D11ShaderResourceView*, views, num);
+    VARARRAY(ID3D11SamplerState*, states, num);
     for(int i = 0; i < num; ++i)
     {
       psTex* t = (psTex*)(_texstack[s.tex[i] + i]);
@@ -1747,8 +1747,8 @@ void psDirectX11::_processdebugqueue()
 void psDirectX11::_processdebugmessage(UINT64 index, SIZE_T len)
 {
   HRESULT hr;
-  DYNARRAY(char, buf, len);
-  D3D11_MESSAGE* message = (D3D11_MESSAGE*)buf;
+  VARARRAY(char, buf, len);
+  D3D11_MESSAGE* message = reinterpret_cast<D3D11_MESSAGE*>((char*)buf);
   if(FAILED(hr = _infoqueue->GetMessageA(index, message, &len)))
     return;
 

@@ -44,7 +44,7 @@ namespace planeshader {
     template<uint8_t I>
     inline static psShader* CreateShader(const ELEMENT_DESC(&layout)[I], uint8_t num, ...)
     {
-      DYNARRAY(SHADER_INFO, infos, num);
+      VARARRAY(SHADER_INFO, infos, num);
       va_list vl;
       va_start(vl, num);
       for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
@@ -97,7 +97,7 @@ namespace planeshader {
     template<uint8_t I>
     inline static psShaderT* CreateShader(const ELEMENT_DESC(&layout)[I], uint8_t num, ...) // All arguments here must be passed in as const SHADER_INFO*
     {
-      DYNARRAY(SHADER_INFO, infos, num);
+      VARARRAY(SHADER_INFO, infos, num);
       va_list vl;
       va_start(vl, num);
       for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
@@ -106,7 +106,7 @@ namespace planeshader {
     }
     inline static psShaderT* CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, ...) // All arguments here must be passed in as const SHADER_INFO*
     {
-      DYNARRAY(SHADER_INFO, infos, num);
+      VARARRAY(SHADER_INFO, infos, num);
       va_list vl;
       va_start(vl, num);
       for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);

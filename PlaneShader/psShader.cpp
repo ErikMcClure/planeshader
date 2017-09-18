@@ -38,7 +38,7 @@ bool psShader::SetConstants(const void* data, uint32_t sz, uint8_t I)
 psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, ...)
 {
   PROFILE_FUNC();
-  DYNARRAY(SHADER_INFO, infos, num);
+  VARARRAY(SHADER_INFO, infos, num);
   va_list vl;
   va_start(vl, num);
   for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);

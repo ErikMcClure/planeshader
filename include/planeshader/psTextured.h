@@ -5,7 +5,7 @@
 #define __TEXTURED_H__PS__
 
 #include "psTex.h"
-#include "bss-util/Array.h"
+#include "bss-util/CompactArray.h"
 #include <vector>
 
 namespace planeshader {
@@ -19,17 +19,17 @@ namespace planeshader {
     explicit psTextured(psTex* tex = 0);
     ~psTextured();
 
-    virtual void SetTexture(psTex* tex, uint32_t index = 0);
+    virtual void SetTexture(psTex* tex, size_t index = 0);
     void ClearTextures();
-    inline const psTex* GetTexture(uint32_t index = 0) const { if(index>=_tex.Capacity()) return 0; return _tex[index]; }
+    inline const psTex* GetTexture(size_t index = 0) const { if(index>=_tex.Length()) return 0; return _tex[index]; }
     inline psTex* const* GetTextures() const { return _tex; }
-    inline uint8_t NumTextures() const { return _tex.Capacity(); }
+    inline size_t NumTextures() const { return _tex.Length(); }
 
     psTextured& operator=(const psTextured& right);
     psTextured& operator=(psTextured&& right);
 
   protected:
-    bss::Array<psTex*, uint8_t> _tex;
+    bss::CompactArray<psTex*> _tex;
   };
 }
 

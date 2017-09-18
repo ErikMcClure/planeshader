@@ -46,7 +46,7 @@ void psStateblock::DestroyThis() { delete this; }
 psStateblock* psStateblock::Create(uint32_t numstates, ...)
 {
   PROFILE_FUNC();
-  DYNARRAY(STATEINFO, states, numstates);
+  VARARRAY(STATEINFO, states, numstates);
 
   va_list vl;
   va_start(vl, numstates);
@@ -73,7 +73,7 @@ psStateblock* psStateblock::Create(const STATEINFO* infos, uint32_t numstates)
 template<class T>
 T* stateblock_combine(bss::Array<STATEINFO, uint16_t>& left, STATEINFO* right, uint16_t num)
 {
-  DYNARRAY(STATEINFO, states, left.Capacity() + num);
+  VARARRAY(STATEINFO, states, left.Capacity() + num);
   memcpy(states, (STATEINFO*)left, left.Capacity()*sizeof(STATEINFO));
   memcpy(states + left.Capacity(), (STATEINFO*)right, num*sizeof(STATEINFO));
   return T::Create(states, left.Capacity() + num);
@@ -102,7 +102,7 @@ void psTexblock::DestroyThis() { delete this; }
 psTexblock* psTexblock::Create(uint32_t numstates, ...)
 {
   PROFILE_FUNC();
-  DYNARRAY(STATEINFO, states, numstates);
+  VARARRAY(STATEINFO, states, numstates);
 
   va_list vl;
   va_start(vl, numstates);
