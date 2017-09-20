@@ -66,20 +66,20 @@ namespace planeshader {
     inline psVec rb() const { return psVec(r, b); }
     inline psVec gb() const { return psVec(g, b); }
 
-    inline const psColor operator+(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl+xr) >> ret.v; return ret; }
-    inline const psColor operator-(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl-xr) >> ret.v; return ret; }
-    inline const psColor operator*(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl*xr) >> ret.v; return ret; }
-    inline const psColor operator/(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl/xr) >> ret.v; return ret; }
-    inline psColor& operator+=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl+xr) >> v; return *this; }
-    inline psColor& operator-=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl-xr) >> v; return *this; }
-    inline psColor& operator*=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl*xr) >> v; return *this; }
-    inline psColor& operator/=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl/xr) >> v; return *this; }
+    inline const psColor operator+(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl+xr).Set(ret.v); return ret; }
+    inline const psColor operator-(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl-xr).Set(ret.v); return ret; }
+    inline const psColor operator*(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl*xr).Set(ret.v); return ret; }
+    inline const psColor operator/(const psColor& c) const { psColor ret; sseVec xl(v); sseVec xr(c.v); (xl/xr).Set(ret.v); return ret; }
+    inline psColor& operator+=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl+xr).Set(v); return *this; }
+    inline psColor& operator-=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl-xr).Set(v); return *this; }
+    inline psColor& operator*=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl*xr).Set(v); return *this; }
+    inline psColor& operator/=(const psColor& c) { sseVec xl(v); sseVec xr(c.v); (xl/xr).Set(v); return *this; }
     inline bool operator==(const psColor& c) { return (c.a==a)&&(c.r==r)&&(c.g==g)&&(c.b==b); }
     inline bool operator!=(const psColor& c) { return (c.a!=a)||(c.r!=r)||(c.g!=g)||(c.b!=b); }
     inline psColor& operator=(const psVec3D& rgb) { r=rgb.x; r=rgb.y; r=rgb.z; return *this; }
     inline psColor& operator=(uint32_t argb) {
       sseVec c(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(argb), _mm_setzero_si128()), _mm_setzero_si128()));
-      sseVec(_mm_castsi128_ps(BSS_SSE_SHUFFLE_EPI32(_mm_castps_si128(c/sseVec(255.0f)), _MM_SHUFFLE(3, 0, 1, 2)))) >> v; return *this;
+      sseVec(_mm_castsi128_ps(BSS_SSE_SHUFFLE_EPI32(_mm_castps_si128(c/sseVec(255.0f)), _MM_SHUFFLE(3, 0, 1, 2)))).Set(v); return *this;
     }
     inline psColor& operator=(const uint8_t(&rgba)[4]) { r=rgba[0]/255.0f; g=rgba[1]/255.0f; b=rgba[2]/255.0f; a=rgba[3]/255.0f; return *this; }
     inline psColor& operator=(const float(&rgba)[4]) { r=rgba[0]; g=rgba[1]; b=rgba[2]; a=rgba[3]; return *this; }
@@ -116,7 +116,7 @@ namespace planeshader {
     {
       sseVec xc(c);
       psColor ret;
-      ((sseVec(l.v)*(sseVec(1.0f)-xc)) + (sseVec(r.v)*xc)) >> ret.v;
+      ((sseVec(l.v)*(sseVec(1.0f)-xc)) + (sseVec(r.v)*xc)).Set(ret.v);
       return ret;
     }
     BSS_FORCEINLINE static sseVec Saturate(const sseVec& x)
@@ -129,7 +129,7 @@ namespace planeshader {
       float h=hsva.r;
       float b=hsva.b*(1-hsva.g);
       psColor r;
-      (Saturate(sseVec(abs(3.0f-h)-1.0f, 4.0f-h, h-2, 1))*sseVec(1, bssmin(1, h), bssmin(1, 6.0f-h), 1)*sseVec(1-b)*sseVec(hsva.b-b) + sseVec(b)) >> r.v;
+      (Saturate(sseVec(abs(3.0f-h)-1.0f, 4.0f-h, h-2, 1))*sseVec(1, bssmin(1, h), bssmin(1, 6.0f-h), 1)*sseVec(1-b)*sseVec(hsva.b-b) + sseVec(b)).Set(r.v);
       r.a=hsva.a;
       return r;
     }

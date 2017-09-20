@@ -5,7 +5,7 @@
 
 using namespace planeshader;
 
-psChartContainer::psChartContainer(psTexFont* font) : _view(0,0,0,0), _font(font)
+psChartContainer::psChartContainer(psTexFont* font) : _view(0,0,0,0), _font(font), _flags(0)
 {
 }
 

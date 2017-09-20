@@ -37,8 +37,8 @@ void psSolid::_setdim(const psVec& dim)
 void psSolid::GetMatrix(psMatrix& m, const psTransform2D* parent)
 {
   psLocatable::GetMatrix(m, parent);
-  sseVec(m[0])*sseVec(_scale.x) >> m[0];
-  sseVec(m[1])*sseVec(_scale.y) >> m[1];
+  (sseVec(m[0])*sseVec(_scale.x)).Set(m[0]);
+  (sseVec(m[1])*sseVec(_scale.y)).Set(m[1]);
 }
 
 psSolid& psSolid::operator =(const psSolid& right)

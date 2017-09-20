@@ -47,7 +47,7 @@ namespace planeshader {
       VARARRAY(SHADER_INFO, infos, num);
       va_list vl;
       va_start(vl, num);
-      for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
+      for(uint32_t i = 0; i < num; ++i) new(infos + i) SHADER_INFO(*va_arg(vl, const SHADER_INFO*));
       va_end(vl);
       return CreateShader(I, layout, num, infos);
     }

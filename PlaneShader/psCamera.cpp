@@ -113,7 +113,7 @@ bool psCamera::Culling::Cull(const psRect& rect, float rectz, float camz, psFlag
 
 psCamera::Culling::Culling(const Culling& copy) : SSEwindow(copy.SSEwindow), SSEwindow_center(copy.SSEwindow_center), SSEwindow_hold(copy.SSEwindow_hold),
   SSEfixed(copy.SSEfixed), SSEfixed_center(copy.SSEfixed_center), SSEfixed_hold(copy.SSEfixed_hold), last(copy.last), lastfixed(copy.lastfixed),
-  window(copy.window), winfixed(copy.winfixed)
+  window(copy.window), winfixed(copy.winfixed), z(copy.z)
 {}
-psCamera::Culling::Culling() : SSEwindow(0), SSEwindow_center(0), SSEwindow_hold(0), SSEfixed(0), SSEfixed_center(0), SSEfixed_hold(0), last(0), lastfixed(0)
+psCamera::Culling::Culling() : SSEwindow(0), SSEwindow_center(0), SSEwindow_hold(0), SSEfixed(0), SSEfixed_center(0), SSEfixed_hold(0), last(0), lastfixed(0), z(0.0)
 {}

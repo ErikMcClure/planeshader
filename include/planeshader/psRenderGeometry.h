@@ -89,6 +89,7 @@ namespace planeshader {
 
   class PS_DLLEXPORT psFullScreenQuad : public psRenderable, public psTextured, public psDriverHold
   {
+  public:
     psFullScreenQuad(const psFullScreenQuad& copy);
     psFullScreenQuad(psFullScreenQuad&& mov);
     psFullScreenQuad();
