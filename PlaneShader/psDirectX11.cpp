@@ -513,15 +513,13 @@ void psDirectX11::Flush()
   _snapshotstack.Clear();
   _texstack.Clear();
 
-  size_t length = 0;
+  _matrixbuf.SetLength(_transformstack.Length() - 1);
   for(size_t i = 1; i < _transformstack.Length(); ++i)
   {
-    ptrdiff_t index = _matrixstack.begin() - _transformstack[i];
-    if(index > length)
-      MEMCPY(_matrixstack.begin() + length, 4 * 4 * sizeof(float), _transformstack[i], 4 * 4 * sizeof(float));
-    ++length;
+    MEMCPY(_matrixbuf.begin() + i - 1, 4 * 4 * sizeof(float), _transformstack[i], 4 * 4 * sizeof(float));
+    _transformstack[i] = _matrixbuf.begin() + i - 1;
   }
-  _matrixstack.SetLength(length);
+  _matrixalloc.Clear();
 }
 psBatchObj* psDirectX11::FlushPreserve()
 {
@@ -531,8 +529,9 @@ psBatchObj* psDirectX11::FlushPreserve()
   psMatrix m;
   MEMCPY(m, 4 * 4 * sizeof(float), &obj.transform, 4 * 4 * sizeof(float));
   Flush();
-  MEMCPY(PushMatrix(), 4 * 4 * sizeof(float), &m, 4 * 4 * sizeof(float));
-  return DrawBatchBegin(obj.shader, obj.stateblock, obj.flags, obj.buffer.verts, obj.buffer.indices, obj.buffer.mode, _matrixstack.Back());
+  psMatrix& lastm = *_matrixalloc.Alloc();
+  MEMCPY(&lastm, 4 * 4 * sizeof(float), &m, 4 * 4 * sizeof(float));
+  return DrawBatchBegin(obj.shader, obj.stateblock, obj.flags, obj.buffer.verts, obj.buffer.indices, obj.buffer.mode, lastm);
 }
 
 void psDirectX11::Draw(psVertObj* buf, psFlag flags, const float(&transform)[4][4])

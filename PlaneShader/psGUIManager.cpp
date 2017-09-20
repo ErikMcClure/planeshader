@@ -242,6 +242,7 @@ psVeciu psGUIManager::GetMonitorDPI(int num)
   xdpi = (UINT)GetDeviceCaps(hdc, LOGPIXELSX);
   ydpi = (UINT)GetDeviceCaps(hdc, LOGPIXELSY);
   //GetDpiForMonitor(0, MDT_Effective_DPI, &xdpi, &ydpi);
+  ReleaseDC(0, hdc);
   return psVeciu(xdpi, ydpi);
 }
 

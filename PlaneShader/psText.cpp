@@ -59,8 +59,8 @@ void psText::_render(const psTransform2D& parent)
     Matrix<float, 4, 4> m;
     Matrix<float, 4, 4>::AffineTransform_T(pos.x - GetPivot().x, pos.y - GetPivot().y, pos.z, parent.rotation + rotation, GetPivot().x, GetPivot().y, m);
     // This mimics assembling a scaling matrix and multiplying it with m, assuming we are using transposed matrices.
-    sseVec(m.v[0])*sseVec(_scale.x) >> m.v[0];
-    sseVec(m.v[1])*sseVec(_scale.y) >> m.v[1];
+    (sseVec(m.v[0])*sseVec(_scale.x)).Set(m.v[0]);
+    (sseVec(m.v[1])*sseVec(_scale.y)).Set(m.v[1]);
     psDriverHold::GetDriver()->PushTransform(m.v);
     _textdim = _font->DrawText(GetShader(), _stateblock, _text.c_str(), _lineheight, _letterspacing, psRectRotateZ(0, 0, GetUnscaledDim().x, GetUnscaledDim().y, 0), GetColor().color, GetFlags(), _func);
     psDriverHold::GetDriver()->PopTransform();

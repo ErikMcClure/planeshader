@@ -94,8 +94,13 @@ bool psTileset::SetTile(psVeci pos, uint32_t index, uint32_t color, float rotate
 void psTileset::SetTiles(psTile* tiles, uint32_t num, uint32_t pitch)
 {
   SetDimIndex(psVeci(pitch, num / pitch));
-  memset(_tiles.begin(), 0, _tiles.Length()*sizeof(psTile)); // zero everything, which prevents our trailing tiles from showing up in case you didn't give a perfectly square array.
+  Clear();
   memcpy(_tiles.begin(), tiles, num*sizeof(psTile)); // copy memory in
+}
+
+void psTileset::Clear()
+{
+  bss::bssFillN<psTile>(_tiles.begin(), _tiles.Length(), 0);
 }
 
 void psTileset::SetDimIndex(psVeci dim)
@@ -134,6 +139,7 @@ void psTileset::_render(const psTransform2D& parent)
 
   uint32_t skipped = 0;
   uint32_t bytecount = T_NEXTMULTIPLE(_tiles.Length(), 7) >> 3;
+  assert(bytecount < 0xFFFF);
   VARARRAY(uint8_t, drawn, bytecount);
   memset(drawn, 0, bytecount);
 
@@ -143,7 +149,7 @@ void psTileset::_render(const psTransform2D& parent)
       for(uint32_t i = window.left; i < (uint32_t)window.right; ++i)
       {
         uint32_t k = i + (j*_rowlength);
-        if(bss::bssGetBit<uint8_t>(drawn, k))
+        if(bss::bssGetBit<uint8_t>(drawn, k) || _tiles[k].index > _defs.Length() || _tiles[k].color == 0)
           continue; // if we drew this tile already don't draw it again
 
         psTileDef& def = _defs[_tiles[k].index];

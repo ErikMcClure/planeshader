@@ -51,7 +51,7 @@ psStateblock* psStateblock::Create(uint32_t numstates, ...)
   va_list vl;
   va_start(vl, numstates);
   for(uint32_t i = 0; i < numstates; ++i)
-    states[i]=*va_arg(vl, const STATEINFO*);
+    new(states+i) STATEINFO(*va_arg(vl, const STATEINFO*));
   va_end(vl);
 
   return Create(states, numstates);
@@ -107,7 +107,7 @@ psTexblock* psTexblock::Create(uint32_t numstates, ...)
   va_list vl;
   va_start(vl, numstates);
   for(uint32_t i = 0; i < numstates; ++i)
-    states[i]=*va_arg(vl, const STATEINFO*);
+    new(states + i) STATEINFO(*va_arg(vl, const STATEINFO*));
   va_end(vl);
 
   return Create(states, numstates);

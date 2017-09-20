@@ -6,6 +6,7 @@
 
 #include "psRect.h"
 #include "bss-util\DynArray.h"
+#include "bss-util\BlockAlloc.h"
 
 namespace planeshader {
   class psTex;
@@ -432,7 +433,7 @@ namespace planeshader {
     // Returns an index to an internal state snapshot
     virtual uint32_t GetSnapshot() = 0;
     // Pushes a matrix on to the matrix stack. This stack gets cleared once Flush is called.
-    inline float (*PushMatrix())[4][4] { size_t l = _matrixstack.Length(); _matrixstack.SetLength(l + 1); return _matrixstack.begin() + l; }
+    //inline float(*PushMatrix())[4][4]{ return _matrixalloc.Alloc(); }
 
     BSS_FORCEINLINE static FORMATS ToSRGBFormat(FORMATS format)
     {
@@ -491,7 +492,7 @@ namespace planeshader {
 
   protected:
     bss::DynArray<psBatchObj> _jobstack;
-    bss::DynArray<psMatrix, size_t, bss::ARRAY_SIMPLE, bss::AlignedStaticAllocPolicy<psMatrix>> _matrixstack;
+    bss::BlockAlloc<psMatrix> _matrixalloc;
     bss::DynArray<const float(*)[4][4]> _transformstack;
   };
 

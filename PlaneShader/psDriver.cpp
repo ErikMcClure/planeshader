@@ -121,7 +121,7 @@ void psDriver::MergeClipRect(const psRect& rect)
 
 void psDriver::PushTransform(const psMatrix& xform)
 {
-  psMatrix& m = *PushMatrix();
+  psMatrix& m = *_matrixalloc.Alloc();
   bss::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
   _transformstack.AddConstruct<const float(*)[4][4]>(&m);
 }
