@@ -6,7 +6,7 @@
 
 #include "psSolid.h"
 #include "psColor.h"
-#include "bss-util\DynArray.h"
+#include "bss-util/DynArray.h"
 
 namespace planeshader {
   // Used by all curve objects to render a curve as a deconstructed quadratic curve

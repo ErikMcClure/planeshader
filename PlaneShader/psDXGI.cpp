@@ -2,7 +2,7 @@
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
-#include "bss-util\DynArray.h"
+#include "bss-util/DynArray.h"
 #include "psDXGI.h"
 
 using namespace planeshader;

@@ -5,7 +5,7 @@
 #define __DXGI_H__PS__
 
 #include "psDriver.h"
-#include "bss-util\win32_includes.h"
+#include "bss-util/win32_includes.h"
 #ifdef USE_DIRECTXTK
 #include <dxgi.h>
 #else

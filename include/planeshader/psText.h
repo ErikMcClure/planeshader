@@ -7,8 +7,8 @@
 #include "psTexFont.h"
 #include "psSolid.h"
 #include "psColor.h"
-#include "bss-util\Str.h"
-#include "bss-util\ArraySort.h"
+#include "bss-util/Str.h"
+#include "bss-util/ArraySort.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psText : public psSolid

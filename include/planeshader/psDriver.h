@@ -5,8 +5,8 @@
 #define __DRIVER_H__PS__
 
 #include "psRect.h"
-#include "bss-util\DynArray.h"
-#include "bss-util\BlockAlloc.h"
+#include "bss-util/DynArray.h"
+#include "bss-util/GreedyBlockAlloc.h"
 
 namespace planeshader {
   class psTex;
@@ -492,7 +492,7 @@ namespace planeshader {
 
   protected:
     bss::DynArray<psBatchObj> _jobstack;
-    bss::BlockAlloc<psMatrix> _matrixalloc;
+    bss::GreedyBlockAlloc<psMatrix> _matrixalloc;
     bss::DynArray<const float(*)[4][4]> _transformstack;
   };
 
