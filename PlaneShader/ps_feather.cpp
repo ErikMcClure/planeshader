@@ -6,14 +6,14 @@
 #include "psFont.h"
 #include "psTex.h"
 #include "psVector.h"
-#include "feathergui\fgButton.h"
-#include "feathergui\fgText.h"
-#include "feathergui\fgResource.h"
-#include "feathergui\fgWindow.h"
-#include "feathergui\fgRadioButton.h"
-#include "feathergui\fgProgressbar.h"
-#include "feathergui\fgSlider.h"
-#include "feathergui\fgList.h"
+#include "feathergui/fgButton.h"
+#include "feathergui/fgText.h"
+#include "feathergui/fgResource.h"
+#include "feathergui/fgWindow.h"
+#include "feathergui/fgRadioButton.h"
+#include "feathergui/fgProgressbar.h"
+#include "feathergui/fgSlider.h"
+#include "feathergui/fgList.h"
 
 #undef DrawText
 

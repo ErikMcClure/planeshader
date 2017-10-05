@@ -288,7 +288,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
   break;
   case WM_NCMOUSEMOVE:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam)); //This is a bit weird but it works because we get passed lParam by value, so this function actually ends up modifying lParam directly.
   case WM_MOUSEMOVE:
     if(!(self->_guiflags&PSMONITOR_ISINSIDE))
@@ -302,7 +302,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCLBUTTONDOWN:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONDOWN:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDOWN, FG_MOUSELBUTTON, wpcopy, GetMessageTime());
@@ -310,7 +310,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCLBUTTONUP:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_LBUTTONUP:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, FG_MOUSELBUTTON, wpcopy, GetMessageTime());
@@ -321,7 +321,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCRBUTTONDOWN:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONDOWN:
     SetCapture(hWnd);
@@ -329,7 +329,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCRBUTTONUP:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_RBUTTONUP:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, FG_MOUSERBUTTON, wpcopy, GetMessageTime());
@@ -340,7 +340,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCMBUTTONDOWN:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONDOWN:
     SetCapture(hWnd);
@@ -348,7 +348,7 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCMBUTTONUP:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_MBUTTONUP:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, FG_MOUSEMBUTTON, wpcopy, GetMessageTime());
@@ -359,14 +359,14 @@ LRESULT __stdcall psMonitor::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     break;
   case WM_NCXBUTTONDOWN:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONDOWN:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEDOWN, (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? FG_MOUSEXBUTTON1 : FG_MOUSEXBUTTON2), wpcopy, GetMessageTime());
     break;
   case WM_NCXBUTTONUP:
     if(!(self->_guiflags&PSMONITOR_HOOKNC)) break;
-    wpcopy = (uint32_t)-1;
+    wpcopy = (WPARAM)~0;
     _STCpoints(hWnd, MAKELPPOINTS(lParam));
   case WM_XBUTTONUP:
     gui->SetMouse(MAKELPPOINTS(lParam), FG_MOUSEUP, (GET_XBUTTON_WPARAM(wpcopy) == XBUTTON1 ? FG_MOUSEXBUTTON1 : FG_MOUSEXBUTTON2), wpcopy, GetMessageTime());

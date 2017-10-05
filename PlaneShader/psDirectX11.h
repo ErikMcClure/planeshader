@@ -185,7 +185,7 @@ namespace planeshader {
     ID3D11View* _creatertview(ID3D11Resource* src);
     ID3D11View* _createdepthview(ID3D11Resource* src);
     void _processdebugqueue();
-    void _getbackbufferref();
+    void _getbackbufferref(int ref);
     void _resetscreendim();
     void _applycamera(const CamDef& cam);
     void _applyrendertargets();

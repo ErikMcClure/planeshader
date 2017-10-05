@@ -97,7 +97,7 @@ void psGUIManager::SetMouse(POINTS* points, unsigned short type, unsigned char b
     return;
   }
 
-  if(wparam != (size_t)-1) //if wparam is -1 it signals that it is invalid, so we simply leave our assignments at their last known value.
+  if(wparam != (size_t)~0) //if wparam is -1 it signals that it is invalid, so we simply leave our assignments at their last known value.
   {
     uint8_t bt = 0; //we must keep these bools accurate at all times
     bt |= FG_MOUSELBUTTON&(-((wparam&MK_LBUTTON) != 0));

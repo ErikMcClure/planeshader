@@ -7,7 +7,7 @@
 #include "psSolid.h"
 #include "psDriver.h"
 #include "psTextured.h"
-#include "bss-util\DynArray.h"
+#include "bss-util/DynArray.h"
 
 namespace planeshader {
   struct psTile
@@ -48,6 +48,8 @@ namespace planeshader {
     }
     static inline psVeciu WangTile2D(uint32_t e0, uint32_t e1, uint32_t e2, uint32_t e3) { return psVeciu(WangTile1D(e0, e2), WangTile1D(e1, e3)); }
 
+    inline psTile* operator[](uint32_t row) { return _tiles.begin() + (row*_rowlength); }
+    inline const psTile* operator[](uint32_t row) const { assert((row*_rowlength) < _tiles.Length()); return _tiles.begin() + (row*_rowlength); }
     psTileset& operator=(const psTileset& copy);
     psTileset& operator=(psTileset&& mov);
 

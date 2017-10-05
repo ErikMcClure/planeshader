@@ -246,7 +246,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _proj_usr = (ID3D11Buffer*)CreateBuffer(4 * 4 * 2, sizeof(float), USAGE_CONSTANT_BUFFER | USAGE_DYNAMIC, 0);
   _clipstack.Push(RECT_ZERO); //push the initial clip rect (it'll get set in PushCamera, inside _resetscreendim)
 
-  _getbackbufferref();
+  _getbackbufferref(0);
   _resetscreendim();
 
   _fsquadVS = (ID3D11VertexShader*)CreateShader(quadVS_main, sizeof(quadVS_main), VERTEX_SHADER_4_0);
@@ -445,7 +445,10 @@ psDirectX11::~psDirectX11()
     library.PARTICLE->Drop();
 
   if(_backbuffer)
-    delete _backbuffer;
+  {
+    int count = _backbuffer->Drop();
+    assert(!count);
+  }
 
   PROCESSQUEUE();
   int r;
@@ -515,11 +518,15 @@ void psDirectX11::Flush()
 
   _matrixbuf.SetLength(_transformstack.Length() - 1);
   for(size_t i = 1; i < _transformstack.Length(); ++i)
-  {
     MEMCPY(_matrixbuf.begin() + i - 1, 4 * 4 * sizeof(float), _transformstack[i], 4 * 4 * sizeof(float));
-    _transformstack[i] = _matrixbuf.begin() + i - 1;
-  }
+  
   _matrixalloc.Clear();
+  for(size_t i = 1; i < _transformstack.Length(); ++i)
+  {
+    _transformstack[i] = _matrixalloc.Alloc();
+    MEMCPY(const_cast<psMatrix*>(_transformstack[i]), 4 * 4 * sizeof(float), _matrixbuf.begin() + i - 1, 4 * 4 * sizeof(float));
+  }
+  _matrixbuf.SetLength(0);
 }
 psBatchObj* psDirectX11::FlushPreserve()
 {
@@ -1439,17 +1446,19 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
   PROFILE_FUNC();
   if(_backbuffer->GetRawDim() != dim || _backbuffer->GetFormat() != format)
   {
+    int ref = 1;
     if(_backbuffer)
     {
       for(uint32_t i = 0; i < _lastrt.Length(); ++i)
         if(_lastrt[i] == _backbuffer)
           _lastrt[i] = 0;
+      ref = _backbuffer->Grab() - 2;
       _backbuffer->~psTex();
     }
     _context->OMSetRenderTargets(0, 0, 0);
     _context->ClearState();
     LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
-    _getbackbufferref();
+    _getbackbufferref(ref);
     for(uint32_t i = 0; i < _lastrt.Length(); ++i)
       if(!_lastrt[i])
         _lastrt[i] = _backbuffer;
@@ -1467,13 +1476,14 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
   if(fullscreen >= 0)
     LOGFAILURE(_swapchain->SetFullscreenState(fullscreen > 0, 0));
 }
-void psDirectX11::_getbackbufferref()
+void psDirectX11::_getbackbufferref(int ref)
 {
   ID3D11Texture2D* backbuffer = 0;
   LOGFAILURE(_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backbuffer));
 
   D3D11_TEXTURE2D_DESC backbuffer_desc;
   backbuffer->GetDesc(&backbuffer_desc);
+
   if(!_backbuffer)
     _backbuffer = (psTex*)new char[sizeof(psTex)];
 
@@ -1485,6 +1495,7 @@ void psDirectX11::_getbackbufferref()
     backbuffer_desc.MipLevels,
     0,
     psVeciu(BASE_DPI));
+  _backbuffer->Grab(ref);
 
   backbuffer->Release();
   SetDPIScale(_dpiscale); // Resets the backbuffer dpi, just in case.

@@ -7,8 +7,8 @@
 #include "psTexFont.h"
 #include "psSolid.h"
 #include "psColor.h"
-#include "bss-util\Str.h"
-#include "bss-util\DynArray.h"
+#include "bss-util/Str.h"
+#include "bss-util/DynArray.h"
 
 namespace planeshader {
   struct psChart : public psDriverHold

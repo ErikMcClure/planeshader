@@ -2,7 +2,7 @@
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psVector.h"
-#include "bss-util\algo.h"
+#include "bss-util/algo.h"
 #include "psTex.h"
 
 using namespace planeshader;
