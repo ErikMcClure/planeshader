@@ -176,6 +176,19 @@ void psLayer::_render(const psTransform2D& parent)
   Pop();
 }
 
+psLayer* psLayer::CurLayer() 
+{ 
+  return !CurLayers.Length() ? nullptr : CurLayers.Peek();
+}
+psCamera* psLayer::CurCamera()
+{
+  size_t i = CurLayers.Length();
+  while(i > 0)
+    if(psCamera* cam = CurLayers[--i]->_cam)
+      return cam;
+  return 0;
+}
+
 bool psLayer::Cull(psSolid* solid, const psTransform2D* parent) const
 {
   assert(psLayer::CurLayer() == this);

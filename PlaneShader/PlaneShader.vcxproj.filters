@@ -36,6 +36,9 @@
     <ClInclude Include="..\include\planeshader\psLocatable.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\planeshader\psMonitor.h">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="..\include\planeshader\psRect.h">
       <Filter>include</Filter>
     </ClInclude>

@@ -9,6 +9,7 @@
 #include "bss-util/Logger.h"
 #include "bss-util/Str.h"
 #include "bss-util/Serializer.h"
+#include "bss-util/Stack.h"
 #include "psGUIManager.h"
 #include "psDriver.h"
 

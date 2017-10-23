@@ -1,8 +1,8 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
-#ifndef __PASS_H__PS__
-#define __PASS_H__PS__
+#ifndef __LAYER_H__PS__
+#define __LAYER_H__PS__
 
 #include "psRenderable.h"
 #include "psCamera.h"
@@ -39,12 +39,13 @@ namespace planeshader {
     void Defer(psRenderable* r, const psTransform2D& parent);
     bool Cull(psSolid* solid, const psTransform2D* parent) const;
     inline const psCamera::Culling& GetCulling() const { assert(CurLayers.Peek() == this); return _cull; }
+
     inline void SetClearColor(psColor32 color, bool clear = true) { _clearcolor = color; _clear = clear; }
     inline psColor32 GetClearColor() const { return _clearcolor; }
 
     psLayer& operator=(psLayer&& mov);
-    static psLayer* CurLayer() { return !CurLayers.Length() ? nullptr : CurLayers.Peek(); }
-    static bss::Stack<psLayer*> CurLayers;
+    static psLayer* CurLayer();
+    static psCamera* CurCamera();
 
     typedef bss::BlockPolicy<bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>>> ALLOC;
     friend class psRenderable;
@@ -65,6 +66,8 @@ namespace planeshader {
     bss::DynArray<std::pair<psRenderable*, psTransform2D>> _defer;
     bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*, psRenderable::StandardCompare>, ALLOC> _renderlist;
     bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _targets;
+
+    static bss::Stack<psLayer*> CurLayers;
   };
 }
 

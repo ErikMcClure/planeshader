@@ -36,9 +36,9 @@ psRenderable::psRenderable(psFlag flags, int zorder, psStateblock* stateblock, p
 psRenderable::~psRenderable() { _destroy(); }
 void psRenderable::Render(const psTransform2D& parent)
 {
-  if(psLayer::CurLayers.Length() > 0)
+  if(psLayer* cur = psLayer::CurLayer())
   {
-    if(_layer != 0 && _layer != psLayer::CurLayers.Peek())
+    if(_layer != 0 && _layer != cur)
       _layer->Defer(this, parent);
     else if(!Cull(parent))
       _render(parent);
