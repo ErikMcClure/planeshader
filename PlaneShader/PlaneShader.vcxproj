@@ -502,6 +502,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClInclude Include="..\include\planeshader\psImage.h" />
     <ClInclude Include="..\include\planeshader\psLayer.h" />
     <ClInclude Include="..\include\planeshader\psLocatable.h" />
+    <ClInclude Include="..\include\planeshader\psMonitor.h" />
     <ClInclude Include="..\include\planeshader\psRect.h" />
     <ClInclude Include="..\include\planeshader\psRenderable.h" />
     <ClInclude Include="..\include\planeshader\psRenderGeometry.h" />
