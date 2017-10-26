@@ -215,22 +215,22 @@ void  fgDirtyElementPS(fgElement* e)
 
 }
 
+static const HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
+static const HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
+static const HCURSOR hCross = LoadCursor(NULL, IDC_CROSS);
+static const HCURSOR hWait = LoadCursor(NULL, IDC_WAIT);
+static const HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
+static const HCURSOR hSizeNS = LoadCursor(NULL, IDC_SIZENS);
+static const HCURSOR hSizeWE = LoadCursor(NULL, IDC_SIZEWE);
+static const HCURSOR hSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
+static const HCURSOR hSizeNESW = LoadCursor(NULL, IDC_SIZENESW);
+static const HCURSOR hSizeAll = LoadCursor(NULL, IDC_SIZEALL);
+static const HCURSOR hNo = LoadCursor(NULL, IDC_NO);
+static const HCURSOR hHelp = LoadCursor(NULL, IDC_HELP);
+static const HCURSOR hDrag = hSizeAll;
+
 void  fgSetCursorPS(uint32_t type, void* custom)
 {
-  static const HCURSOR hArrow = LoadCursor(NULL, IDC_ARROW);
-  static const HCURSOR hIBeam = LoadCursor(NULL, IDC_IBEAM);
-  static const HCURSOR hCross = LoadCursor(NULL, IDC_CROSS);
-  static const HCURSOR hWait = LoadCursor(NULL, IDC_WAIT);
-  static const HCURSOR hHand = LoadCursor(NULL, IDC_HAND);
-  static const HCURSOR hSizeNS = LoadCursor(NULL, IDC_SIZENS);
-  static const HCURSOR hSizeWE = LoadCursor(NULL, IDC_SIZEWE);
-  static const HCURSOR hSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
-  static const HCURSOR hSizeNESW = LoadCursor(NULL, IDC_SIZENESW);
-  static const HCURSOR hSizeAll = LoadCursor(NULL, IDC_SIZEALL);
-  static const HCURSOR hNo = LoadCursor(NULL, IDC_NO);
-  static const HCURSOR hHelp = LoadCursor(NULL, IDC_HELP);
-  static const HCURSOR hDrag = hSizeAll;
-
   switch(type)
   {
   case FGCURSOR_ARROW: SetCursor(hArrow); break;
@@ -387,49 +387,49 @@ char fgProcessMessagesPS()
   return !psEngine::Instance()->GetQuit();
 }
 
+static const fgBackend psBACKEND = {
+  FGTEXTFMT_UTF32,
+  &fgCreateFontPS,
+  &fgCloneFontPS,
+  &fgDestroyFontPS,
+  &fgDrawFontPS,
+  &fgFontLayoutPS,
+  &fgFontGetPS,
+  &fgFontIndexPS,
+  &fgFontPosPS,
+  &fgCreateAssetFileDefault,
+  &fgCreateResourcePS,
+  &fgCloneResourcePS,
+  &fgDestroyResourcePS,
+  &fgDrawResourcePS,
+  &fgResourceSizePS,
+  &fgDrawLinesPS,
+  &fgCreateDefault,
+  &fgFlagMapDefault,
+  &fgMessageMapDefault,
+  &fgUserDataMapCallbacks,
+  &fgPushClipRectPS,
+  &fgPeekClipRectPS,
+  &fgPopClipRectPS,
+  &fgDragStartPS,
+  &fgSetCursorPS,
+  &fgClipboardCopyPS,
+  &fgClipboardExistsPS,
+  &fgClipboardPastePS,
+  &fgClipboardFreePS,
+  &fgDirtyElementPS,
+  &fgProcessMessagesPS,
+  &fgLoadExtensionDefault,
+  &fgLogHookPS,
+  &fgTerminateDefault,
+};
+
 psRoot::psRoot() : _psInject(0, 0)
 {
   AbsRect area = { 0, 0, 1, 1 };
 
-  static const fgBackend BACKEND = {
-    FGTEXTFMT_UTF32,
-    &fgCreateFontPS,
-    &fgCloneFontPS,
-    &fgDestroyFontPS,
-    &fgDrawFontPS,
-    &fgFontLayoutPS,
-    &fgFontGetPS,
-    &fgFontIndexPS,
-    &fgFontPosPS,
-    &fgCreateAssetFileDefault,
-    &fgCreateResourcePS,
-    &fgCloneResourcePS,
-    &fgDestroyResourcePS,
-    &fgDrawResourcePS,
-    &fgResourceSizePS,
-    &fgDrawLinesPS,
-    &fgCreateDefault,
-    &fgFlagMapDefault,
-    &fgMessageMapDefault,
-    &fgUserDataMapCallbacks,
-    &fgPushClipRectPS,
-    &fgPeekClipRectPS,
-    &fgPopClipRectPS,
-    &fgDragStartPS,
-    &fgSetCursorPS,
-    &fgClipboardCopyPS,
-    &fgClipboardExistsPS,
-    &fgClipboardPastePS,
-    &fgClipboardFreePS,
-    &fgDirtyElementPS,
-    &fgProcessMessagesPS,
-    &fgLoadExtensionDefault,
-    &fgLogHookPS,
-    &fgTerminateDefault,
-  };
-
   AbsVec dpi = { BASE_DPI, BASE_DPI };
-  fgRoot_Init(this, &area, &dpi, &BACKEND);
+  fgRoot_Init(this, &area, &dpi, &psBACKEND);
   DWORD blinkrate = 0;
   int64_t sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
   if(sz > 0)
