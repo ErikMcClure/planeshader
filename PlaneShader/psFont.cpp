@@ -1,10 +1,10 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
+#include "psEngine.h"
 #include "psFont.h"
 #include "psTex.h"
 #include "psColor.h"
-#include "psEngine.h"
 #include "bss-util/Str.h"
 #include "bss-util/os.h"
 #include "ft2build.h"

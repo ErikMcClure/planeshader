@@ -1,9 +1,9 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
+#include "psEngine.h"
 #include "ps_feather.h"
 #include "psDirectX11.h"
-#include "psEngine.h"
 #include "psTex.h"
 #include "psStateblock.h"
 #include "bss-util/Str.h"
@@ -523,7 +523,7 @@ void psDirectX11::Flush()
   _matrixalloc.Clear();
   for(size_t i = 1; i < _transformstack.Length(); ++i)
   {
-    _transformstack[i] = _matrixalloc.Alloc();
+    _transformstack[i] = _matrixalloc.allocate(1);
     MEMCPY(const_cast<psMatrix*>(_transformstack[i]), 4 * 4 * sizeof(float), _matrixbuf.begin() + i - 1, 4 * 4 * sizeof(float));
   }
   _matrixbuf.SetLength(0);
@@ -536,7 +536,7 @@ psBatchObj* psDirectX11::FlushPreserve()
   psMatrix m;
   MEMCPY(m, 4 * 4 * sizeof(float), &obj.transform, 4 * 4 * sizeof(float));
   Flush();
-  psMatrix& lastm = *_matrixalloc.Alloc();
+  psMatrix& lastm = *_matrixalloc.allocate(1);
   MEMCPY(&lastm, 4 * 4 * sizeof(float), &m, 4 * 4 * sizeof(float));
   return DrawBatchBegin(obj.shader, obj.stateblock, obj.flags, obj.buffer.verts, obj.buffer.indices, obj.buffer.mode, lastm);
 }

@@ -13,9 +13,9 @@ namespace planeshader {
   class PS_DLLEXPORT psLocatable : protected psTransform2D
   {
   public:
-    psLocatable(const psLocatable& copy);
-    explicit psLocatable(const psVec3D& position, FNUM rotation=0.0f, const psVec& pivot=VEC_ZERO);
-    ~psLocatable();
+    psLocatable(const psLocatable& copy) = default;
+    explicit psLocatable(const psVec3D& pos, FNUM rot=0.0f, const psVec& piv=VEC_ZERO) { position = pos; rotation = rot; pivot = piv; }
+    ~psLocatable() {}
     // Gets the rotation 
     inline FNUM GetRotation() const { return rotation; }
     // Sets the rotation of this object 

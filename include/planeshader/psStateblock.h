@@ -76,6 +76,7 @@ namespace planeshader {
 
   struct STATEINFO
   {
+    STATEINFO() = default;
     STATEINFO(STATETYPE t, uint32_t v, uint16_t i = 0) : value(v), type(t), index(i) {}
     STATEINFO(STATETYPE t, uint16_t i, float f) : valuef(f), type(t), index(i) {}
     union {

@@ -1,8 +1,8 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
-#include "ps_feather.h"
 #include "psEngine.h"
+#include "ps_feather.h"
 #include "psFont.h"
 #include "psTex.h"
 #include "psVector.h"

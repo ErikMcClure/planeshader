@@ -12,6 +12,7 @@
 #include "bss-util/Stack.h"
 #include "psGUIManager.h"
 #include "psDriver.h"
+#include "psLayer.h"
 
 #define PSLOG(level,...) psEngine::Instance()->Log(__FILE__,__LINE__,(level),__VA_ARGS__)
 #define PSLOGF(level,format,...) psEngine::Instance()->LogFormat(__FILE__,__LINE__,(level),format,__VA_ARGS__)
@@ -100,6 +101,8 @@ namespace planeshader {
     static psEngine* Instance(); // Cannot be inline'd for DLL reasons.
     static const char* LOGSOURCE;
     static const bssVersionInfo Version;
+
+    bss::LocklessBlockPolicy<psLayer::NODE> NodeAlloc;
 
   protected:
     virtual void _onresize(psVeciu dim, bool fullscreen) override;

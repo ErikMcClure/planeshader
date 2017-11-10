@@ -7,7 +7,7 @@
 #include "psRenderable.h"
 #include "psCamera.h"
 #include "psTex.h"
-#include "bss-util/BlockAlloc.h"
+#include "bss-util/BlockAllocMT.h"
 #include "bss-util/Stack.h"
 
 namespace planeshader {
@@ -18,11 +18,11 @@ namespace planeshader {
   {
   public:
     psLayer(psLayer&& mov);
-    inline psLayer() : _cam(0), _renderlist(&_renderalloc), _renderables(0), _dpi(0,0), _clear(false) {}
-    inline explicit psLayer(psTex* target) : _cam(0), _renderlist(&_renderalloc), _renderables(0), _dpi(0, 0), _clear(false) { SetTarget(target); }
-    inline psLayer(psTex* const* targets, uint8_t num) : _cam(0), _renderlist(&_renderalloc), _renderables(0), _dpi(0, 0), _clear(false) { SetTargets(targets, num); }
+    psLayer();
+    psLayer(psTex* const* targets, uint8_t num);
+    inline explicit psLayer(psTex* target) : psLayer(&target, 1) {}
     template<int N>
-    inline psLayer(psTex* (&targets)[N]) : _cam(0), _renderlist(&_renderalloc), _renderables(0), _dpi(0, 0), _clear(false) { SetTargets(targets, N); }
+    inline psLayer(psTex* (&targets)[N]) : psLayer(targets, N) { }
     ~psLayer();
     void Push(const psTransform2D& parent);
     void Pop();
@@ -47,7 +47,7 @@ namespace planeshader {
     static psLayer* CurLayer();
     static psCamera* CurCamera();
 
-    typedef bss::BlockPolicy<bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>>> ALLOC;
+    typedef bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>> NODE;
     friend class psRenderable;
     friend class psCullGroup;
 
@@ -59,12 +59,11 @@ namespace planeshader {
     bss::ref_ptr<psCamera> _cam;
     psCamera::Culling _cull;
     psRenderable* _renderables;
-    ALLOC _renderalloc;
     psVeciu _dpi;
     psColor32 _clearcolor;
     bool _clear;
     bss::DynArray<std::pair<psRenderable*, psTransform2D>> _defer;
-    bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*, psRenderable::StandardCompare>, ALLOC> _renderlist;
+    bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*, psRenderable::StandardCompare>, bss::PolymorphicAllocator<NODE, bss::LocklessBlockPolicy>> _renderlist;
     bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _targets;
 
     static bss::Stack<psLayer*> CurLayers;

@@ -1,8 +1,8 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
-#include "psVulkan.h"
 #include "psEngine.h"
+#include "psVulkan.h"
 
 using namespace planeshader;
 

@@ -1,10 +1,10 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
+#include "psEngine.h"
 #include "psGUIManager.h"
 #include "bss-util/win32_includes.h"
 #include "bss-util/profiler.h"
-#include "psEngine.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
