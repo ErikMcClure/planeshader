@@ -1,8 +1,8 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
-#include "psCamera.h"
 #include "psEngine.h"
+#include "psCamera.h"
 #include "bss-util/profiler.h"
 #include "psSolid.h"
 #include "psTex.h"

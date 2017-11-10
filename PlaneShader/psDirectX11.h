@@ -216,7 +216,7 @@ namespace planeshader {
     bss::DynArray<void*, uint32_t> _texstack;
     std::array<bss::DynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
     bss::DynArray<psTex*, uint32_t> _lastrt;
-    bss::DynArray<psMatrix, size_t, bss::ARRAY_SIMPLE, bss::AlignedStaticAllocPolicy<psMatrix>> _matrixbuf;
+    bss::DynArray<psMatrix, size_t, bss::ARRAY_SIMPLE, bss::AlignedAllocator<psMatrix>> _matrixbuf;
     ID3D11DepthStencilView* _lastdepth;
     ID3D11VertexShader* _fsquadVS;
     ID3D11VertexShader* _defaultVS;

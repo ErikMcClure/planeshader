@@ -492,7 +492,7 @@ namespace planeshader {
 
   protected:
     bss::DynArray<psBatchObj> _jobstack;
-    bss::GreedyBlockAlloc<psMatrix> _matrixalloc;
+    bss::GreedyBlockPolicy<psMatrix> _matrixalloc;
     bss::DynArray<const float(*)[4][4]> _transformstack;
   };
 

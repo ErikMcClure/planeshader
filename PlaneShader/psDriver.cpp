@@ -1,6 +1,7 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
+#include "psEngine.h"
 #include "psDriver.h"
 #include "psShader.h"
 #include "psStateblock.h"
@@ -121,7 +122,7 @@ void psDriver::MergeClipRect(const psRect& rect)
 
 void psDriver::PushTransform(const psMatrix& xform)
 {
-  psMatrix& m = *_matrixalloc.Alloc();
+  psMatrix& m = *_matrixalloc.allocate(1);
   bss::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
   _transformstack.AddConstruct<const float(*)[4][4]>(&m);
 }

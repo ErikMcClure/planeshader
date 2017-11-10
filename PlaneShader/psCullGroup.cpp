@@ -1,6 +1,7 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
+#include "psEngine.h"
 #include "psCullGroup.h"
 #include "psLayer.h"
 #include "bss-util/Delegate.h"
@@ -8,7 +9,7 @@
 using namespace planeshader;
 
 psCullGroup::psCullGroup(psCullGroup&& mov) : psRenderable(std::move(mov)), _tree(std::move(mov._tree)), _nodealloc(std::move(mov._nodealloc)),
-  _list(&_alloc), _alloc(std::move(mov._alloc))
+  _list(&psEngine::Instance()->NodeAlloc)
 {}
 psCullGroup::psCullGroup(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass) :
   psRenderable(flags, zorder, stateblock, shader, pass)

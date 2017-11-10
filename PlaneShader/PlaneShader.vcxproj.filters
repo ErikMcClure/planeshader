@@ -119,9 +119,6 @@
     <ClCompile Include="psEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="psLocatable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="psCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

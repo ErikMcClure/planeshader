@@ -10,11 +10,12 @@
 
 namespace planeshader {
   // Represents a single shader program of a certain type (pixel/vertex/etc.)
-  struct SHADER_INFO : psDriverHold
+  struct SHADER_INFO
   {
+    SHADER_INFO() = default;
     // Directly creates a shader info object, which is not usually suggested but can be done if you have no constant data you care about.
     SHADER_INFO(void* Shader, SHADER_VER V, uint16_t sz=0, const void* Init=0) : shader(Shader), v(V), init(Init), ty_sz(sz) {}
-    SHADER_INFO(const char* Shader, const char* entrypoint, SHADER_VER V, uint16_t sz=0, const void* Init=0) : shader(_driver->CompileShader(Shader, V, entrypoint)), v(V), init(Init), ty_sz(sz) {}
+    SHADER_INFO(const char* Shader, const char* entrypoint, SHADER_VER V, uint16_t sz=0, const void* Init=0) : shader(psDriverHold::GetDriver()->CompileShader(Shader, V, entrypoint)), v(V), init(Init), ty_sz(sz) {}
     void* shader;
     SHADER_VER v;
     uint16_t ty_sz;

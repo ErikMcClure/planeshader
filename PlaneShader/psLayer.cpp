@@ -1,12 +1,12 @@
 // Copyright ©2017 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
+#include "psEngine.h"
 #include "psLayer.h"
 #include "psSolid.h"
 #include "psCullGroup.h"
 #include "psStateblock.h"
 #include "psShader.h"
-#include "psEngine.h"
 #include "bss-util/profiler.h"
 
 using namespace planeshader;
@@ -14,9 +14,10 @@ using namespace bss;
 
 bss::Stack<psLayer*> psLayer::CurLayers;
 
-psLayer::psLayer(psLayer&& mov) : psRenderable(std::move(mov)), _cam(std::move(mov._cam)), _cull(mov._cull), _renderables(mov._renderables), 
-  _renderalloc(std::move(mov._renderalloc)), _dpi(mov._dpi), _clearcolor(mov._clearcolor), _clear(mov._clear), _defer(std::move(mov._defer)),
-  _renderlist(std::move(mov._renderlist)), _targets(std::move(mov._targets))
+psLayer::psLayer() : _cam(0), _renderlist(&psEngine::Instance()->NodeAlloc), _renderables(0), _dpi(0, 0), _clear(false) {}
+psLayer::psLayer(psTex* const* targets, uint8_t num) : _cam(0), _renderlist(&psEngine::Instance()->NodeAlloc), _renderables(0), _dpi(0, 0), _clear(false) { SetTargets(targets, num); }
+psLayer::psLayer(psLayer&& mov) : psRenderable(std::move(mov)), _cam(std::move(mov._cam)), _cull(mov._cull), _renderables(mov._renderables), _dpi(mov._dpi),
+_clearcolor(mov._clearcolor), _clear(mov._clear), _defer(std::move(mov._defer)), _renderlist(std::move(mov._renderlist)), _targets(std::move(mov._targets))
 {
   mov._renderables = 0;
   mov._dpi = { 0,0 };
@@ -28,7 +29,6 @@ psLayer& psLayer::operator=(psLayer&& mov)
 
   _cam = std::move(mov._cam);
   _cam = mov._cam;
-  _renderalloc = std::move(mov._renderalloc);
   _renderables = mov._renderables;
   _dpi = mov._dpi;
   _clearcolor = mov._clearcolor;

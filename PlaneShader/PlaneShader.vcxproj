@@ -449,6 +449,20 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bss-util.lib;freetype.lib;feathergui.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PrecompiledHeaderFile)32.pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
+    <ClCompile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PrecompiledHeaderFile).pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Release-Static|true'">
     <PostBuildEvent>
@@ -476,6 +490,18 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <Link>
       <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bss-util32_d.lib;freetyped.lib;feathergui32_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PrecompiledHeaderFile)32_d.pch</PrecompiledHeaderOutputFile>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
+    </ClCompile>
+    <ClCompile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PrecompiledHeaderFile)_d.pch</PrecompiledHeaderOutputFile>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug-Static|true'">
     <PostBuildEvent>
@@ -532,12 +558,16 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psDirectX11.cpp" />
     <ClCompile Include="psDriver.cpp" />
     <ClCompile Include="psDXGI.cpp" />
-    <ClCompile Include="psEngine.cpp" />
+    <ClCompile Include="psEngine.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="psFont.cpp" />
     <ClCompile Include="psGUIManager.cpp" />
     <ClCompile Include="psImage.cpp" />
     <ClCompile Include="psLayer.cpp" />
-    <ClCompile Include="psLocatable.cpp" />
     <ClCompile Include="psMonitor.cpp" />
     <ClCompile Include="psRenderable.cpp" />
     <ClCompile Include="psRenderGeometry.cpp" />
