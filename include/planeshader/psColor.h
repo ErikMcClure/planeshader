@@ -19,9 +19,12 @@ namespace planeshader {
     typedef bss::sseVeci sseVeci;
 
     explicit inline psColor(uint32_t argb) { operator=(argb); } // operator= is SSE optimized in this case
+    explicit inline psColor(const std::array<uint8_t, 4>& rgba) : BASE(rgba[0] / 255.0f, rgba[1] / 255.0f, rgba[2] / 255.0f, rgba[3] / 255.0f) {}
     explicit inline psColor(const uint8_t(&rgba)[4]) : BASE(rgba[0]/255.0f, rgba[1]/255.0f, rgba[2]/255.0f, rgba[3]/255.0f) {}
     //inline psColor(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_=255) : BASE(r_/255.0f,g_/255.0f,b_/255.0f,a_/255.0f) { }
+    explicit inline psColor(const std::array<float, 4>& rgba) : BASE(rgba[0], rgba[1], rgba[2], rgba[3]) { }
     explicit inline psColor(const float(&rgba)[4]) : BASE(rgba[0],rgba[1],rgba[2],rgba[3]) { }
+    explicit inline psColor(const std::array<double, 4>& rgba) : BASE((float)rgba[0], (float)rgba[1], (float)rgba[2], (float)rgba[3]) { }
     explicit inline psColor(const double(&rgba)[4]) : BASE((float)rgba[0],(float)rgba[1],(float)rgba[2],(float)rgba[3]) { }
     inline psColor(float r_, float g_, float b_, float a_=1.0f) : BASE(r_,g_,b_,a_) { }
     inline psColor(double r_, double g_, double b_, double a_=1.0f) : BASE((float)r_,(float)g_,(float)b_,(float)a_) { }
@@ -81,7 +84,9 @@ namespace planeshader {
       sseVec c(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(argb), _mm_setzero_si128()), _mm_setzero_si128()));
       sseVec(_mm_castsi128_ps(BSS_SSE_SHUFFLE_EPI32(_mm_castps_si128(c/sseVec(255.0f)), _MM_SHUFFLE(3, 0, 1, 2)))).Set(v); return *this;
     }
+    inline psColor& operator=(const std::array<uint8_t, 4>& rgba) { r = rgba[0] / 255.0f; g = rgba[1] / 255.0f; b = rgba[2] / 255.0f; a = rgba[3] / 255.0f; return *this; }
     inline psColor& operator=(const uint8_t(&rgba)[4]) { r=rgba[0]/255.0f; g=rgba[1]/255.0f; b=rgba[2]/255.0f; a=rgba[3]/255.0f; return *this; }
+    inline psColor& operator=(const std::array<float, 4>& rgba) { r = rgba[0]; g = rgba[1]; b = rgba[2]; a = rgba[3]; return *this; }
     inline psColor& operator=(const float(&rgba)[4]) { r=rgba[0]; g=rgba[1]; b=rgba[2]; a=rgba[3]; return *this; }
     inline operator uint32_t() const
     {
@@ -153,7 +158,23 @@ namespace planeshader {
   {
     psColor32() {}
     psColor32(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : a(A), r(R), g(G), b(B) {}
-    explicit psColor32(uint8_t(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
+    psColor32(float A, float R, float G, float B) :
+      a((char)bss::fFastTruncate(A*255.0f)),
+      r((char)bss::fFastTruncate(R*255.0f)),
+      g((char)bss::fFastTruncate(G*255.0f)),
+      b((char)bss::fFastTruncate(B*255.0f)) {}
+    explicit inline psColor32(const float(&c)[4]) :
+      a((char)bss::fFastTruncate(c[0]*255.0f)),
+      r((char)bss::fFastTruncate(c[1]*255.0f)),
+      g((char)bss::fFastTruncate(c[2]*255.0f)),
+      b((char)bss::fFastTruncate(c[3]*255.0f)) {}
+    explicit inline psColor32(const std::array<float, 4>& c) :
+      a((char)bss::fFastTruncate(c[0] * 255.0f)),
+      r((char)bss::fFastTruncate(c[1] * 255.0f)),
+      g((char)bss::fFastTruncate(c[2] * 255.0f)),
+      b((char)bss::fFastTruncate(c[3] * 255.0f)) {}
+    explicit psColor32(const uint8_t(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
+    explicit psColor32(const std::array<uint8_t, 4>& c) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
     psColor32(uint32_t c) : color(c) {}
     inline bool operator==(const psColor32& c) { return color == c.color; }
     inline bool operator!=(const psColor32& c) { return color != c.color; }
