@@ -54,7 +54,7 @@ psMonitor::~psMonitor()
 void psMonitor::Destroy(psMonitor* self)
 {
   auto& m = psEngine::Instance()->_monitors;
-  for(size_t i = 0; i < m.Length(); ++i)
+  for(uint8_t i = 0; i < m.Length(); ++i)
     if(&m[i] == self)
     {
       m.Remove(i);

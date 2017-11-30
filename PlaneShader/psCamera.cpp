@@ -10,7 +10,7 @@
 using namespace planeshader;
 using namespace bss;
 
-const psCamera psCamera::default_camera(psVec3D(0, 0, -1.0f), 0.0f, VEC_ZERO, psVec(1.0f, 50000.0f)); // we must manually set the extent because the default_extent constructor is not gauranteed to have been called.
+psCamera psCamera::default_camera(psVec3D(0, 0, -1.0f), 0.0f, VEC_ZERO, psVec(1.0f, 50000.0f)); // we must manually set the extent because the default_extent constructor is not gauranteed to have been called.
 psVec psCamera::default_extent(1.0f, 50000.0f);
 
 BSS_FORCEINLINE void r_adjust(sseVec& window, const sseVec& winhold, const sseVec& center, float& last, float adjust)

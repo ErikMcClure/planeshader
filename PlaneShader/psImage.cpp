@@ -45,10 +45,10 @@ void psImage::ClearSources() { _uvs.SetLength(0); }
 
 void psImage::_setuvs(size_t size)
 {
-  uint32_t oldsize = _uvs.Length();
+  size_t oldsize = _uvs.Length();
   if(size>oldsize)
     _uvs.SetLength(size);
-  for(uint32_t i = oldsize; i < _uvs.Length(); ++i)
+  for(size_t i = oldsize; i < _uvs.Length(); ++i)
     _uvs[i]=RECT_UNITRECT;
 }
 

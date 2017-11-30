@@ -43,7 +43,7 @@ namespace planeshader {
     }
 
     static const psVeci INVALID_LASTRELMOUSE;
-    static const psCamera default_camera;
+    static psCamera default_camera;
     static psVec default_extent;
 
     struct PS_DLLEXPORT Culling {

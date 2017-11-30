@@ -3,6 +3,7 @@
 #include "testbed.h"
 #include "psTex.h"
 #include "psFont.h"
+#include "psText.h"
 
 using namespace bss;
 using namespace planeshader;
@@ -21,6 +22,10 @@ TESTDEF::RETPAIR test_psFont()
   block = block->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 0, 0.0f));
   block = block->Append(STATEINFO(TYPE_BLEND_BLENDFACTOR, 2, 0.0f));
   //font->PreloadGlyphs("qwertyuiopasdfghjklzxcvbnm`1234567890-=[];',./~!@#$%^&*()_+{}|:");
+
+  //explicit psText(psTexFont* font = 0, const char* text = 0, float lineheight = 0.0f, const psVec3D& position = VEC3D_ZERO, FNUM rotation = 0.0f, const psVec& pivot = VEC_ZERO, psFlag flags = 0, int zorder = 0, psStateblock* stateblock = 0, psShader* shader = 0, psLayer* pass = 0, const psVec& scale = VEC_ONE);
+  psText obj(font, "Example text", 0.0f, psVec3D(10, 300, 0));
+  engine->GetLayer()->Insert(&obj);
 
   while(!gotonext && engine->Begin())
   {

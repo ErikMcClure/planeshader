@@ -112,7 +112,7 @@ namespace planeshader {
       return true;
     }
     static STATEINFOS* Exists(STATEINFOS* compare);
-    typedef bss::HashBase<STATEINFOS*, void, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
+    typedef bss::Hash<STATEINFOS*, void, bss::ARRAY_SIMPLE, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
     static BLOCKHASH _blocks;
   };
 

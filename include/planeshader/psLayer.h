@@ -26,7 +26,7 @@ namespace planeshader {
     ~psLayer();
     void Push(const psTransform2D& parent);
     void Pop();
-    inline void SetCamera(const psCamera* camera = 0) { _cam = const_cast<psCamera*>(camera); }
+    inline void SetCamera(psCamera* camera = 0) { _cam = camera; }
     inline const psCamera* GetCamera() const { return _cam; }
     inline psTex* const* GetTargets() const { return reinterpret_cast<psTex* const*>(_targets.begin()); }
     inline uint8_t NumTargets() const { return _targets.Capacity(); }

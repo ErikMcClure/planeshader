@@ -21,7 +21,7 @@ namespace planeshader {
 
     virtual void SetTexture(psTex* tex, size_t index = 0);
     void ClearTextures();
-    inline const psTex* GetTexture(size_t index = 0) const { if(index>=_tex.Length()) return 0; return _tex[index]; }
+    inline psTex* GetTexture(size_t index = 0) const { if(index>=_tex.Length()) return 0; return _tex[index]; }
     inline psTex* const* GetTextures() const { return _tex; }
     inline size_t NumTextures() const { return _tex.Length(); }
 

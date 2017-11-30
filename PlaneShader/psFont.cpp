@@ -25,7 +25,7 @@ using namespace bss;
 #endif
 
 FT_Library psFont::PTRLIB = 0;
-Hash<const char*, psFont*, true> psFont::_Fonts; //Hashlist of all fonts, done by file.
+HashIns<const char*, psFont*> psFont::_Fonts; //Hashlist of all fonts, done by file.
 
 psFont::psFont(const char* file, int psize, FONT_ANTIALIAS antialias, const psVeciu& dpi) : _path(file), _pointsize(psize), _curtex(0),
 _curpos(VEC_ZERO), _ft2face(0), _buf(0), _dpi(dpi), _haskerning(false)
@@ -121,6 +121,31 @@ void psFont::_adjustantialias(FONT_ANTIALIAS antialias)
     break;
   }
   _enforceantialias();
+}
+
+psStateblock* psFont::GetStateblock() const
+{
+  switch(_antialiased)
+  {
+  default:
+  case FT_LOAD_TARGET_MONO:
+  case FT_LOAD_TARGET_LIGHT:
+  case FT_LOAD_TARGET_NORMAL: return 0;
+  case FT_LOAD_TARGET_LCD:
+  case FT_LOAD_TARGET_LCD_V: return STATEBLOCK_LIBRARY::SUBPIXELBLEND1;
+  }
+}
+psShader* psFont::GetShader() const
+{
+  switch(_antialiased)
+  {
+  default:
+  case FT_LOAD_TARGET_MONO:
+  case FT_LOAD_TARGET_LIGHT:
+  case FT_LOAD_TARGET_NORMAL: return _driver->library.IMAGE;
+  case FT_LOAD_TARGET_LCD:
+  case FT_LOAD_TARGET_LCD_V: return _driver->library.TEXT1;
+  }
 }
 
 psFont::FONT_ANTIALIAS psFont::GetAntialias() const
@@ -263,8 +288,6 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
   psGlyph* retval = _glyphs[codepoint];
   if(!retval) return 0;
 
-  _antialiased = FT_LOAD_TARGET_LCD;
-  _enforceantialias();
   if(FT_Load_Char(_ft2face, codepoint, FT_LOAD_RENDER | FT_LOAD_FORCE_AUTOHINT | _antialiased) != 0) //if this throws an error, remove it as a possible renderable codepoint
   {
     PSLOG(1, "Codepoint ", codepoint, " in font ", _path, " failed to load");
@@ -293,17 +316,17 @@ psGlyph* psFont::_renderglyph(uint32_t codepoint)
       }
       else
       { // Success, so we trigger a re-render of all codepoints
-        for(auto it = _glyphs.begin(); it != _glyphs.end(); ++it)
-          _renderglyph(_glyphs.GetKey(*it));
+        for(auto [k,v] : _glyphs)
+          _renderglyph(k);
         return retval; // that re-render included us, so return.
       }
     }
     else
     {
-      for(auto it = _glyphs.begin(); it != _glyphs.end(); ++it)
+      for(auto [k,v] : _glyphs)
       {
-        _glyphs.GetValue(*it)->uv.topleft *= psVec(0.5f);
-        _glyphs.GetValue(*it)->uv.bottomright *= psVec(0.5f);
+        v.uv.topleft *= psVec(0.5f);
+        v.uv.bottomright *= psVec(0.5f);
       }
     }
   }

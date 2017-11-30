@@ -24,7 +24,7 @@ namespace planeshader {
     {
       psVec3D pos = parent.CalcPosition(*this);
       pos.xy -= pivot;
-      return psRectRotateZ(pos.x, pos.y, pos.x + _dim.x, pos.y + _dim.y, rotation, pivot, pos.z);
+      return psRectRotateZ(pos.x, pos.y, pos.x + _dim.x, pos.y + _dim.y, rotation + parent.rotation, pivot, pos.z);
     }
     // Generates an AABB bounding rect for general collisions (will also update the collision rect) 
     inline const psRect& GetBoundingRect(const psTransform2D& parent) { return _boundingrect = GetCollisionRect(parent).BuildAABB(); }
