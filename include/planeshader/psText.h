@@ -22,7 +22,7 @@ namespace planeshader {
     inline const int* GetText() const { return _text; }
     inline void SetText(const char* text) { _text = text; _recalcdim(); }
     // Get/Set font used
-    inline psTexFont* GetFont() const { return const_cast<psTexFont*>((const psTexFont*)_font); }
+    inline const psTexFont* GetFont() const { return _font; }
     void SetFont(psTexFont* font);
     // Get/Set the dimensions of the textbox - a dimension of 0 will grow to contain the text.
     inline psVec GetSize() const { return _textdim; }

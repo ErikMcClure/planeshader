@@ -63,6 +63,8 @@ namespace planeshader {
     inline void SetLineHeight(float lineheight) noexcept { _fontlineheight = lineheight; }
     std::pair<size_t, psVec> GetIndex(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec pos);
     std::pair<size_t, psVec> GetPos(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, size_t index);
+    virtual psStateblock* GetStateblock() const { return 0; }
+    virtual psShader* GetShader() const { return 0; }
 
     static psTexFont* CreateTexFont(psTex* tex=0, float lineheight = 0.0f, float ascender = 0.0f, float descender = 0.0f);
 

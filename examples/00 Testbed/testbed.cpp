@@ -120,9 +120,9 @@ TESTDEF::RETPAIR test_psColor()
   TEST(comparevec(c, psColor(0.498039f, 0.2470588f, 0.121568f, 1.0f), 100));
   unsigned int ci = c;
   TEST(ci == 0xFF7F3F1F);
-  TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 0) == 0xFF7F3F1F);
-  TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 1.0f) == 0x103070F0);
-  TEST(psColor::Interpolate(0xFF7F3F1F, 0x103070F0, 0.5f) == 0x87575787);
+  TEST(psColor32::Interpolate(0xFF7F3F1F, 0x103070F0, 0) == 0xFF7F3F1F);
+  TEST(psColor32::Interpolate(0xFF7F3F1F, 0x103070F0, 1.0f) == 0x103070F0);
+  TEST(psColor32::Interpolate(0xFF7F3F1F, 0x103070F0, 0.5f) == 0x87575787);
   TEST(psColor::Multiply(0xFF7F3F1F, 0) == 0);
   TEST(psColor::Multiply(0xFF7F3F1F, 1.0f) == 0xFF7F3F1F);
   TEST(psColor::Multiply(0xFF7F3F1F, 0.5f) == 0x7F3F1F0F);

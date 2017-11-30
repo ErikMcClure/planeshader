@@ -37,7 +37,7 @@ namespace planeshader {
     uint8_t antialias;
 
     template<typename Engine>
-    void Serialize(bss::Serializer<Engine>& e)
+    void Serialize(bss::Serializer<Engine>& e, const char*)
     {
       e.EvaluateType<PSINIT>(
         GenPair("width", width),

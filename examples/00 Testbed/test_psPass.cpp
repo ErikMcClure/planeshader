@@ -35,7 +35,7 @@ TESTDEF::RETPAIR test_psPass()
   image.SetStateblock(STATEBLOCK_LIBRARY::PREMULTIPLIED);
   if(!image.GetTexture())
     ENDTEST;
-  const_cast<psTex*>(image.GetTexture())->SetTexblock(STATEBLOCK_LIBRARY::UVBORDER);
+  image.GetTexture()->SetTexblock(STATEBLOCK_LIBRARY::UVBORDER);
   image.ApplyEdgeBuffer();
   image2.SetShader(shader);
 

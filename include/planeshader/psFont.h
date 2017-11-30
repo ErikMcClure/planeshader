@@ -32,6 +32,8 @@ namespace planeshader {
       FAA_SDF //Antialiasing using a Signed Distance Field. Requires using a shader that takes an SDF as input!
     };
 
+    virtual psStateblock* GetStateblock() const override;
+    virtual psShader* GetShader() const override;
     FONT_ANTIALIAS GetAntialias() const;
     static psFont* Create(const char* file, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, const psVeciu& dpi = psVeciu(0, 0));
     static psFont* Create(const char* family, short weight, bool italic, int psize, FONT_ANTIALIAS antialias = FAA_ANTIALIAS, const psVeciu& dpi = psVeciu(0,0));
@@ -64,7 +66,7 @@ namespace planeshader {
     bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _staging;
     bool _haskerning;
 
-    static bss::Hash<const char*, psFont*, true> _Fonts; //Hashlist of all fonts, done by file.
+    static bss::HashIns<const char*, psFont*> _Fonts; //Hashlist of all fonts, done by file.
   };
 }
 

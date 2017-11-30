@@ -96,17 +96,6 @@ namespace planeshader {
     }
     inline operator const float*() const { return v; }
 
-    // Interpolates between two colors
-    inline static uint32_t Interpolate(uint32_t l, uint32_t r, float c)
-    {
-      sseVec xl(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(l), _mm_setzero_si128()), _mm_setzero_si128())); // unpack left integer into floats (WITHOUT normalization)
-      sseVec xr(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(r), _mm_setzero_si128()), _mm_setzero_si128())); // unpack right integer
-      sseVec xc(c); // (c,c,c,c)
-      sseVec xx = (xr*xc) + (xl*(sseVec(1.0f)-xc)); // Do operation (r*c) + (l*(1-c))
-      sseVeci xch = _mm_packus_epi16(_mm_packs_epi32(sseVeci(xx), _mm_setzero_si128()), _mm_setzero_si128()); // Convert floats back to integers (WITHOUT renormalization) and repack into integer
-      return (uint32_t)_mm_cvtsi128_si32(xch);
-    }
-
     // Multiplies a color by a value (equivalent to interpolating between r and 0x00000000)
     inline static uint32_t Multiply(uint32_t r, float c)
     {
@@ -156,13 +145,11 @@ namespace planeshader {
   // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
   struct PS_DLLEXPORT psColor32
   {
+    typedef bss::sseVec sseVec;
+    typedef bss::sseVeci sseVeci;
+
     psColor32() {}
     psColor32(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : a(A), r(R), g(G), b(B) {}
-    psColor32(float A, float R, float G, float B) :
-      a((char)bss::fFastTruncate(A*255.0f)),
-      r((char)bss::fFastTruncate(R*255.0f)),
-      g((char)bss::fFastTruncate(G*255.0f)),
-      b((char)bss::fFastTruncate(B*255.0f)) {}
     explicit inline psColor32(const float(&c)[4]) :
       a((char)bss::fFastTruncate(c[0]*255.0f)),
       r((char)bss::fFastTruncate(c[1]*255.0f)),
@@ -182,6 +169,21 @@ namespace planeshader {
     inline operator uint32_t() const { return color; }
     uint16_t WriteFormat(FORMATS format, void* target) const;
     uint16_t ReadFormat(FORMATS format, const void* target);
+
+    // Interpolates between two colors
+    inline static uint32_t Interpolate(uint32_t l, uint32_t r, float c)
+    {
+      sseVec xl(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(l), _mm_setzero_si128()), _mm_setzero_si128())); // unpack left integer into floats (WITHOUT normalization)
+      sseVec xr(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(r), _mm_setzero_si128()), _mm_setzero_si128())); // unpack right integer
+      sseVec xc(c); // (c,c,c,c)
+      sseVec xx = (xr*xc) + (xl*(sseVec(1.0f) - xc)); // Do operation (r*c) + (l*(1-c))
+      sseVeci xch = _mm_packus_epi16(_mm_packs_epi32(sseVeci(xx), _mm_setzero_si128()), _mm_setzero_si128()); // Convert floats back to integers (WITHOUT renormalization) and repack into integer
+      return (uint32_t)_mm_cvtsi128_si32(xch);
+    }
+    template<class AniData>
+    static inline uint32_t LerpInterpolate(const typename AniData::FRAME* v, size_t s, size_t cur, double t, const uint32_t& init) { return Interpolate(!cur ? init : v[cur - 1].value, v[cur].value, (float)t); }
+    template<class AniData>
+    static inline uint32_t LerpInterpolateRel(const typename AniData::FRAME* v, size_t s, size_t cur, double t, const uint32_t& init) { assert(cur > 0); return init + Interpolate(v[cur - 1].value, v[cur].value, (float)t); }
 
     union
     {
