@@ -77,8 +77,8 @@ void psRenderable::_destroy()
 
 void psRenderable::_invalidate()
 {
-  if(_psort!=0 && ((_psort->prev!=0 && StandardCompare(_psort->prev->value.first, this)>0) || (_psort->next && StandardCompare(this, _psort->next->value.first)<0)))
-  { // We only invalidate if the new parameters actually invalidate the object's position.
+  if(_psort!=0 && !psLayer::TREE::Validate(_psort))
+  { // We only invalidate if the new parameters actually invalidate the object's position in the tree
     _layer->_renderlist.Remove(_psort);
     _psort = 0;
   }
