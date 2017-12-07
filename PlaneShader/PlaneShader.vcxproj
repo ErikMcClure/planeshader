@@ -199,6 +199,10 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>%(PrecompiledHeaderFile)32_d.pch</PrecompiledHeaderOutputFile>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -206,6 +210,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util32_d.lib;freetyped.lib;feathergui32_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>
@@ -234,6 +239,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util32_d.lib;freetyped.lib;feathergui32_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>
@@ -253,6 +259,10 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;feathergui_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>%(PrecompiledHeaderFile)_d.pch</PrecompiledHeaderOutputFile>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -260,6 +270,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util_d.lib;freetyped.lib;feathergui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>
@@ -287,6 +298,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util_d.lib;freetyped.lib;feathergui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>
@@ -315,6 +327,9 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;feathergui_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>%(PrecompiledHeaderFile)32.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -324,6 +339,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util32.lib;freetype.lib;feathergui32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -358,6 +374,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util32.lib;freetype.lib;feathergui32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -382,6 +399,9 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;PlaneShader_EXPORTS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>psEngine.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>%(PrecompiledHeaderFile).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -391,6 +411,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util.lib;freetype.lib;feathergui.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -425,6 +446,7 @@
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <LargeAddressAware>true</LargeAddressAware>
+      <AdditionalDependencies>bss-util.lib;freetype.lib;feathergui.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -443,26 +465,6 @@ xcopy "$(TargetDir)$(TargetName).dll" "$(VcpkgRoot)bin" /c /y /q /i
 xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)bin" /c /y /q /i
 xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
     </PostBuildEvent>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bss-util32.lib;freetype.lib;feathergui32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">bss-util.lib;freetype.lib;feathergui.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <ClCompile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">psEngine.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PrecompiledHeaderFile)32.pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
-    <ClCompile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">psEngine.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(PrecompiledHeaderFile).pch</PrecompiledHeaderOutputFile>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Release-Static|true'">
     <PostBuildEvent>
@@ -470,12 +472,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
 xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)lib" /c /y /q /i
 xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
     </PostBuildEvent>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release-Static|Win32'">bss-util32.lib;freetype.lib;feathergui32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release-Static|x64'">bss-util.lib;freetype.lib;feathergui.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug|true'">
     <PostBuildEvent>
@@ -484,24 +480,6 @@ xcopy "$(TargetDir)$(TargetName).dll" "$(VcpkgRoot)debug\bin" /c /y /q /i
 xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)debug\bin" /c /y /q /i
 xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
     </PostBuildEvent>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">bss-util_d.lib;freetyped.lib;feathergui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bss-util32_d.lib;freetyped.lib;feathergui32_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <ClCompile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">psEngine.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PrecompiledHeaderFile)32_d.pch</PrecompiledHeaderOutputFile>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
-    </ClCompile>
-    <ClCompile>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">psEngine.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(PrecompiledHeaderFile)_d.pch</PrecompiledHeaderOutputFile>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(VcpkgEnabled)'=='Debug-Static|true'">
     <PostBuildEvent>
@@ -509,12 +487,6 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
 xcopy "$(TargetDir)$(TargetName).pdb" "$(VcpkgRoot)debug\lib" /c /y /q /i
 xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i /s</Command>
     </PostBuildEvent>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug-Static|x64'">bss-util_d.lib;freetyped.lib;feathergui_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
-    <Link>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug-Static|Win32'">bss-util32_d.lib;freetyped.lib;feathergui32_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\planeshader\psCamera.h" />
@@ -584,7 +556,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="psVulkan.cpp" />
     <ClCompile Include="ps_feather.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)'=='Release'">
+  <ItemGroup>
     <FxCompile Include="shaders/quadVS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>

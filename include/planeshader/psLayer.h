@@ -48,6 +48,7 @@ namespace planeshader {
     static psCamera* CurCamera();
 
     typedef bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>> NODE;
+    typedef bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*, psRenderable::StandardCompare>, bss::PolymorphicAllocator<NODE, bss::LocklessBlockPolicy>> TREE;
     friend class psRenderable;
     friend class psCullGroup;
 
@@ -63,7 +64,7 @@ namespace planeshader {
     psColor32 _clearcolor;
     bool _clear;
     bss::DynArray<std::pair<psRenderable*, psTransform2D>> _defer;
-    bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*, psRenderable::StandardCompare>, bss::PolymorphicAllocator<NODE, bss::LocklessBlockPolicy>> _renderlist;
+    TREE _renderlist;
     bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _targets;
 
     static bss::Stack<psLayer*> CurLayers;
