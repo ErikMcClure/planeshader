@@ -1,16 +1,12 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __DXGI_H__PS__
 #define __DXGI_H__PS__
 
 #include "psDriver.h"
-#include "bss-util/win32_includes.h"
-#ifdef USE_DIRECTXTK
+#include "win32_includes.h"
 #include <dxgi.h>
-#else
-#include "directx/dxgi.h"
-#endif
 
 namespace planeshader {
   // Common interface to DXGI for DirectX10, DirectX11 and DirectX12

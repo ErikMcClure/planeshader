@@ -1,10 +1,11 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
-#include "bss-util/win32_includes.h"
 #include "bss-util/Str.h"
 #include "feathergui/fgWindow.h"
+
+#include "win32_includes.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 

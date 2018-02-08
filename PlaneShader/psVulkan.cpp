@@ -1,16 +1,10 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
-#include "psEngine.h"
+#include "psEngine.h" /*
 #include "psVulkan.h"
 
 using namespace planeshader;
-
-#ifdef BSS_CPU_x86_64
-#pragma comment(lib, "../lib/vulkan-1.lib")
-#else
-#pragma comment(lib, "../lib/vulkan32-1.lib")
-#endif
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint) {                        \
     fp##entrypoint = (PFN_vk##entrypoint)vkGetInstanceProcAddr(inst, "vk" #entrypoint); \
@@ -27,7 +21,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
   uint32_t validation_layer_count = 0;
   char **instance_validation_layers = NULL;
 
-  /* Look for instance extensions */
+  // Look for instance extensions
   VkBool32 surfaceExtFound = 0;
   VkBool32 platformSurfaceExtFound = 0;
 
@@ -88,7 +82,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
     return;
   }
 
-  /* Make initial call to query gpu_count, then second call for gpu info*/
+  // Make initial call to query gpu_count, then second call for gpu info
   err = vkEnumeratePhysicalDevices(_instance, &gpu_count, NULL);
   assert(!err && gpu_count > 0);
 
@@ -97,7 +91,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
     std::unique_ptr<VkPhysicalDevice[]> physical_devices(new VkPhysicalDevice[gpu_count]);
     err = vkEnumeratePhysicalDevices(_instance, &gpu_count, physical_devices.get());
     assert(!err);
-    /* For tri demo we just grab the first physical device */
+    // For tri demo we just grab the first physical device
     _gpu = physical_devices[0];
   }
   else
@@ -106,7 +100,7 @@ psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool full
     return;
   }
 
-  /* Look for device extensions */
+  // Look for device extensions
   uint32_t device_extension_count = 0;
   VkBool32 swapchainExtFound = 0;
   enabled_extension_count = 0;
@@ -498,3 +492,4 @@ const char* psVulkan::VkResultToString(const VkResult result)
 
   return "UNKNOWN";
 }
+*/
