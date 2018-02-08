@@ -114,6 +114,9 @@
     <ClInclude Include="..\include\planeshader\psLayer.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="win32_includes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="psEngine.cpp">

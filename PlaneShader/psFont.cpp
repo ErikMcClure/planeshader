@@ -1,4 +1,4 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -10,19 +10,13 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include "freetype/ftlcdfil.h"
-#include <Shlobj.h>
 #include <algorithm>
+
+#include "win32_includes.h"
+#include <Shlobj.h>
 
 using namespace planeshader;
 using namespace bss;
-
-#ifdef BSS_COMPILER_MSC
-#ifdef BSS_DEBUG
-#pragma comment(lib, "freetyped.lib")
-#else
-#pragma comment(lib, "freetype.lib")
-#endif
-#endif
 
 FT_Library psFont::PTRLIB = 0;
 HashIns<const char*, psFont*> psFont::_Fonts; //Hashlist of all fonts, done by file.

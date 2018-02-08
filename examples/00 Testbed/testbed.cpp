@@ -2,7 +2,18 @@
 // -------------------------
 // This example runs a series of verification tests to ensure Planeshader is working properly.
 //
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http ://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 
 #include "testbed.h"
@@ -86,8 +97,9 @@ void updatefpscount(uint64_t& timer, int& fps)
   if(HighPrecisionTimer::CloseProfiler(timer)>1000000000)
   {
     timer = HighPrecisionTimer::OpenProfiler();
-    char text[10] = { 0,0,0,0,0,0,0,0,0,0 };
-    _itoa_r(fps, text, 10);
+    char text[25] = {};
+    STRCPYx0(text, "Press Enter - ");
+    itoa_r(fps, text + 14, 11, 10);
     engine->GetMonitor()->element.SetText(text);
     fps = 0;
   }
@@ -165,7 +177,7 @@ int main(int argc, char** argv)
   const size_t NUMTESTS = sizeof(tests) / sizeof(TESTDEF);
 
   std::cout << "Black Sphere Studios - PlaneShader v" << (uint32_t)psEngine::Version.Major << '.' << (uint32_t)psEngine::Version.Minor << '.' <<
-    (uint32_t)psEngine::Version.Revision << ": Unit Tests\nCopyright (c)2017 Black Sphere Studios\n" << std::endl;
+    (uint32_t)psEngine::Version.Revision << ": Unit Tests\nCopyright (c)2018 Black Sphere Studios\n" << std::endl;
   const int COLUMNS[3] = { 24, 11, 8 };
   printf("%-*s %-*s %-*s\n", COLUMNS[0], "Test Name", COLUMNS[1], "Subtests", COLUMNS[2], "Pass/Fail");
 

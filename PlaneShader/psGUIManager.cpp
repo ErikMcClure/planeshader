@@ -1,22 +1,21 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psGUIManager.h"
-#include "bss-util/win32_includes.h"
 #include "bss-util/profiler.h"
+
+#include "win32_includes.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
 using namespace planeshader;
 using namespace bss;
 
-#pragma comment(lib, "Winmm.lib")
-
 psGUIManager::psGUIManager() : _firstjoystick(FG_JOYSTICK_INVALID), _alljoysticks(0), _maxjoy((uint8_t)(FG_JOYSTICK_ID16 >> 8)), _quit(false)
 {
   psMonitor::CheckDesktopComposition();
-  psMonitor::WndRegister(0, 0, 0);
+  psMonitor::WndRegister(0, 0, LoadIcon(GetModuleHandleW(0), MAKEINTRESOURCE(101)));
   GetKeyboardState(_allkeys);
   memset(&_allbuttons, 0, sizeof(uint32_t)*NUMJOY);
   memset(&_alljoyaxis, 0, sizeof(unsigned long)*NUMJOY*NUMAXIS);

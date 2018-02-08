@@ -1,11 +1,11 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psLayer.h"
 #include "psTex.h"
 #include "psDirectX11.h"
-#include "psVulkan.h"
+//#include "psVulkan.h"
 #include "psNullDriver.h"
 #include "psStateblock.h"
 #include "bss-util/profiler.h"
@@ -13,18 +13,6 @@
 
 using namespace planeshader;
 using namespace bss;
-
-#ifdef BSS_COMPILER_MSC
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64)
-#pragma comment(lib, "bss-util_d.lib")
-#elif defined(BSS_CPU_x86_64)
-#pragma comment(lib, "bss-util.lib")
-#elif defined(BSS_DEBUG)
-#pragma comment(lib, "bss-util32_d.lib")
-#else
-#pragma comment(lib, "bss-util32.lib")
-#endif
-#endif
 
 psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
@@ -55,11 +43,11 @@ psEngine::psEngine(const PSINIT& init, std::ostream* log) : _log(!log?"PlaneShad
     PSLOG(-1, "Initializing Null Driver");
     new psNullDriver();
     break;
-  case RealDriver::DRIVERTYPE_VULKAN:
-    PSLOG(-1, "Initializing Vulkan Driver");
-    new psVulkan(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
-    //if(((psVulkan*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
-    break;
+  //case RealDriver::DRIVERTYPE_VULKAN:
+  //  PSLOG(-1, "Initializing Vulkan Driver");
+  //  new psVulkan(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);
+  //  //if(((psVulkan*)_driver)->GetLastError() != 0) { delete _driver; _driver = 0; }
+  //  break;
   case RealDriver::DRIVERTYPE_DX11:
     PSLOG(-1, "Initializing DirectX11 Driver");
     new psDirectX11(dim, init.antialias, init.vsync, init.mode == psMonitor::MODE_FULLSCREEN, init.sRGB, &_monitors[0]);

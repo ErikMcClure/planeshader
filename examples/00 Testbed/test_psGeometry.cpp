@@ -1,4 +1,5 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
+// For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #include "testbed.h"
 #include "psRenderGeometry.h"
@@ -12,6 +13,8 @@ using namespace planeshader;
 TESTDEF::RETPAIR test_psGeometry()
 {
   BEGINTEST;
+  psTex* t = psTex::Create("../media/pslogo192.png", USAGE_STAGING);
+
   HighPrecisionTimer time;
   int fps = 0;
   auto timer = HighPrecisionTimer::OpenProfiler();

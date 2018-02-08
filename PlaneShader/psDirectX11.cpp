@@ -1,4 +1,4 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -11,10 +11,10 @@
 #include "bss-util/profiler.h"
 #include "psColor.h"
 #include "psCamera.h"
-#ifdef USE_DIRECTXTK
-#include "DirectXTK/WICTextureLoader.h"
+#ifdef WINXP
+#include <D3DX11.h>
 #else
-#include "directx/D3DX11.h"
+#include "DirectXTK/WICTextureLoader.h"
 #endif
 
 #include "psDirectX11_quadVS_main.h"
@@ -49,39 +49,6 @@
 
 using namespace planeshader;
 using namespace bss;
-
-#ifdef USE_DIRECTXTK
-#pragma comment(lib, "d3d10_1.lib")
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "dxErr.lib")
-#pragma comment(lib, "DirectXTK.lib")
-#else
-#ifdef BSS_64BIT
-#pragma comment(lib, "../lib/dxlib/x64/d3d10.lib")
-#pragma comment(lib, "../lib/dxlib/x64/d3d11.lib")
-#pragma comment(lib, "../lib/dxlib/x64/dxgi.lib")
-#pragma comment(lib, "../lib/dxlib/x64/dxguid.lib")
-#pragma comment(lib, "../lib/dxlib/x64/dxErr.lib")
-#ifdef BSS_DEBUG
-#pragma comment(lib, "../lib/dxlib/x64/d3dx11d.lib")
-#else
-#pragma comment(lib, "../lib/dxlib/x64/d3dx11.lib")
-#endif
-#else
-#pragma comment(lib, "../lib/dxlib/d3d10.lib")
-#pragma comment(lib, "../lib/dxlib/d3d11.lib")
-#pragma comment(lib, "../lib/dxlib/dxgi.lib")
-#pragma comment(lib, "../lib/dxlib/dxguid.lib")
-#pragma comment(lib, "../lib/dxlib/dxErr.lib")
-#ifdef BSS_DEBUG
-#pragma comment(lib, "../lib/dxlib/d3dx11d.lib")
-#else
-#pragma comment(lib, "../lib/dxlib/d3dx11.lib")
-#endif
-#endif
-#endif
 
 #ifdef BSS_DEBUG
 #define PROCESSQUEUE() _processdebugqueue()
@@ -129,6 +96,12 @@ protected:
 psDirectX11::psDirectX11(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor) : psDriver(), _device(0), _vsync(vsync), _lasterr(0),
 _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
 {
+#if (_WIN32_WINNT >= 0x0A00 /*_WIN32_WINNT_WIN10*/)
+  LOGFAILURE(Microsoft::WRL::Wrappers::RoInitializeWrapper initialize(RO_INIT_MULTITHREADED));
+#else
+  LOGFAILURE(CoInitializeEx(nullptr, 0));
+#endif
+
   PROFILE_FUNC();
   memset(&library, 0, sizeof(SHADER_LIBRARY));
 
@@ -965,9 +938,9 @@ void psDirectX11::_applymipshader(ID3D11Texture2D* tex, psShader* shader)
   buftex->Release();
 }
 
+#ifdef WINXP
 void psDirectX11::_getTextureInfo(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, FORMATS format, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, bool sRGB)
 {
-#ifndef USE_DIRECTXTK
   memset(info, D3DX11_DEFAULT, sizeof(D3DX11_IMAGE_LOAD_INFO));
   info->MipLevels = miplevels;
   info->FirstMipLevel = 0;
@@ -984,8 +957,8 @@ void psDirectX11::_getTextureInfo(D3DX11_IMAGE_LOAD_INFO* info, uint32_t usage, 
   info->pSrcInfo = 0;
   if(format != FMT_UNKNOWN) info->Format = FMTtoDXGI(format);
   else if(sRGB) info->Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-#endif
 }
+#endif
 
 void* psDirectX11::_loadTexture(const char* path, size_t datasize, uint32_t usage, FORMATS format, void** additionalview, uint8_t miplevels, FILTERS mipfilter, FILTERS loadfilter, psVeciu dim, psTexblock* texblock, bool sRGB)
 {
@@ -994,7 +967,7 @@ void* psDirectX11::_loadTexture(const char* path, size_t datasize, uint32_t usag
   ID3D11ShaderResourceView* view = 0;
   if(_customfilter(mipfilter)) usage |= USAGE_SHADER_RESOURCE;
 
-#ifndef USE_DIRECTXTK
+#ifdef WINXP
   D3DX11_IMAGE_LOAD_INFO info;
   _getTextureInfo(&info, usage, format, miplevels, mipfilter, loadfilter, dim, sRGB);
   if(datasize > 0)
@@ -1007,22 +980,22 @@ void* psDirectX11::_loadTexture(const char* path, size_t datasize, uint32_t usag
 #else
   if(datasize > 0)
     LOGFAILURERETNULL(DirectX::CreateWICTextureFromMemoryEx(
-    _device,
-    _context,
-    (const uint8_t*)path,
-    datasize,
-    0,
-    (D3D11_USAGE)_usagetodxtype(usage),
-    _usagetobind(usage),
-    _usagetocpuflag(usage),
-    _usagetomisc(usage, false),
-    sRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_IGNORE_SRGB,
-    &tex,
-    &view), "LoadTexture failed for ", (const void*)path)
+      _device,
+      _usagetocpuflag(usage) ? 0 : _context, // CPU flags are incompatible with autogen mipmaps
+      (const uint8_t*)path,
+      datasize,
+      0,
+      (D3D11_USAGE)_usagetodxtype(usage),
+      _usagetobind(usage),
+      _usagetocpuflag(usage),
+      _usagetomisc(usage, false),
+      sRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_DEFAULT,
+      &tex,
+      (usage&USAGE_SHADER_RESOURCE) ? &view : 0), "LoadTexture failed for ", (const void*)path)
   else
     LOGFAILURERETNULL(DirectX::CreateWICTextureFromFileEx(
       _device,
-      _context,
+      _usagetocpuflag(usage) ? 0 : _context, // CPU flags are incompatible with autogen mipmaps
       StrW(path).c_str(),
       0,
       (D3D11_USAGE)_usagetodxtype(usage),
@@ -1031,7 +1004,7 @@ void* psDirectX11::_loadTexture(const char* path, size_t datasize, uint32_t usag
       _usagetomisc(usage, false),
       sRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_IGNORE_SRGB,
       &tex,
-      &view), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path)
+      (usage&USAGE_SHADER_RESOURCE) ? &view : 0), "LoadTexture failed with error ", _geterror(_lasterr), " for ", path)
 #endif
 
   if(_customfilter(loadfilter))
@@ -1857,7 +1830,7 @@ uint32_t psDirectX11::_reverseusage(uint32_t usage, uint32_t misc, uint32_t bind
 }
 inline uint32_t psDirectX11::_filtertodx11(FILTERS filter)
 {
-#ifndef USE_DIRECTXTK
+#ifdef WINXP
   switch(filter)
   {
   case FILTER_NEAREST:

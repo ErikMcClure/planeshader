@@ -1,4 +1,4 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -14,20 +14,8 @@
 #include "feathergui/fgProgressbar.h"
 #include "feathergui/fgSlider.h"
 #include "feathergui/fgList.h"
-
-#undef DrawText
-
-#ifdef BSS_COMPILER_MSC
-#if defined(BSS_DEBUG) && defined(BSS_CPU_x86_64) 
-#pragma comment(lib, "feathergui_d.lib") 
-#elif defined(BSS_CPU_x86_64) 
-#pragma comment(lib, "feathergui.lib") 
-#elif defined(BSS_DEBUG) 
-#pragma comment(lib, "feathergui32_d.lib") 
-#else 
-#pragma comment(lib, "feathergui32.lib") 
-#endif 
-#endif
+#include "win32_includes.h"
+#include "bss-util/os.h"
 
 using namespace planeshader;
 
@@ -184,9 +172,6 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   }
   driver->PopTransform();
 }
-
-#include "bss-util/win32_includes.h"
-#include "bss-util/os.h"
 
 fgRoot*  fgInitialize()
 {

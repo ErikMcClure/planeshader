@@ -1,4 +1,4 @@
-// Copyright ©2017 Black Sphere Studios
+// Copyright ©2018 Black Sphere Studios
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __DIRECTX11_H__PS__
@@ -7,13 +7,10 @@
 #include "psDriver.h"
 #include "psShader.h"
 #include "bss-util/Stack.h"
-#include "bss-util/win32_includes.h"
 #include <array>
-#ifdef USE_DIRECTXTK
+#include "win32_includes.h"
+#include <initguid.h>
 #include <d3d11.h>
-#else
-#include "directx/d3d11.h"
-#endif
 #include "psDXGI.h"
 
 struct D3DX11_IMAGE_LOAD_INFO;
