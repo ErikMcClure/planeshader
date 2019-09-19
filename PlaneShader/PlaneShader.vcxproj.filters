@@ -206,4 +206,35 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shaders/quad.vs.hlsl" />
+    <FxCompile Include="shaders/image.vs.hlsl" />
+    <FxCompile Include="shaders/image.ps.hlsl" />
+    <FxCompile Include="shaders/image.gs.hlsl" />
+    <FxCompile Include="shaders/image0.vs.hlsl" />
+    <FxCompile Include="shaders/image0.ps.hlsl" />
+    <FxCompile Include="shaders/image0.gs.hlsl" />
+    <FxCompile Include="shaders/image2.vs.hlsl" />
+    <FxCompile Include="shaders/image2.ps.hlsl" />
+    <FxCompile Include="shaders/image2.gs.hlsl" />
+    <FxCompile Include="shaders/image3.vs.hlsl" />
+    <FxCompile Include="shaders/image3.ps.hlsl" />
+    <FxCompile Include="shaders/image3.gs.hlsl" />
+    <FxCompile Include="shaders/text.hlsl" />
+    <FxCompile Include="shaders/debug.hlsl" />
+    <FxCompile Include="shaders/alphabox.hlsl" />
+    <FxCompile Include="shaders/premultiply.hlsl" />
+    <FxCompile Include="shaders/line.ps.hlsl" />
+    <FxCompile Include="shaders/line.vs.hlsl" />
+    <FxCompile Include="shaders/point.vs.hlsl" />
+    <FxCompile Include="shaders/point.ps.hlsl" />
+    <FxCompile Include="shaders/point.gs.hlsl" />
+    <FxCompile Include="shaders/curve.vs.hlsl" />
+    <FxCompile Include="shaders/curve.ps.hlsl" />
+    <FxCompile Include="shaders/rectround.vs.hlsl" />
+    <FxCompile Include="shaders/rectround.ps.hlsl" />
+    <FxCompile Include="shaders/rectround.gs.hlsl" />
+    <FxCompile Include="shaders/circle.hlsl" />
+    <FxCompile Include="shaders/triangle.hlsl" />
+  </ItemGroup>
 </Project>
