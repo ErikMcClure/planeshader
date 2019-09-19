@@ -54,7 +54,7 @@
     <ProjectGuid>{D4997047-629C-4100-AEDA-4670F3D277CA}</ProjectGuid>
     <RootNamespace>PlaneShader</RootNamespace>
     <VcpkgAutoLink>false</VcpkgAutoLink>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!--<PropertyGroup Condition="'$(Platform)'=='Win32'" Label="Configuration">
@@ -68,7 +68,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug XP|Win32'" Label="Configuration">
@@ -88,7 +88,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug XP|x64'" Label="Configuration">
@@ -108,7 +108,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -130,7 +130,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -807,7 +807,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
     <ClCompile Include="ps_feather.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders/quadVS.hlsl">
+    <FxCompile Include="shaders/quad.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
       <ObjectFileOutput>
@@ -815,7 +815,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image.hlsl">
+    <FxCompile Include="shaders/image.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -824,7 +824,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image.hlsl">
+    <FxCompile Include="shaders/image.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -833,7 +833,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image.hlsl">
+    <FxCompile Include="shaders/image.gs.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>mainGS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -842,7 +842,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image0.hlsl">
+    <FxCompile Include="shaders/image0.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -851,7 +851,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image0.hlsl">
+    <FxCompile Include="shaders/image0.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -860,7 +860,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image0.hlsl">
+    <FxCompile Include="shaders/image0.gs.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>mainGS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -869,7 +869,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image2.hlsl">
+    <FxCompile Include="shaders/image2.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -878,7 +878,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image2.hlsl">
+    <FxCompile Include="shaders/image2.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -887,7 +887,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image2.hlsl">
+    <FxCompile Include="shaders/image2.gs.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>mainGS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -896,7 +896,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image3.hlsl">
+    <FxCompile Include="shaders/image3.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -905,7 +905,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image3.hlsl">
+    <FxCompile Include="shaders/image3.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -914,7 +914,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/image3.hlsl">
+    <FxCompile Include="shaders/image3.gs.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>mainGS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -959,7 +959,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/line.hlsl">
+    <FxCompile Include="shaders/line.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -968,7 +968,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/line.hlsl">
+    <FxCompile Include="shaders/line.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -977,7 +977,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/point.hlsl">
+    <FxCompile Include="shaders/point.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -986,7 +986,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/point.hlsl">
+    <FxCompile Include="shaders/point.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -995,7 +995,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/point.hlsl">
+    <FxCompile Include="shaders/point.gs.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>mainGS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -1004,7 +1004,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/curve.hlsl">
+    <FxCompile Include="shaders/curve.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -1013,7 +1013,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/curve.hlsl">
+    <FxCompile Include="shaders/curve.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -1022,7 +1022,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/rectround.hlsl">
+    <FxCompile Include="shaders/rectround.vs.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -1031,7 +1031,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/rectround.hlsl">
+    <FxCompile Include="shaders/rectround.ps.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
@@ -1040,7 +1040,7 @@ xcopy "..\include\planeshader\*.h" "$(VcpkgRoot)include\planeshader" /c /y /q /i
       <ShaderModel>4.0</ShaderModel>
       <VariableName>%(Filename)_%(EntryPointName)</VariableName>
     </FxCompile>
-    <FxCompile Include="shaders/rectround.hlsl">
+    <FxCompile Include="shaders/rectround.gs.hlsl">
       <ShaderType>Geometry</ShaderType>
       <EntryPointName>mainGS</EntryPointName>
       <HeaderFileOutput>$(ProjectDir)psDirectX11_%(Filename)_%(EntryPointName).h</HeaderFileOutput>
