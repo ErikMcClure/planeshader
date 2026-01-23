@@ -1,10 +1,10 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psTexFont.h"
 #include "psTex.h"
-#include "bss-util/Str.h"
+#include "buntils/Str.h"
 
 using namespace planeshader;
 
@@ -89,8 +89,8 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
       if(!d.IsEmpty()) d(ipos, rect, color);
       if(flags&PSFONT_PIXELSNAP)
       {
-        rect.left = (float)bss::fFastRound(rect.left);
-        rect.top = (float)bss::fFastRound(rect.top);
+        rect.left = (float)bun::fFastRound(rect.left);
+        rect.top = (float)bun::fFastRound(rect.top);
         rect.right = rect.left + gdimx;
         rect.bottom = rect.top + gdimy;
         _driver->DrawRectBatch(obj, rect, &g->uv, color);
@@ -151,8 +151,8 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
         }
         if(flags&PSFONT_PIXELSNAP)
         {
-          rect.left = (float)bss::fFastRound(rect.left);
-          rect.top = (float)bss::fFastRound(rect.top);
+          rect.left = (float)bun::fFastRound(rect.left);
+          rect.top = (float)bun::fFastRound(rect.top);
         }
 
         rect.right = rect.left + gdimx;
@@ -182,7 +182,7 @@ psVec psTexFont::DrawText(psShader* shader, const psStateblock* stateblock, cons
     UTF8toUTF32(text, len, txt, len);
     return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d);
   }
-  bss::StrT<int> txt(text);
+  bun::StrT<int> txt(text);
   return DrawText(shader, stateblock, txt, lineheight, letterspacing, area, color, flags, d);
 }
 bool psTexFont::_isspace(int c) // We have to make our own isspace implementation because the standard isspace() explodes if you feed it unicode characters.

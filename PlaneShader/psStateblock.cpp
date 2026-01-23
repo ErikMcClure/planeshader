@@ -1,10 +1,10 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psStateblock.h"
 #include "psDriver.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 #include <stdarg.h>
 #include <algorithm>
 
@@ -32,7 +32,7 @@ STATEINFO::STATEINFOS* STATEINFO::Exists(STATEINFOS* infos)
   _blocks.Insert(infos);
   return 0;
 }
-psStateblock::psStateblock(const STATEINFO* infos, uint32_t numstates) : bss::Array<STATEINFO, uint16_t>(numstates)
+psStateblock::psStateblock(const STATEINFO* infos, uint32_t numstates) : bun::Array<STATEINFO, uint16_t>(numstates)
 {
   memcpy(_array, infos, numstates*sizeof(STATEINFO));
   std::sort<STATEINFO*>(_array, _array+numstates, &STATEINFO::SILESS);
@@ -72,7 +72,7 @@ psStateblock* psStateblock::Create(const STATEINFO* infos, uint32_t numstates)
 }
 
 template<class T>
-T* stateblock_combine(bss::Array<STATEINFO, uint16_t>& left, STATEINFO* right, uint16_t num)
+T* stateblock_combine(bun::Array<STATEINFO, uint16_t>& left, STATEINFO* right, uint16_t num)
 {
   VARARRAY(STATEINFO, states, left.Capacity() + num);
   memcpy(states, (STATEINFO*)left, left.Capacity()*sizeof(STATEINFO));
@@ -81,14 +81,14 @@ T* stateblock_combine(bss::Array<STATEINFO, uint16_t>& left, STATEINFO* right, u
 }
 psStateblock* psStateblock::Combine(psStateblock* other) const
 { 
-  return stateblock_combine<psStateblock>((bss::Array<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
+  return stateblock_combine<psStateblock>((bun::Array<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
 }
 psStateblock* psStateblock::Append(STATEINFO state) const
 {
-  return stateblock_combine<psStateblock>((bss::Array<STATEINFO, uint16_t>&)*this, &state, 1);
+  return stateblock_combine<psStateblock>((bun::Array<STATEINFO, uint16_t>&)*this, &state, 1);
 }
 
-psTexblock::psTexblock(const STATEINFO* infos, uint32_t numstates) : bss::Array<STATEINFO, uint16_t>(numstates)
+psTexblock::psTexblock(const STATEINFO* infos, uint32_t numstates) : bun::Array<STATEINFO, uint16_t>(numstates)
 {
   memcpy(_array, infos, numstates*sizeof(STATEINFO));
   std::sort<STATEINFO*>(_array, _array+numstates, &STATEINFO::SILESS);
@@ -128,11 +128,11 @@ psTexblock* psTexblock::Create(const STATEINFO* infos, uint32_t numstates)
 }
 psTexblock* psTexblock::Combine(psTexblock* other) const
 {
-  return stateblock_combine<psTexblock>((bss::Array<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
+  return stateblock_combine<psTexblock>((bun::Array<STATEINFO, uint16_t>&)*this, (STATEINFO*)*other, other->Capacity());
 }
 psTexblock* psTexblock::Append(STATEINFO state) const
 {
-  return stateblock_combine<psTexblock>((bss::Array<STATEINFO, uint16_t>&)*this, &state, 1);
+  return stateblock_combine<psTexblock>((bun::Array<STATEINFO, uint16_t>&)*this, &state, 1);
 }
 
 void STATEBLOCK_LIBRARY::INITLIBRARY()

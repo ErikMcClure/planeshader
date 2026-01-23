@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __CHART_H__PS__
@@ -7,8 +7,8 @@
 #include "psTexFont.h"
 #include "psSolid.h"
 #include "psColor.h"
-#include "bss-util/Str.h"
-#include "bss-util/DynArray.h"
+#include "buntils/Str.h"
+#include "buntils/DynArray.h"
 
 namespace planeshader {
   struct psChart : public psDriverHold
@@ -31,7 +31,7 @@ namespace planeshader {
 
   protected:
     psRect _extrema;
-    bss::DynArray<bss::Str, size_t, bss::ARRAY_SAFE> _captions;
+    bun::DynArray<bun::Str, size_t> _captions;
     psFlag _flags;
   };
 
@@ -49,7 +49,7 @@ namespace planeshader {
     psColor32 _outline;
     psColor32 _fill;
     float _width;
-    bss::ref_ptr<psTex> _data;
+    bun::ref_ptr<psTex> _data;
   };
 
   // Renders a bar graph of several variables. You can render multiple bar graphs on top of each other or next to each other.
@@ -65,7 +65,7 @@ namespace planeshader {
   protected:
     psColor32 _fill;
     float _width;
-    bss::ref_ptr<psTex> _data;
+    bun::ref_ptr<psTex> _data;
   };
 
   // Simple assigns a point to each element of the dataset, which can be unordered and take on arbitrary values.
@@ -93,7 +93,7 @@ namespace planeshader {
     inline virtual psPieChart* Clone() const { return new psPieChart(*this); }
 
   protected:
-    bss::ref_ptr<psTex> _data;
+    bun::ref_ptr<psTex> _data;
   };
 
   // Acts as a container for multiple overlayed charts, and optionally renders a standard background.
@@ -123,12 +123,12 @@ namespace planeshader {
     virtual void _render(const psTransform2D& parent) override;
 
     psTexFont* _font;
-    bss::Str _title;
-    bss::Str _xlabel;
-    bss::Str _ylabel;
+    bun::Str _title;
+    bun::Str _xlabel;
+    bun::Str _ylabel;
     psRect _view;
     psRect _viewrel;
-    bss::DynArray<std::unique_ptr<psChart>, size_t, bss::ARRAY_SAFE> _captions;
+    bun::DynArray<std::unique_ptr<psChart>, size_t> _captions;
     psFlag _flags;
     psColor32 _textcolor;
   };

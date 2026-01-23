@@ -16,6 +16,8 @@
 /PlaneShader/psDirectX11_*.h
 /PlaneShader/x64/
 /PlaneShader/Win32/
+/feathergui/x64/
+/feathergui/Win32/
 /examples/00 Testbed/x64/
 /examples/00 Testbed/Win32/
 /media/*.ico

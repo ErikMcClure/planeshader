@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -12,7 +12,7 @@ psChartContainer::psChartContainer(psTexFont* font) : _view(0,0,0,0), _font(font
 
 size_t psChartContainer::AddChart(psChart* chart) { return _captions.AddConstruct(chart); }
 psChart* psChartContainer::GetChart(size_t index) { return _captions[index].get(); }
-bool psChartContainer::RemoveChart(size_t index) { if(index >= _captions.Length()) return false; _captions.Remove(index); return true; }
+bool psChartContainer::RemoveChart(size_t index) { if(index >= _captions.size()) return false; _captions.Remove(index); return true; }
 
 void psChartContainer::_render(const psTransform2D& parent)
 {

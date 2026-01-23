@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __LAYER_H__PS__
@@ -7,8 +7,8 @@
 #include "psRenderable.h"
 #include "psCamera.h"
 #include "psTex.h"
-#include "bss-util/BlockAllocMT.h"
-#include "bss-util/Stack.h"
+#include "buntils/BlockAllocMT.h"
+#include "buntils/Stack.h"
 
 namespace planeshader {
   class psSolid;
@@ -47,8 +47,8 @@ namespace planeshader {
     static psLayer* CurLayer();
     static psCamera* CurCamera();
 
-    typedef bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>> NODE;
-    typedef bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*, psRenderable::StandardCompare>, bss::PolymorphicAllocator<NODE, bss::LocklessBlockPolicy>> TREE;
+    typedef bun::TRB_Node<std::pair<psRenderable*, const psTransform2D*>> NODE;
+    typedef bun::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bun::first_three_way<psRenderable*, psRenderable*, bun::indirect_three_way>, bun::PolicyAllocator<NODE, bun::LocklessBlockPolicy>> TREE;
     friend class psRenderable;
     friend class psCullGroup;
 
@@ -57,17 +57,17 @@ namespace planeshader {
     static void _applytop();
     virtual void _render(const psTransform2D& parent) override;
 
-    bss::ref_ptr<psCamera> _cam;
+    bun::ref_ptr<psCamera> _cam;
     psCamera::Culling _cull;
     psRenderable* _renderables;
     psVeciu _dpi;
     psColor32 _clearcolor;
     bool _clear;
-    bss::DynArray<std::pair<psRenderable*, psTransform2D>> _defer;
+    bun::DynArray<std::pair<psRenderable*, psTransform2D>> _defer;
     TREE _renderlist;
-    bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _targets;
+    bun::Array<bun::ref_ptr<psTex>, uint8_t> _targets;
 
-    static bss::Stack<psLayer*> CurLayers;
+    static bun::Stack<psLayer*> CurLayers;
   };
 }
 

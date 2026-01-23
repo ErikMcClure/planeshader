@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #include "testbed.h"
@@ -7,7 +7,7 @@
 #include "psVector.h"
 #include "psImage.h"
 
-using namespace bss;
+using namespace bun;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psGeometry()
@@ -20,7 +20,7 @@ TESTDEF::RETPAIR test_psGeometry()
   auto timer = HighPrecisionTimer::OpenProfiler();
   psDriver* driver = engine->GetDriver();
 
-  bss::CircleSector<float> segment(300, 100, 10, 50, PI/2, 0.5);
+  bun::CircleSector<float> segment(300, 100, 10, 50, PI/2, 0.5);
 
   psRenderCircle arc(50, psVec3D(300, 100, 0));
   arc.SetOutline(segment.outer - segment.inner);
@@ -56,11 +56,11 @@ TESTDEF::RETPAIR test_psGeometry()
     processGUI();
     psRenderLine::DrawLine(line, 0xFFFFFFFF);
     psVec out[2];
-    int n = bss::LineSegmentRadiusIntersect<float>(line.x1 - circle.GetPosition().x, line.y1 - circle.GetPosition().y, line.x2 - circle.GetPosition().x, line.y2 - circle.GetPosition().y, circle.GetDim().x / 2, out);
+    int n = bun::LineSegmentRadiusIntersect<float>(line.x1 - circle.GetPosition().x, line.y1 - circle.GetPosition().y, line.x2 - circle.GetPosition().x, line.y2 - circle.GetPosition().y, circle.GetDim().x / 2, out);
     line.p2 = globalcam.GetMouseAbsolute(engine->GetLayer(0)->GetTargets()[0]->GetRawDim());
     //circle3.SetPosition(line.p2);
     arc2.SetPosition(line.p2);
-    n = bss::CircleRadiusIntersect<float>(segment.outer, line.p2.x - arc.GetPosition().x, line.p2.y - arc.GetPosition().y, segment.outer, out);
+    n = bun::CircleRadiusIntersect<float>(segment.outer, line.p2.x - arc.GetPosition().x, line.p2.y - arc.GetPosition().y, segment.outer, out);
     //float X = arc2.GetPosition().x - segment.x;
     //float Y = arc2.GetPosition().y - segment.y;
     //n = psCircleSegment::_lineSegmentRadiusIntersect((cos(segment.min) * segment.inner) - X, - (sin(segment.min) * segment.inner) - Y, (cos(segment.min) * segment.outer) - X, - (sin(segment.min) * segment.outer) - Y, segment.outer, out);

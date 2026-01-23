@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -6,9 +6,9 @@
 #include "psDirectX11.h"
 #include "psTex.h"
 #include "psStateblock.h"
-#include "bss-util/Str.h"
-#include "bss-util/DynArray.h"
-#include "bss-util/profiler.h"
+#include "buntils/Str.h"
+#include "buntils/DynArray.h"
+#include "buntils/profiler.h"
 #include "psColor.h"
 #include "psCamera.h"
 #ifdef WINXP
@@ -48,9 +48,9 @@
 #include "psDirectX11_triangle_mainPS.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
-#ifdef BSS_DEBUG
+#ifdef BUN_DEBUG
 #define PROCESSQUEUE() _processdebugqueue()
 #else
 #define PROCESSQUEUE()
@@ -121,7 +121,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
   _lastvertbuffer = 0;
   _driver = this;
 
-#ifdef BSS_DEBUG
+#ifdef BUN_DEBUG
   const UINT DEVICEFLAGS = D3D11_CREATE_DEVICE_SINGLETHREADED | D3D11_CREATE_DEVICE_DEBUG;
 #else
   const UINT DEVICEFLAGS = D3D11_CREATE_DEVICE_SINGLETHREADED;
@@ -146,7 +146,7 @@ _backbuffer(0), _dpiscale(1.0f), _infoqueue(0), _lastdepth(0)
 
   PSLOG(3, "DX11 Feature Level: ", strfeature);
   
-#ifdef BSS_DEBUG
+#ifdef BUN_DEBUG
   _device->QueryInterface(__uuidof(ID3D11InfoQueue), (void **)&_infoqueue);
 #endif
 
@@ -460,7 +460,7 @@ char psDirectX11::End()
 
 void psDirectX11::Flush()
 {
-  for(uint32_t i = 0; i < _jobstack.Length(); ++i)
+  for(uint32_t i = 0; i < _jobstack.size(); ++i)
   {
     psBatchObj& obj = _jobstack[i];
     if(obj.shader != 0)
@@ -489,12 +489,12 @@ void psDirectX11::Flush()
   _snapshotstack.Clear();
   _texstack.Clear();
 
-  _matrixbuf.SetLength(_transformstack.Length() - 1);
-  for(size_t i = 1; i < _transformstack.Length(); ++i)
+  _matrixbuf.SetLength(_transformstack.size() - 1);
+  for(size_t i = 1; i < _transformstack.size(); ++i)
     MEMCPY(_matrixbuf.begin() + i - 1, 4 * 4 * sizeof(float), _transformstack[i], 4 * 4 * sizeof(float));
   
   _matrixalloc.Clear();
-  for(size_t i = 1; i < _transformstack.Length(); ++i)
+  for(size_t i = 1; i < _transformstack.size(); ++i)
   {
     _transformstack[i] = _matrixalloc.allocate(1);
     MEMCPY(const_cast<psMatrix*>(_transformstack[i]), 4 * 4 * sizeof(float), _matrixbuf.begin() + i - 1, 4 * 4 * sizeof(float));
@@ -503,7 +503,7 @@ void psDirectX11::Flush()
 }
 psBatchObj* psDirectX11::FlushPreserve()
 {
-  assert(_jobstack.Length() > 0);
+  assert(_jobstack.size() > 0);
 
   psBatchObj obj(_jobstack.Back());
   psMatrix m;
@@ -618,7 +618,7 @@ psBatchObj* psDirectX11::DrawPoints(psShader* shader, const psStateblock* stateb
 }
 psBatchObj* psDirectX11::DrawLinesStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  BSS_ALIGN(16) psMatrix m;
+  BUN_ALIGN(16) psMatrix m;
   Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
   PushTransform(m);
 
@@ -637,7 +637,7 @@ void psDirectX11::DrawLines(psBatchObj*& o, const psLine& line, float Z1, float 
 }
 psBatchObj* psDirectX11::DrawCurveStart(psShader* shader, const psStateblock* stateblock, psFlag flags)
 {
-  BSS_ALIGN(16) psMatrix m;
+  BUN_ALIGN(16) psMatrix m;
   Matrix<float, 4, 4>::Translation_T(0.5f, 0.5f, 0.0f, m);
   PushTransform(m);
 
@@ -680,7 +680,7 @@ void psDirectX11::SetCamera(const psVec3D& pos, const psVec& pivot, FNUM rotatio
   // 0    0     zn*zf/(zn-zf)  0
   // We negate the y axis to get our right handed coordinate system, where +y points down, +x points
   // to the right, and +z points into the screen.
-  BSS_ALIGN(16) Matrix<float, 4, 4> matProj;
+  BUN_ALIGN(16) Matrix<float, 4, 4> matProj;
   memset((float*)matProj.v, 0, sizeof(Matrix<float, 4, 4>));
   float znear = extent.x;
   float zfar = extent.y;
@@ -700,12 +700,12 @@ void psDirectX11::SetCamera(const psVec3D& pos, const psVec& pivot, FNUM rotatio
     matProj *= m;
   }
 
-  BSS_ALIGN(16) Matrix<float, 4, 4> cam;
+  BUN_ALIGN(16) Matrix<float, 4, 4> cam;
   Matrix<float, 4, 4>::AffineTransform_T(pos.x - adjust.x, pos.y - adjust.y, pos.z, rotation, adjust.x, adjust.y, cam);
-  BSS_ALIGN(16) Matrix<float, 4, 4> matView;
+  BUN_ALIGN(16) Matrix<float, 4, 4> matView;
   cam.Inverse(matView.v); // inverse cam and store the result in matView
 
-  BSS_ALIGN(16) Matrix<float, 4, 4> defaultCam;
+  BUN_ALIGN(16) Matrix<float, 4, 4> defaultCam;
   Matrix<float, 4, 4>::Translation_T(viewport.right*-0.5f, viewport.bottom*-0.5f, 1, defaultCam);
 
   _applycamera(CamDef{ matView * matProj, defaultCam*matProj, matView, viewport });
@@ -727,7 +727,7 @@ void psDirectX11::_applycamera(const CamDef& def)
   _clipstack[0].right = viewport.right;
   _clipstack[0].bottom = viewport.bottom;
 
-  if(_clipstack.Length() <= 1) // if we are currently using the default clip rect, re-apply with new dimensions
+  if(_clipstack.size() <= 1) // if we are currently using the default clip rect, re-apply with new dimensions
     _context->RSSetScissorRects(1, (D3D11_RECT*)&_clipstack[0]);
 
   _setcambuf(_cam_def, _curcam.viewproj.v, identity); // matViewProj is identical to matProj here so PSFLAG_FIXED will have no effect
@@ -1013,7 +1013,7 @@ void* psDirectX11::_loadTexture(const char* path, size_t datasize, uint32_t usag
   if(_customfilter(mipfilter))
     _applymipshader(static_cast<ID3D11Texture2D*>(tex), _getfiltershader(mipfilter));
 
-#ifdef BSS_DEBUG
+#ifdef BUN_DEBUG
   if(!datasize)
     tex->SetPrivateData(WKPDID_D3DDebugObjectName, (UINT)strlen(path), path);
 #endif
@@ -1063,7 +1063,7 @@ void psDirectX11::PushClipRect(const psRect& rect)
 
 psRect psDirectX11::PeekClipRect()
 {
-  if(!_clipstack.Length())
+  if(!_clipstack.size())
     return psRect(VEC_ZERO, psVec(_backbuffer->GetRawDim())/GetDPIScale());
   return psRect(_clipstack.Peek());
 }
@@ -1071,7 +1071,7 @@ psRect psDirectX11::PeekClipRect()
 void psDirectX11::PopClipRect()
 {
   PROFILE_FUNC();
-  if(_clipstack.Length()>1)
+  if(_clipstack.size()>1)
     _clipstack.Discard();
 }
 
@@ -1084,9 +1084,9 @@ void psDirectX11::SetRenderTargets(psTex* const* texes, uint8_t num, psTex* dept
 }
 std::pair<psTex* const*, uint8_t> psDirectX11::GetRenderTargets()
 {
-  if(!_lastrt.Length())
+  if(!_lastrt.size())
     return { &_backbuffer, 1 };
-  return { _lastrt.begin(), _lastrt.Length() };
+  return { _lastrt.begin(), _lastrt.size() };
 }
 void psDirectX11::SetShaderConstants(void* constbuf, SHADER_VER shader)
 {
@@ -1422,7 +1422,7 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
     int ref = 1;
     if(_backbuffer)
     {
-      for(uint32_t i = 0; i < _lastrt.Length(); ++i)
+      for(uint32_t i = 0; i < _lastrt.size(); ++i)
         if(_lastrt[i] == _backbuffer)
           _lastrt[i] = 0;
       ref = _backbuffer->Grab() - 2;
@@ -1432,7 +1432,7 @@ void psDirectX11::Resize(psVeciu dim, FORMATS format, char fullscreen)
     _context->ClearState();
     LOGFAILURE(_swapchain->ResizeBuffers(1, dim.x, dim.y, FMTtoDXGI(format), DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH), "ResizeBuffers failed with error code: ", _lasterr);
     _getbackbufferref(ref);
-    for(uint32_t i = 0; i < _lastrt.Length(); ++i)
+    for(uint32_t i = 0; i < _lastrt.size(); ++i)
       if(!_lastrt[i])
         _lastrt[i] = _backbuffer;
 
@@ -1480,16 +1480,16 @@ void psDirectX11::_resetscreendim()
 }
 void psDirectX11::_applyrendertargets()
 {
-  if(!_lastrt.Length()) {
+  if(!_lastrt.size()) {
     ID3D11RenderTargetView* v = (ID3D11RenderTargetView*)_backbuffer->GetView();
     _context->OMSetRenderTargets(1, &v, _lastdepth);
   }
   else
   {
-    VARARRAY(ID3D11RenderTargetView*, lastrt, _lastrt.Length());
-    for(size_t i = 0; i < _lastrt.Length(); ++i)
+    VARARRAY(ID3D11RenderTargetView*, lastrt, _lastrt.size());
+    for(size_t i = 0; i < _lastrt.size(); ++i)
       lastrt[i] = (ID3D11RenderTargetView*)_lastrt[i]->GetView();
-    _context->OMSetRenderTargets(_lastrt.Length(), lastrt, _lastdepth);
+    _context->OMSetRenderTargets(_lastrt.size(), lastrt, _lastdepth);
   }
 }
 void psDirectX11::Clear(psTex* t, uint32_t color)
@@ -1559,14 +1559,14 @@ char psDirectX11::SetShader(void* shader, SHADER_VER profile)
   PROFILE_FUNC();
   if(profile <= VERTEX_SHADER_5_0) {
     if(_lastVS == shader) return 0;
-#ifdef BSS_DEBUG
+#ifdef BUN_DEBUG
     if(!shader) shader = _fsquadVS;
 #endif
     _context->VSSetShader(_lastVS = (ID3D11VertexShader*)shader, 0, 0);
   }
   else if(profile <= PIXEL_SHADER_5_0) {
     if(_lastPS == shader) return 0;
-#ifdef BSS_DEBUG
+#ifdef BUN_DEBUG
     if(!shader) shader = library.DEBUG->GetInternalPrograms()[1];
 #endif
     _context->PSSetShader(_lastPS = (ID3D11PixelShader*)shader, 0, 0);
@@ -1627,10 +1627,10 @@ psVec psDirectX11::GetDPIScale() const
 bool psDirectX11::_checksnapshot(Snapshot& s)
 {
   psRectl& lastrect = _clipstack.Peek();
-  if(_lasttex[0].Length() == s.ntex[0] &&
-    _lasttex[1].Length() == s.ntex[1] &&
-    _lasttex[2].Length() == s.ntex[2] &&
-    _lastrt.Length() == s.nrt &&
+  if(_lasttex[0].size() == s.ntex[0] &&
+    _lasttex[1].size() == s.ntex[1] &&
+    _lasttex[2].size() == s.ntex[2] &&
+    _lastrt.size() == s.nrt &&
     _lastdepth == s.depth &&
     lastrect.left == s.cliprect.left &&
     lastrect.top == s.cliprect.top &&
@@ -1650,25 +1650,25 @@ bool psDirectX11::_checksnapshot(Snapshot& s)
 }
 uint32_t psDirectX11::GetSnapshot()
 {
-  if(_snapshotstack.Length() > 0 && _checksnapshot(_snapshotstack.Back())) // Check if we can return the last snapshot
-    return _snapshotstack.Length() - 1;
+  if(_snapshotstack.size() > 0 && _checksnapshot(_snapshotstack.Back())) // Check if we can return the last snapshot
+    return _snapshotstack.size() - 1;
 
   // Snapshot textures (one for each shader type), rendertargets, depth target, and clipping rect
   _snapshotstack.AddConstruct();
   Snapshot& s = _snapshotstack.Back();
   s.cliprect = _clipstack.Peek();
   s.depth = _lastdepth;
-  s.nrt = _lastrt.Length();
-  s.rt = _texstack.Length();
+  s.nrt = _lastrt.size();
+  s.rt = _texstack.size();
   for(uint32_t i = 0; i < s.nrt; ++i) _texstack.Add(_lastrt[i]->GetView());
   for(uint32_t j = 0; j < 3; ++j)
   {
-    s.ntex[j] = _lasttex[j].Length();
-    s.tex[j] = _texstack.Length();
+    s.ntex[j] = _lasttex[j].size();
+    s.tex[j] = _texstack.size();
     for(uint32_t i = 0; i < s.ntex[j]; ++i) _texstack.Add(_lasttex[j][i]);
   }
 
-  return _snapshotstack.Length() - 1;
+  return _snapshotstack.size() - 1;
 }
 
 void psDirectX11::_applysnapshot(const Snapshot& s)

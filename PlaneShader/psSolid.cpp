@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -6,7 +6,7 @@
 #include "psLayer.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 psSolid::psSolid(const psSolid& copy) : psLocatable(copy), psRenderable(copy), _scale(copy._scale), _dim(copy._dim), _realdim(copy._realdim),  _boundingrect(copy._boundingrect) { }
 psSolid::psSolid(psSolid&& mov) : psLocatable(std::move(mov)), psRenderable(std::move(mov)), _scale(mov._scale), _dim(mov._dim), _realdim(mov._realdim), _boundingrect(mov._boundingrect) { }

@@ -1,8 +1,8 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
-#include "bss-util/Str.h"
+#include "buntils/Str.h"
 #include "feathergui/fgWindow.h"
 
 #include "win32_includes.h"
@@ -20,14 +20,12 @@ DWMBLURBEHIND psMonitor::dwmblurbehind = 0;
 
 #define MAKELPPOINTS(l)       ((POINTS FAR *)&(l))
 
-psMonitor::psMonitor() : _manager(0), _window(0) {}
-psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* window) : _manager(manager), _window(window), _mode(mode), _backbuffer(0)
-{
-  if(!dwm && mode >= MODE_COMPOSITE) mode = MODE_WINDOWED; //can't do composite if its not supported
+AbsRect psMonitor::calc_window_rect(MODE& mode, psVeciu& dim, HWND__*& _window)  {
+  if (!dwm && mode >= MODE_COMPOSITE) mode = MODE_WINDOWED; //can't do composite if its not supported
   psVeciu screen(GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
   dim = psVeciu(!dim.x ? screen.x : dim.x, !dim.y ? screen.y : dim.y);
   RECT rect;
-  if(!_window)
+  if (!_window)
   {
     rect.left = 0;
     rect.top = 0;
@@ -37,10 +35,15 @@ psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* win
   }
 
   GetClientRect(_window, &rect);
-  AbsRect r = { 0, 0, rect.right - rect.left, rect.bottom - rect.top };
+  return AbsRect{ 0, 0, static_cast<FABS>(rect.right - rect.left), static_cast<FABS>(rect.bottom - rect.top) };
+}
+
+//psMonitor::psMonitor() : _manager(0), _window(0) {}
+psMonitor::psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* window) : _manager(manager), _window(window), _mode(mode), _backbuffer(0), 
+  fgMonitor(FGFLAGS_INTERNAL | FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, calc_window_rect(_mode, dim, _window), psGUIManager::GetMonitorDPIf(0))
+{
   psVeciu dpi = psGUIManager::GetMonitorDPI(0);
   AbsVec fgdpi = { dpi.x, dpi.y };
-  fgMonitor_Init(this, FGFLAGS_INTERNAL|FGELEMENT_BACKGROUND, &manager->GetGUI(), 0, &r, &fgdpi);
   _manager->_updaterootarea();
   this->element.message = (fgMessage)&Message;
   this->element.destroy = (fgDestroy)&Destroy;
@@ -55,7 +58,7 @@ psMonitor::~psMonitor()
 void psMonitor::Destroy(psMonitor* self)
 {
   auto& m = psEngine::Instance()->_monitors;
-  for(uint8_t i = 0; i < m.Length(); ++i)
+  for(uint8_t i = 0; i < m.size(); ++i)
     if(&m[i] == self)
     {
       m.Remove(i);
@@ -75,10 +78,10 @@ size_t psMonitor::Message(fgMonitor* s, const FG_Msg* m)
     self->_manager->_updaterootarea();
     break;
   case FG_SETTEXT:
-    SetWindowTextW(self->_window, bss::StrW((const char*)m->p).c_str());
+    SetWindowTextW(self->_window, bun::StrW((const char*)m->p).c_str());
     return 1;
   case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
-    otherint = bss::bssSetBit<fgFlag>(flags, otherint, m->u2 != 0);
+    otherint = bun::bun_SetBit<fgFlag>(flags, otherint, m->u2 != 0);
   case FG_SETFLAGS:
     if((otherint^flags) & (FGWINDOW_MINIMIZABLE| FGWINDOW_MAXIMIZABLE | FGWINDOW_RESIZABLE | FGWINDOW_NOCAPTION | FGWINDOW_NOBORDER))
     { // handle a layout flag change

@@ -1,0 +1,42 @@
+// Copyright (c)2026 Erik McClure
+// For conditions of distribution and use, see copyright notice in "feathergui.h"
+
+#ifndef __FG_CURVE_H__
+#define __FG_CURVE_H__
+
+#include "fgElement.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+  enum FGCURVE_FLAGS
+  {
+    FGCURVE_LINE = 0,
+    FGCURVE_QUADRATIC = (1 << 9),
+    FGCURVE_CUBIC = (2 << 9),
+    FGCURVE_BSPLINE = (3 << 9),
+    FGCURVE_CURVEMASK = (3 << 9),
+  };
+
+  typedef fgDeclareVector(AbsVec, Point) fgVectorPoint;
+
+  // fgCurve stores either a series of lines, or a curve that is tesselated into a strip of lines.
+  typedef struct {
+    fgElement element;
+    fgColor color;
+    fgVectorPoint points; // use ADDITEM or REMOVEITEM to add or remove points
+    fgVectorPoint cache; // curves are subdivided into lines
+    float factor; // subdivision factor, set using SETSTATE
+  } fgCurve;
+
+  FG_EXTERN fgElement* fgCurve_Create(const AbsVec* points, size_t npoints, unsigned int color, fgElement* BUN_RESTRICT parent, fgElement* BUN_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform, fgMsgType units);
+  FG_EXTERN void fgCurve_Init(fgCurve* self, fgElement* BUN_RESTRICT parent, fgElement* BUN_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform, fgMsgType units);
+  FG_EXTERN void fgCurve_Destroy(fgCurve* self);
+  FG_EXTERN size_t fgCurve_Message(fgCurve* self, const FG_Msg* msg);
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif

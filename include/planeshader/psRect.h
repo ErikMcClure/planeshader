@@ -1,36 +1,43 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __RECT_H__PS__
 #define __RECT_H__PS__
 
 #include "psVec.h"
-#include "bss-util/sseVec.h"
+#include "buntils/sseVec.h"
 
 namespace planeshader {
   // The psRectRotateT class is a rotated rectagle 
   template<class T>
-  struct BSS_COMPILER_DLLEXPORT psRectRotateT : public bss::Rect<T>
+  struct BUN_COMPILER_DLLEXPORT psRectRotateT : public bun::Rect<T>
   {
+    using BASE = bun::Rect<T>;
+    using V = typename BASE::V;
+    using BASE::left;
+    using BASE::right;
+    using BASE::top;
+    using BASE::bottom;
+
     inline psRectRotateT() {} //The following constructors allow for implicit conversion between rect types
     template<class U>
-    inline psRectRotateT(const psRectRotateT<U>& other) : bss::Rect<T>(other), rotation(other.rotation), pivot(other.pivot) {}
-    inline psRectRotateT(T Left, T Top, T Right, T Bottom, T rotation, const V& pivot=VEC_ZERO) : bss::Rect<T>(Left, Top, Right, Bottom), rotation(rotation), pivot(pivot) { }
+    inline psRectRotateT(const psRectRotateT<U>& other) : bun::Rect<T>(other), rotation(other.rotation), pivot(other.pivot) {}
+    inline psRectRotateT(T Left, T Top, T Right, T Bottom, T rotation, const V& pivot=VEC_ZERO) : bun::Rect<T>(Left, Top, Right, Bottom), rotation(rotation), pivot(pivot) { }
     inline psRectRotateT(T X, T Y, const V& dim, T rotation, const V& pivot=VEC_ZERO) : rotation(rotation), pivot(pivot) { left = X; right = X+dim.x; top = Y; bottom = Y+dim.y; }
-    inline psRectRotateT(const bss::Rect<T>& rect, T rotation=0.0f, const V& pivot=VEC_ZERO) : bss::Rect<T>(rect), rotation(rotation), pivot(pivot) { }
+    inline psRectRotateT(const bun::Rect<T>& rect, T rotation=0.0f, const V& pivot=VEC_ZERO) : bun::Rect<T>(rect), rotation(rotation), pivot(pivot) { }
     inline psRectRotateT(const V& pos, const V& dim, T rotation, const V& pivot=VEC_ZERO) : rotation(rotation), pivot(pivot) { left = pos.x; right = pos.x+dim.x; top = pos.y; bottom = pos.y+dim.y; }
     inline bool IntersectPoint(T x, T y) const
     {
-      if(!bss::fSmall(rotation))
+      if(!bun::fSmall(rotation))
         V::RotatePoint(x, y, -rotation, pivot.x+left, pivot.y+top);
-      return bss::Rect<T>::IntersectPoint(x, y);
+      return bun::Rect<T>::IntersectPoint(x, y);
     }
     inline bool IntersectPoint(const V& point) const { return IntersectPoint(point.x, point.y); }
 
     // This builds an Axis-Aligned Bounding Box from the rotated rectangle, rotated around a pivot RELATIVE TO THE TOPLEFT CORNER OF THE RECTANGLE. It does this by representing the box by the distance from an arbitrary rotation axis, and rotating that axis. 
-    inline bss::Rect<T> BuildAABB() const
+    inline bun::Rect<T> BuildAABB() const
     {
-      if(bss::fSmall(rotation))
+      if(bun::fSmall(rotation))
         return *this;
       float c = (cos(rotation));
       float s = (sin(rotation));
@@ -48,13 +55,13 @@ namespace planeshader {
       ex+=pivot.x+left;
       ey+=pivot.y+top;
 
-      return bss::Rect<T>(ex - x_radius, ey - y_radius, ex + x_radius, ey + y_radius);
+      return bun::Rect<T>(ex - x_radius, ey - y_radius, ex + x_radius, ey + y_radius);
     }
 
-    inline psRectRotateT<T>& operator =(const bss::Rect<T>& _right) { bss::Rect<T>::operator =(_right); return *this; }
-    inline psRectRotateT<T>& operator =(const psRectRotateT<T>& _right) { if(&_right!=this) { bss::Rect<T>::operator =(_right); rotation=_right.rotation; pivot=_right.pivot; } return *this; }
-    BSS_FORCEINLINE psRectRotateT<T> EnforceLTRB() const { return psRectRotateT<T>(bss::Rect<T>::EnforceLTRB(), rotation, pivot); }
-    BSS_FORCEINLINE psRectRotateT<T> Inflate(T amount) const { return psRectRotateT<T>(bss::Rect<T>::Inflate(amount), rotation, pivot); }
+    inline psRectRotateT<T>& operator =(const bun::Rect<T>& _right) { bun::Rect<T>::operator =(_right); return *this; }
+    inline psRectRotateT<T>& operator =(const psRectRotateT<T>& _right) { if(&_right!=this) { bun::Rect<T>::operator =(_right); rotation=_right.rotation; pivot=_right.pivot; } return *this; }
+    BUN_FORCEINLINE psRectRotateT<T> EnforceLTRB() const { return psRectRotateT<T>(bun::Rect<T>::EnforceLTRB(), rotation, pivot); }
+    BUN_FORCEINLINE psRectRotateT<T> Inflate(T amount) const { return psRectRotateT<T>(bun::Rect<T>::Inflate(amount), rotation, pivot); }
     inline psRectRotateT RelativeTo(const psVec& pos, float r, const psVec& p) const
     {
       psVec dim = { right - left, bottom - top };
@@ -81,20 +88,27 @@ namespace planeshader {
 
   // The psRectRotateZT class is a rotated rectangle with a Z coordinate for the sole purpose of storing that Z coordinate in the culling rect
   template<class T>
-  struct BSS_COMPILER_DLLEXPORT psRectRotateZT : public psRectRotateT<T>
+  struct BUN_COMPILER_DLLEXPORT psRectRotateZT : public psRectRotateT<T>
   {
+    using BASE = psRectRotateT<T>;
+    using V = typename BASE::V;
+    using BASE::left;
+    using BASE::right;
+    using BASE::top;
+    using BASE::bottom;
+
     inline psRectRotateZT() {}
     template<class U>
     inline psRectRotateZT(const psRectRotateZT<U>& other) : psRectRotateT<T>(other), z((T)other.z) {}
     inline psRectRotateZT(T Left, T Top, T Right, T Bottom, T rotation, const V& pivot=VEC_ZERO, FNUM Z=0.0f) : psRectRotateT<T>(Left, Top, Right, Bottom, rotation, pivot), z(Z) { }
     inline psRectRotateZT(const psRectRotateT<T>& rect, FNUM Z=0.0f) : psRectRotateT<T>(rect), z(Z) { }
 
-    inline psRectRotateZT<T>& operator =(const bss::Rect<T>& _right) { bss::Rect<T>::operator =(_right); return *this; }
+    inline psRectRotateZT<T>& operator =(const bun::Rect<T>& _right) { bun::Rect<T>::operator =(_right); return *this; }
     inline psRectRotateZT<T>& operator =(const psRectRotateT<T>& _right) { psRectRotateT<T>::operator =(_right); return *this; }
     inline psRectRotateZT<T>& operator =(const psRectRotateZT<T>& _right) { psRectRotateT<T>::operator =(_right); z=_right.z; return *this; }
-    BSS_FORCEINLINE psRectRotateZT<T> EnforceLTRB() const { return psRectRotateZT<T>(psRectRotateT<T>::EnforceLTRB(), z); }
-    BSS_FORCEINLINE psRectRotateZT<T> Inflate(T amount) const { return psRectRotateZT<T>(psRectRotateT<T>::Inflate(amount), z); }
-    BSS_FORCEINLINE psRectRotateZT RelativeTo(const psVec3D& pos, float r, const psVec& p) const { return psRectRotateZT<T>(psRectRotateT<T>::RelativeTo(pos.xy, r, p), pos.z + z); }
+    BUN_FORCEINLINE psRectRotateZT<T> EnforceLTRB() const { return psRectRotateZT<T>(psRectRotateT<T>::EnforceLTRB(), z); }
+    BUN_FORCEINLINE psRectRotateZT<T> Inflate(T amount) const { return psRectRotateZT<T>(psRectRotateT<T>::Inflate(amount), z); }
+    BUN_FORCEINLINE psRectRotateZT RelativeTo(const psVec3D& pos, float r, const psVec& p) const { return psRectRotateZT<T>(psRectRotateT<T>::RelativeTo(pos.xy, r, p), pos.z + z); }
 
     T z;
   };

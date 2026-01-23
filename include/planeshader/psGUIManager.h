@@ -1,16 +1,16 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __GUI_MANAGER_H__PS__
 #define __GUI_MANAGER_H__PS__
 
-#include "bss-util/BitField.h"
-#include "bss-util/Delegate.h"
+#include "buntils/BitField.h"
+#include "buntils/Delegate.h"
 #include "psVec.h"
 #include "ps_feather.h"
 
 namespace planeshader {
-  struct BSS_COMPILER_DLLEXPORT JOY_DEVCAPS
+  struct BUN_COMPILER_DLLEXPORT JOY_DEVCAPS
   {
     static const uint8_t NUMAXIS=6; //Max number of axis accounted for
 
@@ -41,7 +41,7 @@ namespace planeshader {
     // Tells you if a joystick is plugged in. 
     inline bool HasJoystick(uint8_t joy) const { return (_alljoysticks&(1<<joy))!=0; }
     // Gets the nth monitor we've initialized, where a monitor is either fullscreen or a window on the desktop.
-    inline psMonitor* GetMonitor(uint8_t index = 0) { return index < _monitors.Length() ? &_monitors[index] : 0; }
+    inline psMonitor* GetMonitor(uint8_t index = 0) { return index < _monitors.size() ? &_monitors[index] : 0; }
     psMonitor* AddMonitor(psVeciu& dim, psMonitor::MODE mode, HWND__* window);
     // Shows/hides the hardware cursor
     void ShowCursor(bool show);
@@ -55,6 +55,7 @@ namespace planeshader {
     inline void Quit() { _quit = true; }
     inline bool GetQuit() const { return _quit; }
     static psVeciu GetMonitorDPI(int);
+    static AbsVec GetMonitorDPIf(int i) { auto v = GetMonitorDPI(i); return AbsVec{ (FABS)v.x, (FABS)v.y }; }
 
     friend class psMonitor;
     static const uint16_t NUMKEYS=256; //256 possible keyboard IDs
@@ -85,7 +86,7 @@ namespace planeshader {
     JOY_DEVCAPS _joydevs[NUMJOY];
     uint8_t _maxjoy; //Number of joysticks supported by the driver
     bool _quit;
-    bss::DynArray<psMonitor, uint8_t, bss::ARRAY_CONSTRUCT> _monitors;
+    bun::DynArray<psMonitor, uint8_t> _monitors;
     psRoot _root;
     unsigned long _lastmsgtime; // Gets the timestamp of the last message
   };

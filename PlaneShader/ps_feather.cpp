@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -15,7 +15,7 @@
 #include "feathergui/fgSlider.h"
 #include "feathergui/fgList.h"
 #include "win32_includes.h"
-#include "bss-util/os.h"
+#include "buntils/os.h"
 
 using namespace planeshader;
 
@@ -150,10 +150,10 @@ void  fgDrawLinesPS(const AbsVec* p, size_t n, unsigned int color, const AbsVec*
   unsigned long vertexcolor;
   psColor32(color).WriteFormat(FMT_R8G8B8A8, &vertexcolor);
   psMatrix m;
-  bss::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
+  bun::Matrix<float, 4, 4>::AffineTransform_T(translate->x, translate->y, 0, rotation, center->x, center->y, m);
   psMatrix ms;
-  bss::Matrix<float, 4, 4>::AffineScaling(scale->x * (data->dpi.x / 96.0f), scale->y * (data->dpi.y / 96.0f), 1.0f, ms);
-  bss::MatrixMultiply<float, 4, 4, 4>(m, ms, m);
+  bun::Matrix<float, 4, 4>::AffineScaling(scale->x * (data->dpi.x / 96.0f), scale->y * (data->dpi.y / 96.0f), 1.0f, ms);
+  bun::MatrixMultiply<float, 4, 4, 4>(m, ms, m);
   driver->PushTransform(m);
 
   if(n == 2)
@@ -317,7 +317,7 @@ const void*  fgClipboardPastePS(uint32_t type, size_t* length)
       const wchar_t* str = (const wchar_t*)GlobalLock(gdata);
       SIZE_T size = GlobalSize(gdata) / 2;
       SIZE_T len = UTF16toUTF32(str, size, 0, 0);
-      int* ret = bss::bssMalloc<int>(len);
+      int* ret = bun::bunMalloc<int>(len);
       *length = UTF16toUTF32(str, size, ret, len);
       GlobalUnlock(gdata);
       CloseClipboard();
@@ -328,7 +328,7 @@ const void*  fgClipboardPastePS(uint32_t type, size_t* length)
       const char* str = (const char*)GlobalLock(gdata);
       SIZE_T size = GlobalSize(gdata);
       SIZE_T len = UTF8toUTF32(str, size, 0, 0);
-      int* ret = bss::bssMalloc<int>(len);
+      int* ret = bun::bunMalloc<int>(len);
       *length = UTF8toUTF32(str, size, ret, len);
       GlobalUnlock(gdata);
       CloseClipboard();
@@ -416,13 +416,13 @@ psRoot::psRoot() : _psInject(0, 0)
   AbsVec dpi = { BASE_DPI, BASE_DPI };
   fgRoot_Init(this, &area, &dpi, &psBACKEND);
   DWORD blinkrate = 0;
-  int64_t sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
+  int64_t sz = bun::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", 0, 0);
   if(sz > 0)
   {
     VARARRAY(wchar_t, buf, sz / 2);
-    sz = bss::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", reinterpret_cast<unsigned char*>((wchar_t*)buf), sz);
+    sz = bun::GetRegistryValue(HKEY_CURRENT_USER, "Control Panel\\Desktop", "CursorBlinkRate", reinterpret_cast<unsigned char*>((wchar_t*)buf), sz);
     if(sz > 0)
-      cursorblink = atoi(bss::Str(buf, sz / 2)) / 1000.0;
+      cursorblink = atoi(bun::Str(buf, sz / 2)) / 1000.0;
   }
 }
 psRoot::~psRoot()

@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __MONITOR_H__PS__
@@ -46,7 +46,7 @@ namespace planeshader {
       MODE_COMPOSITE_OPAQUE_CLICK,
     };
 
-    psMonitor();
+    psMonitor(psMonitor&& r) = default;
     psMonitor(psGUIManager* manager, psVeciu& dim, MODE mode, HWND__* window = 0);
     ~psMonitor();
     // Gets the window handle
@@ -61,6 +61,8 @@ namespace planeshader {
     static void WndRegister(HINSTANCE__* instance, const wchar_t* icon, HICON__* iconrc);
     static void CheckDesktopComposition();
 
+    psMonitor& operator=(psMonitor&& r) = default;
+
   protected:
     HWND__* WndCreate(HINSTANCE__* instance, tagRECT& dim, MODE mode, fgFlag flags, HWND__* hWnd);
 
@@ -69,7 +71,7 @@ namespace planeshader {
     static longptr_t __stdcall WndProc(HWND__* hWnd, uint32_t message, size_t wParam, longptr_t lParam);
     static tagPOINTS* __stdcall _STCpoints(HWND__* hWnd, tagPOINTS* target);
     static void _lockcursor(HWND__* hWnd, bool lock);
-
+    AbsRect calc_window_rect(MODE& mode, psVeciu& dim, HWND__*& _window);
 
     static long(__stdcall *dwmextend)(HWND__*, const struct _MARGINS*);
     static long(__stdcall *dwmblurbehind)(HWND__*, const struct _DWM_BLURBEHIND*);
@@ -77,9 +79,9 @@ namespace planeshader {
 
     HWND__* _window;
     psGUIManager* _manager;
-    bss::ref_ptr<psTex> _backbuffer;
+    bun::ref_ptr<psTex> _backbuffer;
     MODE _mode;
-    bss::BitField<uint8_t> _guiflags;
+    bun::BitField<uint8_t> _guiflags;
   };
 }
 

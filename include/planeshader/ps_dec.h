@@ -1,5 +1,5 @@
 /* PlaneShader - Advanced Hybrid 2D Graphics Engine
-   Copyright ©2018 Black Sphere Studios
+   Copyright (c)2026 Erik McClure
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,26 +18,26 @@
 #define __DEC_H__PS__
 
 #define PS_VERSION_MAJOR 0
-#define PS_VERSION_MINOR 7
+#define PS_VERSION_MINOR 8
 #define PS_VERSION_REVISION 0
 
 #ifndef _WINRESRC_
 
-#include "bss-util/defines.h"
+#include "buntils/defines.h"
 
 #ifndef PS_STATIC_LIB
 #ifdef PlaneShader_EXPORTS
 #pragma warning(disable:4251)
-#define PS_DLLEXPORT BSS_COMPILER_DLLEXPORT
+#define PS_DLLEXPORT BUN_COMPILER_DLLEXPORT
 #else
-#define PS_DLLEXPORT BSS_COMPILER_DLLIMPORT
+#define PS_DLLEXPORT BUN_COMPILER_DLLIMPORT
 #endif
 #else
 #define PS_DLLEXPORT
 #endif
 
-#ifdef BSS_DEBUG
-#define BSS_ENABLE_PROFILER
+#ifdef BUN_DEBUG
+#define BUN_ENABLE_PROFILER
 #endif
 
 #ifdef  __cplusplus

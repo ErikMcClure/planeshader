@@ -1,0 +1,38 @@
+// Copyright (c)2026 Erik McClure
+// For conditions of distribution and use, see copyright notice in "feathergui.h"
+
+#ifndef __FG_DROPDOWN_H__
+#define __FG_DROPDOWN_H__
+
+#include "fgBox.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+// A dropdown contains a list of arbitrary items and allows the user to select one.
+typedef struct _FG_DROPDOWN {
+  fgControl control;
+  fgBox box;
+  fgElement* selected;
+  fgColor hover;
+  fgColor select;
+  char dropflag;
+  fgMouseState mouse;
+#ifdef  __cplusplus
+  inline operator fgElement*() { return &control.element; }
+  inline fgElement* operator->() { return operator fgElement*(); }
+#endif
+} fgDropdown;
+
+FG_EXTERN void fgDropdown_Init(fgDropdown* BUN_RESTRICT self, fgElement* BUN_RESTRICT parent, fgElement* BUN_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform, fgMsgType units);
+FG_EXTERN void fgDropdown_Destroy(fgDropdown* self);
+FG_EXTERN size_t fgDropdown_Message(fgDropdown* self, const FG_Msg* msg);
+
+FG_EXTERN size_t fgDropdownBox_Message(fgBox* self, const FG_Msg* msg);
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif

@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __IMAGE_H__PS__
@@ -40,7 +40,7 @@ namespace planeshader {
     void _setuvs(size_t size);
     void _recalcdim();
 
-    bss::CompactArray<psRect> _uvs;
+    bun::CompactArray<psRect> _uvs;
     psColor32 _color;
   };
 }

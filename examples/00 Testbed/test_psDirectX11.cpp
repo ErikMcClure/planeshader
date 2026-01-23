@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #include "testbed.h"
 #include "psTex.h"
 #include "psLayer.h"
 
-using namespace bss;
+using namespace bun;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psDirectX11()

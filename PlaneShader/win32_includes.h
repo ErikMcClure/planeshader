@@ -1,5 +1,5 @@
-// Copyright ©2018 Black Sphere Studios
-// For conditions of distribution and use, see copyright notice in "bss_util.h"
+// Copyright (c)2026 Erik McClure
+// For conditions of distribution and use, see copyright notice in "bun_util.h"
 
 #ifndef __PS_WIN32_INCLUDES_H__
 #define __PS_WIN32_INCLUDES_H__

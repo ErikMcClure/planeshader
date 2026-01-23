@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psText.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 psText::psText(const psText& copy) : psSolid(copy), _color(copy._color), _text(copy._text), _font(copy._font), _textdim(copy._textdim),
   _letterspacing(copy._letterspacing), _drawflags(copy._drawflags), _func(copy._func), _lineheight(copy._lineheight)

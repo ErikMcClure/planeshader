@@ -1,12 +1,12 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __CULL_GROUP_H__PS__
 #define __CULL_GROUP_H__PS__
 
-#include "bss-util/BlockAlloc.h"
-#include "bss-util/KDTree.h"
-#include "bss-util/LLBase.h"
+#include "buntils/BlockAlloc.h"
+#include "buntils/KDTree.h"
+#include "buntils/LLBase.h"
 #include "psSolid.h"
 #include "psLayer.h"
 
@@ -27,27 +27,27 @@ namespace planeshader {
     // Clears the tree 
     void Clear();
     // Gets or sets the rebalance threshold
-    BSS_FORCEINLINE uint32_t GetRBThreshold() const { return _tree.GetRBThreshold(); }
-    BSS_FORCEINLINE void SetRBThreshold(uint32_t rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
+    BUN_FORCEINLINE uint32_t GetRBThreshold() const { return _tree.GetRBThreshold(); }
+    BUN_FORCEINLINE void SetRBThreshold(uint32_t rbthreshold) { _tree.SetRBThreshold(rbthreshold); }
 
-    typedef bss::KDNode<psSolid> KDNODE;
+    typedef bun::KDNode<psSolid> KDNODE;
 
   protected:
-    BSS_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic().ltrb; }
-    BSS_FORCEINLINE static bss::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bss::LLBase<psSolid>*)&p->_llist); }
-    BSS_FORCEINLINE static KDNODE*& CF_FNODE(psSolid* p) { return p->_kdnode; }
-    BSS_FORCEINLINE static void AdjustRect(const float(&rect)[4], float camZ, float(&rcull)[4])
+    BUN_FORCEINLINE static const float* CF_FRECT(psSolid* p) { return p->GetBoundingRectStatic().ltrb; }
+    BUN_FORCEINLINE static bun::LLBase<psSolid>& CF_FLIST(psSolid* p) { return *((bun::LLBase<psSolid>*)&p->_llist); }
+    BUN_FORCEINLINE static KDNODE*& CF_FNODE(psSolid* p) { return p->_kdnode; }
+    BUN_FORCEINLINE static void AdjustRect(const float(&rect)[4], float camZ, float(&rcull)[4])
     {
       float diff = ((rect[1] + rect[3])*0.5f);
       float diff2 = ((rect[0] + rect[2])*0.5f);
-      bss::sseVec d(diff2, diff, diff2, diff);
-      (((bss::sseVec(rect) - d)*bss::sseVec(1 + camZ)) + d).Set(rcull);
+      bun::sseVec d(diff2, diff, diff2, diff);
+      (((bun::sseVec(rect) - d)*bun::sseVec(1 + camZ)) + d).Set(rcull);
     }
     virtual void _render(const psTransform2D& parent) override;
 
-    bss::KDTree<psSolid, CF_FRECT, CF_FLIST, CF_FNODE, bss::PolymorphicAllocator<KDNODE, bss::BlockPolicy>> _tree;
-    bss::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bss::CompTFirst<psRenderable*, const psTransform2D*,psRenderable::StandardCompare>, bss::PolymorphicAllocator<psLayer::NODE, bss::LocklessBlockPolicy>> _list;
-    bss::BlockPolicy<KDNODE> _nodealloc;
+    bun::KDTree<psSolid, CF_FRECT, CF_FLIST, CF_FNODE, bun::PolicyAllocator<KDNODE, bun::BlockPolicy>> _tree;
+    bun::TRBtree<std::pair<psRenderable*, const psTransform2D*>, bun::first_three_way<psRenderable*, psRenderable*, bun::indirect_three_way>, bun::PolicyAllocator<psLayer::NODE, bun::LocklessBlockPolicy>> _list;
+    bun::BlockPolicy<KDNODE> _nodealloc;
   };
 }
 

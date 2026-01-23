@@ -1,19 +1,19 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psCamera.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 #include "psSolid.h"
 #include "psTex.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 psCamera psCamera::default_camera(psVec3D(0, 0, -1.0f), 0.0f, VEC_ZERO, psVec(1.0f, 50000.0f)); // we must manually set the extent because the default_extent constructor is not gauranteed to have been called.
 psVec psCamera::default_extent(1.0f, 50000.0f);
 
-BSS_FORCEINLINE void r_adjust(sseVec& window, const sseVec& winhold, const sseVec& center, float& last, float adjust)
+BUN_FORCEINLINE void r_adjust(sseVec& window, const sseVec& winhold, const sseVec& center, float& last, float adjust)
 {
   if(last != adjust)
   {
@@ -41,7 +41,7 @@ psVec psCamera::GetMouseAbsolute(const psVeciu& rawdim) const
   psVec dim = _viewport.bottomright*rawdim;
   Vector<float, 4> p(psEngine::Instance()->GetMouse().x - dim.x, psEngine::Instance()->GetMouse().y - dim.y, 0, 1);
 
-  BSS_ALIGN(16) Matrix<float, 4, 4> cam;
+  BUN_ALIGN(16) Matrix<float, 4, 4> cam;
   Matrix<float, 4, 4>::AffineTransform_T(position.x - (pivot.x*dim.x), position.y - (pivot.y*dim.y), position.z, rotation, pivot.x, pivot.y, cam.v);
   p = p*cam.Inverse();
   return psVec(p.x*p.z + dim.x, p.y*p.z + dim.y);
@@ -62,7 +62,7 @@ void psCamera::SetViewPortAbs(const psRect& vp, const psVeciu& dim)
 inline void psCamera::Apply(const psVeciu& dim, Culling& cache) const
 {
   auto& vp = GetViewPort();
-  psRectiu realvp = { (uint32_t)bss::fFastRound(vp.left*dim.x), (uint32_t)bss::fFastRound(vp.top*dim.y), (uint32_t)bss::fFastRound(vp.right*dim.x), (uint32_t)bss::fFastRound(vp.bottom*dim.y) };
+  psRectiu realvp = { (uint32_t)bun::fFastRound(vp.left*dim.x), (uint32_t)bun::fFastRound(vp.top*dim.y), (uint32_t)bun::fFastRound(vp.right*dim.x), (uint32_t)bun::fFastRound(vp.bottom*dim.y) };
   psVec pivot = GetPivot()*psVec(dim);
   _driver->SetCamera(position, pivot, GetRotation(), realvp, GetExtent());
   psVec pos = position.xy - pivot;
@@ -100,13 +100,13 @@ bool psCamera::Culling::Cull(const psRect& rect, float rectz, float camz, psFlag
   {
     rectz += 1.0f;
     r_adjust(SSEfixed, SSEfixed_hold, SSEfixed_center, lastfixed, rectz);
-    BSS_ALIGN(16) psRect rfixed(SSEfixed);
+    BUN_ALIGN(16) psRect rfixed(SSEfixed);
     return !rect.RectCollide(rfixed);
   }
 
   rectz -= camz;
   r_adjust(SSEwindow, SSEwindow_hold, SSEwindow_center, last, rectz);
-  BSS_ALIGN(16) psRect rfixed(SSEwindow);
+  BUN_ALIGN(16) psRect rfixed(SSEwindow);
   return !rect.RectCollide(rfixed);
 }
 

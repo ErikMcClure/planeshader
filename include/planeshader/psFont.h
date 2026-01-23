@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __FONT_H__PS__
 #define __FONT_H__PS__
 
 #include "psTexFont.h"
-#include "bss-util/Str.h"
+#include "buntils/Str.h"
 
 typedef struct FT_FaceRec_*  FT_Face;
 typedef struct FT_LibraryRec_* FT_Library;
@@ -61,12 +61,12 @@ namespace planeshader {
     psVeciu _curpos;
     uint32_t _nexty;
     uint8_t _curtex;
-    bss::Str _path;
-    bss::Str _hash;
-    bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _staging;
+    bun::Str _path;
+    bun::Str _hash;
+    bun::Array<bun::ref_ptr<psTex>, uint8_t> _staging;
     bool _haskerning;
 
-    static bss::HashIns<const char*, psFont*> _Fonts; //Hashlist of all fonts, done by file.
+    static bun::HashIns<const char*, psFont*> _Fonts; //Hashlist of all fonts, done by file.
   };
 }
 

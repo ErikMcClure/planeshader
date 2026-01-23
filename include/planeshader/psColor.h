@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __COLOR_H__PS__
@@ -7,16 +7,16 @@
 #include "psDriver.h"
 
 namespace planeshader {
-  BSS_ALIGNED_STRUCT(16) PS_DLLEXPORT psColor : bss::Vector<float, 4>
+  BUN_DLLEXPORT struct alignas(16) psColor : bun::Vector<float, 4>
   {
-    typedef bss::Vector<float, 4> BASE;
+    typedef bun::Vector<float, 4> BASE;
     using BASE::a;
     using BASE::r;
     using BASE::g;
     using BASE::b;
     using BASE::v;
-    typedef bss::sseVec sseVec;
-    typedef bss::sseVeci sseVeci;
+    typedef bun::sseVec sseVec;
+    typedef bun::sseVeci sseVeci;
 
     explicit inline psColor(uint32_t argb) { operator=(argb); } // operator= is SSE optimized in this case
     explicit inline psColor(const std::array<uint8_t, 4>& rgba) : BASE(rgba[0] / 255.0f, rgba[1] / 255.0f, rgba[2] / 255.0f, rgba[3] / 255.0f) {}
@@ -35,8 +35,8 @@ namespace planeshader {
 
     inline const psColor ToHSVA() const
     {
-      float l = bssmin(r, bssmin(g, b));
-      float u= bssmax(r, bssmax(g, b));
+      float l = bun_min(r, bun_min(g, b));
+      float u= bun_max(r, bun_max(g, b));
       float d = u - l;
 
       float h;
@@ -82,7 +82,7 @@ namespace planeshader {
     inline psColor& operator=(const psVec3D& rgb) { r=rgb.x; r=rgb.y; r=rgb.z; return *this; }
     inline psColor& operator=(uint32_t argb) {
       sseVec c(_mm_unpacklo_epi16(_mm_unpacklo_epi8(_mm_cvtsi32_si128(argb), _mm_setzero_si128()), _mm_setzero_si128()));
-      sseVec(_mm_castsi128_ps(BSS_SSE_SHUFFLE_EPI32(_mm_castps_si128(c/sseVec(255.0f)), _MM_SHUFFLE(3, 0, 1, 2)))).Set(v); return *this;
+      sseVec(_mm_castsi128_ps(BUN_SSE_SHUFFLE_EPI32(_mm_castps_si128(c/sseVec(255.0f)), _MM_SHUFFLE(3, 0, 1, 2)))).Set(v); return *this;
     }
     inline psColor& operator=(const std::array<uint8_t, 4>& rgba) { r = rgba[0] / 255.0f; g = rgba[1] / 255.0f; b = rgba[2] / 255.0f; a = rgba[3] / 255.0f; return *this; }
     inline psColor& operator=(const uint8_t(&rgba)[4]) { r=rgba[0]/255.0f; g=rgba[1]/255.0f; b=rgba[2]/255.0f; a=rgba[3]/255.0f; return *this; }
@@ -91,7 +91,7 @@ namespace planeshader {
     inline operator uint32_t() const
     {
       sseVeci xch(sseVec(v)*sseVec(255.0f, 255.0f, 255.0f, 255.0f));
-      xch = _mm_packus_epi16(_mm_packs_epi32(BSS_SSE_SHUFFLE_EPI32(xch, _MM_SHUFFLE(3, 0, 1, 2)), _mm_setzero_si128()), _mm_setzero_si128());
+      xch = _mm_packus_epi16(_mm_packs_epi32(BUN_SSE_SHUFFLE_EPI32(xch, _MM_SHUFFLE(3, 0, 1, 2)), _mm_setzero_si128()), _mm_setzero_si128());
       return (uint32_t)_mm_cvtsi128_si32(xch);
     }
     inline operator const float*() const { return v; }
@@ -113,7 +113,7 @@ namespace planeshader {
       ((sseVec(l.v)*(sseVec(1.0f)-xc)) + (sseVec(r.v)*xc)).Set(ret.v);
       return ret;
     }
-    BSS_FORCEINLINE static sseVec Saturate(const sseVec& x)
+    BUN_FORCEINLINE static sseVec Saturate(const sseVec& x)
     {
       return x.min(sseVec::ZeroVector()).max(sseVec(1.0f));
     }
@@ -123,12 +123,12 @@ namespace planeshader {
       float h=hsva.r;
       float b=hsva.b*(1-hsva.g);
       psColor r;
-      (Saturate(sseVec(abs(3.0f-h)-1.0f, 4.0f-h, h-2, 1))*sseVec(1, bssmin(1, h), bssmin(1, 6.0f-h), 1)*sseVec(1-b)*sseVec(hsva.b-b) + sseVec(b)).Set(r.v);
+      (Saturate(sseVec(abs(3.0f-h)-1.0f, 4.0f-h, h-2, 1))*sseVec(1, bun_min(1, h), bun_min(1, 6.0f-h), 1)*sseVec(1-b)*sseVec(hsva.b-b) + sseVec(b)).Set(r.v);
       r.a=hsva.a;
       return r;
     }
     // Builds a 32-bit color from 8-bit components
-    BSS_FORCEINLINE static uint32_t BuildColor(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
+    BUN_FORCEINLINE static uint32_t BuildColor(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
     {
       uint32_t ret;
       uint8_t* c=(uint8_t*)(&ret);
@@ -145,21 +145,21 @@ namespace planeshader {
   // Helper struct that makes accessing the 8-bit channels in 32-bit color easier.
   struct PS_DLLEXPORT psColor32
   {
-    typedef bss::sseVec sseVec;
-    typedef bss::sseVeci sseVeci;
+    typedef bun::sseVec sseVec;
+    typedef bun::sseVeci sseVeci;
 
     psColor32() {}
     psColor32(uint8_t A, uint8_t R, uint8_t G, uint8_t B) : a(A), r(R), g(G), b(B) {}
     explicit inline psColor32(const float(&c)[4]) :
-      a((char)bss::fFastTruncate(c[0]*255.0f)),
-      r((char)bss::fFastTruncate(c[1]*255.0f)),
-      g((char)bss::fFastTruncate(c[2]*255.0f)),
-      b((char)bss::fFastTruncate(c[3]*255.0f)) {}
+      a((char)bun::fFastTruncate(c[0]*255.0f)),
+      r((char)bun::fFastTruncate(c[1]*255.0f)),
+      g((char)bun::fFastTruncate(c[2]*255.0f)),
+      b((char)bun::fFastTruncate(c[3]*255.0f)) {}
     explicit inline psColor32(const std::array<float, 4>& c) :
-      a((char)bss::fFastTruncate(c[0] * 255.0f)),
-      r((char)bss::fFastTruncate(c[1] * 255.0f)),
-      g((char)bss::fFastTruncate(c[2] * 255.0f)),
-      b((char)bss::fFastTruncate(c[3] * 255.0f)) {}
+      a((char)bun::fFastTruncate(c[0] * 255.0f)),
+      r((char)bun::fFastTruncate(c[1] * 255.0f)),
+      g((char)bun::fFastTruncate(c[2] * 255.0f)),
+      b((char)bun::fFastTruncate(c[3] * 255.0f)) {}
     explicit psColor32(const uint8_t(&c)[4]) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
     explicit psColor32(const std::array<uint8_t, 4>& c) : a(c[0]), r(c[1]), g(c[2]), b(c[3]) {}
     psColor32(uint32_t c) : color(c) {}

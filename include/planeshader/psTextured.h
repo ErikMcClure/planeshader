@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __TEXTURED_H__PS__
 #define __TEXTURED_H__PS__
 
 #include "psTex.h"
-#include "bss-util/CompactArray.h"
+#include "buntils/CompactArray.h"
 #include <vector>
 
 namespace planeshader {
@@ -21,15 +21,15 @@ namespace planeshader {
 
     virtual void SetTexture(psTex* tex, size_t index = 0);
     void ClearTextures();
-    inline psTex* GetTexture(size_t index = 0) const { if(index>=_tex.Length()) return 0; return _tex[index]; }
+    inline psTex* GetTexture(size_t index = 0) const { if(index>=_tex.size()) return 0; return _tex[index]; }
     inline psTex* const* GetTextures() const { return _tex; }
-    inline size_t NumTextures() const { return _tex.Length(); }
+    inline size_t NumTextures() const { return _tex.size(); }
 
     psTextured& operator=(const psTextured& right);
     psTextured& operator=(psTextured&& right);
 
   protected:
-    bss::CompactArray<psTex*> _tex;
+    bun::CompactArray<psTex*> _tex;
   };
 }
 

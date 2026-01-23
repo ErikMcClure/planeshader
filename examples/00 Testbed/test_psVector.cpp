@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #include "testbed.h"
@@ -6,7 +6,7 @@
 #include "psLayer.h"
 #include "psVector.h"
 
-using namespace bss;
+using namespace bun;
 using namespace planeshader;
 
 TESTDEF::RETPAIR test_psVector()
@@ -63,7 +63,7 @@ TESTDEF::RETPAIR test_psVector()
     curve.Set(psVec(100), engine->GetMouse(), psVec(300));
     curve2.Set(psVec(100), psVec(300, 100), engine->GetMouse(), psVec(300));
     tri.SetCorners(psRect(30, 10, 30, (engine->GetMouse().x - tri.GetPosition().x)/tri.GetDim().x));
-    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bssFMod(time.GetTime()*0.001, PI_DOUBLE)));
+    circle.SetArcs(psRect(atan2(-engine->GetMouse().y + circle.GetPosition().y, engine->GetMouse().x - circle.GetPosition().x) - 0.5, 1.0, 0, bunFMod(time.GetTime()*0.001, PI_DOUBLE)));
   }
 
   ENDTEST;

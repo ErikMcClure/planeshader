@@ -1,15 +1,15 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psCullGroup.h"
 #include "psLayer.h"
-#include "bss-util/Delegate.h"
+#include "buntils/Delegate.h"
 
 using namespace planeshader;
 
 psCullGroup::psCullGroup(psCullGroup&& mov) : psRenderable(std::move(mov)), _tree(std::move(mov._tree)), _nodealloc(std::move(mov._nodealloc)),
-  _list(&psEngine::Instance()->NodeAlloc)
+  _list(psEngine::Instance()->NodeAlloc)
 {}
 psCullGroup::psCullGroup(psFlag flags, int zorder, psStateblock* stateblock, psShader* shader, psLayer* pass) :
   psRenderable(flags, zorder, stateblock, shader, pass)
@@ -43,7 +43,7 @@ void psCullGroup::_render(const psTransform2D& parent)
   psLayer* cur = psLayer::CurLayer();
   assert(cur);
   float camZ = cur->GetCulling().z;
-  BSS_ALIGN(16) float rcull[4];
+  BUN_ALIGN(16) float rcull[4];
   AdjustRect(cur->GetCulling().full.RelativeTo(parent.position, parent.rotation, parent.pivot).BuildAABB().ltrb, camZ, rcull);
 
   _tree.TraverseAction(rcull, [this,cur,parent](psSolid* p) {

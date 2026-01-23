@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __CAMERA_H__PS__
@@ -7,16 +7,16 @@
 #include "psLocatable.h"
 #include "psRect.h"
 #include "psDriver.h"
-#include "bss-util/RefCounter.h"
+#include "buntils/RefCounter.h"
 
 #pragma warning(push)
 #pragma warning(disable:4251)
 
 namespace planeshader {
   // Represents a camera and viewport, but must be applied relative to some texture's dimensions
-  class PS_DLLEXPORT psCamera : public psLocatable, public bss::RefCounter, public psDriverHold // The reference counter is optional (set to 1 on initial construction)
+  class PS_DLLEXPORT psCamera : public psLocatable, public bun::RefCounter, public psDriverHold // The reference counter is optional (set to 1 on initial construction)
   {
-    typedef bss::sseVec sseVec;
+    typedef bun::sseVec sseVec;
   public:
     // Constructors
     psCamera(const psCamera& copy);
@@ -47,8 +47,8 @@ namespace planeshader {
     static psVec default_extent;
 
     struct PS_DLLEXPORT Culling {
-      BSS_ALIGN(16) psRect window;
-      BSS_ALIGN(16) psRect winfixed;
+      BUN_ALIGN(16) psRect window;
+      BUN_ALIGN(16) psRect winfixed;
       mutable sseVec SSEwindow;
       sseVec SSEwindow_center;
       sseVec SSEwindow_hold;
@@ -63,7 +63,7 @@ namespace planeshader {
       Culling(const Culling&);
       Culling();
       inline void SetSSE();
-      BSS_FORCEINLINE bool Cull(const psRectRotateZ& rect, const psTransform2D* parent, psFlag flags) const
+      BUN_FORCEINLINE bool Cull(const psRectRotateZ& rect, const psTransform2D* parent, psFlag flags) const
       {
         if((flags&PSFLAG_DONOTCULL) != 0)
           return false;

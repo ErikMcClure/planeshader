@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #ifndef __TESTBED_H__
@@ -9,9 +9,9 @@
 #include "psEngine.h"
 #include "psColor.h"
 #include "psCamera.h"
-#include "bss-util/HighPrecisionTimer.h"
-#include "bss-util/lockless.h"
-#include "bss-util/Str.h"
+#include "buntils/HighPrecisionTimer.h"
+#include "buntils/lockless.h"
+#include "buntils/Str.h"
 
 struct TESTDEF
 {
@@ -42,14 +42,14 @@ static void _ITERFUNC(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { for(uint3
 template<class T, size_t SIZE, class F>
 static void _ITERALL(TESTDEF::RETPAIR& __testret, T(&t)[SIZE], F f) { bool __val = true; for(uint32_t i = 0; i < SIZE; ++i) __val = __val && (f(i)); TEST(__val); }
 
-extern bss::Logger _failedtests;
+extern bun::Logger _failedtests;
 extern planeshader::psCamera globalcam;
 extern planeshader::psEngine* engine;
 extern bool gotonext;
 
 extern bool comparevec(planeshader::psVec a, planeshader::psVec b, int diff = 1);
 extern bool comparevec(planeshader::psColor& a, planeshader::psColor& b, int diff = 1);
-extern bss::Str ReadFile(const char* path);
+extern bun::Str ReadFile(const char* path);
 extern void processGUI();
 extern void updatefpscount(uint64_t& timer, int& fps);
 

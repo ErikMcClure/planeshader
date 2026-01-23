@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __SOLID_H__PS__
@@ -8,7 +8,7 @@
 #include "psRenderable.h"
 #include "psRect.h"
 
-namespace bss { template<typename T> struct KDNode; }
+namespace bun { template<typename T> struct KDNode; }
 
 namespace planeshader {
   // A solid is an inheritable with dimensions. Only objects inheriting from psSolid can be culled.
@@ -63,7 +63,7 @@ namespace planeshader {
     void _setdim(const psVec& dim);
 
     psRect _boundingrect;
-    bss::KDNode<psSolid>* _kdnode;
+    bun::KDNode<psSolid>* _kdnode;
   };
 }
 

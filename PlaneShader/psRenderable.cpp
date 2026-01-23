@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psRenderable.h"
 #include "psLayer.h"
 #include "psTex.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 
 using namespace planeshader;
 

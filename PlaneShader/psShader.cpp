@@ -1,9 +1,9 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psShader.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 
 using namespace planeshader;
 
@@ -36,17 +36,7 @@ bool psShader::SetConstants(const void* data, uint32_t sz, uint8_t I)
   return true;
 }
 
-psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, ...)
-{
-  PROFILE_FUNC();
-  VARARRAY(SHADER_INFO, infos, num);
-  va_list vl;
-  va_start(vl, num);
-  for(uint32_t i = 0; i < num; ++i) infos[i] = *va_arg(vl, const SHADER_INFO*);
-  va_end(vl);
-  return CreateShader(nlayout, layout, num, infos);
-}
-psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, const SHADER_INFO* infos)
+psShader* psShader::CreateShader(const std::span<ELEMENT_DESC> layouts, const std::span<SHADER_INFO> infos)
 {
   PROFILE_FUNC();
   if(!_driver) return 0;
@@ -57,7 +47,7 @@ psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, ui
   uint8_t index=-1;
   uint8_t minvalid=-1;
   uint8_t minindex=-1;
-  for(uint8_t i = 0; i < num; ++i)
+  for(uint8_t i = 0; i < infos.size(); ++i)
   {
     if(infos[i].v<=VERTEX_SHADER_5_0)
       index=0;
@@ -72,8 +62,7 @@ psShader* psShader::CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, ui
     sz[index] = infos[i].ty_sz;
     if(sz[index]>0) sc[index] = _driver->CreateBuffer(sz[index], 1, USAGE_CONSTANT_BUFFER|USAGE_DYNAMIC, infos[i].init);
   }
-  assert(!num || (minindex<num));
-  psShader* s = new psShader((!layout || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layout, nlayout), ss, sc, sz);
+  psShader* s = new psShader((layouts.empty() || !infos[minindex].shader)?0:_driver->CreateLayout(infos[minindex].shader, layouts.data(), layouts.size()), ss, sc, sz);
   s->Grab();
   return s;
 }
@@ -92,16 +81,14 @@ psShader* psShader::CreateShader(const psShader* copy)
   r->Grab();
   return r;
 }
-psShader* psShader::MergeShaders(uint32_t num, const psShader* first, ...)
+psShader* psShader::MergeShaders(std::span<psShader> shaders)
 {
   PROFILE_FUNC();
-  if(!num) return 0;
-  psShader* r = new psShader(*first);
-  va_list vl;
-  va_start(vl, first);
-  for(uint32_t i = 1; i < num; ++i)
-    *r += *va_arg(vl, const psShader*);
-  va_end(vl);
+  if (!shaders.size()) return nullptr;
+  psShader* r = new psShader(shaders.front());
+  for (auto shader : shaders) {
+    *r += shader;
+  }
   r->Grab();
   return r;
 }

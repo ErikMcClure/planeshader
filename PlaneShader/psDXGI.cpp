@@ -1,8 +1,8 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
-#include "bss-util/DynArray.h"
+#include "buntils/DynArray.h"
 #include "psDXGI.h"
 
 using namespace planeshader;
@@ -22,24 +22,24 @@ IDXGIAdapter* psDXGI::_createfactory(HWND hwnd, IDXGIOutput*& out)
   if(FAILED(_lasterr = _factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER)))
     PSLOG(2, "MakeWindowAssociation failed with error: ", GetDXGIError(_lasterr));
 
-  bss::DynArray<IDXGIAdapter*, uint8_t> _adapters;
+  bun::DynArray<IDXGIAdapter*, uint8_t> _adapters;
   IDXGIAdapter* adapter = NULL;
   for(uint8_t i = 0; _factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i)
     _adapters.Add(adapter);
 
-  if(!_adapters.Length())
+  if(!_adapters.size())
   {
     PSLOG(0, "No adapters to attach to!");
     return 0;
   }
   adapter = _adapters[0];
 
-  bss::DynArray<IDXGIOutput*, uint8_t> _outputs;
+  bun::DynArray<IDXGIOutput*, uint8_t> _outputs;
   IDXGIOutput* output = NULL;
   for(uint8_t i = 0; adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND; ++i)
     _outputs.Add(output);
 
-  if(!_outputs.Length())
+  if(!_outputs.size())
   {
     PSLOG(0, "No outputs to attach to!");
     return adapter;

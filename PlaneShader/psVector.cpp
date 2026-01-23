@@ -1,13 +1,13 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psVector.h"
-#include "bss-util/algo.h"
+#include "buntils/algo.h"
 #include "psTex.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 psQuadraticHull::psQuadraticHull() : psRenderable(0, 0, 0, _driver->library.CURVE, 0) {}
 psQuadraticHull::~psQuadraticHull() {}
@@ -16,13 +16,13 @@ void psQuadraticHull::_render(const psTransform2D& parent)
 {
   static psBufferObj bufobj = *_driver->CreateBufferObj(&bufobj, CURVEBUFSIZE, sizeof(QuadVertex), USAGE_VERTEX | USAGE_DYNAMIC, 0);
   if(parent == psTransform2D::Zero)
-    _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
+    _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.size(), &bufobj, 0, TRIANGLELIST, GetFlags());
   else
   {
     psMatrix m;
     parent.GetMatrix(m);
     _driver->PushTransform(m);
-    _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.Length(), &bufobj, 0, TRIANGLELIST, GetFlags());
+    _driver->DrawArray(GetShader(), GetStateblock(), _verts.begin(), _verts.size(), &bufobj, 0, TRIANGLELIST, GetFlags());
     _driver->PopTransform();
   }
 }
@@ -54,7 +54,7 @@ void psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float t
   if(!isfinite(t.x)) t.x = 0;
   if(!isfinite(t.y)) t.y = 0;
 
-  t = psVec(bssclamp(t.x, 0, 1), bssclamp(t.y, 0, 1)); // Clamp to [0,1]
+  t = psVec(bun_clamp(t.x, 0, 1), bun_clamp(t.y, 0, 1)); // Clamp to [0,1]
   psVec pmax = QuadraticBezierCurve<psVec, psVec>(t, p[0], p[1], p[2]); // Simultaneously plug in t values for x and y to get our candidate maximum point.
   psVec pmin = pmax;
   if(p[0].x > pmax.x) pmax.x = p[0].x;
@@ -84,7 +84,7 @@ void psQuadraticHull::AppendQuadraticCurve(psVec p0, psVec p1, psVec p2, float t
   static const int VSIZE = 6;
   psVec verts[VSIZE] = { rect[0], rect[1], rect[2], rect[2], rect[1], rect[3] };
 
-  _verts.SetLength(_verts.Length() + VSIZE);
+  _verts.SetLength(_verts.size() + VSIZE);
   QuadVertex* v = _verts.end() - VSIZE;
   for(int i = 0; i < VSIZE; ++i)
   {
@@ -167,7 +167,7 @@ void psCubicCurve::Set(psVec(&p)[4])
 }
 void psCubicCurve::_addquad(const float(&P0)[2], const float(&P1)[2], const float(&P2)[2])
 {
-  AppendQuadraticCurve(psVec(P0), psVec(P1), psVec(P2), _thickness, _color.color, !_verts.Length() | (psVec(P2) == _p[3])*2);
+  AppendQuadraticCurve(psVec(P0), psVec(P1), psVec(P2), _thickness, _color.color, !_verts.size() | (psVec(P2) == _p[3])*2);
 }
 
 psRoundRect::psRoundRect(const psRoundRect& copy) : psSolid(copy), _color(copy._color), _outline(copy._outline), _corners(copy._corners), _edge(copy._edge) {}

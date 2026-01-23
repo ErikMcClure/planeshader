@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -40,15 +40,15 @@ psImage& psImage::operator =(psImage&& right)
   return *this;
 }
 
-void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.Length()); if(_uvs.Length()==1) _recalcdim(); }
+void psImage::AddSource(const psRect& r) { _uvs.Insert(r, _uvs.size()); if(_uvs.size()==1) _recalcdim(); }
 void psImage::ClearSources() { _uvs.SetLength(0); }
 
 void psImage::_setuvs(size_t size)
 {
-  size_t oldsize = _uvs.Length();
+  size_t oldsize = _uvs.size();
   if(size>oldsize)
     _uvs.SetLength(size);
-  for(size_t i = oldsize; i < _uvs.Length(); ++i)
+  for(size_t i = oldsize; i < _uvs.size(); ++i)
     _uvs[i]=RECT_UNITRECT;
 }
 
@@ -66,13 +66,13 @@ void psImage::SetTexture(psTex* tex, size_t index)
 
 void psImage::_recalcdim()
 {
-  if(_tex.Length() > 0 && _tex[0])
-    SetDim((_uvs.Length()>0)?(_tex[0]->GetDim()*_uvs[0].Dim()):_tex[0]->GetDim());
+  if(_tex.size() > 0 && _tex[0])
+    SetDim((_uvs.size()>0)?(_tex[0]->GetDim()*_uvs[0].Dim()):_tex[0]->GetDim());
 }
 
 void psImage::ApplyEdgeBuffer()
 {
-  if(_tex.Length() > 0 && _tex[0])
+  if(_tex.size() > 0 && _tex[0])
   {
     if(!NumSources()) AddSource();
     SetSource(GetSource(0).Inflate(1.0f));

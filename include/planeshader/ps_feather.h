@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __FEATHER_H__PS__
@@ -6,13 +6,13 @@
 
 #include "psMonitor.h"
 #include "psRenderable.h"
-#include "bss-util/Delegate.h"
+#include "buntils/Delegate.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psRoot : public fgRoot, public psDriverHold, public psRenderable
   {
   public:
-    typedef bss::Delegate<size_t, const FG_Msg&> PS_MESSAGE;
+    typedef bun::Delegate<size_t, const FG_Msg&> PS_MESSAGE;
 
     psRoot();
     ~psRoot();

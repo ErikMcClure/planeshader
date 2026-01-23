@@ -1,0 +1,485 @@
+// Copyright (c)2026 Erik McClure
+// For conditions of distribution and use, see copyright notice in "feathergui.h"
+
+#include "feathercpp.h"
+#include "fgBox.h"
+#include "fgRoot.h"
+#include "buntils/algo.h"
+
+void fgBox_Init(fgBox* self, fgElement* BUN_RESTRICT parent, fgElement* BUN_RESTRICT next, const char* name, fgFlag flags, const fgTransform* transform, fgMsgType units)
+{
+  fgElement_InternalSetup(*self, parent, next, name, flags, transform, units, (fgDestroy)&fgBox_Destroy, (fgMessage)&fgBox_Message);
+}
+void fgBox_Destroy(fgBox* self)
+{
+  ((fgElementArray&)self->selected).~ArraySort();
+  fgBoxOrderedElement_Destroy(&self->order);
+  self->scroll->message = (fgMessage)fgScrollbar_Message;
+  fgScrollbar_Destroy(&self->scroll); // this will destroy our prechildren for us.
+}
+void fgBoxOrderedElement_Destroy(struct _FG_BOX_ORDERED_ELEMENTS_* self)
+{
+  ((bun::DynArray<fgElement*>&)self->ordered).~DynArray();
+}
+
+bool BUN_FORCEINLINE checkIsOrdered(fgElement* root)
+{
+  if(!root) return true;
+  char count = !(root->flags&FGELEMENT_BACKGROUND);
+  root = root->next;
+  while(count < 3 && root != 0)
+  {
+    if(!(root->flags&FGELEMENT_BACKGROUND) == !(count % 2))
+      ++count;
+    root = root->next;
+  }
+  return count < 3; // If count never exceeded 2, then this matches the pattern BACKGROUND-FOREGROUND-BACKGROUND.
+}
+
+template<fgFlag FLAGS> BUN_FORCEINLINE char fgBoxVecCompare(const AbsVec& l, const AbsVec& r);
+template<> BUN_FORCEINLINE char fgBoxVecCompare<FGBOX_TILEX>(const AbsVec& l, const AbsVec& r) { return SGNCOMPARE(l.x, r.x); }
+template<> BUN_FORCEINLINE char fgBoxVecCompare<FGBOX_TILEY>(const AbsVec& l, const AbsVec& r) { return SGNCOMPARE(l.y, r.y); }
+template<> BUN_FORCEINLINE char fgBoxVecCompare<FGBOX_TILE>(const AbsVec& l, const AbsVec& r) { char ret = SGNCOMPARE(l.y, r.y); return !ret ? SGNCOMPARE(l.x, r.x) : ret; }
+template<> BUN_FORCEINLINE char fgBoxVecCompare<FGBOX_TILE | FGBOX_GROWY>(const AbsVec& l, const AbsVec& r) { char ret = SGNCOMPARE(l.x, r.x); return !ret ? SGNCOMPARE(l.y, r.y) : ret; }
+
+BUN_FORCEINLINE AbsVec fgOrderedBottomRight(const AbsRect& r) { return r.bottomright; }
+template<fgFlag FLAGS>
+BUN_FORCEINLINE AbsVec fgOrderedCorner(const AbsRect& r) { return AbsVec{ r.right, r.top }; } // TopRight
+template<>
+BUN_FORCEINLINE AbsVec fgOrderedCorner<FGBOX_GROWY>(const AbsRect& r) { return AbsVec{ r.left, r.bottom }; } // BottomLeft
+
+template<fgFlag FLAGS, AbsVec(*CORNER)(const AbsRect&)>
+char fgOrderedCompare(const AbsVec& l, const fgElement* const& e, const AbsRect* cache)
+{
+  assert(e->parent != 0);
+  AbsRect r;
+  ResolveRectCache(e, &r, cache, &e->parent->padding);
+  return fgBoxVecCompare<FLAGS&(FGBOX_TILE | FGBOX_GROWY)>(l, CORNER(r));
+}
+
+template<fgFlag FLAGS>
+fgElement* fgOrderedGet(struct _FG_BOX_ORDERED_ELEMENTS_* self, const AbsRect* area, const AbsRect* cache)
+{
+  if(!self->ordered.l)
+    return 0;
+
+  size_t r = 0;
+
+  if((FLAGS&FGBOX_TILE) != FGBOX_TILE) // Simple case is easy
+    r = bun::internal::binsearch_aux_t<const fgElement*, AbsVec, size_t, &bun::CompT_NEQ<char>, (size_t)~0, const AbsRect*>::template BinarySearchNear<&fgOrderedCompare<FLAGS, &fgOrderedBottomRight>>(self->ordered.p, area->topleft, 0, self->ordered.l, cache);
+  else
+  {
+    AbsVec query = (FLAGS&FGBOX_GROWY) ? AbsVec{ area->left, -INFINITY } : AbsVec{ -INFINITY, area->top }; // First we find the target column we want by querying (x,-infinity)
+    r = bun::internal::binsearch_aux_t<const fgElement*, AbsVec, size_t, &bun::CompT_NEQ<char>, (size_t)~0, const AbsRect*>::template BinarySearchNear<&fgOrderedCompare<FLAGS, fgOrderedCorner<FLAGS&FGBOX_GROWY>>>(self->ordered.p, query, 0, self->ordered.l, cache);
+
+    if(r == self->ordered.l) // If this happens, we went past the END of the array
+      r = self->ordered.l - 1;
+    if(r < self->ordered.l) // Then, if this elements left edge is greater than the area left edge, go back one to get the previous column.
+    {
+      AbsRect abs;
+      ResolveOuterRectCache(self->ordered.p[r], &abs, cache, &self->ordered.p[r]->parent->padding);
+      if(((FLAGS&FGBOX_GROWY) && (abs.left > area->left)) || (!(FLAGS&FGBOX_GROWY) && (abs.top > area->top)))
+        r -= 1;
+    }
+    if(r >= self->ordered.l) // Otherwise we went past the START of the array
+      r = 0;
+
+    AbsRect abs;
+    ResolveOuterRectCache(self->ordered.p[r], &abs, cache, &self->ordered.p[r]->parent->padding);
+    query = (FLAGS&FGBOX_GROWY) ? AbsVec{ abs.left, area->top } : AbsVec{ area->left, abs.top }; // Now that we have the correct column, create a query on the y-axis using the left edge of the column.
+    r = bun::internal::binsearch_aux_t<const fgElement*, AbsVec, size_t, &bun::CompT_NEQ<char>, (size_t)~0, const AbsRect*>::template BinarySearchNear<&fgOrderedCompare<FLAGS, fgOrderedCorner<FLAGS&FGBOX_GROWY>>>(self->ordered.p, query, 0, self->ordered.l, cache);
+  }
+  return (r >= self->ordered.l) ? self->ordered.p[0] : self->ordered.p[r];
+}
+template<fgFlag FLAGS>
+BUN_FORCEINLINE fgElement* fgBoxOrder(fgElement* self, const AbsRect* area, const AbsRect* cache) { return fgOrderedGet<FLAGS>(&((fgBox*)self)->order, area, cache); }
+
+template<fgFlag FLAGS>
+inline fgElement* fgBoxOrderInject(fgElement* self, const FG_Msg* msg)
+{
+  AbsRect r = { (FABS)msg->x, (FABS)msg->y, (FABS)msg->x, (FABS)msg->y };
+  AbsRect cache;
+  ResolveRect(self, &cache);
+  return fgOrderedGet<FLAGS>(&((fgBox*)self)->order, &r, &cache);
+}
+
+inline fgOrderedDrawGet fgBox_GetDrawOrderFn(fgFlag flags)
+{
+  switch(flags&(FGBOX_TILE | FGBOX_GROWY))
+  {
+  case 0:
+  case FGBOX_TILEX: return &fgBoxOrder<FGBOX_TILEX>;
+  case FGBOX_TILEY: return &fgBoxOrder<FGBOX_TILEY>;
+  case FGBOX_TILE: return&fgBoxOrder<FGBOX_TILE>;
+  case FGBOX_TILE | FGBOX_GROWY: return &fgBoxOrder<FGBOX_TILE | FGBOX_GROWY>;
+  }
+  assert(false);
+  return 0;
+}
+
+fgElement* fgBoxOrderedElement_Get(struct _FG_BOX_ORDERED_ELEMENTS_* self, const AbsRect* target, const AbsRect* area, fgFlag flags)
+{
+  switch(flags&(FGBOX_TILE | FGBOX_GROWY))
+  {
+  case FGBOX_TILEX: return fgOrderedGet<FGBOX_TILEX>(self, target, area);
+  case FGBOX_TILEY: return fgOrderedGet<FGBOX_TILEY>(self, target, area);
+  case FGBOX_TILE: return fgOrderedGet<FGBOX_TILE>(self, target, area);
+  case FGBOX_TILE | FGBOX_GROWY: return fgOrderedGet<FGBOX_TILE|FGBOX_GROWY>(self, target, area);
+  }
+  return 0;
+}
+
+void fgBoxRenderDividers(fgElement* self, fgColor color, const fgSkin* skin, const AbsRect* area, const AbsRect* drawarea, const fgDrawAuxData* aux, fgElement* begin)
+{
+  if(!color.a && !skin)
+    return;
+  fgElement* next = begin;
+  begin = fgLayout_GetPrev(begin);
+  if(!begin)
+    begin = next;
+
+  AbsRect rbegin;
+  ResolveRectCache(begin, &rbegin, area, &self->padding);
+  AbsVec center = ResolveVec(&self->transform.center, area);
+  AbsVec offset = { 0,0 };
+  AbsVec scale = { 1,1 };
+
+  while(next = fgLayout_GetNext(begin)) // We only draw dividers between elements, so once we hit the last one, stop
+  {
+    AbsRect rnext;
+    ResolveRectCache(next, &rnext, area, &self->padding);
+
+    if(self->flags&FGBOX_TILEX)
+    {
+      if(skin)
+      {
+        AbsRect rect = { rbegin.right, drawarea->top, rnext.left, drawarea->bottom };
+        fgDrawSkin(skin, &rect, aux, false);
+      }
+      else
+      {
+        float avg = fgSnapAll<floorf>((rnext.left + rbegin.right) * 0.5f, aux->dpi.x);
+        AbsVec v[2] = { { avg,floor(drawarea->top + self->padding.top)}, { avg,floor(drawarea->bottom - self->padding.bottom)} };
+        fgroot_instance->backend.fgDrawLines(v, 2, color.color, &offset, &scale, self->transform.rotation, &center, aux);
+      }
+    }
+    else
+    {
+      if(skin)
+      {
+        AbsRect rect = { drawarea->left, rbegin.bottom, drawarea->right, rnext.top };
+        fgDrawSkin(skin, &rect, aux, false);
+      }
+      else
+      {
+        float avg = fgSnapAll<floorf>((rnext.top + rbegin.bottom) * 0.5f, aux->dpi.y);
+        AbsVec v[2] = { { floor(drawarea->left + self->padding.left),avg },{ floor(drawarea->right - self->padding.right),avg } };
+        fgroot_instance->backend.fgDrawLines(v, 2, color.color, &offset, &scale, self->transform.rotation, &center, aux);
+      }
+    }
+
+    begin = next;
+    rbegin = rnext;
+  }
+}
+
+void fgBox_Draw(fgElement* self, const AbsRect* area, const fgDrawAuxData* data, fgElement* begin)
+{
+  fgBox* realself = reinterpret_cast<fgBox*>(self);
+  fgBoxRenderDividers(self, realself->dividercolor, realself->dividerskin, area, area, data, begin);
+}
+
+void fgBox_DeselectAll(fgBox* self)
+{
+  for(size_t i = 0; i < self->selected.l; ++i)
+    fgSetFlagStyle(self->selected.p[i], "selected", false);
+  ((fgElementArray&)self->selected).Clear();
+}
+
+void fgBox_SelectTarget(fgBox* self, fgElement* target)
+{
+  assert(target != 0 && target->parent == (fgElement*)self);
+
+  fgSetFlagStyle(target, "selected", true);
+  ((fgElementArray&)self->selected).Insert(target);
+  self->scroll->Selection(target);
+}
+
+void fgBox_SetSpacing(fgElement* self, AbsVec& spacing, const FG_Msg* msg)
+{
+  uint16_t diff = 0;
+  if(spacing.x != msg->f) diff |= FGMOVE_RESIZEX;
+  if(spacing.y != msg->f2) diff |= FGMOVE_RESIZEY;
+  if(diff != 0)
+  {
+    spacing.x = msg->f;
+    spacing.y = msg->f2;
+    if((msg->subtype&(FGUNIT_X_MASK | FGUNIT_Y_MASK)) != 0)
+      fgResolveVecUnit(spacing, self->GetDPI(), self->GetLineHeight(), msg->subtype);
+    _sendsubmsg<FG_LAYOUTCHANGE, void*, size_t>(self, FGELEMENT_LAYOUTRESET, 0, 0);
+  }
+}
+size_t fgBox_Message(fgBox* self, const FG_Msg* msg)
+{
+  switch(msg->type)
+  {
+  case FG_CONSTRUCT:
+    self->fndraw = &fgBox_Draw;
+    self->dividercolor.color = 0;
+    self->dividerskin = 0;
+    self->fixedsize.x = -1;
+    self->fixedsize.y = -1;
+    bun::bssFill(self->selected, 0);
+    bun::bssFill(self->spacing, 0);
+    break;
+  case FG_CLONE:
+    if(msg->e)
+    {
+      fgBox* hold = reinterpret_cast<fgBox*>(msg->e);
+      bun::memsubcpy<fgBox, fgScrollbar>(hold, self); // We do this first because we have to ensure our messages can process ADDCHILD correctly.
+      bun::bssFill(hold->order.ordered);
+      bun::bssFill(hold->selected);
+      fgScrollbar_Message(&self->scroll, msg);
+    }
+    return sizeof(fgBox);
+  case FG_GETCOLOR:
+    if(msg->subtype == FGSETCOLOR_DIVIDER)
+      return self->dividercolor.color;
+    break;
+  case FG_SETCOLOR:
+    if(msg->subtype != FGSETCOLOR_DIVIDER)
+      break;
+    self->dividercolor.color = msg->u;
+    return FG_ACCEPT;
+  case FG_DRAW:
+    if(!self->order.isordered || !self->order.ordered.l)
+      fgStandardDraw(*self, (AbsRect*)msg->p, (fgDrawAuxData*)msg->p2, msg->subtype & 1, self->fndraw);
+    else
+      fgOrderedDraw(*self, (AbsRect*)msg->p, (fgDrawAuxData*)msg->p2, msg->subtype & 1, self->order.ordered.p[self->order.ordered.l - 1]->next, fgBox_GetDrawOrderFn(self->scroll->flags), self->fndraw, self->selected.l > 0 ? self->selected.p[0] : 0);
+    return FG_ACCEPT;
+  case FG_INJECT:
+    if(!self->order.isordered || !self->order.ordered.l)
+      return fgStandardInject(*self, (const FG_Msg*)msg->p, (const AbsRect*)msg->p2);
+    else
+    {
+      fgElement* (*fn)(fgElement*, const FG_Msg*);
+      switch(self->scroll->flags&(FGBOX_TILE | FGBOX_GROWY))
+      {
+      case 0:
+      case FGBOX_TILEX: fn = &fgBoxOrderInject<FGBOX_TILEX>; break;
+      case FGBOX_TILEY: fn = &fgBoxOrderInject<FGBOX_TILEY>; break;
+      case FGBOX_TILE: fn = &fgBoxOrderInject<FGBOX_TILE>; break;
+      case FGBOX_TILE | FGBOX_GROWY: fn = &fgBoxOrderInject<FGBOX_TILE | FGBOX_GROWY>; break;
+      }
+      return fgOrderedInject(*self, (const FG_Msg*)msg->p, (const AbsRect*)msg->p2, self->order.ordered.p[self->order.ordered.l - 1]->next, fn, self->selected.l > 0 ? self->selected.p[0] : 0);
+    }
+  case FG_SETDIM:
+    if((msg->subtype&FGDIM_MASK) == FGDIM_SPACING)
+    {
+      fgBox_SetSpacing(*self, self->spacing, msg);
+      return FG_ACCEPT;
+    }
+    break;
+  case FG_GETDIM:
+    if((msg->subtype&FGDIM_MASK) == FGDIM_SPACING)
+      return (size_t)&self->spacing;
+    break;
+  case FG_GETSELECTEDITEM:
+    return (msg->u) < self->selected.l ? (size_t)self->selected.p[msg->u] : 0;
+  case FG_REMOVECHILD:
+    for(size_t i = 0; i < self->selected.l; ++i)
+      if(self->selected.p[i] == msg->e)
+      {
+        ((fgElementArray&)self->selected).Remove(i);
+        break;
+      }
+    break;
+  case FG_NEUTRAL: // We don't actually want to set these styles
+  case FG_HOVER:
+  case FG_ACTIVE:
+    return 0;
+  case FG_SETSKIN:
+    fgBoxOrderedElement_Message(&self->order, msg, *self, (fgMessage)&fgScrollbar_Message, &self->spacing);
+    if(self->scroll->skin)
+      self->dividerskin = self->scroll->skin->base.GetSkin("Box$divider");
+    return FG_ACCEPT;
+  case FG_GETCLASSNAME:
+    return (size_t)"Box";
+  }
+
+  return fgBoxOrderedElement_Message(&self->order, msg, *self, (fgMessage)&fgScrollbar_Message, &self->spacing);
+}
+
+void fgBoxCheckOrdered(struct _FG_BOX_ORDERED_ELEMENTS_* self, const FG_Msg* msg, fgElement* element, fgElement* next)
+{
+  if((msg->e->flags & (FGELEMENT_BACKGROUND | FGELEMENT_NOCLIP)) == FGELEMENT_NOCLIP)
+    self->isordered = 0; // If ANY foreground elements are nonclipping, we can't use ordered rendering, because this would require us to maintain a second "nonclipping" sorted array.
+  if(self->isordered)
+  {
+    fgElement* prev = !next ? element->last : next->prev;
+    if(msg->e->flags&FGELEMENT_BACKGROUND) // If we're a background element, just make sure we aren't surrounded by foreground elements
+    {
+      if(next != 0 && !(next->flags&FGELEMENT_BACKGROUND) && prev != 0 && !(prev->flags&FGELEMENT_BACKGROUND))
+        self->isordered = 0;
+    }
+    else if(!((next != 0 && !(next->flags&FGELEMENT_BACKGROUND)) || (prev != 0 && !(prev->flags&FGELEMENT_BACKGROUND)))) // if we are a foreground element and we're touching a foreground element on either side, we're okay. Otherwise, do a probe.
+    {
+      while(next && (next->flags&FGELEMENT_BACKGROUND)) next = next->next;
+      while(prev && (prev->flags&FGELEMENT_BACKGROUND)) prev = prev->prev;
+      if((next != 0 && !(next->flags&FGELEMENT_BACKGROUND)) || (prev != 0 && !(prev->flags&FGELEMENT_BACKGROUND)))
+        self->isordered = 0; // If we are a foreground element and we just hit another foreground element, there must be at least one background element seperating us, which is invalid.
+    }
+  }
+}
+
+void fgBoxOrderedRemove(struct _FG_BOX_ORDERED_ELEMENTS_* self, fgElement* target)
+{
+  for(size_t i = 0; i < self->ordered.l; ++i)
+    if(self->ordered.p[i] == target)
+      ((bun::DynArray<fgElement*>&)self->ordered).Remove(i);
+}
+void fgBoxOrderedInsert(struct _FG_BOX_ORDERED_ELEMENTS_* self, fgElement* target, fgElement* next)
+{
+  if(!next || next->flags&FGELEMENT_BACKGROUND)
+    ((bun::DynArray<fgElement*>&)self->ordered).Add(target);
+  else
+  {
+    size_t i = self->ordered.l;
+    while(i > 0 && self->ordered.p[--i] != next);
+    assert(!self->ordered.p || self->ordered.p[i] == next);
+    ((bun::DynArray<fgElement*>&)self->ordered).Insert(target, i);
+  }
+}
+
+size_t fgBoxOrderedElement_Message(struct _FG_BOX_ORDERED_ELEMENTS_* self, const FG_Msg* msg, fgElement* element, fgMessage callback, const AbsVec* spacing)
+{
+  fgFlag otherint = (fgFlag)msg->u;
+  fgFlag flags = element->flags;
+
+  switch(msg->type)
+  {
+  case FG_CONSTRUCT:
+    bun::bssFill(self->ordered, 0);
+    self->isordered = 1;
+    break;
+  case FG_SETFLAG: // Do the same thing fgElement does to resolve a SETFLAG into SETFLAGS
+    otherint = bun::bssSetBit<fgFlag>(flags, otherint, msg->u2 != 0);
+  case FG_SETFLAGS:
+    if((otherint^flags) & FGBOX_LAYOUTMASK)
+    { // handle a layout flag change
+      size_t r = callback(element, msg); // we have to actually set the flags first before resetting the layout
+      fgSubMessage(element, FG_LAYOUTCHANGE, FGELEMENT_LAYOUTRESET, 0, 0);
+      return r;
+    }
+    break;
+  case FG_LAYOUTFUNCTION:
+    if(element->flags&FGBOX_DISTRIBUTE) // DISTRIBUTE overrides the tiling flags
+      return fgDistributeLayout(element, (const FG_Msg*)msg->p, element->flags&FGBOX_LAYOUTMASK, (AbsVec*)msg->p2);
+    if(element->flags&(FGBOX_TILEX | FGBOX_TILEY))
+      return fgTileLayout(element, (const FG_Msg*)msg->p, element->flags&FGBOX_LAYOUTMASK, (AbsVec*)msg->p2, *spacing);
+    break; // If no layout flags are specified, fall back to default layout behavior.
+  case FG_REMOVECHILD:
+  {
+    fgBoxOrderedRemove(self, msg->e);
+    size_t r = callback(element, msg);
+    self->isordered = checkIsOrdered(element->root);
+    return r;
+  }
+  case FG_REORDERCHILD:
+    assert(msg->p != 0);
+    if(callback(element, msg) == FG_ACCEPT)
+    {
+      fgElement* next = msg->e->next;
+      fgBoxCheckOrdered(self, msg, element, next);
+
+      if(!(msg->e->flags&FGELEMENT_BACKGROUND))
+      {
+        if(self->isordered) // If we are still ordered, we have to remove this from the array and add it back in at the proper location
+        {
+          fgBoxOrderedRemove(self, msg->e);
+          fgBoxOrderedInsert(self, msg->e, next);
+        }
+        else
+          self->ordered.l = 0;
+      }
+      return FG_ACCEPT;
+    }
+    return 0;
+  case FG_ADDCHILD:
+    assert(msg->p != 0);
+    if(callback(element, msg) == FG_ACCEPT)
+    {
+      fgElement* next = msg->e->next;
+      fgBoxCheckOrdered(self, msg, element, next);
+
+      if(!(msg->e->flags&FGELEMENT_BACKGROUND))
+      {
+        if(self->isordered) // If we are still ordered, we have to remove this from the array and add it back in at the proper location
+          fgBoxOrderedInsert(self, msg->e, next);
+        else
+          self->ordered.l = 0;
+      }
+      return FG_ACCEPT;
+    }
+    return 0;
+  case FG_ADDITEM:
+    if(!self->isordered || msg->subtype != FGITEM_ELEMENT)
+      return 0; // Can't set anything if we aren't ordered
+    else
+    {
+      fgElement* next = (msg->u2 < self->ordered.l) ? self->ordered.p[msg->u2] : 0;
+      element->AddChild(msg->e, next);
+      return FG_ACCEPT;
+    }
+  case FG_REMOVEITEM:
+    if(!self->isordered)
+    {
+      fgLog(FGLOG_INFO, "Attempt to remove by index from unordered box: %s", fgGetFullName(element).c_str());
+      return 0; // Can't remove by index if we aren't ordered
+    }
+    if(msg->u < self->ordered.l)
+    {
+      VirtualFreeChild(self->ordered.p[msg->u]);
+      return FG_ACCEPT;
+    }
+    return 0;
+  case FG_GETITEM:
+    if(!self->isordered)
+      return 0; // If this isn't ordered we can't get an item by index (we don't log this because it's used as a probe test)
+    if(msg->subtype == FGITEM_COUNT)
+      return self->ordered.l;
+    if(msg->subtype == FGITEM_LOCATION) // This means to query for the nearest element to the given coordinates.
+    {
+      AbsRect r = { (FABS)msg->x, (FABS)msg->y, (FABS)msg->x, (FABS)msg->y };
+      AbsRect cache;
+      ResolveRect(element, &cache);
+
+      switch(element->flags&(FGBOX_TILE | FGBOX_GROWY))
+      {
+      case 0:
+      case FGBOX_TILEX: return (size_t)fgOrderedGet<FGBOX_TILEX>(self, &r, &cache);
+      case FGBOX_TILEY: return (size_t)fgOrderedGet<FGBOX_TILEY>(self, &r, &cache);
+      case FGBOX_TILE: return (size_t)fgOrderedGet<FGBOX_TILE>(self, &r, &cache);
+      case FGBOX_TILE | FGBOX_GROWY: return (size_t)fgOrderedGet<FGBOX_TILE | FGBOX_GROWY>(self, &r, &cache);
+      }
+    }
+    else if(msg->u < self->ordered.l)
+      return (size_t)self->ordered.p[msg->u];
+    fgLog(FGLOG_INFO, "Invalid get index %zu from box: %s", msg->u, fgGetFullName(element).c_str());
+    return 0;
+  case FG_SETITEM:
+    if(!self->isordered || msg->subtype != FGITEM_ELEMENT)
+      return 0; // Can't set anything if we aren't ordered
+    if(msg->u2 < self->ordered.l)
+    {
+      fgElement* next = self->ordered.p[msg->u2]->next;
+      VirtualFreeChild(self->ordered.p[msg->u2]);
+      element->AddChild(msg->e, next);
+      return FG_ACCEPT;
+    }
+    fgLog(FGLOG_INFO, "Invalid set index %zu from box: %s", msg->u2, fgGetFullName(element).c_str());
+    return 0;
+  }
+
+  return callback(element, msg);
+}

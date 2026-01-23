@@ -1,16 +1,16 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psGUIManager.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 
 #include "win32_includes.h"
 #include <Mmsystem.h>
 #include <dwmapi.h>
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 psGUIManager::psGUIManager() : _firstjoystick(FG_JOYSTICK_INVALID), _alljoysticks(0), _maxjoy((uint8_t)(FG_JOYSTICK_ID16 >> 8)), _quit(false)
 {
@@ -324,7 +324,7 @@ void psGUIManager::_exactmousecalc()
     p = ci.ptScreenPos;
   }
 
-  assert(_monitors.Length() > 0);
+  assert(_monitors.size() > 0);
   ScreenToClient(_monitors[0].GetWindow(), &p);
   _root.mouse.x = p.x;
   _root.mouse.y = p.y;

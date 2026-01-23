@@ -1,12 +1,12 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
 #include "psFont.h"
 #include "psTex.h"
 #include "psColor.h"
-#include "bss-util/Str.h"
-#include "bss-util/os.h"
+#include "buntils/Str.h"
+#include "buntils/os.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
 #include "freetype/ftlcdfil.h"
@@ -16,7 +16,7 @@
 #include <Shlobj.h>
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 FT_Library psFont::PTRLIB = 0;
 HashIns<const char*, psFont*> psFont::_Fonts; //Hashlist of all fonts, done by file.

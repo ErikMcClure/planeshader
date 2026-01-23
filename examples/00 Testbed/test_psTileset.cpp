@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #include "testbed.h"
@@ -6,7 +6,7 @@
 #include "psLayer.h"
 #include "psTileset.h"
 
-using namespace bss;
+using namespace bun;
 using namespace planeshader;
 
 /*

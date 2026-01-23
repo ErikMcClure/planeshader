@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __NULLDRIVER_H__PS__
@@ -7,13 +7,13 @@
 #include "psDriver.h"
 
 namespace planeshader {
-  class BSS_COMPILER_DLLEXPORT psNullDriver : public psDriver, public psDriverHold
+  class BUN_COMPILER_DLLEXPORT psNullDriver : public psDriver, public psDriverHold
   {
   public:
     inline psNullDriver()
     {
       _driver = this;
-      psShader* nullshader = psShader::CreateShader(0, 0, 0, 0);
+      psShader* nullshader = psShader::CreateShader({}, {});
       _backbuffer = new psTex(psVeciu(0, 0), FMT_UNKNOWN, 0, 0, 0, psVeciu(0, 0));
       library.IMAGE0 = nullshader;
       library.IMAGE = nullshader;

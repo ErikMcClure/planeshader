@@ -2,7 +2,7 @@
 // -------------------------
 // This example runs a series of verification tests to ensure Planeshader is working properly.
 //
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -19,10 +19,10 @@
 #include "testbed.h"
 #include "ps_feather.h"
 #include "feathergui/fgDebug.h"
-#include "bss-util/Str.h"
-#include "bss-util/profiler.h"
-#include "bss-util/algo.h"
-#include "bss-util/win32_includes.h"
+#include "buntils/Str.h"
+#include "buntils/profiler.h"
+#include "buntils/algo.h"
+#include "buntils/win32_includes.h"
 #include <time.h>
 #include <iostream>
 #include <functional>
@@ -30,7 +30,7 @@
 #undef DrawText
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 Logger _failedtests("../bin/failedtests.txt"); //This is spawned too early for us to save it with SetWorkDirToCur();
 psEngine* engine = 0;
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 {
   ForceWin64Crash();
   SetWorkDirToCur();
-  bssRandSeed(time(NULL));
+  bunRandSeed(time(NULL));
 
   AllocConsole();
   freopen("CONOUT$", "wb", stdout);

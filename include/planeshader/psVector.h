@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __VECTOR_H__PS__
@@ -6,7 +6,7 @@
 
 #include "psSolid.h"
 #include "psColor.h"
-#include "bss-util/DynArray.h"
+#include "buntils/DynArray.h"
 
 namespace planeshader {
   // Used by all curve objects to render a curve as a deconstructed quadratic curve
@@ -33,7 +33,7 @@ namespace planeshader {
 
   protected:
     virtual void _render(const psTransform2D& parent) override;
-    bss::DynArray<QuadVertex, uint32_t> _verts;
+    bun::DynArray<QuadVertex, uint32_t> _verts;
   };
 
   class PS_DLLEXPORT psQuadraticCurve : public psQuadraticHull

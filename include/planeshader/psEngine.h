@@ -1,15 +1,15 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __ENGINE_H__PS__
 #define __ENGINE_H__PS__
 
-#include "bss-util/Array.h"
-#include "bss-util/BitField.h"
-#include "bss-util/Logger.h"
-#include "bss-util/Str.h"
-#include "bss-util/Serializer.h"
-#include "bss-util/Stack.h"
+#include "buntils/Array.h"
+#include "buntils/BitField.h"
+#include "buntils/Logger.h"
+#include "buntils/Str.h"
+#include "buntils/Serializer.h"
+#include "buntils/Stack.h"
 #include "psGUIManager.h"
 #include "psDriver.h"
 #include "psLayer.h"
@@ -17,6 +17,8 @@
 #define PSLOG(level,...) psEngine::Instance()->Log(__FILE__,__LINE__,(level),__VA_ARGS__)
 #define PSLOGF(level,format,...) psEngine::Instance()->LogFormat(__FILE__,__LINE__,(level),format,__VA_ARGS__)
 #define PSLOGP(level,format,...) psEngine::Instance()->PrintLog(__FILE__,__LINE__,(level),format,__VA_ARGS__)
+
+using bun::GenPair;
 
 namespace planeshader {
   class psLayer;
@@ -37,7 +39,7 @@ namespace planeshader {
     uint8_t antialias;
 
     template<typename Engine>
-    void Serialize(bss::Serializer<Engine>& e, const char*)
+    void Serialize(bun::Serializer<Engine>& e, const char*)
     {
       e.EvaluateType<PSINIT>(
         GenPair("width", width),
@@ -79,7 +81,7 @@ namespace planeshader {
     inline psLayer* GetLayer(uint16_t index=0) const { return index<_layers.Capacity()? _layers[index]:0; }
     inline uint16_t NumLayers() const { return _layers.Capacity(); }
     inline psMonitor::MODE GetMode() const { return _mode; }
-    inline bss::Logger& GetLog() { return _log; }
+    inline bun::Logger& GetLog() { return _log; }
 
     inline int PrintLog(const char* file, uint32_t line, uint8_t level, const char* format, ...)
     {
@@ -91,28 +93,28 @@ namespace planeshader {
     }
     inline int PrintLogV(const char* file, uint32_t line, uint8_t level, const char* format, va_list args) { return _log.PrintLog(LOGSOURCE, file, line, level, format, args); }
     template<typename... Args>
-    BSS_FORCEINLINE void Log(const char* file, uint32_t line, uint8_t level, Args... args) { _log.Log<Args...>(LOGSOURCE, file, line, level, args...); }
+    BUN_FORCEINLINE void Log(const char* file, uint32_t line, uint8_t level, Args... args) { _log.Log<Args...>(LOGSOURCE, file, line, level, args...); }
     template<typename... Args>
-    BSS_FORCEINLINE void LogFormat(const char* file, uint32_t line, uint8_t level, const char* format, Args... args) { _log.LogFormat<Args...>(LOGSOURCE, file, line, level, format, args...); }
+    BUN_FORCEINLINE void LogFormat(const char* file, uint32_t line, uint8_t level, const char* format, Args... args) { _log.LogFormat<Args...>(LOGSOURCE, file, line, level, format, args...); }
 
     psLayer& operator [](uint16_t index) { assert(index<_layers.Capacity()); return *_layers[index]; }
     const psLayer& operator [](uint16_t index) const { assert(index<_layers.Capacity()); return *_layers[index]; }
 
     static psEngine* Instance(); // Cannot be inline'd for DLL reasons.
     static const char* LOGSOURCE;
-    static const bssVersionInfo Version;
+    static const bun_VersionInfo Version;
 
-    bss::LocklessBlockPolicy<psLayer::NODE> NodeAlloc;
+    bun::LocklessBlockPolicy<psLayer::NODE> NodeAlloc;
 
   protected:
     virtual void _onresize(psVeciu dim, bool fullscreen) override;
 
-    bss::Array<psLayer*, uint16_t> _layers;
+    bun::Array<psLayer*, uint16_t> _layers;
     uint16_t _curlayer;
     psLayer* _mainlayer;
     psMonitor::MODE _mode;
     uint64_t _frameprofiler;
-    bss::Logger _log;
+    bun::Logger _log;
 
     static psEngine* _instance;
   };

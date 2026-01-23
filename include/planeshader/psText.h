@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __TEXT_H__PS__
@@ -7,8 +7,8 @@
 #include "psTexFont.h"
 #include "psSolid.h"
 #include "psColor.h"
-#include "bss-util/Str.h"
-#include "bss-util/ArraySort.h"
+#include "buntils/Str.h"
+#include "buntils/ArraySort.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psText : public psSolid
@@ -47,8 +47,8 @@ namespace planeshader {
     virtual void _render(const psTransform2D& parent) override;
     void _recalcdim();
 
-    bss::StrT<int> _text;
-    bss::ref_ptr<psTexFont> _font;
+    bun::StrT<int> _text;
+    bun::ref_ptr<psTexFont> _font;
     psVec _textdim;
     float _letterspacing;
     uint16_t _drawflags;

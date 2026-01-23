@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h" /*
@@ -13,7 +13,7 @@ using namespace planeshader;
 
 psVulkan::psVulkan(const psVeciu& dim, uint32_t antialias, bool vsync, bool fullscreen, bool sRGB, psMonitor* monitor) : psDriver()
 {
-  bss::memsubset<psVulkan, psDriver>(this, 0);
+  bun::memsubset<psVulkan, psDriver>(this, 0);
 
   VkResult err;
   uint32_t instance_extension_count = 0;

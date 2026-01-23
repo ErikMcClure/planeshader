@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __PARENT_H__PS__
 #define __PARENT_H__PS__
 
 #include "psDriver.h"
-#include "bss-util/vector.h"
+#include "buntils/vector.h"
 
 namespace planeshader {
   struct PS_DLLEXPORT psTransform2D
@@ -14,9 +14,9 @@ namespace planeshader {
     float rotation;
     psVec pivot;
 
-    BSS_FORCEINLINE psTransform2D Push(const psTransform2D& p) const { return Push(p.position, p.rotation, p.pivot); }
+    BUN_FORCEINLINE psTransform2D Push(const psTransform2D& p) const { return Push(p.position, p.rotation, p.pivot); }
     inline psTransform2D Push(const psVec3D& pos, float r, const psVec& p) const { return psTransform2D{ CalcPosition(pos), r + rotation, p }; }
-    BSS_FORCEINLINE psVec3D CalcPosition(const psTransform2D& p) const { return CalcPosition(p.position); }
+    BUN_FORCEINLINE psVec3D CalcPosition(const psTransform2D& p) const { return CalcPosition(p.position); }
     inline psVec3D CalcPosition(const psVec3D& pos) const
     {
       psVec3D ret(pos);
@@ -26,9 +26,9 @@ namespace planeshader {
     }
     inline void GetMatrix(psMatrix& matrix) const
     {
-      bss::Matrix<float, 4, 4>::AffineTransform_T(position.x - pivot.x, position.y - pivot.y, position.z, rotation, pivot.x, pivot.y, matrix);
+      bun::Matrix<float, 4, 4>::AffineTransform_T(position.x - pivot.x, position.y - pivot.y, position.z, rotation, pivot.x, pivot.y, matrix);
     }
-    BSS_FORCEINLINE void GetMatrix(psMatrix& matrix, const psTransform2D* parent) const
+    BUN_FORCEINLINE void GetMatrix(psMatrix& matrix, const psTransform2D* parent) const
     {
       if(!parent)
         GetMatrix(matrix);

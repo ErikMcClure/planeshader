@@ -1,13 +1,13 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __STATEBLOCK_H__PS__
 #define __STATEBLOCK_H__PS__
 
 #include "ps_dec.h"
-#include "bss-util/Hash.h"
-#include "bss-util/Array.h"
-#include "bss-util/RefCounter.h"
+#include "buntils/Hash.h"
+#include "buntils/Array.h"
+#include "buntils/RefCounter.h"
 
 namespace planeshader {
   enum STATETYPE : uint8_t {
@@ -91,14 +91,14 @@ namespace planeshader {
       uint64_t __vali64;
     };
 
-    typedef bss::Array<STATEINFO, uint16_t> STATEINFOS;
+    typedef bun::Array<STATEINFO, uint16_t> STATEINFOS;
 
     inline static bool SILESS(const planeshader::STATEINFO& l, const planeshader::STATEINFO& r) { return l.type<=r.type && (l.type<r.type || l.index<r.index); }
     inline static khint_t SIHASHFUNC(STATEINFOS* const& sb) {
       uint16_t sz=sb->Capacity();
       khint32_t r=0;
       for(uint16_t i = 0; i < sz; ++i)
-        r=bss::KH_INT_HASH((((int64_t)bss::KH_INT_HASH((*sb)[i].__vali64))<<32)|r);
+        r=bun::KH_INT_HASH((((int64_t)bun::KH_INT_HASH((*sb)[i].__vali64))<<32)|r);
       return r;
     }
     inline static bool SIEQUALITY(STATEINFOS* const& left, STATEINFOS* const& right)
@@ -112,11 +112,11 @@ namespace planeshader {
       return true;
     }
     static STATEINFOS* Exists(STATEINFOS* compare);
-    typedef bss::Hash<STATEINFOS*, void, bss::ARRAY_SIMPLE, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
+    typedef bun::Hash<STATEINFOS*, void, &SIHASHFUNC, &SIEQUALITY> BLOCKHASH;
     static BLOCKHASH _blocks;
   };
 
-  class PS_DLLEXPORT psStateblock : public bss::Array<STATEINFO, uint16_t>, public bss::RefCounter
+  class PS_DLLEXPORT psStateblock : public bun::Array<STATEINFO, uint16_t>, public bun::RefCounter
   {
   public:
     inline void* GetSB() const { return _sb; }
@@ -137,7 +137,7 @@ namespace planeshader {
   };
 
   // Restricted to sampler infos
-  class PS_DLLEXPORT psTexblock : public bss::Array<STATEINFO, uint16_t>, public bss::RefCounter
+  class PS_DLLEXPORT psTexblock : public bun::Array<STATEINFO, uint16_t>, public bun::RefCounter
   {
   public:
     inline void* GetSB() const { return _tb; }

@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -51,7 +51,7 @@ uint32_t psTileset::AutoGenDefs(psVec dim)
 {
   _defs.Clear();
   const psTex* base = GetTexture(0);
-  psVeci defs = !base ? psVeci(0,0) : (base->GetDim() / dim);
+  psVeci defs = !base ? psVeci(0,0) : psVeci(base->GetDim() / dim);
   _defs.SetLength(defs.x*defs.y);
 
   for(int j = 0; j < defs.y; ++j)
@@ -64,7 +64,7 @@ uint32_t psTileset::AutoGenDefs(psVec dim)
     }
 
   SetTileDim(dim);
-  return _defs.Length();
+  return _defs.size();
 }
 
 uint32_t psTileset::AddTileDef(psRect uv, psVec dim, psVec offset, int level)
@@ -76,13 +76,13 @@ uint32_t psTileset::AddTileDef(psRect uv, psVec dim, psVec offset, int level)
 void psTileset::SetTileDim(psVeci tiledim)
 {
   _tiledim = tiledim;
-  SetDim(!_rowlength ? VEC_ZERO : psVeci(_rowlength, _tiles.Length() / _rowlength)*_tiledim);
+  SetDim(!_rowlength ? psVeci(0,0) : psVeci(_rowlength, _tiles.size() / _rowlength) * _tiledim);
 }
 
 bool psTileset::SetTile(psVeci pos, uint32_t index, uint32_t color, float rotate, psVec pivot)
 {
   uint32_t i = pos.x + pos.y*_rowlength;
-  if(i >= _tiles.Length())
+  if(i >= _tiles.size())
     return false;
 
   _tiles[i].index = index;
@@ -101,7 +101,7 @@ void psTileset::SetTiles(psTile* tiles, uint32_t num, uint32_t pitch)
 
 void psTileset::Clear()
 {
-  bss::bssFillN<psTile>(_tiles.begin(), _tiles.Length(), 0);
+  bun::bun_FillN<psTile>(_tiles, 0);
 }
 
 void psTileset::SetDimIndex(psVeci dim)
@@ -113,8 +113,8 @@ void psTileset::SetDimIndex(psVeci dim)
 
 void psTileset::_render(const psTransform2D& parent)
 {
-  assert(_defs.Length() > 0);
-  if(!_rowlength || !_tiles.Length()) return;
+  assert(_defs.size() > 0);
+  if(!_rowlength || !_tiles.size()) return;
   psMatrix m;
   GetMatrix(m, &parent);
   _driver->PushTransform(m);
@@ -122,7 +122,7 @@ void psTileset::_render(const psTransform2D& parent)
 
   psBatchObj* obj = _driver->DrawRectBatchBegin(GetShader(), GetStateblock(), 1, GetFlags());
 
-  psRecti window = psRecti(0, 0, _rowlength, _tiles.Length() / _rowlength);
+  psRecti window = psRecti(0, 0, _rowlength, _tiles.size() / _rowlength);
   psRectRotateZ crect = GetCollisionRect(parent);
   if(crect.rotation == 0.0f)
   {
@@ -132,17 +132,17 @@ void psTileset::_render(const psTransform2D& parent)
     psVec3D rb = _driver->FromScreenSpace(c.bottomright, crect.z);
     r = psRect(lt.x - r.left, lt.y - r.top, rb.x - r.left, rb.y - r.top);
     window = window.Intersection(psRecti(
-      bss::fFastTruncate(r.left / _tiledim.x), 
-      bss::fFastTruncate(r.top / _tiledim.y), 
-      bss::fFastTruncate(r.right / _tiledim.x) + 1, 
-      bss::fFastTruncate(r.bottom / _tiledim.y) + 1));
+      bun::fFastTruncate(r.left / _tiledim.x), 
+      bun::fFastTruncate(r.top / _tiledim.y), 
+      bun::fFastTruncate(r.right / _tiledim.x) + 1, 
+      bun::fFastTruncate(r.bottom / _tiledim.y) + 1));
   }
 
   uint32_t skipped = 0;
-  uint32_t bytecount = T_NEXTMULTIPLE(_tiles.Length(), 7) >> 3;
+  uint32_t bytecount = T_NEXTMULTIPLE(_tiles.size(), 7) >> 3;
   assert(bytecount < 0xFFFF);
   VARARRAY(uint8_t, drawn, bytecount);
-  memset(drawn, 0, bytecount);
+  memset(drawn.data(), 0, bytecount);
 
   do
   {
@@ -150,14 +150,14 @@ void psTileset::_render(const psTransform2D& parent)
       for(uint32_t i = window.left; i < (uint32_t)window.right; ++i)
       {
         uint32_t k = i + (j*_rowlength);
-        if(bss::bssGetBit<uint8_t>(drawn, k) || _tiles[k].index > _defs.Length() || _tiles[k].color == 0)
+        if(bun::bun_GetBit<uint8_t>(drawn.data(), k) || _tiles[k].index > _defs.size() || _tiles[k].color == 0)
           continue; // if we drew this tile already don't draw it again
 
         psTileDef& def = _defs[_tiles[k].index];
-        if(_drawcheck<uint8_t>(drawn, k + 1, def.level) ||  // There are four tiles that we must check the levels of in case they need to render first
-          _drawcheck<uint8_t>(drawn, k + _rowlength - 1, def.level) ||
-          _drawcheck<uint8_t>(drawn, k + _rowlength + 0, def.level) ||
-          _drawcheck<uint8_t>(drawn, k + _rowlength + 1, def.level))
+        if(_drawcheck<uint8_t>(drawn.data(), k + 1, def.level) ||  // There are four tiles that we must check the levels of in case they need to render first
+          _drawcheck<uint8_t>(drawn.data(), k + _rowlength - 1, def.level) ||
+          _drawcheck<uint8_t>(drawn.data(), k + _rowlength + 0, def.level) ||
+          _drawcheck<uint8_t>(drawn.data(), k + _rowlength + 1, def.level))
         {
           ++skipped;
           continue;

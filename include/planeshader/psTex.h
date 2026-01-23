@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __TEX_H__PS__
@@ -7,7 +7,7 @@
 #include "psDriver.h"
 #include "psStateblock.h"
 #include "psColor.h"
-#include "bss-util/RefCounter.h"
+#include "buntils/RefCounter.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psPixelArray : public psDriverHold
@@ -43,7 +43,7 @@ namespace planeshader {
   };
 
   // Encapsulates an arbitrary texture not necessarily linked to an actual image
-  class PS_DLLEXPORT psTex : public bss::RefCounter, psDriverHold // The reference counter is optional (set to 1 on initial construction)
+  class PS_DLLEXPORT psTex : public bun::RefCounter, psDriverHold // The reference counter is optional (set to 1 on initial construction)
   {
   public:
     psTex(psTex&& mov);
@@ -93,7 +93,7 @@ namespace planeshader {
     uint8_t _miplevels;
     uint32_t _usage;
     FORMATS _format;
-    bss::ref_ptr<psTexblock> _texblock;
+    bun::ref_ptr<psTexblock> _texblock;
     psVeciu _dpi; // Actual DPI of this texture. The returned dimensions are scaled by this.
   };
 }

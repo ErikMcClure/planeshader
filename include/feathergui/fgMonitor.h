@@ -1,0 +1,44 @@
+// Copyright (c)2026 Erik McClure
+// For conditions of distribution and use, see copyright notice in "feathergui.h"
+
+#ifndef __FG_MONITOR_H__
+#define __FG_MONITOR_H__
+
+#include "fgElement.h"
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+// Defines a helper element that may OPTIONALLY be used by an implementation to track all available monitors. If a monitor's DPI
+// does not match the root DPI, elements must children of that monitor in order to respond to it's DPI.
+typedef struct _FG_MONITOR {
+  fgElement element;
+  AbsRect coverage; // True area of the monitor in the native DPI of root.
+  AbsVec dpi; // DPI of the monitor
+  struct _FG_MONITOR* mnext;
+  struct _FG_MONITOR* mprev;
+
+#ifdef  __cplusplus
+  _FG_MONITOR(_FG_MONITOR&&) = default;
+  _FG_MONITOR(const _FG_MONITOR&) = delete;
+  _FG_MONITOR(fgFlag flags, struct _FG_ROOT* BUN_RESTRICT parent, _FG_MONITOR* BUN_RESTRICT prev, AbsRect coverage, std::optional<AbsVec> dpi);
+  ~_FG_MONITOR();
+
+  _FG_MONITOR& operator=(_FG_MONITOR&&) = default;
+  _FG_MONITOR& operator=(const _FG_MONITOR&) = delete;
+#endif
+
+} fgMonitor;
+
+struct _FG_ROOT;
+
+FG_EXTERN void fgMonitor_Init(fgMonitor* BUN_RESTRICT self, fgFlag flags, struct _FG_ROOT* BUN_RESTRICT parent, fgMonitor* BUN_RESTRICT prev, const AbsRect* coverage, const AbsVec* dpi);
+FG_EXTERN void fgMonitor_Destroy(fgMonitor* self);
+FG_EXTERN size_t fgMonitor_Message(fgMonitor* self, const FG_Msg* msg);
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif

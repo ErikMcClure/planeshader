@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -7,7 +7,7 @@
 #include "psStateblock.h"
 #include "psRenderable.h"
 #include "psTex.h"
-#include "bss-util/vector.h"
+#include "buntils/vector.h"
 
 using namespace planeshader;
 
@@ -25,7 +25,7 @@ psVec3D psDriver::FromScreenSpace(const psVec& point, float z) const
 psBatchObj* psDriver::DrawBatchBegin(psShader* shader, void* stateblock, psFlag flags, psBufferObj* verts, psBufferObj* indices, PRIMITIVETYPE rendermode, const float(&transform)[4][4], uint32_t reserve)
 {
   uint32_t snapshot = GetSnapshot(); // Snapshot our driver state
-  if(_jobstack.Length() > 0)
+  if(_jobstack.size() > 0)
   {
     auto& last = _jobstack.Back(); // Can this be batch rendered?
     if(!(flags&PSFLAG_DONOTBATCH) && 
@@ -123,7 +123,7 @@ void psDriver::MergeClipRect(const psRect& rect)
 void psDriver::PushTransform(const psMatrix& xform)
 {
   psMatrix& m = *_matrixalloc.allocate(1);
-  bss::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
+  bun::MatrixMultiply<float, 4, 4, 4>(*_transformstack.Back(), xform, m);
   _transformstack.AddConstruct<const float(*)[4][4]>(&m);
 }
 const psMatrix& psDriver::PeekTransform()

@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -7,12 +7,12 @@
 #include "psCullGroup.h"
 #include "psStateblock.h"
 #include "psShader.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
-bss::Stack<psLayer*> psLayer::CurLayers;
+bun::Stack<psLayer*> psLayer::CurLayers;
 
 psLayer::psLayer() : _cam(0), _renderlist(&psEngine::Instance()->NodeAlloc), _renderables(0), _dpi(0, 0), _clear(false) {}
 psLayer::psLayer(psTex* const* targets, uint8_t num) : _cam(0), _renderlist(&psEngine::Instance()->NodeAlloc), _renderables(0), _dpi(0, 0), _clear(false) { SetTargets(targets, num); }
@@ -52,7 +52,7 @@ psLayer::~psLayer()
 void psLayer::Push(const psTransform2D& parent)
 {
   PROFILE_FUNC();
-  if(!CurLayers.Length() || CurLayers.Peek() != this)
+  if(!CurLayers.size() || CurLayers.Peek() != this)
   {
     CurLayers.Push(this);
     _applytop();
@@ -74,7 +74,7 @@ void psLayer::Push(const psTransform2D& parent)
 }
 void psLayer::_applytop()
 {
-  if(!CurLayers.Length())
+  if(!CurLayers.size())
     return;
   psLayer& cur = *CurLayers.Peek();
   if(cur._dpi.x != 0 && cur._dpi.y != 0)
@@ -86,13 +86,13 @@ void psLayer::_applytop()
     auto targets = _driver->GetRenderTargets();
     if(targets.first)
       cur._cam->Apply(targets.first[0]->GetRawDim(), cur._cull);
-    else if(CurLayers.Length() > 1)
-      cur._cull = CurLayers[CurLayers.Length() - 2]->_cull;
+    else if(CurLayers.size() > 1)
+      cur._cull = CurLayers[CurLayers.size() - 2]->_cull;
     else
       assert(false);
   }
-  else if(CurLayers.Length() > 1)
-    cur._cull = CurLayers[CurLayers.Length() - 2]->_cull;
+  else if(CurLayers.size() > 1)
+    cur._cull = CurLayers[CurLayers.size() - 2]->_cull;
   else // All root layers must have cameras
     assert(false);
 }
@@ -178,11 +178,11 @@ void psLayer::_render(const psTransform2D& parent)
 
 psLayer* psLayer::CurLayer() 
 { 
-  return !CurLayers.Length() ? nullptr : CurLayers.Peek();
+  return !CurLayers.size() ? nullptr : CurLayers.Peek();
 }
 psCamera* psLayer::CurCamera()
 {
-  size_t i = CurLayers.Length();
+  size_t i = CurLayers.size();
   while(i > 0)
     if(psCamera* cam = CurLayers[--i]->_cam)
       return cam;

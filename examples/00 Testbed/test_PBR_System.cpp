@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in testbed.cpp
 
 #include "testbed.h"
@@ -6,7 +6,7 @@
 #include "psLayer.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 struct PBRobj {
   Vector<float, 4> vecEye;
@@ -22,7 +22,7 @@ TESTDEF::RETPAIR test_PBR_System()
   psDriver* driver = engine->GetDriver();
 
   // Load and configure PBR shader
-  auto pbrfile = bssLoadFile<char, true>("../media/pbr-model.hlsl").first;
+  auto pbrfile = bunLoadFile<char, true>("../media/pbr-model.hlsl").first;
   PBRobj data = { {0}, { 0 }, { 1,1,1,1 } };
 
   psShader* pbrshader = psShader::MergeShaders(2, driver->library.IMAGE, psShader::CreateShader(0, 0, 1,

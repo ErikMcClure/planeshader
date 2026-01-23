@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -8,7 +8,7 @@ using namespace planeshader;
 
 psTextured::psTextured(const psTextured& copy) : _tex(copy._tex)
 {
-  for(uint32_t i = 0; i < _tex.Length(); ++i)
+  for(uint32_t i = 0; i < _tex.size(); ++i)
     _tex[i]->Grab();
 }
 psTextured::psTextured(psTextured&& mov) : _tex(std::move(mov._tex)) { }
@@ -18,7 +18,7 @@ psTextured::~psTextured() {}
 
 void psTextured::SetTexture(psTex* tex, size_t index)
 {
-  uint32_t oldsize = _tex.Length();
+  uint32_t oldsize = _tex.size();
   if(index>=oldsize)
     _tex.SetLength(index+1);
   for(uint32_t i = oldsize; i <= index; ++i) // use <= here on purpose
@@ -34,7 +34,7 @@ psTextured& psTextured::operator=(const psTextured& right)
 {
   _tex = right._tex;
 
-  for(uint32_t i = 0; i < _tex.Length(); ++i)
+  for(uint32_t i = 0; i < _tex.size(); ++i)
     _tex[i]->Grab();
 
   return *this;

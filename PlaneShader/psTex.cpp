@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -115,7 +115,7 @@ inline bool psTex::Resize(psVeciu dim, RESIZE resize)
   switch(resize)
   {
   case RESIZE_CLIP:
-    _driver->CopyTextureRect(&psRectiu(0, 0, bssmin(dim.x, _dim.x), bssmin(dim.y, _dim.y)), psVeciu(0, 0), _res, res);
+    _driver->CopyTextureRect(&psRectiu(0, 0, bun_min(dim.x, _dim.x), bun_min(dim.y, _dim.y)), psVeciu(0, 0), _res, res);
     break;
   case RESIZE_STRETCH:
     break; // Not supported

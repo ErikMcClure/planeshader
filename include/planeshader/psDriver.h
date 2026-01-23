@@ -1,12 +1,12 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __DRIVER_H__PS__
 #define __DRIVER_H__PS__
 
 #include "psRect.h"
-#include "bss-util/DynArray.h"
-#include "bss-util/GreedyBlockAlloc.h"
+#include "buntils/DynArray.h"
+#include "buntils/GreedyBlockAlloc.h"
 
 namespace planeshader {
   class psTex;
@@ -21,9 +21,9 @@ namespace planeshader {
   struct psBatchObj;
   class psStateblock;
 
-  typedef BSS_ALIGN(16) float psMatrix[4][4];
+  typedef BUN_ALIGN(16) float psMatrix[4][4];
 
-  struct BSS_COMPILER_DLLEXPORT RealDriver
+  struct BUN_COMPILER_DLLEXPORT RealDriver
   {
     union {
       psDirectX9* dx9;
@@ -435,7 +435,7 @@ namespace planeshader {
     // Pushes a matrix on to the matrix stack. This stack gets cleared once Flush is called.
     //inline float(*PushMatrix())[4][4]{ return _matrixalloc.Alloc(); }
 
-    BSS_FORCEINLINE static FORMATS ToSRGBFormat(FORMATS format)
+    BUN_FORCEINLINE static FORMATS ToSRGBFormat(FORMATS format)
     {
       switch(format)
       {
@@ -449,7 +449,7 @@ namespace planeshader {
       }
       return format;
     }
-    BSS_FORCEINLINE static FORMATS FromSRGBFormat(FORMATS format)
+    BUN_FORCEINLINE static FORMATS FromSRGBFormat(FORMATS format)
     {
       switch(format)
       {
@@ -463,11 +463,11 @@ namespace planeshader {
       }
       return format;
     }
-    BSS_FORCEINLINE static void _MatrixTranslate(float(&out)[4][4], float x, float y, float z) { out[3][0]=x; out[3][1]=y; out[3][2]=z; } //This is the transpose of what is NORMALLY done, presumably due to the order of multiplication
-    BSS_FORCEINLINE static void _MatrixScale(float(&out)[4][4], float x, float y, float z) { out[0][0]=x; out[1][1]=y; out[2][2]=z; }
-    BSS_FORCEINLINE static void _MatrixRotateZ(float(&out)[4][4], float angle) { float ca=cos(angle); float sa=sin(angle); out[0][0]=ca; out[1][0]=-sa; out[0][1]=sa; out[1][1]=ca; } //Again, we need the transpose
-    BSS_FORCEINLINE static void _inversetransform(float(&mat)[4][4]) { mat[3][0]=(-mat[3][0]); mat[3][1]=(-mat[3][1]); }
-    BSS_FORCEINLINE static void _inversetransformadd(float(&mat)[4][4], const float(&add)[4][4]) { mat[3][0]=add[3][0]-mat[3][0]; mat[3][1]=add[3][1]-mat[3][1]; mat[3][2]=add[3][2]; }
+    BUN_FORCEINLINE static void _MatrixTranslate(float(&out)[4][4], float x, float y, float z) { out[3][0]=x; out[3][1]=y; out[3][2]=z; } //This is the transpose of what is NORMALLY done, presumably due to the order of multiplication
+    BUN_FORCEINLINE static void _MatrixScale(float(&out)[4][4], float x, float y, float z) { out[0][0]=x; out[1][1]=y; out[2][2]=z; }
+    BUN_FORCEINLINE static void _MatrixRotateZ(float(&out)[4][4], float angle) { float ca=cos(angle); float sa=sin(angle); out[0][0]=ca; out[1][0]=-sa; out[0][1]=sa; out[1][1]=ca; } //Again, we need the transpose
+    BUN_FORCEINLINE static void _inversetransform(float(&mat)[4][4]) { mat[3][0]=(-mat[3][0]); mat[3][1]=(-mat[3][1]); }
+    BUN_FORCEINLINE static void _inversetransformadd(float(&mat)[4][4], const float(&add)[4][4]) { mat[3][0]=add[3][0]-mat[3][0]; mat[3][1]=add[3][1]-mat[3][1]; mat[3][2]=add[3][2]; }
     static const psMatrix identity;
 
     struct SHADER_LIBRARY
@@ -491,9 +491,9 @@ namespace planeshader {
     } library;
 
   protected:
-    bss::DynArray<psBatchObj> _jobstack;
-    bss::GreedyBlockPolicy<psMatrix> _matrixalloc;
-    bss::DynArray<const float(*)[4][4]> _transformstack;
+    bun::DynArray<psBatchObj> _jobstack;
+    bun::GreedyBlockPolicy<psMatrix> _matrixalloc;
+    bun::DynArray<const float(*)[4][4]> _transformstack;
   };
 
   struct PS_DLLEXPORT psDriverHold

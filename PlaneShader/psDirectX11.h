@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __DIRECTX11_H__PS__
@@ -6,7 +6,7 @@
 
 #include "psDriver.h"
 #include "psShader.h"
-#include "bss-util/Stack.h"
+#include "buntils/Stack.h"
 #include <array>
 #include "win32_includes.h"
 #include <initguid.h>
@@ -161,7 +161,7 @@ namespace planeshader {
     static void* operator new(std::size_t sz);
     static void operator delete(void* ptr, std::size_t sz);
 
-    struct CamDef { bss::Matrix<float, 4, 4> viewproj; bss::Matrix<float, 4, 4> proj; bss::Matrix<float, 4, 4> view; psRectiu viewport; };
+    struct CamDef { bun::Matrix<float, 4, 4> viewproj; bun::Matrix<float, 4, 4> proj; bun::Matrix<float, 4, 4> view; psRectiu viewport; };
     struct Snapshot { uint32_t tex[3]; uint32_t ntex[3]; uint32_t rt; uint32_t nrt; ID3D11DepthStencilView* depth; psRectl cliprect; };
 
   protected:
@@ -208,12 +208,12 @@ namespace planeshader {
     bool _zerocamrot;
     bool _vsync;
     CamDef _curcam;
-    bss::Stack<psRectl> _clipstack;
-    bss::DynArray<Snapshot, uint32_t> _snapshotstack;
-    bss::DynArray<void*, uint32_t> _texstack;
-    std::array<bss::DynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
-    bss::DynArray<psTex*, uint32_t> _lastrt;
-    bss::DynArray<psMatrix, size_t, bss::ARRAY_SIMPLE, bss::AlignedAllocator<psMatrix>> _matrixbuf;
+    bun::Stack<psRectl> _clipstack;
+    bun::DynArray<Snapshot, uint32_t> _snapshotstack;
+    bun::DynArray<void*, uint32_t> _texstack;
+    std::array<bun::DynArray<ID3D11Texture2D*, uint32_t>,3> _lasttex;
+    bun::DynArray<psTex*, uint32_t> _lastrt;
+    bun::DynArray<psMatrix, size_t, bun::AlignedAllocator<psMatrix>> _matrixbuf;
     ID3D11DepthStencilView* _lastdepth;
     ID3D11VertexShader* _fsquadVS;
     ID3D11VertexShader* _defaultVS;

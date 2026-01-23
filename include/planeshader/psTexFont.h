@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __TEXFONT_H__PS__
@@ -7,10 +7,10 @@
 #include "psRect.h"
 #include "psDriver.h"
 #include "psTex.h"
-#include "bss-util/RefCounter.h"
-#include "bss-util/Hash.h"
-#include "bss-util/Array.h"
-#include "bss-util/Delegate.h"
+#include "buntils/RefCounter.h"
+#include "buntils/Hash.h"
+#include "buntils/Array.h"
+#include "buntils/Delegate.h"
 
 namespace planeshader {
   struct psGlyph
@@ -39,10 +39,10 @@ namespace planeshader {
   };
 
   // Represents any arbitrary font created out of a texture. This is used to implement psFont.
-  class PS_DLLEXPORT psTexFont : public bss::RefCounter, protected psDriverHold
+  class PS_DLLEXPORT psTexFont : public bun::RefCounter, protected psDriverHold
   {
   public:
-    typedef bss::Delegate<void, size_t, psRectRotateZ&, uint32_t&> DELEGATE;
+    typedef bun::Delegate<void, size_t, psRectRotateZ&, uint32_t&> DELEGATE;
     // Draws text in the given rectangle. Returns the dimensions of the text which can be cached used to assemble an area if the text doesn't change.
     psVec DrawText(psShader* shader, const psStateblock* stateblock, const int* text, float lineheight, float letterspacing = 0.0f, const psRectRotateZ& area = psRectRotateZ(0, 0, 0, 0, 0), uint32_t color = 0xFFFFFFFF, psFlag flags = 0, DELEGATE d = DELEGATE(0, 0));
     psVec DrawText(psShader* shader, const psStateblock* stateblock, const char* text, float lineheight, float letterspacing = 0.0f, const psRectRotateZ& area = psRectRotateZ(0,0,0,0,0), uint32_t color = 0xFFFFFFFF, psFlag flags = 0, DELEGATE d = DELEGATE(0, 0));
@@ -75,15 +75,15 @@ namespace planeshader {
     psTexFont();
     virtual ~psTexFont();
     float _getlinewidth(const int*& text, float maxwidth, psFlag flags, float letterspacing, float& cur);
-    BSS_FORCEINLINE psGlyph* _getchar(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec& cursor, psRect& box, int& last, float& lastadvance, bool& dobreak);
+    BUN_FORCEINLINE psGlyph* _getchar(const int* text, float maxwidth, psFlag flags, float lineheight, float letterspacing, psVec& cursor, psRect& box, int& last, float& lastadvance, bool& dobreak);
     virtual psGlyph* _loadglyph(uint32_t codepoint);
     virtual float _loadkerning(uint32_t prev, uint32_t cur);
     float _getkerning(uint32_t prev, uint32_t cur);
     static bool _isspace(int c);
 
-    bss::Hash<uint64_t, float> _kerning;
-    bss::Hash<uint32_t, psGlyph> _glyphs;
-    bss::Array<bss::ref_ptr<psTex>, uint8_t, bss::ARRAY_CONSTRUCT> _textures;
+    bun::Hash<uint64_t, float> _kerning;
+    bun::Hash<uint32_t, psGlyph> _glyphs;
+    bun::Array<bun::ref_ptr<psTex>, uint8_t> _textures;
     float _fontlineheight;
     float _fontascender;
     float _fontdescender;

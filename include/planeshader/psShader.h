@@ -1,11 +1,11 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __SHADER_H__PS__
 #define __SHADER_H__PS__
 
 #include "psDriver.h"
-#include "bss-util/RefCounter.h"
+#include "buntils/RefCounter.h"
 #include <stdarg.h>
 
 namespace planeshader {
@@ -23,13 +23,13 @@ namespace planeshader {
 
     // Creates a shader from either precompiled source, or a string with a given entrypoint, with optional initial data of type T stored as a constant buffer.
     template<class T> // We can't have templates on constructors so we have to do this instead
-    BSS_FORCEINLINE static SHADER_INFO From(void* Shader, SHADER_VER V, const T* Init=0) { return SHADER_INFO(Shader, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value,char,T>::type), Init); }
+    BUN_FORCEINLINE static SHADER_INFO From(void* Shader, SHADER_VER V, const T* Init=0) { return SHADER_INFO(Shader, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value,char,T>::type), Init); }
     template<class T>
-    BSS_FORCEINLINE static SHADER_INFO From(const char* Shader, const char* entrypoint, SHADER_VER V, const T* Init=0) { return SHADER_INFO(Shader, entrypoint, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value, char, T>::type), Init); }
+    BUN_FORCEINLINE static SHADER_INFO From(const char* Shader, const char* entrypoint, SHADER_VER V, const T* Init=0) { return SHADER_INFO(Shader, entrypoint, V, std::is_void<T>::value?0:sizeof(std::conditional<std::is_void<T>::value, char, T>::type), Init); }
   };
 
   // Encapsulates an entire shader effect: each type of shader program (vertex/pixel/etc.), the constants for each individual shader program, and the shader layout.
-  class PS_DLLEXPORT psShader : protected psDriverHold, public bss::RefCounter
+  class PS_DLLEXPORT psShader : protected psDriverHold, public bun::RefCounter
   {
   public:
     void Activate() const;
@@ -42,24 +42,11 @@ namespace planeshader {
     bool SetConstants(const void* data, uint32_t sz, uint8_t I);
 
     // Creates a new shader object out of a given layout and a list of SHADER_INFOs, which represent all included shader programs and their associated constant buffers.
-    template<uint8_t I>
-    inline static psShader* CreateShader(const ELEMENT_DESC(&layout)[I], uint8_t num, ...)
-    {
-      VARARRAY(SHADER_INFO, infos, num);
-      va_list vl;
-      va_start(vl, num);
-      for(uint32_t i = 0; i < num; ++i) new(infos + i) SHADER_INFO(*va_arg(vl, const SHADER_INFO*));
-      va_end(vl);
-      return CreateShader(I, layout, num, infos);
-    }
-    static psShader* CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, ...); // All arguments here must be passed in as const SHADER_INFO*
-    template<uint8_t I>
-    inline static psShader* CreateShader(const ELEMENT_DESC(&layout)[I], uint8_t num, const SHADER_INFO* infos) { return CreateShader(I, layout, num, infos); }
-    static psShader* CreateShader(uint8_t nlayout, const ELEMENT_DESC* layout, uint8_t num, const SHADER_INFO* infos);
+    static psShader* CreateShader(const std::span<ELEMENT_DESC> layout, const std::span<SHADER_INFO> infos);
     // Copies a single shader
     static psShader* CreateShader(const psShader* copy);
     // merges num shaders into a new shader in left to right order (so the first will be overwritten by the rest). num cannot be 0.
-    static psShader* MergeShaders(uint32_t num, const psShader* first, ...); 
+    static psShader* MergeShaders(std::span<psShader> shaders); 
     void** GetInternalPrograms() { return _ss; }
 
     psShader& operator+=(const psShader& right);
@@ -87,7 +74,7 @@ namespace planeshader {
   class PS_DLLEXPORT psShaderT : protected psShader
   {
   public:
-    inline psShaderT(void* layout) : psShader<VS, PS, GS, CS, DS, HS>(layout)
+    inline psShaderT(void* layout) : psShader(layout) {}
     template<typename T> // Automatically picks the correct shader to apply the constants to by match T to that shader's constant declaration.
     inline bool SetConstants(const T& src)
     {

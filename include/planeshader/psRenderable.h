@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #ifndef __RENDERABLE_H__PS__
@@ -7,9 +7,9 @@
 #include "psStateBlock.h"
 #include "psShader.h"
 #include "psTransform2D.h"
-#include "bss-util/BitField.h"
-#include "bss-util/LLBase.h"
-#include "bss-util/TRBtree.h"
+#include "buntils/BitField.h"
+#include "buntils/LLBase.h"
+#include "buntils/TRBtree.h"
 
 namespace planeshader {
   class PS_DLLEXPORT psRenderable
@@ -28,7 +28,7 @@ namespace planeshader {
     inline psLayer* GetLayer() const { return _layer; }
     void SetPass(psLayer* pass);
     void SetPass(); // Sets the pass to the 0th pass.
-    inline bss::BitField<psFlag>& GetFlags() { return _flags; }
+    inline bun::BitField<psFlag>& GetFlags() { return _flags; }
     inline psFlag GetFlags() const { return _flags; }
     inline psShader* GetShader() { return _shader; }
     inline const psShader* GetShader() const { return _shader; }
@@ -40,13 +40,15 @@ namespace planeshader {
 
     psRenderable& operator =(const psRenderable& right);
     psRenderable& operator =(psRenderable&& right);
+    std::strong_ordering operator<=>(const psRenderable& right) const {
 
-    static BSS_FORCEINLINE bss::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
-    static BSS_FORCEINLINE char StandardCompare(psRenderable* const& l, psRenderable* const& r)
-    {
-      char c = SGNCOMPARE(l->_zorder, r->_zorder);
-      return !c ? SGNCOMPARE(l, r) : c;
+      auto c = _zorder <=> right._zorder;
+      return c == 0 ? (this <=> &right) : c;
     }
+    bool operator==(const psRenderable& right) const {
+      return this == &right;
+    }
+    static BUN_FORCEINLINE bun::LLBase<psRenderable>& GetRenderableAlt(psRenderable* r) { return r->_llist; }
 
     virtual void _render(const psTransform2D& parent) = 0;
 
@@ -55,14 +57,14 @@ namespace planeshader {
     void _copyinsert(const psRenderable& r);
     void _invalidate();
 
-    bss::BitField<psFlag> _flags;
+    bun::BitField<psFlag> _flags;
     psLayer* _layer; // Stores what pass we are in
     int _zorder;
     uint8_t _internalflags;
-    bss::ref_ptr<psStateblock> _stateblock;
-    bss::ref_ptr<psShader> _shader;
-    bss::LLBase<psRenderable> _llist;
-    bss::TRB_Node<std::pair<psRenderable*, const psTransform2D*>>* _psort;
+    bun::ref_ptr<psStateblock> _stateblock;
+    bun::ref_ptr<psShader> _shader;
+    bun::LLBase<psRenderable> _llist;
+    bun::TRB_Node<std::pair<psRenderable*, const psTransform2D*>>* _psort;
 
     enum INTERNALFLAGS : uint8_t
     {

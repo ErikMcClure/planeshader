@@ -1,4 +1,4 @@
-// Copyright ©2018 Black Sphere Studios
+// Copyright (c)2026 Erik McClure
 // For conditions of distribution and use, see copyright notice in ps_dec.h
 
 #include "psEngine.h"
@@ -8,17 +8,17 @@
 //#include "psVulkan.h"
 #include "psNullDriver.h"
 #include "psStateblock.h"
-#include "bss-util/profiler.h"
+#include "buntils/profiler.h"
 #include "ps_feather.h"
 
 using namespace planeshader;
-using namespace bss;
+using namespace bun;
 
 psDriver* psDriverHold::_driver=0;
 psEngine* psEngine::_instance=0;
 const char* psEngine::LOGSOURCE = "ps";
 const psMatrix psDriver::identity ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
-const bssVersionInfo psEngine::Version = { 0, PS_VERSION_REVISION, PS_VERSION_MINOR, PS_VERSION_MAJOR };
+const bun_VersionInfo psEngine::Version = { 0, PS_VERSION_REVISION, PS_VERSION_MINOR, PS_VERSION_MAJOR };
 
 psDriver* psDriverHold::GetDriver() { return _driver; }
 
